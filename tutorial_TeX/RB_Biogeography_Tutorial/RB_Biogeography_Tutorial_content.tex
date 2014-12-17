@@ -10,13 +10,13 @@ To examine the posterior, we'll use Python scripts, \Tracer by Andrew Rambaut, t
 {\bf I. Introduction} & \\
 & a) Workspace setup \\
 & b) Range evolution models and data augmentation \\
-{\bf II. DEC in RevBayes} & \\
+{\bf II. DEC in \RevBayes} & \\
 & a) Tree, range, and geographic input \\
 & b) DEC as a graphical model \\
 & c) Monitors, moves, and MCMC \\
 & d) Model selection with Bayes factors \\
 {\bf III. Output and Analysis} & \\
-& a) MCMC output in Tracer \\
+& a) MCMC output in \Tracer \\
 & b) Ancestral range output \\
 & c) Animate ancestral ranges \\
 \end{tabular}
@@ -27,9 +27,9 @@ To examine the posterior, we'll use Python scripts, \Tracer by Andrew Rambaut, t
 
 \begin{tabular}{ll}
 \RevBayes & \url{https://github.com/revbayes/revbayes} \\
-Lab zip file & \href{https://github.com/revbayes/revbayes/raw/development/tutorials/RB\_Biogeography\_tutorial/RB\_biogeo\_files.zip}{{\tt https://github.com/revbayes/revbayes/RB\_biogeo\_files.zip}} \\
-\Phylowood software & \url{http://mlandis.github.io/phylowood} \\
-\Phylowood manual & \url{https://github.com/mlandis/phylowood/wiki} \\
+Lab zip file & \href{https://github.com/revbayes/revbayes\_tutorial/raw/master/tutorials/RB\_Biogeography\_tutorial/RB\_biogeo\_files.zip}{{\tt https://github.com/revbayes/revbayes\_tutorial/RB\_Biogeography\_tutorial/RB\_biogeo\_files.zip}} \\
+\Phylowood~software & \url{http://mlandis.github.io/phylowood} \\
+\Phylowood~manual & \url{https://github.com/mlandis/phylowood/wiki} \\
 \Tracer & \url{http://tree.bio.ed.ac.uk/software/tracer}
 %DendroPy manual & \url{http://pythonhosted.org/DendroPy/} \\
 %matplotlib manual & \url{http://matplotlib.org/} \\
@@ -45,7 +45,7 @@ Just ask for help if the commands don't seem to work.
 
 \noindent \\ \impmark Portions of this lab require Python is installed. No packages are needed.
 
-\noindent \\ \impmark This tutorial will assume you have successfully installed RevBayes and can be called from your current working directory.
+\noindent \\ \impmark This tutorial will assume you have successfully installed \RevBayes~and can be called from your current working directory.
 
 \noindent \\ \impmark Download and unzip the lab zip file, {\tt RB\_biogeo\_files.zip}.
 
@@ -54,11 +54,11 @@ Just ask for help if the commands don't seem to work.
 %%%%%%%%%%%%%%%%
 \section{Model and method}
 
-This section contains a brief description of the data, model, parameters, and method used in BayArea.
+This section contains a brief description of the data, model, parameters, and method that we use \citep{landis13}.
 
 First, we define the range for taxon $i$ as the bit vector $X_i$, where $X_{i,j} = 1$ if the taxon is present in area $j$ and $X_{i,j} = 0$ if the taxon is absent.
 Each taxon range is a bit vector of length $N$ areas.
-For example, if taxon $B$ is present only in areas 2 and 3 out of $N=3$ areas, its range is represented as $X_B = (0,1,1)$, which is translated to the bit string $X_B=011$ for short.
+For example, if taxon $B$ is present only in areas 2 and 3 out of $N\!=\!3$ areas, its range is represented as $X_B = (0,1,1)$, which is translated to the bit string $X_B=011$ for a shorter notation.
 The data matrix, $\textbf{X}$, is analogous to a multiple sequence alignment where each element in the data matrix reports a discrete value for a homologous character shared by all taxa at column $j$.
 
 Next, we need a model of range evolution.
@@ -67,10 +67,10 @@ Since we have discrete characters we'll use the continuous-time Markov chain, wh
 \mathbf{P}_{i,j}(t) = \left[ \exp \left\lbrace \mathbf{Q}t \right\rbrace \right]_{i,j},
 \]
 where $\textbf{Q}$ is the instantaneous rate matrix defining the rates of change between all pairs of characters, and $\textbf{P}$ is the transition probability rate matrix.
-This technique of matrix exponentiation is powerful because it integrates over all possible scenarios of character transitions that could occur during $t$ so long as the chain begins in state $i$ and ends in state $j$.
+This technique of matrix exponentiation is powerful because it integrates over all possible scenarios of character transitions that could occur during the time interval of length $t$ when the Markov chain begins in state $i$ and ends in state $j$.
 
 We can then encode range evolution events into the allowed character transitions of $\textbf{Q}$ and parameterize the events so that we may infer their relative importance to generating our observed ranges.
-We'll take a simple model of range expansion (e.g. $011 \rightarrow 111$) and range contraction (e.g. $011 \rightarrow 001$).
+We'll take a simple model of range expansion (\EG gaining the first area:$011 \rightarrow 111$) and range contraction (\EG loosing the second area: $011 \rightarrow 001$).
 (Range expansion may also be referred to as dispersal or area gain and range contraction as extirpation or area loss.)
 The rates in the transition matrix for three areas might appear as
 
@@ -124,11 +124,11 @@ Moreover, when $\beta > 0$, $\eta(\cdot) < 1$ when area $a$ is relatively distan
 
 In addition to dispersal and extinction, the DEC model allows cladogenic range evolution events.
 For each internal node in the tree, one of four cladogenic events can occur: narrow sympatry, subset sympatry, allopatry, and wide sympatry.
-Say the range of a species approaching an internal node, i.e. that is about to speciate, is 1000.
+Say the range of a species approaching an internal node, \IE that is about to speciate, is 100.
 Since the species range is size one, this always results in narrow sympatry, where both daughter lineages inherit the ancestral species range.
-Now suppose the ancestral range is 1110.
-Under subset sympatric cladogenesis, one lineage identically inherits the ancestral species range, 1110, while the other lineage inherits only a single area, e.g. 0100.
-Under allopatric cladogenesis, the ancestral range is split evenly among daughter lineages, e.g. one lineage may inherit 1100 and the other inherit 0010.
+Now suppose the ancestral range is 111.
+Under subset sympatric cladogenesis, one lineage identically inherits the ancestral species range, 111, while the other lineage inherits only a single area, \EG 010.
+Under allopatric cladogenesis, the ancestral range is split evenly among daughter lineages, \EG one lineage may inherit 110 and the other inherit 001.
 Both daughter lineages inherit the entire ancestral species range following widespread sympatric cladogenic events.
 For a general description of state transitions for cladogenic events, see \citet{matzke13}.
 
@@ -157,7 +157,7 @@ The likelihood of beginning in character $i$ and ending in character $j$ can be 
 While we will never know the exact history of events, we can use stochastic mapping in conjunction with Markov chain Monte Carlo (MCMC) to repeatedly sample range evolution histories that are consistent with the ranges observed in the study taxa at the tips of the phylogeny.
 This technique is an adaptation of the data-augmented phylogenetic method first described by \citet{robinson03}, and was first applied to tertiary structure-dependent evolution of protein-coding nucleotide sequences.
 
-This is the strategy we will use to infer the posterior distribution approximated is 
+This is the strategy we will use to infer the posterior distribution approximated by 
 \newline{Prob$\left( \textbf{X}_{aug}, \theta \mid \textbf{X}_{obs}, T, M \right)$}, where $\textbf{X}_{obs}$ is the range data observed at the tips, $\textbf{X}_{aug}$ is the distribution of ancestral range reconstructions over the phylogeny, $T$, where $\textbf{X}_{aug}$ is inferred jointly with the parameters, $\theta$, assuming the range evolution model, $M$, that describes $\textbf{Q}$ above.
 Ancestral range reconstructions are often of primary interest in phylogenetic biogeographic analyses, which are generated with support values as a by-product of the MCMC analysis.
 
@@ -218,10 +218,10 @@ For example, taxon {\tt P\_hexandra\_Oahu} is present only in area 2.
 
 The {\tt trees} block gives the tree describing the shared ancestry of the study species.
 Because range evolution occurs in units of geological time, the analysis in this tutorial requires a high-quality time-calibrated phylogeny.
-This typically requires a multiple sequence alignment over several loci plus fossils for calibration.
-Since this data availability is often the limiting factor for which taxa to include for your analysis, it is best to produce the phylogeny first.
-Only afterwards should you begin assembling data for your data matrix.
-If your phylogeny cannot be calibrated (e.g. it has no fossils) your best alternative is to proceed with a time tree resulting from a divergence time estimation analysis.
+%This typically requires a multiple sequence alignment over several loci plus fossils for calibration.
+%Since this data availability is often the limiting factor for which taxa to include for your analysis, it is best to produce the phylogeny first.
+%Only afterwards should you begin assembling data for your data matrix.
+%If your phylogeny cannot be calibrated (e.g. it has no fossils) your best alternative is to proceed with a time tree resulting from a divergence time estimation analysis.
 For this tutorial, the phylogeny is assumed to contain no uncertainty.
 
 \subsection{Atlas file}
@@ -230,20 +230,20 @@ The geography used in this tutorial represents the Hawaiian archipelago.
 Beneath Hawaii, currently the largest and youngest island, is a volcanic hotspot that periodically creates new islands.
 The ages of these islands are fairly well known, meaning we can model range availability as a function of time.
 Following \citet{ree08}, we will lump groups of smaller islands into single areas to simplify the analysis, leaving us with four areas: Hawaii (H), Oahu (O), Maui (M; this includes Molokai and Lanai), and Kauai (K; this includes Niihau).
-These areas are modeled have arisen 0.5, 1.9, 3.7, and 5.5 million years ago, respectively.
+These areas have arisen 0.5, 1.9, 3.7, and 5.5 million years ago, respectively.
 
 Although the model will use discrete-state biogeographic ranges, geographical area is naturally continuous.
 This means we must impose some discretization upon the geography to designate a set of biogeographically meaningful characters called areas.
 Different methods use different criteria for this discretization, so it is best to perform the discretization yourself rather than blindly using the discretization given from a previous study or method (but do blindly use the dataset included in this tutorial).
 Some geographies have natural discretizations: for instance, the Hawaiian archipelago forms naturally discrete areas on the basis of islands.
-For many geographies, however, it may unclear how to perform this discretization.
-Much like morphological analyses, you might choose to choose areas based on expert opinion, based on some model, or using some ``naive'' uniform discretization.
+For many geographies, however, it may be unclear how to perform this discretization.
+Much like morphological analyses, you might choose areas based on expert opinion, based on some model, or using some ``naive'' uniform discretization.
 This procedure is not part of the tutorial, but you should be aware that area definitions are not always obvious or objective.
 
 
 \newpage
 
-\noindent \\ \impmark  Open the file \texttt{examples/hawaii\_dynamic.atlas.txt}.
+\noindent \\ \impmark  Open the file \texttt{examples/hawaii\_dynamic.atlas.txt} in a text editor.
 
 \begin{framed}
 %\begin{lstlisting}[basicstyle=\tiny \listingsfont, columns=texcl]
@@ -287,7 +287,7 @@ This procedure is not part of the tutorial, but you should be aware that area de
 This is called the Atlas file, which uses a file format called JSON.
 JSON is a lightweight format used to assign values to variables in a hierarchical manner.
 There are three main tiers to the hierarchy in the Atlas file: the atlas, the epoch, and the area.
-In the lowest tier, each area corresponds to a character in the model and is assigned it's own properties.
+In the lowest tier, each area corresponds to a character in the model and is assigned its own properties.
 In the middle tier, each epoch contains the set of homologous areas (characters) that may be part of a species' range, but importantly the properties of these areas may take on different values during different intervals of time, as given by the {\tt start\_age} and {\tt end\_age} variables.
 Because the tree and range evolution model also operate on units of geological time, the rates of area gain and loss can condition on areas' properties as a function of time.
 Sometimes these models are called stratified models or epochal models.
@@ -301,8 +301,8 @@ Here, the {\tt latitude} and {\tt longitude} change in each of the four epochs, 
 
 In addition, each area is marked as habitable or not using the {\tt dispersalValues} array.
 The elements in the array correspond to the other areas defined in the analysis.
-For example, in {\tt epoch1}, Kauai's {\tt dispersalValues} is equal to {\tt [ 1,0,0,0 ]}, which indicates Kauai exists at that point in time but it is not in contact with any other areas, i.e. the range in that area cannot expand into other areas.
-The {\tt dispersalValues} for Oahu, Maui, and Hawaii are all equal to {\tt [ 0,0,0,0 ]}, meaning no species may be present in that area during the time interval of {\t epoch1} during ages from 10.0 to 3.7. In contrast, {\tt epoch4}, from ages 0.5 to the present, range expansions may occur between any pair of areas and any area may be included in a species' range.
+For example, in {\tt epoch1}, Kauai's {\tt dispersalValues} is equal to {\tt [ 1,0,0,0 ]}, which indicates Kauai exists at that point in time but it is not in contact with any other areas, \IE the range in that area cannot expand into other areas.
+The {\tt dispersalValues} for Oahu, Maui, and Hawaii are all equal to {\tt [ 0,0,0,0 ]}, meaning no species may be present in that area during the time interval of {\tt epoch1} during ages from 10.0 to 3.7. In contrast, {\tt epoch4}, from ages 0.5 to the present, range expansions may occur between any pair of areas and any area may be included in a species' range.
 
 \section{RevBayes Analysis}
 
@@ -323,18 +323,18 @@ Finally, we'll analyze our MCMC output.
 
 \begin{snugshade}
 \begin{lstlisting}
-$ revbayes
+$ rb
 \end{lstlisting}
 \end{snugshade}
 
 First, we'll assign all our input files to {\tt String} variables.
 \begin{snugshade}
 \begin{lstlisting}
-RevBayes > in_fp   <- "./input/"
-RevBayes > data_fn <- "psychotria_range.nex"
-RevBayes > area_fn <- "hawaii_dynamic.atlas.txt"
-RevBayes > out_fp  <- "./output/"
-RevBayes > out_str <- "bg_2rate"
+ in_fp   = "data/"
+ data_fn = "psychotria_range.nex"
+ area_fn = "hawaii_dynamic.atlas.txt"
+ out_fp  = "output/"
+ out_str = "bg_2rate"
 \end{lstlisting}
 \end{snugshade}
 
@@ -342,11 +342,13 @@ Then we'll create our range data, tree, and atlas objects
 
 \begin{snugshade}
 \begin{lstlisting}
-RevBayes > data  <- readDiscreteCharacterData(in_fp + data_fn)
-RevBayes > tree  <- readTrees(in_fp + data_fn)[1]
-RevBayes > atlas <- readAtlas(in_fp + area_fn)
+ data  <- readDiscreteCharacterData(in_fp + data_fn)
+ tree  <- readTrees(in_fp + data_fn)[1]
+ atlas <- readAtlas(in_fp + area_fn)
 \end{lstlisting}
 \end{snugshade}
+
+Have a look what is stored in the variables \cl{data}, \cl{tree} and \cl{atlas}.
 
 %Verify the data and tree share the same number of taxa and the data and atlas share the same number of characters
 %
@@ -371,34 +373,40 @@ Because our tree is in units of millions of years, this means our prior expectat
 To introduce this to the model, type
 \begin{snugshade}
 \begin{lstlisting}
-RevBayes > for (i in 1:2) glr[i] ~ dnExponential(10.0)
+ for (i in 1:2) glr[i] ~ dnExponential(10.0)
+Q_area 		:= fnFreeBinary(glr)
 \end{lstlisting}
 \end{snugshade}
 
-Next, we will create {\tt dp}, which determines the importance of geographical distance to dispersal.
+Next, we create {\tt beta} (note that we call the variable in our \RevBayes~session {\tt beta} and the general model variable $\beta$ to make the distinction between the two), which determines the importance of geographical distance to dispersal.
 Remember that values of $\beta$ far from zero means distance is important.
 So, if we we assign a prior that pulls $\beta$ towards zero, then posterior values of $\beta$ far from zero indicate the range data are informative of the importance of distance to dispersal.
-We'll use an exponential distribution with rate 10.0 (mean 0.1) as a prior for {\tt dp}.
+We'll use an exponential distribution with rate 10.0 (mean 0.1) as a prior for {\tt beta}.
 
-We will also create a deterministic node to modify the rate of dispersal between areas by evaluating {\tt dp} and {\tt atlas}.
+\begin{snugshade}
+\begin{lstlisting}
+ beta ~ dnExponential(10.0)
+\end{lstlisting}
+\end{snugshade}
+
+We also create a deterministic node to modify the rate of dispersal between areas by evaluating {\tt beta} and {\tt atlas}.
 This node is determined by the function {\tt fnBiogeoGRM}, where GRM stands for ``geographical rate modifier'', and plays the role of the $\eta(\cdot)$ rate-modifier function mentioned earlier.
 We will tell the {\tt fnBiogeoGRM} function to modify dispersal rates based on distances and whether or not the area exists during an epoch.
 
 \begin{snugshade}
 \begin{lstlisting}
-RevBayes > dp ~ dnExponential(10.0)
-RevBayes > grm := fnBiogeoGRM(atlas=atlas, distancePower=dp, useAvailable=true, useDistance=true)
+ grm := fnBiogeoGRM(atlas=atlas, distancePower=beta, useAvailable=true, useDistance=true)
 \end{lstlisting}
 \end{snugshade}
 
-Now we need a deterministic node to represent the rate matrix, {\bf Q}.
-To determine the value of this node, we'll use the function {\tt fnBiogeoDE} to assign our model parameters to transition rates as described in the introduction.
-As input, we'll pass our gain and loss rates, {\tt glr}, and our geographical rate modifier, {\tt grm}.
-In addition, we'll inform the function of the number of areas in our analysis and whether we will allow species to be absent in all areas (i.e. have the null range).
+Now we need a deterministic node to represent the rate matrix {\bf Q}.
+To determine the value of this node, we use the function {\tt fnBiogeoDE} to assign our model parameters to transition rates as described in the introduction.
+As input, we pass our gain and loss rates {\tt glr} and our geographical rate modifier {\tt grm}.
+In addition, we inform the function of the number of areas in our analysis and whether we allow species to be absent in all areas (\IE have the null range).
 
 \begin{snugshade}
 \begin{lstlisting}
-RevBayes > Q := fnBiogeoDE(gainLossRates=glr, geoRateMod=grm, numAreas=4, forbidExtinction=true)
+ Q_range := fnBiogeoDE(gainLossRates=Q_area, geoRateMod=grm, numAreas=4, forbidExtinction=true)
 \end{lstlisting}
 \end{snugshade}
 
