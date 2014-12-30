@@ -1,0 +1,151 @@
+#
+#
+# RevBayes Ancestral State Reconstruction Tutorial #2:
+# Bayesian inference of gynostemium evolution in Aristolochia (Part 1)
+# by Will Freyman
+#
+# Tutorial_2_Part_1.Rev
+#
+# In Tutorial #2 we will estimate ancestral character states using two models of character
+# evolution, and compare the fit of the two models using Bayes factors. 
+
+# In Part 1 we will use the Markov k-state 1 parameter model (Mk1), which is a generalization 
+# of the Jukes-Cantor substition model with one parameter that is the rate of change between
+# all k states, so any particular transition is equally probable.
+#
+# In Part 2 we will use a model that has separate parameters for each possible transition. 
+# This model does not assume reversibility, so the transition from state A to state B has a 
+# different rate parameter than the transition from state B to state A. Since we'll have 12 
+# rates, we'll call this the Mk12 model.
+#
+# Aristolochia flowers have an extensively modified perianth that traps and
+# eventually releases pollinators to ensure cross pollination (this is why
+# the flowers resemble pipes and are commonly called Dutchman's pipes).
+# The gynostemium is a reproductive organ found only in Aristolchiaceae and Orchids 
+# that consists of fused stamens and pistil that pollinators must interact with 
+# during pollination. In this example we will examine the evolution of 
+# gynostemium morphology. 
+#
+# The 4 states of gynostemium morphology are coded as such:
+# 0 = gynostemium is three-lobed with each lobe carrying two grouped stamens
+# 1 = gynostemium is subdivided into nearly 24 lobes, stamens equidistant not grouped
+# 2 = gynostemium has 5 lobes, stamens equidistant not grouped
+# 3 = gynostemium has 6 lobes, stamens equidistant not grouped
+#
+#
+
+# Read in the character data, note there is some missing character data notated by '?'. 
+gynostemium_data = readTSVCharacterData("data/gynostemium_data.tsv", type="NaturalNumbers")
+
+# To accommodate for phylogenetic uncertainty, we will run our analyses over a
+# posterior distribution of trees estimated in a previous analysis. We do this
+# by sampling from an empirical tree distribution constructed from the tree trace
+# output of the previous MCMC analysis.
+
+# read in tree trace
+treetrace = readTreeTrace("data/precooked_tree_samples.trees", treetype="non-clock") 
+
+# Sample 200 trees from the empirical tree distribution. We also include
+# as the first sample the MAP tree, which will be useful when we want to 
+# summarize our results.
+psi[1] = readBranchLengthTrees("data/precooked_MAP.tree")[1]
+for (i in 2:200) {
+
+	psi[i] ~ dnEmpiricalTree(burnin=200, treetrace)
+	
+}
+
+
+
+#######################
+# Gynostemium Evolution Model w/ 1 Transition Rate
+#######################
+
+
+# rate of change
+lambda ~ dnExponential(0.1)
+
+# the number of states
+k = 4
+
+# create the rate matrix. Here we use the Jukes-Cantor rate matrix.
+Q := fnJC(k)
+
+# do not assume stationarity
+root_frequencies := simplex(1,1,1,1)
+
+
+##############
+# set up moves
+#############
+
+mi = 0
+moves[mi++] = mvScale(lambda) 
+
+
+###############
+# create the model
+###############
+
+for (i in 1:200) {
+
+	morpho_ctmc[i] ~ dnPhyloCTMC(Q=Q, tree=psi[i], rootFreq=root_frequencies, branchRates=lambda, type="NaturalNumbers")
+
+	# clamp data
+	morpho_ctmc[i].clamp(gynostemium_data)
+}
+
+mymodel = model(Q)
+
+# create the monitors
+monitors[1] = mnScreen(printgen=10, lambda)
+monitors[2] = mnFile(filename="output/mk1.trees", printgen=10, psi[1])
+monitors[3] = mnAncestralState(filename="output/mk1.log",printgen=10, tree=psi[1], ctmc=morpho_ctmc[1], type="NaturalNumbers")
+monitors[4] = mnModel(filename="output/mk1_model.log",printgen=10)
+
+
+###############
+# run MCMC analysis
+###############
+
+# set up mcmc... in a real analysis you'd want to run the chain longer and check for convergence...
+mymcmc = mcmc(mymodel, monitors, moves)
+mymcmc.run(5000)
+
+# now summarize ancestral states over the MAP tree
+ancestral_state_trace = readAncestralStateTrace("output/mk1.log") 
+ancestral_state_tree_trace = readAncestralStateTreeTrace("output/mk1.trees", treetype="non-clock")
+ancestralStateTree(psi[1], ancestral_state_trace, ancestral_state_tree_trace, "output/mk1_final.tree")
+
+# The ancestral state tree trace step is necessary because the ancestralStateTree function does not
+# assume the topology is fixed.
+
+
+###############
+# calculate Bayes factor
+###############
+
+# Compute power posterior distributions
+pow_p = powerPosterior(mymodel, moves, "output/mk1.out", cats=10)
+pow_p.run(generations=1000)
+
+# Use stepping-stone sampling to calculate marginal likelihoods
+ss = steppingStoneSampler(file="output/mk1.out", powerColumnName="power", likelihoodColumnName="likelihood")
+ss.marginal()
+
+# This last line gives us the marginal log-likelihood (lnL) of the model. To compare the two models
+# we will calculate the log-Bayes factor as such:
+#
+# ln-Bayes factor = ( marginal lnL of mk12 ) - ( marginal lnL of mk1 )
+#
+# Then we convert to the raw Bayes factor by taking the exponent:
+#
+# BF(mk12, mk1) = e ^ ( ln-Bayes factor )
+#
+# Calculate the Bayes factor after running both Part 1 and Part 2 of this tutorial. Which model of
+# gynostemium evolution fits the data better? How do the reconstructed ancestral states differ?
+# Both MCMC analyses ran for the same number of iterations. Did both converge to their stationary
+# distribution? Implement another model of gynostemium evolution and compare it to mk1 and mk12. 
+# None of these models may be very realistic due to the way gynostemium morphology was initially 
+# coded. Suggest an alternative coding scheme.
+
