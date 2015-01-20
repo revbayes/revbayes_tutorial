@@ -1,4 +1,5 @@
 pdflatex RB_Manual.tex
+bibtex RB_Getting_Started/RB_Getting_Started_content
 bibtex RB_Basics_Tutorial/RB_Basics_Tutorial_content
 bibtex RB_CTMC_Tutorial/RB_CTMC_Tutorial_content
 bibtex RB_MCMC_Tutorial/RB_MCMC_Tutorial_content
@@ -18,6 +19,10 @@ rm RB_Manual.blg
 rm RB_Manual.log
 rm RB_Manual.out
 rm RB_Manual.toc
+
+rm RB_Getting_Started/RB_Getting_Started_content.aux
+rm RB_Getting_Started/RB_Getting_Started_content.bbl
+rm RB_Getting_Started/RB_Getting_Started_content.blg
 
 rm RB_Basics_Tutorial/RB_Basics_Tutorial_content.aux
 rm RB_Basics_Tutorial/RB_Basics_Tutorial_content.bbl

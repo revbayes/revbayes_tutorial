@@ -1,0 +1,149 @@
+\section{Overview}
+
+
+This tutorial focuses on data formats used in \RevBayes.
+
+
+\subsection*{Requirements}
+We assume that you have read and hopefully completed the following tutorials:
+\begin{itemize}
+\item RB\_Getting\_Started
+\end{itemize}
+
+
+
+%
+%
+%
+\newpage
+\FloatBarrier
+\section{Molecular Sequences}
+
+\bigskip
+\subsection{Getting Started}
+
+
+\exs{Download data and output files from: \href{http://revbayes.github.io/tutorials.html}{http://revbayes.github.io/tutorials.html}}
+\exs{Open the file \cl{primates\_cytb.nex} in your text editor. This file contains the sequences for the cytochrome B gene sampled from 13 species (Box 1). The elements of the \cl{DATA} block indicate the type of data, number of taxa, and length of the sequences.}
+
+
+\begin{center}
+Box 1: A fragment of the NEXUS file containing the ITS sequences for this exercise. \\
+\end{center}
+{\tt \scriptsize \begin{framed}
+\begin{lstlisting}
+#NEXUS 
+
+Begin data;
+Dimensions ntax=13 nchar=673;
+Format datatype=DNA missing=? gap=-;
+Matrix
+Trig_excelsa   
+TCGAAACCTG...
+Fagus_engleriana   
+TCGAAACCTG...
+Fagus_crenata1   
+TCGAAACCTG...
+Fagus_japonica2   
+TCGAAACCTG...
+Fagus_japonica1   
+TCGAAACCTG...
+Fagus_orientalis   
+TCGAAACCTG...
+Fagus_sylvatica   
+TCGAAACCTG...
+Fagus_lucida1   
+TCGAAACCTG...
+Fagus_lucida2   
+TCGAAACCTG...
+Fagus_crenata2   
+TCGAAACCTG...
+Fagus_grandifolia   
+TCGAAACCTG...
+Fagus_mexicana   
+TCGAAACCTG...
+Fagus_longipetiolata   
+TCGAAACCTG...
+	;
+End;
+\end{lstlisting}
+\end{framed}}
+
+
+\subsection{Reading Molecular Sequences}
+
+
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+# show some general information
+data
+|*
+|*
+|*
+
+# get some quick and useful attributes of the data
+data.ntaxa()
+data.names()	
+\end{lstlisting}
+\end{snugshade*}}
+
+
+
+\subsection{Concatenating Sequences}
+
+
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+data_atpB <- readDiscreteCharacterData("data/conifer_atpB.nex")
+data_atpB <- readDiscreteCharacterData("data/conifer_atpB.nex")
+\end{lstlisting}
+\end{snugshade*}}
+
+Since the first step in this exercise is to assume a single model for both genes, we need to combine the two datasets.
+Concatenate the two data matrices using the \cl{+} operator. This returns a single data matrix with both genes.
+
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+data <- concatenate(data_ITS, data_rbcL, data_matK)
+\end{lstlisting}
+\end{snugshade*}}
+
+
+
+\subsection{Removing Sites or Genes}
+
+
+\subsection{Removing Taxa}
+
+
+
+\section{Morpholigical Data}
+
+
+
+\section{Continuous Trait Data}
+
+
+
+\bigskip
+\section*{Useful Links}
+
+\begin{itemize}
+\item RevBayes: \href{https://github.com/revbayes/code}{https://github.com/revbayes/code} \\ \vspace{-7mm}
+\item MrBayes: \href{http://mrbayes.sourceforge.net/}{http://mrbayes.sourceforge.net} \\ \vspace{-7mm}
+\item PhyloBayes: \href{http://megasun.bch.umontreal.ca/People/lartillot/www/index.htm}{http://www.phylobayes.org} \\ \vspace{-7mm}
+\item Bali-Phy: \href{http://www.bali-phy.org/}{http://www.bali-phy.org} \\ \vspace{-7mm}
+%\item BEAGLE: \href{http://code.google.com/p/beagle-lib/}{http://code.google.com/p/beagle-lib/} \\ \vspace{-7mm}
+\item Tree Thinkers: \href{http://treethinkers.org/}{http://treethinkers.org} \\ \vspace{-7mm}
+\end{itemize}
+
+Questions about this tutorial can be directed to: \\\vspace{-10mm}
+\begin{itemize}
+\item Tracy Heath (email: \href{mailto:tracyh@berkeley.edu}{tracyh@berkeley.edu}) \\\vspace{-8mm}
+\item Michael Landis (email: \href{mailto:mlandis@berkeley.edu}{mlandis@berkeley.edu}) \\\vspace{-8mm} 
+\item Sebastian H\"{o}hna (email: \href{mailto:sebastian.hoehna@gmail.com}{sebastian.hoehna@gmail.com}) \\\vspace{-8mm}
+\item Brian R. Moore (email: \href{mailto:brianmoore@ucdavis.edu}{brianmoore@ucdavis.edu}) \\\vspace{-8mm}
+\end{itemize}
+
+\bibliographystyle{mbe}
+\bibliography{bib_tex/master_refs}

@@ -1,6 +1,8 @@
 \usepackage[]{authblk}
 \usepackage{graphicx}
-\usepackage{color}
+\usepackage{tabularx}
+%\usepackage{color}
+\usepackage[usenames,dvipsnames]{xcolor}
 \usepackage{longtable}
 \usepackage{hanging}
 \usepackage{indentfirst}
@@ -183,7 +185,24 @@
 %\defaultfontfeatures{Mapping=tex-text}
 
 %\lstset{columns=fullflexible}
-\lstset{basicstyle=\ttfamily,columns=flexible}
+%\lstset{basicstyle=\ttfamily,columns=flexible}
+\lstdefinelanguage{Rev}
+{morekeywords={RevBayes},
+sensitive=false,
+morecomment=[l]{\#},
+moredelim=[il][\color{gray}\ttfamily]{|*},
+}
+%\lstdefinelanguage{Rev}
+%{morecomment=[l]{#},
+%moredelim=[il][\color{gray}\ttfamily]{|*},
+%}
+\lstset{
+    language=Rev,
+    basicstyle=\ttfamily,
+    columns=flexible
+}
+%\lstset{morecomment=[l]{\#}}
+
 
 % Some commands to keep the sysbio.bst from generating weird errors
 \newcommand{\bibAnnoteFile}[1]{%
