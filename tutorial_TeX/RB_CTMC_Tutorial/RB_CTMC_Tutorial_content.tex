@@ -2,15 +2,15 @@
 
 
 This tutorial demonstrates how to set up and perform an analysis for different substitution models. 
-The substitution models used in molecular evolution are continuous time Markov models which are characterized by their substitution rate matrix
+The substitution models used in molecular evolution are continuous time Markov models, which are fully characterized by their instantaneous-rate matrix:
 \begin{equation*}
 Q = \begin{pmatrix} -\mu_A & \mu_{GA} & \mu_{CA} & \mu_{TA} \\
 \mu_{AG} & -\mu_G  & \mu_{CG} & \mu_{TG} \\
 \mu_{AC} & \mu_{GC} & -\mu_C  & \mu_{TC} \\
 \mu_{AT} & \mu_{GT} & \mu_{CT} & -\mu_T 
-\end{pmatrix}
+\end{pmatrix} \mbox{  ,}
 \end{equation*}
-where $\mu_{ij}$ represents the rate of substitution from $i$ to $j$. Given the rate matrix $Q$, we can compute the transition probabilities by
+where $\mu_{ij}$ represents the instantaneous rate of substitution from state $i$ to state $j$. Given the instantaneous-rate matrix, $Q$, we can compute the corresponding transition probabilities for a branch of length $t$, $P(t)$, by exponentiating the rate matrix:
 \begin{equation*}
 P(t) = \begin{pmatrix}          
 p_{AA}(t) & p_{GA}(t) & p_{CA}(t) & p_{TA}(t) \\
@@ -19,11 +19,11 @@ p_{AC}(t) & p_{GC}(t) & p_{CC}(t) & p_{TC}(t) \\
 p_{AT}(t) & p_{GT}(t) & p_{CT}(t) & p_{TT}(t)
 \end{pmatrix} = e^{Qt} = \sum_{j=0}^\infty\frac{tQ^j}{j!} \mbox{  .}
 \end{equation*}
-The difference between different molecular substitution models is how the rate matrix $Q$ is defined.
+Each specific substitution model has a uniquely defined rate matrix, $Q$.
 
 
-In this tutorial you will create a phylogenetic model for the evolution of DNA sequences under a JC, HKY85, GTR, GTR+Gamma and GTR+Gamma+I substitution model.
-For all these models you will perform an MCMC run to estimate phylogeny and other model parameters.
+In this tutorial you will create a phylogenetic model for the evolution of DNA sequences under common models, including JC, HKY85, GTR, GTR+Gamma and GTR+Gamma+I substitution models.
+For all of these models you will perform an MCMC analysis to estimate phylogeny and other model parameters.
 
 \subsection*{Requirements}
 We assume that you have read and hopefully completed the following tutorials:
@@ -44,10 +44,10 @@ We assume that you have read and hopefully completed the following tutorials:
 \bigskip
 \subsection{Getting Started}
 
-The first section of this exercise involves 
-(1) setting up a Jukes-Cantor (JC) substitution model for an alignment of the cytochrome b subunit, 
-(2) approximating the posterior probability of the tree topology and branch lengths (and all other parameters) using MCMC,  
-(3) summarizing the MCMC output by computing the maximum a posteriori tree. 
+The first section of this exercise involves:
+(1) setting up a Jukes-Cantor (JC) substitution model for an alignment of the cytochrome b subunit;
+(2) approximating the posterior probability of the tree topology and branch lengths (and all other parameters) using MCMC, and; 
+(3) summarizing the MCMC output by computing the maximum \textit{a posteriori} tree. 
 
 
 The general structure of the model is represented in Figure~\ref{fig:jc}.
@@ -61,7 +61,7 @@ The only free parameters of this model, the unconstrained Jukes-Cantor model, ar
 }
 \label{fig:jc}
 \end{figure}
-In the example we will use the simplest substitution model, the Jukes-Cantor \citep{Jukes1969}.
+We first consider the simplest substitution model, the Jukes-Cantor \citep{Jukes1969} substitution model.
 The rate matrix is defined as
 \begin{equation*}
 Q_{JC69} = \begin{pmatrix} 
@@ -69,33 +69,35 @@ Q_{JC69} = \begin{pmatrix}
 {1} & {*} & {1} & {1} \\ 
 {1} & {1} & {*} & {1} \\ 
 {1} & {1} & {1} & {*}  
-\end{pmatrix}
+\end{pmatrix} \mbox{  ,}
 \end{equation*}
 which has the advantage that the transition probability matrix can be computed analytically:
 \begin{equation*}
 P_{JC69} = \begin{pmatrix} {{1\over4} + {3\over4}e^{-t\mu}} & {{1\over4} - {1\over4}e^{-t\mu}} & {{1\over4} - {1\over4}e^{-t\mu}} & {{1\over4} - {1\over4}e^{-t\mu}} \\\\ {{1\over4} - {1\over4}e^{-t\mu}} & {{1\over4} + {3\over4}e^{-t\mu}} & {{1\over4} - {1\over4}e^{-t\mu}} & {{1\over4} - {1\over4}e^{-t\mu}} \\\\ {{1\over4} - {1\over4}e^{-t\mu}} & {{1\over4} - {1\over4}e^{-t\mu}} & {{1\over4} + {3\over4}e^{-t\mu}} & {{1\over4} - {1\over4}e^{-t\mu}} \\\\ {{1\over4} - {1\over4}e^{-t\mu}} & {{1\over4} - {1\over4}e^{-t\mu}} & {{1\over4} - {1\over4}e^{-t\mu}} & {{1\over4} + {3\over4}e^{-t\mu}}  
 \end{pmatrix} \mbox{  .}
 \end{equation*}
-In the later exercises you will be asked to use more complex substitution models.
-\textbf{Don't be scared about the math!}
+In the later exercises you will be asked to specify more complex substitution models.
+\textbf{Don't be scared by the math!}
 \RevBayes~will take care of all the computations for you.
-Here we only provide some of the equations for the models in case that you are interested in the details.
+Here we only provide some of the equations for the models in case you might be interested in the details.
 You will be able to complete the exercises without understanding the underlying math.
 
 
-The files for this example analysis are provided for you and you can run these without significant effort using the \cl{source()} function in the \RevBayes~console:
+The files for this example analysis are provided for you, which can easily be run using the \cl{source()} function in the \RevBayes~console:
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 source("RevBayes_scripts/JukesCantor.Rev")
 \end{lstlisting}
 \end{snugshade*}}
 
-If everything loaded properly, then you should see the program begin running the Markov chain Monte Carlo analysis needed for estimating the posterior distribution. If you continue to let this run, then you will see it output the states of the Markov chain once the MCMC analysis begins. (It is worth noting, however, that the file \cl{JukesCantor.Rev} performs shorter runs with fewer generations for a faster run time.)
+If everything loaded properly, then you should see the program initiate the Markov chain Monte Carlo analysis that estimates the posterior distribution. 
+If you continue to let this run, then you will see it output the states of the Markov chain once the MCMC analysis begins. 
+(It is worth noting, however, that the file \cl{JukesCantor.Rev} performs shorter runs with fewer generations for the purposes of illustration.)
 
 Ultimately, this is how you will execute most analyses in \RevBayes~and the full specification of the model and analyses are contained in the sourced files. 
-You could easily run this entire analysis on your own data if you changed the name of the files containing the tutorial's sequences. 
-However, it is important to understand the components of the model to be able to take advantage of the flexibility and richness of \RevBayes.
-Furthermore, without inspecting the \Rev~scripts sourced in \cl{JukesCantor.Rev}, you may have inadvertently conducted an inappropriate analysis on your dataset, which would be a waste of your time and CPU cycles. 
+You could easily run this entire analysis on your own data by substituting your data file name for that in the model-specification file. 
+However, it is important to understand the components of the model to be able to take full advantage of the flexibility and richness of \RevBayes.
+Furthermore, without inspecting the \Rev~scripts sourced in \cl{JukesCantor.Rev}, you may end up inadvertently performing inappropriate analyses on your dataset, which would be a waste of your time and CPU cycles. 
 The next steps will walk you through the full specification of the model and MCMC analyses. 
 
 \bigskip
@@ -142,6 +144,7 @@ n_branches <- 2 * n_species - 3
 \end{snugshade*}}
 
 Additionally, we set up a counter variable for the number of moves that we already added to our analysis.
+[Recall that moves are algorithms used to propose new parameter values during the MCMC simulation.]
 This will make it much easier if we extend the model or analysis to include additional moves or to remove some moves.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
@@ -152,14 +155,14 @@ You may have noticed that we used the \cl{=} operator to create the move-index.
 This simply means that the variable is not part of the model.
 You will later see that we use this operator more often, \EG when we create moves and monitors.
 
-Now we can proceed with building our Jukes-Cantor model.
+With the data loaded, we can now proceed to specify our Jukes-Cantor model.
 
 \subsection{Jukes-Cantor Substitution Model}
 
-The substitution model is defined by the rate matrix $Q$.
-Since the Jukes-Cantor substitution model does not have any parameter, we can define it as a constant variable.
-The function \cl{fnJC(n)} will create a rate matrix for character with $n$ states.
-Since we use DNA data here, we create a 4x4 rate matrix:
+A given substitution model is defined by its corresponding instantaneous-rate matrix, $Q$.
+The Jukes-Cantor substitution model does not have any free parameters (as the substitution rates are all assumed to be equal), so we can define it as a constant variable.
+The function \cl{fnJC(n)} will create an instantaneous-rate matrix for character with $n$ states.
+Since we use DNA data here, we create a 4x4 instantaneous-rate matrix:
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 Q <- fnJC(4) 
@@ -190,16 +193,17 @@ topology ~ dnUniformTopology(names)
 \end{lstlisting}
 \end{snugshade*}}
 
-For some types of stochastic nodes there are several available moves. 
-Often the different moves explore parameter space in a different way and nothing prevents one from using multiple different moves to improve mixing. 
-For the unrooted tree topology, we can use both a nearest-neighbor interchange move (\cl{mvNNI}) and a subtree-prune and regrafting move (\cl{mvSPR}). These moves do not have tuning parameters associated with them, thus you only need to pass in the \cl{topology} node and \cl{weight} 
+Some types of stochastic nodes can be updated by a number of alternative moves. 
+Different moves may explore parameter space in different ways, and it is possible to use multiple different moves for a given parameter to improve mixing. 
+In the case of our unrooted tree topology, for example, we can use both a nearest-neighbor interchange move (\cl{mvNNI}) and a subtree-prune and regrafting move (\cl{mvSPR}). 
+These moves do not have tuning parameters associated with them, thus you only need to pass in the \cl{topology} node and \cl{weight} 
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 moves[++mi] = mvNNI(topology, weight=1.0)
 moves[++mi] = mvSPR(topology, weight=1.0)
 \end{lstlisting}
 \end{snugshade*}}
-The weight specifies how often the move will be applied either on average per iteration or relatively to all other moves.
+The weight specifies how often the move will be applied either on average per iteration or relative to all other moves.
 Have a look at the MCMC tutorial for more details about moves and MCMC strategies: \href{http://revbayes.github.io/tutorials.html}{http://revbayes.github.io/tutorials.html}
 
 
@@ -214,14 +218,17 @@ for (i in 1:n_branches) {
 \end{lstlisting}
 \end{snugshade*}}
 
-It is convenient for monitoring purposes to add the tree length as deterministic variable. The tree length is the sum of all branch lengths and this can be computed using the \cl{sum()} function which calculates the sum of any vector of values.
+It is convenient for monitoring purposes to add the tree length as deterministic variable. The tree length is simply the sum of all branch lengths.
+Accordingly, the tree length can be computed using the \cl{sum()} function, which calculates the sum of any vector of values.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 TL := sum(br_lens)
 \end{lstlisting}
 \end{snugshade*}}
 
-Finally, we can create a branch-length phylogeny by combining the tree topology and branch lengths using the \cl{treeAssembly()} function, which applies the value of the $i^{th}$ member of the \cl{br\_lens} vector to the branch leading to the $i^{th}$ node in \cl{topology}. Thus, the \cl{phylogeny} variable is a deterministic node: 
+Finally, we can create a phylogram (a phylogeny in which the branch lengths are proportional to the expected number of substitutions/site) by combining the tree topology and branch lengths.
+We do this using the \cl{treeAssembly()} function, which applies the value of the $i^{th}$ member of the \cl{br\_lens} vector to the branch leading to the $i^{th}$ node in \cl{topology}. 
+Thus, the \cl{phylogeny} variable is a deterministic node: 
 
 {\tt \begin{snugshade*}
 \begin{lstlisting}
@@ -233,9 +240,15 @@ phylogeny := treeAssembly(topology, br_lens)
 
 \subsection{Putting it All Together}
 
-Now that we have initialized virtually all of our model parameters and we can link all of the parts in the stochastic node that will be clamped by the data. 
-The sequence substitution model is a distribution called the \textit{phylogenetic continuous-time Markov chain} and we use the \cl{PhyloCTMC} constructor function to create this node.
-This distribution requires several input arguments: (1) the \cl{tree} with branch lengths, (2) the instantaneous rate matrix \cl{Q} (3) the \cl{type} of character data.
+%Having specified virtually all of our phylogenetic model parameters, we can now link all of the parts in the stochastic node that will be clamped by the data. 
+%The sequence substitution model is a distribution called the \textit{phylogenetic continuous-time Markov chain}, and we use the \cl{PhyloCTMC} constructor function to create this node.
+% The above two sentences are a bit unclear: I think we could say something like: 
+We have fully specified all of the parameters of our phylogenetic model---the tree topology with branch lengths, and the substitution model that describes how the sequence data evolved over the tree with branch lengths.  
+Collectively, these parameters comprise a distribution called the \textit{phylogenetic continuous-time Markov chain}, and we use the \cl{PhyloCTMC} constructor function to create this node.
+This distribution requires several input arguments: 
+(1) the \cl{tree} with branch lengths; 
+(2) the instantaneous-rate matrix \cl{Q}, and; 
+(3) the \cl{type} of character data.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 seq ~ dnPhyloCTMC(tree=phylogeny, Q=Q, type="DNA")
@@ -243,23 +256,26 @@ seq ~ dnPhyloCTMC(tree=phylogeny, Q=Q, type="DNA")
 \end{snugshade*}}
 
 
-Once the character evolution model has been created, we can attach our sequence data to the tip nodes in the tree.
+Once the \cl{PhyloCTMC} model has been created, we can attach our sequence data to the tip nodes in the tree.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 seq.clamp(data)
 \end{lstlisting}
 \end{snugshade*}}
-When this function is called, \RevBayes~sets each of the stochastic nodes representing the tip nodes of the tree to the sequence corresponding to that species in the alignment. 
+[Note that although we assume that our sequence data are random variables---they are realizations of our phylogenetic model---for the purposes of inference, we assume that the sequence data are ``clamped''.]
+When this function is called, \RevBayes~sets each of the stochastic nodes representing the tips of the tree to the corresponding sequence in the alignment. 
 This essentially tells the program that we have observed data for the sequences at the tips. 
 
-Now we can wrap up the whole model to conveniently access the DAG. To do this, we only need to give the \cl{model()} function a single node. With this node, the \cl{model()} function can find all of the other nodes by following the arrows in the graphical model:
+Finally, we wrap the entire model to provide convenient access to the DAG. 
+To do this, we only need to give the \cl{model()} function a single node. 
+With this node, the \cl{model()} function can find all of the other nodes by following the arrows in the graphical model:
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 mymodel = model(Q)
 \end{lstlisting}
 \end{snugshade*}}
 
-Now we have specified a simple molecular phylogeny analysis---each parameter of the model will be estimated from every site in our alignment.
+Now we have specified a simple molecular phylogenetic analysis---each parameter of the model will be estimated from every site in our alignment.
 If we inspect the contents of \cl{mymodel} we can review all of the nodes in the DAG:
 {\tt \begin{snugshade*}
 \begin{lstlisting}
@@ -268,13 +284,13 @@ mymodel
 \end{snugshade*}}
 
 \bigskip
-\subsection{Perform MCMC Analysis Under the Uniform Model}
+\subsection{Performing an MCMC Analysis Under the Uniform Model}
 
-This section will cover setting up the MCMC sampler and summarizing the posterior distribution of trees. 
+In this section, will describe how to set up the MCMC sampler and summarize the resulting posterior distribution of trees. 
 
-\subsubsection{Specify Monitors}
+\subsubsection{Specifying Monitors}
 
-For our MCMC analysis we need to set up a vector of \textit{monitors} to save the states of our Markov chain. 
+For our MCMC analysis, we need to set up a vector of \textit{monitors} to record the states of our Markov chain. 
 The monitor functions are all called \cl{mn*}, where \cl{*} is the wildcard representing the monitor type.
 First, we will initialize the model monitor using the \cl{mnModel} function. This creates a new monitor variable that will output the states for all model parameters when passed into a MCMC function. 
 {\tt \begin{snugshade*}
@@ -299,7 +315,7 @@ monitors[3] = mnScreen(printgen=1000, TL)
 \end{lstlisting}
 \end{snugshade*}}
 
-\subsection{Initialize and Run MCMC}
+\subsubsection{Initializing and Running the MCMC Simulation}
 
 With a fully specified model, a set of monitors, and a set of moves, we can now set up the MCMC algorithm that will sample parameter values in proportion to their posterior probability. The \cl{mcmc()} function will create our MCMC object:
 {\tt \begin{snugshade*}
@@ -309,7 +325,11 @@ mymcmc = mcmc(mymodel, monitors, moves)
 \end{snugshade*}}
 
 
-We can run the \cl{.burnin()} member function if we wish to pre-run the chain and discard the initial states. 
+We may wish to run the \cl{.burnin()} member function.
+% if we wish to pre-run the chain and discard the initial states. 
+% I think you might want to add a brief explanation here, something like:
+Recall that this function \textbf{does not} specify the number of states that we wish to discard from the MCMC analysis as burnin (i.e., the samples collected before the chain converges to the stationary distribution).  
+Instead, the \cl{.burnin()} function specifies a \textit{completely separate} preliminary MCMC analysis that is used to tune the scale of the moves to improve mixing of the MCMC analysis.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 mymcmc.burnin(generations=10000,tuningInterval=1000)
@@ -327,22 +347,23 @@ mymcmc.run(generations=30000)
 When the analysis is complete, you will have the monitored files in your output directory.
 
 
-Methods for visualizing the marginal densities of parameter values are not currently available in \RevBayes~itself. Thus, it is important to use programs like Tracer \citep{Rambaut2011} to evaluate mixing and non-convergence. (\RevBayes~does, however, have a tool for convergence assessment called \cl{beca}.)
+Methods for visualizing the marginal densities of parameter values are not currently available in \RevBayes~itself. 
+Thus, it is important to use programs like \texttt{Tracer} \citep{Rambaut2011} to evaluate mixing and non-convergence. (\RevBayes~does, however, have a tool for convergence assessment called \cl{beca}.)
 
-\noindent \\ \impmark Look at the file called \cl{output/primates\_cytb\_JC\_posterior.log} in Tracer.
+\noindent \\ \impmark Look at the file called \cl{output/primates\_cytb\_JC\_posterior.log} in \texttt{Tracer}.
 
 
-\subsection{Exercise}
+\subsection{Exercise 1}
 
-We are interested in the phylogenetic relationship of the Tarsiers. Therefore, we need to summarize the tree samples from the posterior distribution.
-\RevBayes~can summarize the tree samples by reading in the tree-trace file:
+We are interested in the phylogenetic relationship of the Tarsiers. Therefore, we need to summarize the trees sampled from the posterior distribution.
+\RevBayes~can summarize the sampled trees by reading in the tree-trace file:
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 treetrace = readTreeTrace("output/primates_cytb_JC_posterior.trees", treetype="non-clock")
 treetrace.summarize()
 \end{lstlisting}
 \end{snugshade*}}
-The \cl{mapTree()} function will summarize the tree samples and write the maximum a posteriori tree to file:
+The \cl{mapTree()} function will summarize the tree samples and write the maximum \textit{a posteriori} tree to file:
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 mapTree(treetrace,"output/primates_cytb_JC.tree")
@@ -396,7 +417,7 @@ Your model 3 & \TextField[name=pp91,backgroundcolor={.85 .85 .85},color={1 0 0},
 
 
 \newpage
-\section{The Hasegawa-Kishino-Yano (HKY) 1985 substitution model}
+\section{The Hasegawa-Kishino-Yano (HKY) 1985 Substitution Model}
 
 Previously with the Jukes-Cantor substitution model we assumed that all rates are equal.
 This implies that also the base-frequencies are all equal.
@@ -456,7 +477,7 @@ This should be all for the HKY model.
 
 \noindent \\ \impmark Don't forget to change the output file names, otherwise your old analyses files will be overwritten.
 
-\subsection{Exercises}
+\subsection{Exercise 2}
 
 \begin{itemize}
 \item Copy the file called  \cl{JukesCantor.Rev} and modify it with the new parameters so that you have an HKY analysis.
@@ -474,7 +495,7 @@ Can you set up the F81 model and run an analysis?
 
 
 \newpage
-\section{GTR}
+\section{The General Time-Reversible (GTR) Substitution Model}
 
 In the above section we used the HKY substitution model and thus a model with unequal base frequencies and a rate for the difference between transitions and transversion.
 However, the HKY model may still be too simple in most realistic cases.
@@ -531,7 +552,7 @@ Without strong prior knowledge about the pattern of relative rates, however, we 
 Notably, all patterns of relative rates have the same probability density under \cl{er\_prior <- v(1,1,1,1,1,1)}.
 \begin{figure}[h!]
 \centering
-\fbox{\includegraphics[width=5in,angle=-90]{\ResourcePath figures/dirichlet_rates.eps}}
+\fbox{\includegraphics[width=5in]{\ResourcePath figures/dirichlet_rates.pdf}}
 \caption{\small Four different examples of Dirichlet priors on exchangeability rates.}
 \label{dirichletFig}
 \end{figure}
@@ -574,7 +595,7 @@ Q := fnGTR(er,pi)
 
 
 
-\subsection{Execises}
+\subsection{Execise 3}
 
 \begin{itemize}
 \item Use your previous analysis file, either the \cl{JukesCantor.Rev} or \cl{HKY.Rev} to create a GTR analysis in a new file called \cl{GTR.Rev}.
@@ -603,7 +624,7 @@ By contrast, when the value of the $\alpha$-shape parameter is $< 1$, the gamma 
 
 \begin{figure}[h]
 \centering
-\fbox{\includegraphics[width=2.5in,angle=-90]{\ResourcePath figures/asrh_gamma.eps}}
+\fbox{\includegraphics[width=3.5in]{\ResourcePath figures/asrh_gamma.pdf}}
 \caption{\small The probability density of mean-one gamma-distributed rates under different shape parameters.}
 \label{asrhGammaFig}
 \end{figure}
@@ -658,7 +679,7 @@ seq ~ dnPhyloCTMC(tree=phylogeny, Q=Q, siteRates=gamma_rates , type="DNA")
 \end{snugshade*}}
 
 
-\subsection{Execises}
+\subsection{Execise 4}
 
 Adopt the GTR analysis to use now the GTR+Gamma model. Run an MCMC to estimate the posterior distribution.
 \begin{itemize}
@@ -670,7 +691,7 @@ Adopt the GTR analysis to use now the GTR+Gamma model. Run an MCMC to estimate t
 
 
 \newpage
-\section{Modeling invariant sites}
+\section{Modeling Invariable Sites}
 The final extension to our model is a substitution model where each site has the probability \cl{pinvar} to be invariant. This means, that with probability $1-pinvar$ each site is able to evolve.
 
 First, let us have a look at the data and see how many invariant sites we have:
@@ -679,10 +700,10 @@ First, let us have a look at the data and see how many invariant sites we have:
 data.getNumInvariantSites()
 \end{lstlisting}
 \end{snugshade*}}
-There seem to be a substantial number of invariant site.
+There seem to be a substantial number of invariant sites.
 
 So let us specify the model in \RevBayes.
-We need a prior probability for the probability of a site being invariant.
+We need a prior probability for the probability of a site being invariable.
 A Beta distribution is the common choice for parameters representing probabilities.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
@@ -699,13 +720,13 @@ moves[mi++] = mvSlide(pinvar)
 \end{lstlisting}
 \end{snugshade*}}
 
-\subsection{Exercises}
+\subsection{Exercise 5}
 
 \begin{itemize}
 \item Extend the GTR model to account for invariable sites and run an analysis.
-\item What is the estimated probability of invariant sites and how does it relate to the ratio of invariant sites to the total number of sites?
+\item What is the estimated probability of invariable sites and how does it relate to the ratio of invariant sites to the total number of sites?
 \item Extend the GTR+$\Gamma$ model to account for invariable sites and run an analysis.
-\item What is the estimated probability of invariant sites now?
+\item What is the estimated probability of invariable sites now?
 \item Complete the table of the phylogenetic relationship of Tarsiers.
 \end{itemize} 
 
