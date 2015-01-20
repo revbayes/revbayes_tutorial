@@ -419,11 +419,10 @@ Your model 3 & \TextField[name=pp91,backgroundcolor={.85 .85 .85},color={1 0 0},
 \newpage
 \section{The Hasegawa-Kishino-Yano (HKY) 1985 Substitution Model}
 
-Previously with the Jukes-Cantor substitution model we assumed that all rates are equal.
-This implies that also the base-frequencies are all equal.
-These assumptions are very unlikely to be realistic.
-Instead, we can use the HKY model \citep{Hasegawa1985} which has unequal equilibrium frequencies $\pi$ and a different transition-transversion rate $\kappa$.
-The HKY model thus defines the rate matrix $Q$ as
+The Jukes-Cantor model assumes that all substitution rates are equal, which also implies that also the stationary frequencies of the four bases are equal.
+These assumptions are not very biologically reasonable, so we might wish to consider a more realistic substitution model that relaxes some of these assumptions.
+For example, we might allow stationary frequencies, $\pi$, to be unequal, and allow rates of transition and transversion substitutions to differ, $\kappa$.
+This corresponds to the substitution model proposed by \citet[][HKY]{Hasegawa1985}, which is specified with the following instantaneous-rate matrix: 
 \begin{equation*}
 Q_{HKY} = \begin{pmatrix} 
 {*} & {\kappa\pi_C} & {\pi_G} & {\pi_T} \\ 
@@ -435,25 +434,25 @@ Q_{HKY} = \begin{pmatrix}
 
 \noindent \\ \impmark Use the file \cl{JukesCantor.Rev} as a starting point for the HKY analysis.
 
-This means that there are two additional variables in the model.
-We can define a variable \cl{pi} for the base frequency drawn from a flat Dirichlet distribution by
+Note that we are adding two new variables to our model.
+We can define a variable \cl{pi} for the stationary frequencies that are drawn from a flat Dirichlet distribution by
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 pi_prior <- v(1,1,1,1) 
 pi ~ dnDirichlet(pi_prior)
 \end{lstlisting}
 \end{snugshade*}}
-Since \cl{pi} is a stochastic variable in the model we need to apply a move on it.
+Since \cl{pi} is a stochastic variable, we need to specify a move to propose updates to it.
 A good move on variables drawn from a Dirichlet distribution is the \cl{mvSimplexElementScale}.
-This move randomly takes an element from the simplex, proposes a new values for it drawn from a Beta distribution and then rescales all values of the simplex to sum to 1 again.
+This move randomly takes an element from the simplex, proposes a new value for it drawn from a Beta distribution, and then rescales all values of the simplex to sum to 1 again.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 moves[++mi] = mvSimplexElementScale(pi, weight=4.0)
 \end{lstlisting}
 \end{snugshade*}}
 
-The second new variable is the transition-transversion rate $\kappa$.
-$\kappa$ needs to be a positive real number and a natural choice as the prior distribution is the lognormal distribution:
+The second new variable is $\kappa$, which specifies the ratio of transition-transversion rates.
+$\kappa$ needs to be a positive-real number and a natural choice as the prior distribution is the lognormal distribution:
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 kappa ~ dnLnorm(0.0,1.25)
@@ -467,7 +466,7 @@ moves[++mi] = mvScale(kappa, weight=1.0)
 \end{lstlisting}
 \end{snugshade*}}
 
-Finally, we only need to create the HKY rate matrix using the \cl{fnHKY} function:
+Finally, we need to create the HKY instantaneous-rate matrix using the \cl{fnHKY} function:
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 Q := fnHKY(kappa,pi)
@@ -480,12 +479,15 @@ This should be all for the HKY model.
 \subsection{Exercise 2}
 
 \begin{itemize}
-\item Copy the file called  \cl{JukesCantor.Rev} and modify it with the new parameters so that you have an HKY analysis.
-\item Run an MCMC to estimate the posterior distribution.
-\item Are the base frequencies equal? If not, how much do they differ? Are the estimated base frequencies similar to the empirical base frequencies? The empirical base frequencies are the frequencies of the characters in the alignment, which can be computed with \RevBayes~by \cl{data.empiricalBaseFrequencies()}.
-\item Is the rate of transition higher than the rate of transversion? If so, by how much?
-\item The Felsenstein 1981 substitution model has unequal base frequencies, just as the HKY model, but assumes an equal transition-transversion rate \citep{Felsenstein1981}.
-Can you set up the F81 model and run an analysis?
+\item Copy the file called  \cl{JukesCantor.Rev} and modify it by including the new parameters so that you specify the HKY substitution model for analysis.
+\item Run an MCMC analysis to estimate the posterior distribution.
+\item Are the resulting estimates of the base frequencies equal? 
+	If not, how much do they differ? 
+	Are the estimated base frequencies similar to the empirical base frequencies? 
+	The empirical base frequencies are the frequencies of the characters in the alignment, which can be computed with \RevBayes~by \cl{data.empiricalBaseFrequencies()}.
+\item Is the inferred rate of transition substitutions higher than the rate of transversion substitutions? If so, by how much?
+\item Like the HKY model, the Felsenstein 1981 substitution model has unequal stationary frequencies, but it assumes equal transition-transversion rates \citep{Felsenstein1981}.
+	Can you set up the F81 model and run an analysis?
 \item Complete the table of the phylogenetic relationship of Tarsiers.
 \end{itemize}
 
