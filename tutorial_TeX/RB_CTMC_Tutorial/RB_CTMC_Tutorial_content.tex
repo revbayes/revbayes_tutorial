@@ -22,7 +22,7 @@ p_{AT}(t) & p_{GT}(t) & p_{CT}(t) & p_{TT}(t)
 Each specific substitution model has a uniquely defined instantaneous-rate matrix, $Q$.
 
 
-In this tutorial you will perform phylogeny inference under common models of DNA sequence evolution: JC, HKY85, GTR, GTR+Gamma and GTR+Gamma+I.
+In this tutorial you will perform phylogeny inference under common models of DNA sequence evolution: JC, F81, HKY85, GTR, GTR+Gamma and GTR+Gamma+I.
 For all of these substitution models, you will perform an MCMC analysis to estimate phylogeny and other model parameters.
 
 \subsection*{Requirements}
@@ -479,14 +479,14 @@ This should be all for the HKY model.
 \subsection{Exercise 2}
 
 \begin{itemize}
-\item Copy the file called  \cl{JukesCantor.Rev} and modify it by including the new parameters so that you specify the HKY substitution model for analysis.
-\item Run an MCMC analysis to estimate the posterior distribution.
+\item Copy the file called  \cl{JukesCantor.Rev} and modify it by including the necessary parameters to specify the HKY substitution model.
+\item Run an MCMC analysis to estimate the posterior distribution under the HKY substitution model.
 \item Are the resulting estimates of the base frequencies equal? 
 	If not, how much do they differ? 
 	Are the estimated base frequencies similar to the empirical base frequencies? 
 	The empirical base frequencies are the frequencies of the characters in the alignment, which can be computed with \RevBayes~by \cl{data.empiricalBaseFrequencies()}.
 \item Is the inferred rate of transition substitutions higher than the rate of transversion substitutions? If so, by how much?
-\item Like the HKY model, the Felsenstein 1981 substitution model has unequal stationary frequencies, but it assumes equal transition-transversion rates \citep{Felsenstein1981}.
+\item Like the HKY model, the Felsenstein 1981 (F81)substitution model has unequal stationary frequencies, but it assumes equal transition-transversion rates \citep{Felsenstein1981}.
 	Can you set up the F81 model and run an analysis?
 \item Complete the table of the phylogenetic relationship of Tarsiers.
 \end{itemize}
@@ -500,8 +500,8 @@ This should be all for the HKY model.
 \section{The General Time-Reversible (GTR) Substitution Model}
 
 The HKY substitution model can accommodate unequal base frequencies and different rates of transition and transversion substitutions.
-Despite these extensions, the HKY model may still be too simple in most realistic cases.
-Here, we extend the HKY model to specify the General Time Reversible (GTR) substitution model \citep{Tavare1986}, which allows all six exchangeability rates to differ.
+Despite these extensions, the HKY model may still be too simplistic for many real datasets.
+Here, we extend the HKY model to specify the General Time Reversible (GTR) substitution model \citep{Tavare1986}, which allows all six exchangeability rates to differ (Figure \ref{fig:gtr}).
 The instantaneous-rate matrix for the GTR substitution model is
 \begin{equation*}
 \resizebox{\textwidth}{!}{%  
@@ -552,10 +552,10 @@ This describes a model that allows for equal rates of change between nucleotides
 %Figure \ref{dirichletFig}a shows the probability density of each rate under this model.
 We might also parameterize the Dirichlet distribution such that all of the shape parameters were equal to 100, which would also specify a prior with an expectation of equal exchangeability rates (Figure \ref{dirichletFig}b). 
 However, by increasing the values of the shape parameters, \cl{er\_prior <- v(100,100,100,100,100,100)}, the Dirichlet distribution will more strongly favor equal exchangeability rates; ({\it i.e.}, providing is a relatively {\em informative} prior). 
-Alternatively, we might consider an asymmetric Dirichlet parameterization that could reflect a strong prior belief that transitions and transversions occurred at different rates.
+Alternatively, we might consider an asymmetric Dirichlet parameterization that could reflect a strong prior belief that transition and transversion substitutions occur at different rates.
 For example, we might specify the prior density \cl{er\_prior <- v(4,8,4,4,8,4)}.   
 Under this model, the expected rate for transversions would be $\frac{4}{32}$ and that for transitions would be $\frac{8}{32}$, and there would be greater prior probability on sets of GTR rates that matched this configuration (Figure \ref{dirichletFig}c). 
-Yet another informative prior could specify that each of the six GTR rates had a different value conforming to a Dirichlet(2,4,6,8,10,12). 
+Yet another aymmetric prior could specify that each of the six GTR rates had a different value conforming to a Dirichlet(2,4,6,8,10,12). 
 This would lead to a different prior probability density for each rate parameter (Figure \ref{dirichletFig}d).
 Without strong prior knowledge about the pattern of relative rates, however, we can better reflect our uncertainty by using a vague prior on the GTR rates. 
 Notably, all patterns of relative rates have the same probability density under \cl{er\_prior <- v(1,1,1,1,1,1)}.
@@ -594,7 +594,7 @@ moves[++mi] <- mvSimplexElementScale(pi, weight=2)
 \end{snugshade*}}
 
 We can finish setting up this part of the model by creating a deterministic node for the GTR instantaneous-rate matrix \cl{Q}. 
-The \cl{fnGTR()} function takes a set of exchangeability rates and a set of base frequencies to compute the rate matrix used when calculating the likelihood of our model.
+The \cl{fnGTR()} function takes a set of exchangeability rates and a set of base frequencies to compute the instantaneous-rate matrix used when calculating the likelihood of our model.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 Q := fnGTR(er,pi)
@@ -607,7 +607,7 @@ Q := fnGTR(er,pi)
 \subsection{Execise 3}
 
 \begin{itemize}
-\item Use one of your previous analysis file, either the \cl{JukesCantor.Rev} or \cl{HKY.Rev}, to create a GTR analysis in a new file called \cl{GTR.Rev}.
+\item Use one of your previous analysis files---either the \cl{JukesCantor.Rev} or \cl{HKY.Rev}---to specify a GTR analysis in a new file called \cl{GTR.Rev}.
 	Adapt the old analysis to be performed under the GTR substitution model. 
 \item Run an MCMC analysis to estimate the posterior distribution.
 \item Complete the table of the phylogenetic relationship of Tarsiers.
@@ -678,7 +678,7 @@ shape_prior <- 0.05
 \end{snugshade*}}
 % I changed this from ``alpha_prior'' to match the description in the text
 
-Then create a stochastic node called \cl{alpha} with an exponential prior (this represents the stochastic $\alpha$-shape parameter node $\alpha$ in Figure \ref{fig:gtrg}):
+Then create a stochastic node called \cl{alpha} with an exponential prior (this represents the stochastic node for the $\alpha$-shape parameter in Figure \ref{fig:gtrg}):
 % The GTR+G graphical model figure was not previously included...I added a modified version below that 
 % horizontally compressed the GTR part of the model; the modified version is called `gtrg_graphical_model_2.'
 % I changed this from \cl{shape} in tis sentence to \cl{alpha} so that it matched the description in the code and the GTR + G graphical model description
@@ -692,7 +692,7 @@ alpha ~ dnExponential(shape_prior)
 The way the ASRV model is implemented involves discretizing the mean-one gamma distribution into a set number of rate categories, $k$. 
 Thus, we can analytically marginalize over the uncertainty in the rate at each site. 
 The likelihood of each site is averaged over the $k$ rate categories, where the rate multiplier is the mean (or median) of each of the discrete $k$ categories. 
-To specify this, we need a deterministic node that is a vector of rates calculated from the gamma distribution and the number of rate categories, $k$. 
+To specify this, we need a deterministic node that is a vector that will hold the set of $k$ rates drawn from the gamma distribution with $k$ rate categories. 
 The \cl{fnDiscretizeGamma()} function returns this deterministic node and takes three arguments: the shape and rate of the gamma distribution and the number of categories. 
 Since we want to discretize a mean-one gamma distribution, we can pass in \cl{alpha} for both the shape and rate.
 % I changed this from \cl{shape} in tis sentence to \cl{alpha} so that it matched the description in the code and the GTR + G graphical model description
@@ -744,7 +744,7 @@ That is, we assume that the sequence data are random variables; specifically, we
 However, some sites may not be free to vary---when the substitution rate of a site is zero, it is said to be \emph{invariable}.
 Invariable sites are often confused with \emph{invariant} sites---when each species exhibits the same state, it is said to be invariant.
 The concepts are related but distinct.
-If a site is truly invariable, it will necessarily give rise to an invariant site pattern, as such sites will always have zero substitutions.
+If a site is truly invariable, it will necessarily give rise to an invariant site pattern, as such sites will always have a zero substitution rate.
 However, an invariant site pattern may be achieved via multiple substitutions that happen to end in the same state for every species.
 
 Here we describe an extension to our phylogenetic model to accommodate invariable sites.
@@ -759,7 +759,7 @@ data.getNumInvariantSites()
 There seem to be a substantial number of invariant sites.
 
 Now let's specify the invariable-sites model in \RevBayes.
-We need a prior probability for the probability of a site being invariable.
+We need to specify the prior probability that a site is invariable.
 A Beta distribution is a common choice for parameters representing probabilities.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
