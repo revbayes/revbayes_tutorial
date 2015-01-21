@@ -619,30 +619,39 @@ Q := fnGTR(er,pi)
 
 
 \newpage
-\section{Gamma-Distributed Among Site Rate Variation}
+\section{The Discrete Gamma Model of Among Site Rate Variation}
 
 
-We will also assume that the substitution rates vary among sites according to a gamma distribution, which has two parameters: the shape parameter, $\alpha$, and the rate parameter, $\beta$. 
+Members of the GTR family of substitution models assume that rates are homogeneous across sites, an assumption that is often violated by real data.
+We can accommodate variation in substitution rate among sites (ASRV) by adopting the discrete-gamma model \citep{yang94a}.
+This model assumes that the substitution rate at each site is a random variable that is described by a discretized gamma distribution, which has two parameters: the shape parameter, $\alpha$, and the rate parameter, $\beta$. 
 In order that we can interpret the branch lengths as the expected number of substitutions per site, this model assumes that the mean site rate is equal to 1.
 %Consequently, we wish to specify a gamma distribution with a mean of 1.
 The mean of the gamma is equal to $\alpha/\beta$, so a mean-one gamma is specified by setting the two parameters to be equal, $\alpha=\beta$.
-Therefore, we need only consider the single shape parameter, $\alpha$ \citep{yang94a}. 
-The degree of among-site substitution rate variation (ASRV) is inversely proportional to the value of the shape parameter---as the value of $\alpha$-shape parameter increases, the gamma distribution increasingly resembles a normal distribution with decreasing variance, which corresponds to decreasing levels of ASRV (Figure \ref{asrhGammaFig}).
-If $\alpha = 1$, then the gamma distribution collapses to an exponential distribution with a rate parameter equal to $\beta$.
-By contrast, when the value of the $\alpha$-shape parameter is $< 1$, the gamma distribution assumes a concave distribution that places most of the prior density on low rates but allows some prior mass on sites with very high rates, which corresponds to high levels of ASRV (Figure \ref{asrhGammaFig}).
+This means that we can fully describe the gamma distribution with the single shape parameter, $\alpha$. 
+The degree of among-site substitution rate variation is inversely proportional to the value of the $\alpha$-shape parameter.
+As the value of the $\alpha$-shape increases, the gamma distribution increasingly resembles a normal distribution with decreasing variance, which therefore corresponds to decreasing levels of ASRV (Figure \ref{asrhGammaFig}).
+%If $\alpha = 1$, then the gamma distribution collapses to an exponential distribution with a rate parameter equal to $\beta$.
+% Is it too much detail to describe the special case of |alpha = 1?
+By contrast, when the value of the $\alpha$-shape parameter is $< 1$, the gamma distribution assumes a concave distribution that concentrates most of the prior density on low rates, but retains some prior mass on sites with very high rates, which therefore corresponds to high levels of ASRV (Figure \ref{asrhGammaFig}).
+Note that, when $\alpha = 1$, the gamma distribution collapses to an exponential distribution with a rate parameter equal to $\beta$.
+
 
 \begin{figure}[h]
 \centering
 \fbox{\includegraphics[width=3.5in]{\ResourcePath figures/asrh_gamma.pdf}}
-\caption{\small The probability density of mean-one gamma-distributed rates under different shape parameters.}
+\caption{\small The probability density of mean-one gamma-distributed rates for different values of the $\alpha$-shape parameter.}
 \label{asrhGammaFig}
 \end{figure}
 
-
-Alternatively, we might not have good prior knowledge about the variance in site rates, thus we can place an uninformative, or diffuse prior on the shape parameter.
+We typically lack prior knowledge regarding the degree of ASRV for a given alignment.
+Accordingly, rather than specifying a precise value of $\alpha$, we can instead estimate the value of the $\alpha$-shape parameter from the data.
+This requires that we specify a diffuse (relatively `uninformative') prior on the $\alpha$-shape parameter.
+% I think we should be careful with the our use of `uninformative' and `informative' priors---even a very vague prior can still impact the posterior, and so it is technically informative.
+% This can lead to misconceptions that `flat' priors are necessarily `uninformative', which is often misleading.  So, it may be better to describe priors as more or less diffuse/informative.
 For this analysis, we will use an exponential distribution with a rate parameter, \cl{shape\_prior}, equal to \cl{0.05}.
-Under an exponential prior, we are placing non-zero probability on values of $\alpha$ ranging from 0 to $\infty$. 
-The rate parameter, often denoted $\lambda$, of an exponential distribution controls both the mean and variance of this prior such that the expected (or mean) value of $\alpha$ is:
+An exponential prior assigns non-zero probability on values of $\alpha$ ranging from 0 to $\infty$. 
+The rate parameter of an exponential distribution, often denoted $\lambda$, controls both the mean and variance of this distribution, such that the expected (or mean) value of $\alpha$ is:
 $\mathbb{E}[\alpha] = \frac{1}{\lambda}.$
 Thus, if we set $\lambda=0.05$, then $\mathbb{E}[\alpha] = 20$.
 
@@ -655,7 +664,7 @@ alpha_prior <- 0.05
 \end{lstlisting}
 \end{snugshade*}}
 
-Then create a stochastic node called \cl{shape} to represent the $\alpha$ node in Figure \ref{gtrgmfig}, with an exponential density as a prior:
+Then create a stochastic node called \cl{shape} to represent the $\alpha$ node in Figure \ref{fig:gtr}, with an exponential density as a prior:
 {\tt\begin{snugshade*}
 \begin{lstlisting}
 alpha ~ dnExponential(alpha_prior)
