@@ -1,7 +1,7 @@
 \section{Overview}
 
 
-This tutorial demonstrates how to set up and perform an analysis for different substitution models. 
+This tutorial demonstrates how to set up and perform analyses using common nucleotide substitution models. 
 The substitution models used in molecular evolution are continuous time Markov models, which are fully characterized by their instantaneous-rate matrix:
 \begin{equation*}
 Q = \begin{pmatrix} -\mu_A & \mu_{GA} & \mu_{CA} & \mu_{TA} \\
@@ -19,11 +19,11 @@ p_{AC}(t) & p_{GC}(t) & p_{CC}(t) & p_{TC}(t) \\
 p_{AT}(t) & p_{GT}(t) & p_{CT}(t) & p_{TT}(t)
 \end{pmatrix} = e^{Qt} = \sum_{j=0}^\infty\frac{tQ^j}{j!} \mbox{  .}
 \end{equation*}
-Each specific substitution model has a uniquely defined rate matrix, $Q$.
+Each specific substitution model has a uniquely defined instantaneous-rate matrix, $Q$.
 
 
-In this tutorial you will create a phylogenetic model for the evolution of DNA sequences under common models, including JC, HKY85, GTR, GTR+Gamma and GTR+Gamma+I substitution models.
-For all of these models you will perform an MCMC analysis to estimate phylogeny and other model parameters.
+In this tutorial you will perform phylogeny inference under common models of DNA sequence evolution: JC, HKY85, GTR, GTR+Gamma and GTR+Gamma+I.
+For all of these substitution models, you will perform an MCMC analysis to estimate phylogeny and other model parameters.
 
 \subsection*{Requirements}
 We assume that you have read and hopefully completed the following tutorials:
@@ -49,20 +49,19 @@ The first section of this exercise involves:
 (2) approximating the posterior probability of the tree topology and branch lengths (and all other parameters) using MCMC, and; 
 (3) summarizing the MCMC output by computing the maximum \textit{a posteriori} tree. 
 
-
-The general structure of the model is represented in Figure~\ref{fig:jc}.
 \begin{figure}[h!]
 \centering
 \fbox{\includegraphics[width=\textwidth,angle=0]{\ResourcePath figures/jc_graphical_model.pdf}}
 \caption{\small Graphical model representation of a simple phylogenetic model. 
 The graphical model shows the dependencies between the parameters.
 Here, the rate matrix $Q$ is constant variable because it is fixed and does not depend on any parameters.
-The only free parameters of this model, the unconstrained Jukes-Cantor model, are the tree topology $\Psi$ and the branch lengths $\nu_i$.
-}
+The only free parameters of this model, the unconstrained Jukes-Cantor model, are the tree topology $\Psi$ and the branch lengths $\nu_i$.}
 \label{fig:jc}
 \end{figure}
-We first consider the simplest substitution model, the Jukes-Cantor \citep{Jukes1969} substitution model.
-The rate matrix is defined as
+
+The general structure of the model is represented in Figure~\ref{fig:jc}.
+We first consider the simplest substitution model described by \citet{Jukes1969}.
+The instantaneous-rate matrix for the JC substitution model is defined as
 \begin{equation*}
 Q_{JC69} = \begin{pmatrix} 
 {*} & {1} & {1} & {1} \\ 
@@ -94,7 +93,7 @@ If everything loaded properly, then you should see the program initiate the Mark
 If you continue to let this run, then you will see it output the states of the Markov chain once the MCMC analysis begins. 
 (It is worth noting, however, that the file \cl{JukesCantor.Rev} performs shorter runs with fewer generations for the purposes of illustration.)
 
-Ultimately, this is how you will execute most analyses in \RevBayes~and the full specification of the model and analyses are contained in the sourced files. 
+Ultimately, this is how you will execute most analyses in \RevBayes~, with the full specification of the model and analyses contained in the sourced files. 
 You could easily run this entire analysis on your own data by substituting your data file name for that in the model-specification file. 
 However, it is important to understand the components of the model to be able to take full advantage of the flexibility and richness of \RevBayes.
 Furthermore, without inspecting the \Rev~scripts sourced in \cl{JukesCantor.Rev}, you may end up inadvertently performing inappropriate analyses on your dataset, which would be a waste of your time and CPU cycles. 
@@ -151,11 +150,11 @@ This will make it much easier if we extend the model or analysis to include addi
 mi = 0 
 \end{lstlisting}
 \end{snugshade*}}
-You may have noticed that we used the \cl{=} operator to create the move-index.
+You may have noticed that we used the \cl{=} operator to create the move index.
 This simply means that the variable is not part of the model.
 You will later see that we use this operator more often, \EG when we create moves and monitors.
 
-With the data loaded, we can now proceed to specify our Jukes-Cantor model.
+With the data loaded, we can now proceed to specify our Jukes-Cantor substitution model.
 
 \subsection{Jukes-Cantor Substitution Model}
 
@@ -183,7 +182,7 @@ As you can see, all substitution rates are equal.
 
 \subsection{Tree Topology and Branch Lengths}
 
-The tree topology and branch lengths are stochastic nodes in our model. 
+The tree topology and branch lengths are stochastic nodes in our phylogenetic model. 
 In Figure \ref{fig:jc}, the tree topology is denoted $\Psi$ and the length of the branch leading to node $i$ is $\nu_i$.
 
 We will assume that all possible labeled, unrooted tree topologies have equal probability. This is the \cl{dnUniformTopology()} distribution in \RevBayes. Specify the \cl{topology} stochastic node by passing in the tip labels \cl{names} to the \cl{dnUniformTopology()} distribution:
@@ -194,9 +193,9 @@ topology ~ dnUniformTopology(names)
 \end{snugshade*}}
 
 Some types of stochastic nodes can be updated by a number of alternative moves. 
-Different moves may explore parameter space in different ways, and it is possible to use multiple different moves for a given parameter to improve mixing. 
+Different moves may explore parameter space in different ways, and it is possible to use multiple different moves for a given parameter to improve mixing (the efficiency of the MCMC simulation). 
 In the case of our unrooted tree topology, for example, we can use both a nearest-neighbor interchange move (\cl{mvNNI}) and a subtree-prune and regrafting move (\cl{mvSPR}). 
-These moves do not have tuning parameters associated with them, thus you only need to pass in the \cl{topology} node and \cl{weight} 
+These moves do not have tuning parameters associated with them, thus you only need to pass in the \cl{topology} node and proposal \cl{weight} 
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 moves[++mi] = mvNNI(topology, weight=1.0)
@@ -208,7 +207,8 @@ Have a look at the MCMC tutorial for more details about moves and MCMC strategie
 
 
 Next we have to create a stochastic node for each of the $2N-3$ branches in our tree (where $N=$ \cl{n\_species}). 
-We can do this using a \cl{for} loop --- this is a plate in our graphical model. In this loop, we can create each branch-length node and assign each move. Copy this entire block of \Rev~code into the console:
+We can do this using a \cl{for} loop --- this is a plate in our graphical model. In this loop, we can create each of the branch-length nodes and assign each move. 
+Copy this entire block of \Rev~code into the console:
 {\tt \small \begin{snugshade*}
 \begin{lstlisting}
 for (i in 1:n_branches) {
@@ -226,7 +226,7 @@ TL := sum(br_lens)
 \end{lstlisting}
 \end{snugshade*}}
 
-Finally, we can create a phylogram (a phylogeny in which the branch lengths are proportional to the expected number of substitutions/site) by combining the tree topology and branch lengths.
+Finally, we can create a \emph{phylogram} (a phylogeny in which the branch lengths are proportional to the expected number of substitutions/site) by combining the tree topology and branch lengths.
 We do this using the \cl{treeAssembly()} function, which applies the value of the $i^{th}$ member of the \cl{br\_lens} vector to the branch leading to the $i^{th}$ node in \cl{topology}. 
 Thus, the \cl{phylogeny} variable is a deterministic node: 
 
@@ -263,7 +263,7 @@ seq.clamp(data)
 \end{lstlisting}
 \end{snugshade*}}
 [Note that although we assume that our sequence data are random variables---they are realizations of our phylogenetic model---for the purposes of inference, we assume that the sequence data are ``clamped''.]
-When this function is called, \RevBayes~sets each of the stochastic nodes representing the tips of the tree to the corresponding sequence in the alignment. 
+When this function is called, \RevBayes~sets each of the stochastic nodes representing the tips of the tree to the corresponding nucleotide sequence in the alignment. 
 This essentially tells the program that we have observed data for the sequences at the tips. 
 
 Finally, we wrap the entire model to provide convenient access to the DAG. 
@@ -275,7 +275,7 @@ mymodel = model(Q)
 \end{lstlisting}
 \end{snugshade*}}
 
-Now we have specified a simple molecular phylogenetic analysis---each parameter of the model will be estimated from every site in our alignment.
+Now we have specified a simple phylogenetic analysis---each parameter of the model will be estimated from every site in our alignment.
 If we inspect the contents of \cl{mymodel} we can review all of the nodes in the DAG:
 {\tt \begin{snugshade*}
 \begin{lstlisting}
@@ -419,7 +419,7 @@ Your model 3 & \TextField[name=pp91,backgroundcolor={.85 .85 .85},color={1 0 0},
 \newpage
 \section{The Hasegawa-Kishino-Yano (HKY) 1985 Substitution Model}
 
-The Jukes-Cantor model assumes that all substitution rates are equal, which also implies that also the stationary frequencies of the four bases are equal.
+The Jukes-Cantor model assumes that all substitution rates are equal, which also implies that the stationary frequencies of the four nucleotide bases are equal.
 These assumptions are not very biologically reasonable, so we might wish to consider a more realistic substitution model that relaxes some of these assumptions.
 For example, we might allow stationary frequencies, $\pi$, to be unequal, and allow rates of transition and transversion substitutions to differ, $\kappa$.
 This corresponds to the substitution model proposed by \citet[][HKY]{Hasegawa1985}, which is specified with the following instantaneous-rate matrix: 
@@ -452,7 +452,7 @@ moves[++mi] = mvSimplexElementScale(pi, weight=4.0)
 \end{snugshade*}}
 
 The second new variable is $\kappa$, which specifies the ratio of transition-transversion rates.
-$\kappa$ needs to be a positive-real number and a natural choice as the prior distribution is the lognormal distribution:
+The $\kappa$ parameter must be a positive-real number and a natural choice as the prior distribution is the lognormal distribution:
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 kappa ~ dnLnorm(0.0,1.25)
@@ -748,7 +748,7 @@ If a site is truly invariable, it will necessarily give rise to an invariant sit
 However, an invariant site pattern may be achieved via multiple substitutions that happen to end in the same state for every species.
 
 Here we describe an extension to our phylogenetic model to accommodate invariable sites.
-Under the invariable-sites model \citep[][]{Hasegawa1985}, each site is invariable with probability \cl{pinvar}, and variable with probability $1-pinvar$.
+Under the invariable-sites model \citep[][]{Hasegawa1985}, each site is invariable with probability \cl{pinvar}, and variable with probability $1-$\cl{pinvar}.
 
 First, let's have a look at the data and see how many invariant sites we have:
 {\tt \begin{snugshade*}
