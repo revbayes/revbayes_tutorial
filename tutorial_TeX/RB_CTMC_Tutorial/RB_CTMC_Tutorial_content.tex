@@ -660,16 +660,29 @@ Thus, if we set $\lambda=0.05$, then $\mathbb{E}[\alpha] = 20$.
 Create a constant node called \cl{shape\_prior} for the rate parameter of the exponential prior on the gamma-shape parameter
 {\tt\begin{snugshade*}
 \begin{lstlisting}
-alpha_prior <- 0.05                                                                             
+shape_prior <- 0.05                                                                             
 \end{lstlisting}
 \end{snugshade*}}
+% I changed this from ``alpha_prior'' to match the description in the txt
 
-Then create a stochastic node called \cl{shape} to represent the $\alpha$ node in Figure \ref{fig:gtr}, with an exponential density as a prior:
+
+Then create a stochastic node called \cl{alpha} to represent the $\alpha$ node in Figure \ref{fig:gtrg}, with an exponential density as a prior:
+% I think you mean the GTR+G graphical model figure, which is not included in the tutorial presently...I added it below
+% I changed this from \cl{shape} in tis sentence to \cl{alpha} so that it matched the description in the code and the GTR + G graphical model description
 {\tt\begin{snugshade*}
 \begin{lstlisting}
-alpha ~ dnExponential(alpha_prior)
+alpha ~ dnExponential(shape_prior)
 \end{lstlisting}
 \end{snugshade*}}
+% I changed this from ``alpha_prior'' to match the description in the txt
+
+
+\begin{figure}[h!]
+\centering
+\fbox{\includegraphics[width=\textwidth,angle=0]{\ResourcePath figures/gtrg_graphical_model_2.pdf}}
+\caption{\small Graphical model representation of the General Time Reversible (GTR) + Gamma phylogenetic model.}
+\label{fig:gtrg}
+\end{figure}
 
 The way the ASRV model is implemented involves discretizing the mean-one gamma distribution into a set number of rate categories. Thus, we can analytically marginalize over the uncertainty in the rate at each site. To do this, we need a deterministic node that is a vector of rates calculated from the gamma distribution and the number of rate categories. The \cl{fnDiscretizeGamma()} function returns this deterministic node and takes three arguments: the shape and rate of the gamma distribution and the number of categories. Since we want to discretize a mean-one gamma distribution, we can pass in \cl{shape} for both the shape and rate.
 
@@ -681,7 +694,8 @@ gamma_rates := fnDiscretizeGamma( alpha, alpha, 4 )
 \end{snugshade*}}
 
 
-The random variable that controls the rate variation is the stochastic node \cl{shape}. 
+The random variable that controls the rate variation is the stochastic node \cl{alpha}. 
+% I changed this from \cl{shape} in tis sentence to \cl{alpha} so that it matched the description in the code and the GTR + G graphical model description
 We will apply a simple scale move to this parameter.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
