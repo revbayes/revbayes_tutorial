@@ -655,27 +655,11 @@ The rate parameter of an exponential distribution, often denoted $\lambda$, cont
 $\mathbb{E}[\alpha] = \frac{1}{\lambda}.$
 Thus, if we set $\lambda=0.05$, then $\mathbb{E}[\alpha] = 20$.
 
-\subsection{Setting up the model in \RevBayes}
-
-Create a constant node called \cl{shape\_prior} for the rate parameter of the exponential prior on the gamma-shape parameter
-{\tt\begin{snugshade*}
-\begin{lstlisting}
-shape_prior <- 0.05                                                                             
-\end{lstlisting}
-\end{snugshade*}}
-% I changed this from ``alpha_prior'' to match the description in the txt
-
-
-Then create a stochastic node called \cl{alpha} to represent the $\alpha$ node in Figure \ref{fig:gtrg}, with an exponential density as a prior:
-% I think you mean the GTR+G graphical model figure, which is not included in the tutorial presently...I added it below
-% I changed this from \cl{shape} in tis sentence to \cl{alpha} so that it matched the description in the code and the GTR + G graphical model description
-{\tt\begin{snugshade*}
-\begin{lstlisting}
-alpha ~ dnExponential(shape_prior)
-\end{lstlisting}
-\end{snugshade*}}
-% I changed this from ``alpha_prior'' to match the description in the txt
-
+This approach for accommodating ASRV is another example of a hierarchical model (Figure \ref{fig:gtrg}).
+That is, variation in substitution rates across sites is addressed by applyig a site-specific rate multiplier to each of the $j$ sites, $r_j$.
+These rate-multipliers are drawn from a discrete, mean-one gamma distribution; the shape of this prior distribution (and the corresponding degree of ASRV) is governed by the $\alpha$-shape parameter.
+The $\alpha$-shape parameter, in turn, is treated as an exponentially distributed random variable.
+Finally, the shape of the exponential prior is governed by the rate parameter, $\lambda$, which is set to a fixed value.   
 
 \begin{figure}[h!]
 \centering
@@ -684,7 +668,34 @@ alpha ~ dnExponential(shape_prior)
 \label{fig:gtrg}
 \end{figure}
 
-The way the ASRV model is implemented involves discretizing the mean-one gamma distribution into a set number of rate categories. Thus, we can analytically marginalize over the uncertainty in the rate at each site. To do this, we need a deterministic node that is a vector of rates calculated from the gamma distribution and the number of rate categories. The \cl{fnDiscretizeGamma()} function returns this deterministic node and takes three arguments: the shape and rate of the gamma distribution and the number of categories. Since we want to discretize a mean-one gamma distribution, we can pass in \cl{shape} for both the shape and rate.
+\subsection{Setting up the Gamma Model in \RevBayes}
+
+Create a constant node called \cl{shape\_prior} for the rate parameter of the exponential prior on the gamma-shape parameter (this is represented as the constant $\lambda$-rate parameter in Figure \ref{fig:gtrg}):
+{\tt\begin{snugshade*}
+\begin{lstlisting}
+shape_prior <- 0.05                                                                             
+\end{lstlisting}
+\end{snugshade*}}
+% I changed this from ``alpha_prior'' to match the description in the text
+
+Then create a stochastic node called \cl{alpha} with an exponential prior (this represents the stochastic $\alpha$-shape parameter node $\alpha$ in Figure \ref{fig:gtrg}):
+% The GTR+G graphical model figure was not previously included...I added a modified version below that 
+% horizontally compressed the GTR part of the model; the modified version is called `gtrg_graphical_model_2.'
+% I changed this from \cl{shape} in tis sentence to \cl{alpha} so that it matched the description in the code and the GTR + G graphical model description
+{\tt\begin{snugshade*}
+\begin{lstlisting}
+alpha ~ dnExponential(shape_prior)
+\end{lstlisting}
+\end{snugshade*}}
+% I changed this from ``alpha_prior'' to match the description in the txt
+
+The way the ASRV model is implemented involves discretizing the mean-one gamma distribution into a set number of rate categories, $k$. 
+Thus, we can analytically marginalize over the uncertainty in the rate at each site. 
+The likelihood of each site is averaged over the $k$ rate categories, where the rate multiplier is the mean (or median) of each of the discrete $k$ categories. 
+To specify this, we need a deterministic node that is a vector of rates calculated from the gamma distribution and the number of rate categories, $k$. 
+The \cl{fnDiscretizeGamma()} function returns this deterministic node and takes three arguments: the shape and rate of the gamma distribution and the number of categories. 
+Since we want to discretize a mean-one gamma distribution, we can pass in \cl{alpha} for both the shape and rate.
+% I changed this from \cl{shape} in tis sentence to \cl{alpha} so that it matched the description in the code and the GTR + G graphical model description
 
 Initialize the \cl{gamma\_rates} deterministic node vector using the  \cl{fnDiscretizeGamma()} function with \cl{4} bins:
 {\tt \begin{snugshade*}
@@ -693,7 +704,7 @@ gamma_rates := fnDiscretizeGamma( alpha, alpha, 4 )
 \end{lstlisting}
 \end{snugshade*}}
 
-
+Note that here, by convention, we set $k = 4$.
 The random variable that controls the rate variation is the stochastic node \cl{alpha}. 
 % I changed this from \cl{shape} in tis sentence to \cl{alpha} so that it matched the description in the code and the GTR + G graphical model description
 We will apply a simple scale move to this parameter.
@@ -703,7 +714,8 @@ moves[++mi] = mvScale(alpha, weight=2.0)
 \end{lstlisting}
 \end{snugshade*}}
 
-Do not forget that you need to the the \cl{PhyloCTMC} distribution that it has now a new parameter:
+Remember that you need to call the \cl{PhyloCTMC} constructor to include the new site-rate parameter:
+% This sentence was incomplete previously; I think the revised version is correct.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 seq ~ dnPhyloCTMC(tree=phylogeny, Q=Q, siteRates=gamma_rates , type="DNA")
@@ -713,10 +725,13 @@ seq ~ dnPhyloCTMC(tree=phylogeny, Q=Q, siteRates=gamma_rates , type="DNA")
 
 \subsection{Execise 4}
 
-Adopt the GTR analysis to use now the GTR+Gamma model. Run an MCMC to estimate the posterior distribution.
+Modify the previous GTR analysis to specify the GTR+Gamma model. 
+Run an MCMC simulation to estimate the posterior distribution.
 \begin{itemize}
-\item Is there an impact on the estimated phylogeny compared with the previous analyses? Look at the MAP tree and the posterior probabilities of the clades.
-\item What is the estimated tree length? Is the estimate different to the previous analysis? What could cause this?
+\item Is there an impact on the estimated phylogeny compared with the previous analyses? 
+	Look at the MAP tree and the posterior probabilities of the clades.
+\item What is the estimated tree length? 
+	Is the estimate different to the previous analysis? What could cause this?
 \item Complete the table of the phylogenetic relationship of Tarsiers.
 \end{itemize}
 
@@ -724,9 +739,18 @@ Adopt the GTR analysis to use now the GTR+Gamma model. Run an MCMC to estimate t
 
 \newpage
 \section{Modeling Invariable Sites}
-The final extension to our model is a substitution model where each site has the probability \cl{pinvar} to be invariant. This means, that with probability $1-pinvar$ each site is able to evolve.
+All of the substitution models described so far assume that the sequence data are potentially variable.
+That is, we assume that the sequence data are random variables; specifically, we assume that they are realizations of the specified \cl{PhyloCTMC} distribution. 
+However, some sites may not be free to vary---when the substitution rate of a site is zero, it is said to be \emph{invariable}.
+Invariable sites are often confused with \emph{invariant} sites---when each species exhibits the same state, it is said to be invariant.
+The concepts are related but distinct.
+If a site is truly invariable, it will necessarily give rise to an invariant site pattern, as such sites will always have zero substitutions.
+However, an invariant site pattern may be achieved via multiple substitutions that happen to end in the same state for every species.
 
-First, let us have a look at the data and see how many invariant sites we have:
+Here we describe an extension to our phylogenetic model to accommodate invariable sites.
+Under the invariable-sites model \citep[][]{Hasegawa1985}, each site is invariable with probability \cl{pinvar}, and variable with probability $1-pinvar$.
+
+First, let's have a look at the data and see how many invariant sites we have:
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 data.getNumInvariantSites()
@@ -734,18 +758,17 @@ data.getNumInvariantSites()
 \end{snugshade*}}
 There seem to be a substantial number of invariant sites.
 
-So let us specify the model in \RevBayes.
+Now let's specify the invariable-sites model in \RevBayes.
 We need a prior probability for the probability of a site being invariable.
-A Beta distribution is the common choice for parameters representing probabilities.
+A Beta distribution is a common choice for parameters representing probabilities.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 pinvar ~ dnBeta(1,1)
 \end{lstlisting}
 \end{snugshade*}}
-The \cl{Beta(1,1)} distribution is a flat prior distribution which specifies equal probability to each value between 0 and 1.
+The \cl{Beta(1,1)} distribution is a flat prior distribution that specifies equal probability for all values between 0 and 1.
 
-Then, as usual, we add a move to change this stochastic variable.
-A simple sliding window move works here.
+Then, as usual, we add a move to change this stochastic variable; we'll used a simple sliding window move.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 moves[mi++] = mvSlide(pinvar)
