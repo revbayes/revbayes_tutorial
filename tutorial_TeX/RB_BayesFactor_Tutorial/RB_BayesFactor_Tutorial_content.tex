@@ -1,8 +1,9 @@
 \section{Overview}
 
 
-This tutorial demonstrates how to set up and perform an analysis that computes the marginal likelihood of a given model.
-We will show how to calculates Bayes factors to select among different substitution model and different partition configurations of aligned DNA sequences. 
+This tutorial demonstrates some general principles of Bayesian model comparison, which is based on estimating the marginal likelihood of competing models and then comparing their relative fit to the data using Bayes factors.
+We consider the specific case of calculating Bayes factors to select among different substitution models.
+% and different partition configurations of aligned DNA sequences. 
 
 \subsection{Requirements}
 We assume that you have read and hopefully completed the following tutorials:
@@ -11,7 +12,7 @@ We assume that you have read and hopefully completed the following tutorials:
 \item RB\_Data\_Tutorial
 \item RB\_CTMC\_Tutorial
 \end{itemize}
-This means, we expect that you are able to start \RevBayes, know some basic commands, how to load data into \RevBayes~and run a single gene phylogenetic analysis (assuming an unconstrained/unrooted tree).
+This means that we will assume that you know how to execute and load data into \RevBayes, are familiar with some basic commands, and know how to perform an analysis of a single-gene dataset (assuming an unconstrained/unrooted tree).
 
 
 
@@ -20,8 +21,8 @@ This means, we expect that you are able to start \RevBayes, know some basic comm
 %%%%%%%%
 \section{Data and files}
 
-We provide several data files which we will use in this tutorial.
-You may want to use your own data instead.
+We provide several data files that we will use in this tutorial.
+Of course, you may want to use your own dataset instead.
 In the \cl{data} folder, you will find the following files
 \begin{itemize}
 \item
@@ -36,11 +37,12 @@ In the \cl{data} folder, you will find the following files
 
 \section{Introduction}
 
-For most sequence alignments, several (possibly many) substitution models and partition schemes of varying complexity are plausible {\it a priori}, which therefore requires a way to objectively identify the model that balances estimation bias and error variance associated with under- and over-parameterized models, respectively.
-Increasingly, model selection is based on \textit{Bayes factors} \citep[{\it e.g.},][]{Suchard2001,Lartillot2006,Xie2011,Baele2012,Baele2013}, which involves first calculating the marginal likelihood under each candidate model and then comparing the ratio of the marginal likelihoods for the set of candidate model.
+For most sequence alignments, several (possibly many) substitution models of varying complexity are plausible {\it a priori}.
+We therefore need a way to objectively identify the model that balances estimation bias and inflated error variance associated with under- and over-parameterized models, respectively.
+Increasingly, model selection is based on \textit{Bayes factors} \citep[{\it e.g.},][]{Suchard2001,Lartillot2006,Xie2011,Baele2012,Baele2013}, which involves first calculating the marginal likelihood of each candidate model and then comparing the ratio of the marginal likelihoods for the set of candidate models.
 
  
-Given two models, $M_0$ and $M_1$, the Bayes factor comparison assessing the relative plausibility of each model as an explanation of the data, $BF(M_0,M_1)$, is:
+Given two models, $M_0$ and $M_1$, the Bayes-factor comparison assessing the relative fit of each model to the data, $BF(M_0,M_1)$, is:
 $$BF(M_0,M_1) = \frac{\mbox{posterior odds}}{\mbox{prior odds}}.$$
 The posterior odds is the posterior probability of $M_0$ given the data, $\mathbf X$, divided by the posterior odds of $M_1$ given the data:
 $$\mbox{posterior odds} = \frac{\mathbb{P}(M_0 \mid \mathbf X)}{\mathbb{P}(M_1 \mid \mathbf X)},$$
@@ -50,8 +52,9 @@ Thus, the Bayes factor measures the degree to which the data alter our belief re
 \begin{align}\label{BFeq1}
 BF(M_0,M_1) = \frac{\mathbb{P}(M_0 \mid \mathbf X, \theta_0)}{\mathbb{P}(M_1 \mid \mathbf X, \theta_1)} \div \frac{\mathbb{P}(M_0)}{\mathbb{P}(M_1)}. 
 \end{align}
-This, somewhat vague, definition does not lead to clear-cut identification of the ``best'' model. Instead, \textsl{you} must decide the degree of your belief in $M_0$ relative to $M_1$. 
-Despite the absence of any strict ``rule-of-thumb'', you can refer to the scale \citep[outlined by][]{Jeffreys1961} for interpreting these measures (Table \ref{bftable}).
+Note that interpreting Bayes factors involves some subjectivity.
+That is, it is up to \textsl{you} to decide the degree of your belief in $M_0$ relative to $M_1$. 
+Despite the absence of an absolutely objective model-selection threshold, we can refer to the scale \citep[outlined by][]{Jeffreys1961} that provides a ``rule-of-thumb'' for interpreting these measures (Table \ref{bftable}).
 \begin{table}[h]
 \centering
 \caption{\small The scale for interpreting Bayes factors by Harold \citet{Jeffreys1961}.} 
@@ -71,15 +74,17 @@ Decisive& $>100$ & $>4.6$ & $>2$ \\
 \end{table}
 
 
-Unfortunately, direct calculation of the posterior odds to prior odds ratio is unfeasible for most phylogenetic models. However, we can further define the posterior odds ratio as:
+Unfortunately, it is generally not possible to directly calculate the posterior odds to prior odds ratio. 
+However, we can further define the posterior odds ratio as:
 \begin{align*}
 \frac{\mathbb{P}(M_0 \mid \mathbf X)}{\mathbb{P}(M_1 \mid \mathbf X)} = \frac{\mathbb{P}(M_0)}{\mathbb{P}(M_1)} \frac{\mathbb{P}(\mathbf X \mid M_0)}{\mathbb{P}(\mathbf X \mid M_1)},
 \end{align*}
-where $\mathbb{P}(\mathbf X \mid M_i)$ is the \textit{marginal likelihood} of the data marginalized over all parameters for $M_i$; it is also referred to as the \textit{model evidence} or \textit{integrated likelihood}.
-More explicitly, the marginal likelihood is the probability of the set of observed data ($\mathbf X$) under a given model ($M_i$), while averaging over all possible values of the parameters of the model ($\theta_i$) with respect to the prior density on $\theta_i$
+where $\mathbb{P}(\mathbf X \mid M_i)$ is the \textit{marginal likelihood} of the data (this may be familiar to you as the denominator of Bayes Theorem, which is variously referred to as the \textit{model evidence} or \textit{integrated likelihood}).
+Formally, the marginal likelihood is the probability of the observed data ($\mathbf X$) under a given model ($M_i$) that is averaged over all possible values of the parameters of the model ($\theta_i$) with respect to the prior density on $\theta_i$
 \begin{align}\label{margeLike}
 \mathbb{P}(\mathbf X \mid M_i) = \int \mathbb{P}(\mathbf X \mid \theta_i) \mathbb{P}(\theta_i)dt.
 \end{align}
+This makes it clear that more complex (parameter-rich) models are penalized by virtue of the associated prior: each additional parameter entails integration of the likelihood over the corresponding prior density.  
 If you refer back to equation \ref{BFeq1}, you can see that, with very little algebra, the ratio of marginal likelihoods is equal to the Bayes factor:
 \begin{align}\label{bfFormula}
 BF(M_0,M_1) = \frac{\mathbb{P}(\mathbf X \mid M_0)}{\mathbb{P}(\mathbf X \mid M_1)} = \frac{\mathbb{P}(M_0 \mid \mathbf X, \theta_0)}{\mathbb{P}(M_1 \mid \mathbf X, \theta_1)} \div \frac{\mathbb{P}(M_0)}{\mathbb{P}(M_1)}. 
@@ -92,23 +97,32 @@ using both the stepping-stone \citep{Xie2011,Fan2011} and path sampling estimato
 
 
 \bigskip
-\subsection{Phylogenetic Models}\label{secUnif} 
+\subsection{Substitution Models}\label{secUnif} 
 
 The models we use here are equivalent to the models described in the previous exercise on substitution models (continuous time Markov models).
-To specify the model please consult the previous exercise. Specifically, you need to specify a 
+To specify the model please consult the previous exercise. Specifically, you will need to specify the following substitution models:
 \begin{itemize}
-\item Jukes-Cantor substitution model
-\item Hasegawa-Kishino-Yano substitution model
-\item General-Time-Reversible substitution model
-\item Gamma distributed rate variation among sites
-\item Invariant sites model
+\item Jukes-Cantor (JC) substitution model \citep[][]{Jukes1969}
+\item Hasegawa-Kishino-Yano (HKY) substitution model \citep[][]{Hasegawa1985}
+\item General-Time-Reversible (GTR) substitution model \citep[][]{Tavare1986}
+\item Gamma (+G) model for among-site rate variation \citep[][]{yang94a}
+\item Invariable-sites (+I) model \citep[][]{Hasegawa1985}
 \end{itemize}
 
 
 \bigskip
 \subsection{Estimating the Marginal Likelihood}
 
-With a fully specified model, we can set up the \cl{powerPosterior()} analysis to create a file of `powers' and likelihoods from which we can estimate the marginal likelihood using stepping-stone or path sampling. 
+We will estimate the marginal likelihood of a given model using a `stepping-stone' (or `path-sampling') algorithm.
+These algorithms are similar to the familiar MCMC algorithms, which are intended to sample from (and estimate) the joint posterior probability of the model parameters.
+Stepping-stone algorithms are like a series of MCMC simulations that iteratively sample from a specified number of discrete steps between the posterior and the prior probability distributions.
+The basic idea is to estimate the probability of the data for all points between the posterior and the prior---effectively summing the probability of the data over the prior probability of the parameters to estimate the marginal likelihood. 
+Technically, the steps correspond to a series of \cl{powerPosteriors()}: a series of numbers between 1 and 0 that are iteratively applied to the posterior.
+When the posterior probability is raised to the power of 1 (typically the first stepping stone), samples are drawn from the (untransformed) posterior.
+By contrast, when the posterior probability is raised to the power of 0 (typically the last stepping stone), samples are drawn from the prior.
+To perform a stepping-stone simulation, we need to specify (1) the \emph{number} of stepping stones (power posteriors) that we will use to traverse the path between the posterior and the prior (e.g., we specify 50 or 100 stones), (2) the \emph{spacing} of the stones between the posterior and prior (e.g., we may specify that the stones are distributed according to a beta distribution), (3) the number of samples to (and thinning) of samples to be drawn from each stepping stone, and (4) the direction we will take (i.e., from the posterior to the prior or vice versa).
+
+%With a fully specified model, we can set up the \cl{powerPosterior()} analysis to create a file of `powers' and likelihoods from which we can estimate the marginal likelihood using stepping-stone or path sampling. 
 This method computes a vector of powers from a beta distribution, then executes an MCMC run for each power step while raising the likelihood to that power. In this implementation, the vector of powers starts with 1, sampling the likelihood close to the posterior and incrementally sampling closer and closer to the prior as the power decreases. 
 
 
@@ -122,30 +136,31 @@ clear()
 \end{lstlisting}
 \end{snugshade*}}
 
-Now set up the model as in the previous exercise. You should start with the simple Jukes-Cantor substitution model. Setting up the model will involve
+Now set up the model as in the previous exercise. You should start with the simple Jukes-Cantor substitution model. 
+Setting up the model requires:
 \begin{enumerate}
 \item Loading the data and retrieving useful variables about the data (\EG number of sequences and taxon names).
-\item Specify the rate matrix of the substitution model.
-\item Specify the tree model including branch length variables.
-\item Create a random variable for the sequences that evolved under the \cl{PhyloCTMC}.
-\item Clamp the data.
-\item Create a model object.
-\item Don't forget the moves!
+\item Specifying the instantaneous-rate matrix of the substitution model.
+\item Specifying the tree model including branch-length variables.
+\item Creating a random variable for the sequences that evolved under the \cl{PhyloCTMC}.
+\item Clamping the data.
+\item Creating a model object.
+\item Specifying the moves for parameter updates.
 \end{enumerate}
 
-The following description of how-to specify a marginal likelihood computation is valid for any model in \RevBayes.
-You need to repeat this later for other models.
-First, we create the variable containing the power posterior analysis. 
-This requires us to provide a model and vector of moves, as well as an output file name. 
-The \cl{cats} argument sets the number of power steps.
+The following procedure for estimating marginal likelihoods is valid for any model in \RevBayes.
+You will need to repeat this later for other models.
+First, we create the variable containing the power-posterior analysis. 
+This requires that we provide a model and vector of moves, as well as an output file name. 
+The \cl{cats} argument sets the number of stepping stones.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 pow_p = powerPosterior(mymodel, moves, "model1.out", cats=50) 
 \end{lstlisting}
 \end{snugshade*}}
 
-We can start the power posterior analysis by first burning in the chain and and discarding the first 10000 states.  
-This will help the analysis to start from the posterior distribution instead of any random parameter state.
+We can start the power-posterior analysis by first burning in the chain and and discarding the first 10000 states.  
+This will help ensure that analysis starts from a region of high posterior probability, rather than from some random point.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 pow_p.burnin(generations=10000,tuningInterval=1000)
@@ -167,7 +182,8 @@ ss <- steppingStoneSampler(file="model1.out", powerColumnName="power", likelihoo
 \end{lstlisting}
 \end{snugshade*}}
 
-Compute the marginal likelihood under stepping-stone sampling using the member function \cl{marginal()} of the \cl{ss} variable and record the value in Table \ref{ssTable}.
+These commands will execute a stepping-stone simulation with 50 stepping stones, sampling 1000 states from each step. 
+Compute the marginal likelihood under stepping-stone sampling using the member function \cl{marginal()} of the \cl{ss} variable and record the value in Table \ref{tab:ml_cytb}.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 ss.marginal() 
@@ -181,7 +197,7 @@ ps = pathSampler(file="model1.out", powerColumnName="power", likelihoodColumnNam
 \end{lstlisting}
 \end{snugshade*}}
 
-Compute the marginal likelihood under stepping-stone sampling using the member function \cl{marginal()} of the \cl{ps} variable and record the value in Table \ref{ssTable}.
+Compute the marginal likelihood under stepping-stone sampling using the member function \cl{marginal()} of the \cl{ps} variable and record the value in Table \ref{tab:ml_cytb}.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 ps.marginal() 
@@ -194,17 +210,17 @@ ps.marginal()
 \subsection{Exercises}
 
 \begin{itemize}
-\item Compute the marginal likelihoods of the \textit{cytb} alignment for the following substitution models
+\item Compute the marginal likelihoods of the \textit{cytb} alignment for the following substitution models:
 \begin{itemize}
-\item Jukes-Cantor substitution model
-\item Hasegawa-Kishino-Yano substitution model
-\item General-Time-Reversible substitution model
-\item General-Time-Reversible substitution model with gamma distributed rate variation among sites
-\item General-Time-Reversible substitution model with invariant sites
-\item General-Time-Reversible substitution model with gamma distributed rate variation among sites and the invariant sites model
+\item Jukes-Cantor (JC) substitution model
+\item Hasegawa-Kishino-Yano (HKY) substitution model
+\item General-Time-Reversible (GTR) substitution model
+\item GTR with gamma distributed-rate model (GTR+G)
+\item GTR with invariable-sites model  (GTR+I)
+\item GTR+I+G model
 \end{itemize}
-\item Fill the marginal likelihood estimates in Table~\ref{tab:ml_cytb}.
-\item Repeat the marginal likelihood computation for the \textit{MT-ND1 gene} and fill Table~\ref{tab:ml_nd1}.
+\item Enter the marginal likelihood estimate for each model in the corresponding cell of Table~\ref{tab:ml_cytb}.
+\item Repeat the above marginal likelihood analyses for the \textit{MT-ND1 gene} and enter these values in Table~\ref{tab:ml_nd1}.
 \item Which is the best fitting substitution model?
 \end{itemize}
 
@@ -285,9 +301,9 @@ Any other model ($M_9$) & \hspace{3mm} & \TextField[name=gene2_m91,backgroundcol
 \section{Compute Bayes Factors and Select Model}
 
 
-Now that we have estimates of the marginal likelihood under each of our different models, we can evaluate their relative plausibility using Bayes factors.
-Phylogenetics software programs log-transform the likelihood to avoid \href{http://en.wikipedia.org/wiki/Arithmetic_underflow}{underflow}, because multiplying likelihoods results in numbers that are too small to be held in computer memory.
-Thus, we must use a different form of equation \ref{bfFormula} to calculate the ln-Bayes factor (we will denote this value $\mathcal{K}$):
+Now that we have estimates of the marginal likelihood for each of our the candidate substitution models, we can evaluate their relative fit to the datasets using Bayes factors.
+Phylogenetic programs log-transform the likelihood values to avoid \href{http://en.wikipedia.org/wiki/Arithmetic_underflow}{underflow}: multiplying likelihoods (numbers $< 1$) generates numbers that are too small to be held in computer memory.
+Accordingly, we need to use a different form of equation \ref{bfFormula} to calculate the ln-Bayes factor (we will denote this value $\mathcal{K}$):
 \begin{align}\label{LNbfFormula}
 \mathcal{K}=\ln[BF(M_0,M_1)] = \ln[\mathbb{P}(\mathbf X \mid M_0)]-\ln[\mathbb{P}(\mathbf X \mid M_1)],
 \end{align}
@@ -296,18 +312,18 @@ The value resulting from equation \ref{LNbfFormula} can be converted to a raw Ba
 \begin{align}\label{LNbfFormula2}
 BF(M_0,M_1) = e^{\cal{K}}.
 \end{align}
-Alternatively, you can interpret the strength of evidence in favor of $M_0$ using the $\cal{K}$ and skip equation \ref{LNbfFormula2}. 
-In this case, we evaluate the $\cal{K}$ in favor of model $M_0$ against model $M_1$ so that:
+Alternatively, you can directly interpret the strength of evidence in favor of $M_0$ in log space by comparing the values of $\cal{K}$ to the appropriate scale (Table ref{bftable}, second column).
+In this case, we evaluate $\cal{K}$ in favor of model $M_0$ against model $M_1$ so that:
 \begin{center}
 \begin{tabular}{l}
-if $\mathcal{K} > 1$, then model $M_0$ wins\\
-if $\mathcal{K} < -1$, then model $M_1$ wins.
+if $\mathcal{K} > 1$, model $M_0$ is preferred\\
+if $\mathcal{K} < -1$, model $M_1$ is preferred.
 \end{tabular}
 \end{center}
-Thus, values of $\mathcal{K}$ around 0 indicate ambiguous support. 
+Thus, values of $\mathcal{K}$ around 0 indicate that there is no preference for either model. 
 
-Using the values you entered in Table \ref{tab:ml_cytb} and equation \ref{LNbfFormula},  calculate the ln-Bayes factors (using $\mathcal{K}$) for the different model comparisons. 
-Enter your answers in Table \ref{bfTable} using the stepping-stone and the path-sampling estimates of the marginal log likelihoods. 
+Using the values you entered in Table \ref{tab:ml_cytb} and equation \ref{LNbfFormula}, calculate the ln-Bayes factors (using $\mathcal{K}$) for each model comparison. 
+Enter your answers in Table \ref{bfTable} using the stepping-stone and the path-sampling estimates of the marginal log-likelihoods. 
 
 \begin{Form}
 \begin{table}[h!]
