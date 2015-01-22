@@ -14,6 +14,26 @@ We assume that you have read and hopefully completed the following tutorials:
 This means, we expect that you are able to start \RevBayes, know some basic commands, how to load data into \RevBayes~and run a single gene phylogenetic analysis (assuming an unconstrained/unrooted tree).
 
 
+
+%%%%%%%%
+%%   Data   %%
+%%%%%%%%
+\section{Data and files}
+
+We provide several data files which we will use in this tutorial.
+You may want to use your own data instead.
+In the \cl{data} folder, you will find the following files
+\begin{itemize}
+\item
+\cl{primates_cytb.nex}: Alignment of the \textit{cytochrome b} subunit from 23 primates representing 14 of the 16 families (\textit{Indriidae} and \textit{Callitrichidae} are missing).
+\item
+\cl{primates_16s.nex}: Alignment of the \textit{16s ribosomal RNA} gene from the same 23 primates species.
+\item
+\cl{primates_cox2.nex}: Alignment of the \textit{COX-2} gene from the same 23 primates species.
+\end{itemize}
+
+
+
 \section{Introduction}
 
 For most sequence alignments, several (possibly many) substitution models and partition schemes of varying complexity are plausible {\it a priori}, which therefore requires a way to objectively identify the model that balances estimation bias and error variance associated with under- and over-parameterized models, respectively.
@@ -38,7 +58,7 @@ Despite the absence of any strict ``rule-of-thumb'', you can refer to the scale 
 \label{bftable}
 \begin{tabular}{l c c c}
 \hline
-\multicolumn{1}{r}{{Strength of evidence}} & \multicolumn{1}{l}{\textbf{$BF(M_0, M_1)$}} & \multicolumn{1}{l}{\textbf{log($BF(M_0, M_1)$)}} &  \multicolumn{1}{l}{\textbf{log_{10}($BF(M_0, M_1)$)}}\\ 
+\multicolumn{1}{r}{{Strength of evidence}} & \multicolumn{1}{l}{\textbf{$BF(M_0, M_1)$}} & \multicolumn{1}{l}{\textbf{log($BF(M_0, M_1)$)}} &  \multicolumn{1}{l}{\textbf{$\text{log}_{10}$($BF(M_0, M_1)$)}}\\ 
 \hline
 Negative (supports $M_1$) & $<1$ & $<0$ & $<0$\\
 Barely worth mentioning & $1$ to $3.2$ & $0$ to $1.16$ & $0$ to $0.5$\\
@@ -257,7 +277,11 @@ Any other model ($M_9$) & \hspace{3mm} & \TextField[name=gene2_m91,backgroundcol
 \end{table}
 \end{Form}
 
-\floatbarrier
+
+
+
+
+\FloatBarrier
 \section{Compute Bayes Factors and Select Model}
 
 
