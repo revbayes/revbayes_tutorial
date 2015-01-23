@@ -361,18 +361,62 @@ $M_9$ & \TextField[name=bf91,backgroundcolor={.85 .85 .85},color={1 0 0},height=
 
 
 \newpage
-\section{Partitioned Analysis}
-Now that you have identified the best substitution model for each of the two genes, we will run a joint analysis under both genes: a partitioned analysis.
+\section{For your consideration...}
+In this tutorial you have learned how to use \RevBayes~to assess the \emph{relative} fit of a pool of candidate substitution models to a given sequence alignment.
+Typically, once we have identified the ``best'' substitution model for our alignment, we would then proceed to use this model for inference.
+Technically, this is a decision to condition our inferences on the selected model, which explicitly assumes that it provides a reasonable description of the process that gave rise to our data.
+However, there are several additional issues to consider before proceeding along these lines, which we briefly mention below.
+%considerations cases where conditioning on the preferred model may be problematic.
+%On possible scenario is related to uncertainty in the choice of substitution model, and the other is related to the \emph{absolute} fit of the chosen model to our data. 
+
+\subsection{Accommodating Process Heterogeneity}
+In the analyses that we performed in this tutorial, we assumed that all sites in an alignment evolved under an identical substitution process.
+It is well established that this assumption is likely to be violated in real datasets.
+Various aspects of the substitution process---the stationary frequencies, exchangeability rates, degree of ASRV, etc.---may vary across sites of our sequence alignment.
+For example, the nature of the substitution process may vary between codon positions in protein-coding genes, between stem and loop regions of ribosomal genes, or between different gene and/or genomic regions. 
+It is equally well established that failure to accommodate this \textit{process heterogeneity}---variation in the nature of the substitution process across the alignment---will cause biased estimates of the tree topology, branch lengths and other phylogenetic model parameters.
+We can accommodate process heterogeneity by adopting a \emph{mixed-model} approach, where two or more subsets of sites are allowed to evolve under distinct substitution processes.
+We will demonstrate how to specify---and select among---alternative mixed models using \RevBayes~in a separate tutorial, RB\_PartitionedData\_Tutorial.
+
+\subsection{Assessing Model Adequacy}
+In this tutorial, we used Bayes factors to assess the fit of various substitution models to our sequence data, effectively establishing the \emph{relative} rank of the candidate models.
+Even if we have successfully identified the very best model from the pool of candidates, however, the preferred model may nevertheless be woefully inadequate in an \emph{absolute} sense. 
+For this reason, it is important to consider \emph{model adequacy}: whether a given model provides a reasonable description of the process that gave rise to our sequence data. 
+We can assess the absolute fit of a model to a given dataset using \emph{posterior predictive simulation}.
+This approach is based on the following premise: if the candidate model provides a reasonable description of the process that gave rise to our dataset, then we should be able to generate data under this model that resemble our observed data.
+%should be able to , where we assess the ability of the candidate model to predict datasets that are similar to our observed data. 
+We will demonstrate how to assess model adequacy using \RevBayes~in a separate tutorial, RB\_ModelAdequacy\_Tutorial.
+
+\subsection{Accommodating Model Uncertainty}
+Model selection entails ranking a set of candidate models according to their relative fit to the data at hand.Even if we have exhaustively evaluated all possible candidate models and accurately assessed the relative fit of each model to a given dataset, it may nevertheless be unwise to condition our inference on the best model.This relates to the issue of model uncertainty.Imagine, for example, that there are several (possibly many) alternative models that provide a similarly good fit to a given dataset (Figure~\ref{model_uncertainty}).In such scenarios, conditioning inference on \textit{any single model} (even the `best') ignores uncertainty in the chosen model and will cause estimates to be biased.This scenario is apt to become increasingly plausible as the size of the candidate model pool continues to grow.If the fit of the data to the best model is substantially better than the fit to the other models, conditioning on the best model (i.e., making it a fixed assumption of the analysis) may be justifiable. 
+Conversely, if the fit of the data to the best model is only marginally better than the fit to the other models, model averaging may be necessary. 
+The Bayesian perspective on this problem is ``If there is uncertainty in model specification, let's integrate it out!'' 
+Specifically, for a given model, we treat each model parameter as a random variable and average inferences over the prior probability density for that parameter to accommodate for uncertainty in the parameters. 
+The idea here is to treat the MODEL as a random variable, and average estimates over the expanse of model space, while simultaneously averaging over prior probability densities for each parameter of each model.
+Because different models may differ in the number of free parameters, this entails changes in the dimensionality of parameter space, which is accommodated by using a trans-dimensional MCMC algorithm that jumps between dimensions in model space. 
+The proportion of time that the RJ MCMC visits a given model is an approximation of the posterior probability of that model.
+Model uncertainty can be addressed by means of \textit{model averaging}---parameters are estimated under each of the candidate models, and then summarized as the weighted average over the candidate models, where the weighting is based on the probability of each candidate model.%Within a maximum likelihood framework, for example, we might accommodate the effect of substitution model uncertainty on parameter estimates by calculating the AIC weight of each candidate model, performing maximum-likelihood estimation under each model, and then calculating the model-averaged estimate for each parameter \citep[{\it e.g.},][]{pisani04}.The Bayesian framework provides a more natural approach for accommodating model uncertainty; we simply adopt the perspective that models (like the parameters within each model) are themselves random variables.Bayesian model averaging has been implemented for various phylogenetic problems using reversible-jump MCMC, where the chain integrates over the joint prior probability density of a given model in the usual manner, but also `jumps' between models, visiting each model in proportion to its marginal probability.For example, rjMCMC has been used to average over the pool of $203$ substitution models corresponding to all possible combinations of the six exchangeability parameters \citep{huelsenbeck04}.Analyses of empirical datasets demonstrate that the credible set typically contains many substitution models.Moreover, accommodating this source of uncertainty has been shown to impact parameters of interest, providing less biased estimates of the topological variance and corresponding clade probabilities \citep {huelsenbeck04}.%Similar results have been shown for methods that average over relaxed-clock models \citep{li10}:
+%typically, many relaxed-clock model have considerable marginal posterior probability ({\it i.e.}, the credible set of models contains several models), and averaging over models results in better estimates of uncertainty in divergence-time estimates \citep{li10}
+We will demonstrate how to accommodate model uncertainty using \RevBayes~in a separate tutorial, RB\_ModelAveraging\_Tutorial.
+
+
+
+%
+%\newpage
+%\section{Partitioned Analysis}
+%Now that you have identified the best substitution model for each of the two genes, we will run a joint analysis under both genes: a partitioned analysis.
 
 
 
 
+\newpage
 \vspace{5cm}
 Questions about this tutorial can be directed to: \\\vspace{-10mm}
 \begin{itemize}
 \item Tracy Heath (email: \href{mailto:tracyh@berkeley.edu}{tracyh@berkeley.edu}) \\\vspace{-8mm}
+\item Sebastian H\"{o}hna (email: \href{mailto:sebastian.hoehna@gmail.com}{sebastian.hoehna@gmail.com}) \\\vspace{-8mm}
 \item Michael Landis (email: \href{mailto:mlandis@berkeley.edu}{mlandis@berkeley.edu}) \\\vspace{-8mm} 
-\item Sebastian H\"{o}hna (email: \href{mailto:sebastian.hoehna@gmail.com}{sebastian.hoehna@gmail.com})
+\item Brian R. Moore (email: \href{mailto:brianmoore@ucdavis.edu}{brianmoore@ucdavis.edu}) \\\vspace{-8mm}
 \end{itemize}
 
 
