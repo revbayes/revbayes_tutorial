@@ -517,13 +517,23 @@ The HKY substitution model can accommodate unequal base frequencies and differen
 Despite these extensions, the HKY model may still be too simplistic for many real datasets.
 Here, we extend the HKY model to specify the General Time Reversible (GTR) substitution model \citep{Tavare1986}, which allows all six exchangeability rates to differ (Figure \ref{fig:gtr}).
 The instantaneous-rate matrix for the GTR substitution model is
+%\begin{equation*}
+%\resizebox{\textwidth}{!}{%  
+%$Q_{GTR} = \begin{pmatrix}
+%{-(x_1 + x_2 + x_3)} & {\pi_1 x_1 \over \pi_2} & {\pi_1 x_2 \over \pi_3} & {\pi_1 x_3 \over \pi_4} \\ 
+%{x_1} & {-({\pi_1 x_1 \over \pi_2} + x_4 + x_5)} & {\pi_2 x_4 \over \pi_3} & {\pi_2 x_5 \over \pi_4} \\ 
+%{x_2} & {x_4} & {-({\pi_1 x_2 \over \pi_3} + {\pi_2 x_4 \over \pi_3} + x_6)} & {\pi_3 x_6 \over \pi_4} \\  
+%{x_3} & {x_5} & {x_6} & {-({\pi_1 x_3 \over \pi_4} + {\pi_2 x_5 \over \pi_4} + {\pi_3 x_6 \over \pi_4})} 
+%\end{pmatrix} \mbox{  .} $}
+%\end{equation*}
+
 \begin{equation*}
 \resizebox{\textwidth}{!}{%  
 $Q_{GTR} = \begin{pmatrix}
-{-(x_1 + x_2 + x_3)} & {\pi_1 x_1 \over \pi_2} & {\pi_1 x_2 \over \pi_3} & {\pi_1 x_3 \over \pi_4} \\ 
-{x_1} & {-({\pi_1 x_1 \over \pi_2} + x_4 + x_5)} & {\pi_2 x_4 \over \pi_3} & {\pi_2 x_5 \over \pi_4} \\ 
-{x_2} & {x_4} & {-({\pi_1 x_2 \over \pi_3} + {\pi_2 x_4 \over \pi_3} + x_6)} & {\pi_3 x_6 \over \pi_4} \\  
-{x_3} & {x_5} & {x_6} & {-({\pi_1 x_3 \over \pi_4} + {\pi_2 x_5 \over \pi_4} + {\pi_3 x_6 \over \pi_4})} 
+- & {\pi_1 x_1 \over \pi_2} & {\pi_1 x_2 \over \pi_3} & {\pi_1 x_3 \over \pi_4} \\ 
+{r_1} & - & {\pi_2 x_4 \over \pi_3} & {\pi_2 x_5 \over \pi_4} \\ 
+{r_2} & {r_4} & - + {\pi_2 x_4 \over \pi_3} + r_6)} & {\pi_3 x_6 \over \pi_4} \\  
+{r_3} & {r_5} & {r_6} &- 
 \end{pmatrix} \mbox{  .} $}
 \end{equation*}
 
