@@ -1,9 +1,9 @@
 \section{Introduction}
 
 The subject of the comparative method is the analysis of trait evolution at the macroevolutionary scale.
-In a comparative context, many different questions can be addressed: tempo and mode of evolution, correlated evolution of multiple quantitative traits, trends and bursts, changes in evolutionary mode correlated with major key innovations in some groups, etc \citep[see][for a good introduction]{Harvey1991}.
+In a comparative context, many different questions can be addressed: tempo and mode of evolution, correlated evolution of multiple quantitative traits, trends and bursts, changes in evolutionary mode correlated with major key innovations in some groups, etc \citep[for a good introduction see][]{Harvey1991}.
 
-In order to correctly formalize comparative questions, the underlying phylogeny should always be explicitly accounted for. This point is clearly illustrated, in particular, by the independent contrast method \citep{Felsenstein1985a}. Practically speaking, the phylogeny and the divergence times are usually first estimated using a separate phylogenetic reconstruction software. In a second step, this time-calibrated phylogeny is used as an input to the comparative method.
+In order to correctly formalize comparative questions, the underlying phylogeny should always be explicitly accounted for. This point is clearly illustrated, in particular, by the independent contrasts method \citep{Felsenstein1985a,Huelsenbeck2003}. Practically speaking, the phylogeny and the divergence times are usually first estimated using a separate phylogenetic reconstruction software. In a second step, this time-calibrated phylogeny is used as an input to the comparative method.
 Doing this, however, raises a certain number of methodological problems:
 \begin{itemize}
 \item
@@ -32,16 +32,10 @@ You may want to use your own data instead.
 In the \cl{data} folder, you will find the following files
 \begin{itemize}
 \item
-\cl{plac40lhtlog.nex}: 3 life-history traits (age at sexual maturity, body mass, maximum recorded lifespan) for 40 placental mammals \citep[taken from the Anage database,][]{DeMagalhaes2009}. The traits have been log-transformed.
+\cl{primates\_cytb.nex}: Alignment of the \textit{cytochrome b} subunit from 23 primates representing 14 of the 16 families (\textit{Indriidae} and \textit{Callitrichidae} are missing).
+
 \item
-\cl{plac40\_4fold.nex}: an alignment made of a concatenation of 17 nuclear genes in 40 placental mammals \citep[from][]{Lartillot2012}, with only the four-fold degenerate third coding positions.
-\item
-\cl{chronoplac40.tree}: a time-calibrated phylogeny, which has been obtained by running another software program \citep[PhyloBayes,][]{Lartillot2009}.
-You can visualize this tree using the \cl{njplot} command: \cl{njplot chronoplac40.tree}
-\item
-\cl{archaeaRNA.nex}: an alignment of rRNA sequences of 33 archaeal species.
-\item
-\cl{archaeaTemp.nex}: optimal growth temperatures for the 33 archaeal species.
+\cl{primates\_lhtlog.nex}: 3 life-history traits (age at sexual maturity, body mass, maximum recorded lifespan) for 23 primate species \citep[taken from the Anage database,][]{DeMagalhaes2009}. The traits have been log-transformed.
 \end{itemize}
 
 
@@ -52,12 +46,12 @@ You can visualize this tree using the \cl{njplot} command: \cl{njplot chronoplac
 
 \label{univariate}
 
-As a first preliminary exercise, we wish to reconstruct the evolution of body mass in placental mammals and, in particular, estimate the body mass of their last common ancestor.
+As a first preliminary exercise, we wish to reconstruct the evolution of body mass in primates and, in particular, estimate the body mass of their last common ancestor.
 For this, we will assume that the logarithm of body mass follows a simple univariate Brownian motion along the phylogeny.
 In a first step, we will ignore phylogenetic uncertainty:
-thus, we will assume that the Brownian process describing body mass evolution runs along a fixed time-calibrated phylogeny (with fixed divergence times), such as specified in the file \cl{chronoplac40.tree}.
+thus, we will assume that the Brownian process describing body mass evolution runs along a fixed time-calibrated phylogeny (with fixed divergence times), such as specified in the file \cl{primates.tree}.
 
-You may want to take the time to visualize the tree given in \cl{chronoplac40.tree} as well as the matrix of quantitative traits specified by the \cl{plac40lhtlog.nex} file, before going into the modeling work described below.
+\noindent \\ \impmark You may want to take the time to visualize the tree given in \cl{primates.tree} as well as the matrix of quantitative traits specified by the \cl{primates\_lhtlog.nex} file, before going into the modeling work described below.
 
 \subsection{The model and the priors}
 
@@ -89,53 +83,55 @@ Conditioning the model on empirical data by clamping $x(t)$ at the tips of the p
 
 \subsection{Programming the model in \RevBayes}
 
-In \cl{RevBayes\_scripts/}, you will find a script called \cl{placentaliaMass.Rev}.
-This script implements the univariate Brownian model described above. Instead of re-typing the content of script entirely in the context of an interactive \RevBayes~session, you can instead run the script directly, by first going to the \cl{tutorials/NESCent/} folder and then giving the script as an argument to the \RevBayes~program:
-\\
-\cl{rb RevBayes\_scripts/placentaliaMass.Rev}.
-
-This script essentially reformulates what has been explained in the last subsection, now in the \Rev~language:
-
-
-load trait data:
+In \cl{RevBayes\_scripts/}, you will find a script called \cl{primatesMass.Rev}.
+This script implements the univariate Brownian model described above. Instead of re-typing the content of script entirely in the context of an interactive \RevBayes~session, you can instead run the script directly:
 {\tt \small \begin{snugshade*}
 \begin{lstlisting}
-contData <- readContinuousCharacterData("data/plac40lhtlog.nex")
+source("RevBayes\_scripts/primatesMass.Rev")
 \end{lstlisting}
 \end{snugshade*}}
 
-load the time-tree from file:
+This script essentially reformulates what has been explained in the last subsection, now in the \Rev~language:
+
+First, load the trait data:
 {\tt \small \begin{snugshade*}
 \begin{lstlisting}
-treeArray <- readTrees("data/chronoplac40.tree")
+contData <- readContinuousCharacterData("data/primates_lhtlog.nex")
+\end{lstlisting}
+\end{snugshade*}}
+
+Next, load the time-tree from file:
+{\tt \small \begin{snugshade*}
+\begin{lstlisting}
+treeArray <- readTrees("data/primates.tree")
 psi <- treeArray[1]
 \end{lstlisting}
 \end{snugshade*}}
 
-define $\sigma$, with a truncated log-uniform prior:
+Then, define $\sigma$, with a truncated log-uniform prior:
 {\tt \small \begin{snugshade*}
 \begin{lstlisting}
 sigma ~ dnLogUniform(min=0.001,max=1000)
 \end{lstlisting}
 \end{snugshade*}}
-to accelerate convergence, it can be useful to force initialization of $\sigma$ to a small value:
+To accelerate convergence, it can be useful to force initialization of $\sigma$ to a small value:
 {\tt \small \begin{snugshade*}
 \begin{lstlisting}
-sigma.setValue(0.1)}
+sigma.setValue(0.1)
 \end{lstlisting}
 \end{snugshade*}}
 
-define the multivariate Brownian process, which we will call \cl{logmass}:
+Define a random variable from the univariate Brownian-Phylo process, which we will call \cl{logmass}:
 {\tt \small \begin{snugshade*}
 \begin{lstlisting}
-logmass ~ dnBrownian(psi,sigma)
+logmass ~ dnPhyloBrownian(psi,sigma)
 \end{lstlisting}
 \end{snugshade*}}
-condition the Brownian model on empirically observed values for body mass in extant taxa.
-Here, we need to specify that body mass is the second column of the dataset:
+Now, condition the Brownian model on empirically observed values for body mass in the extant taxa.
+Here, we need to specify that body mass is the third column of the dataset:
 {\tt \small \begin{snugshade*}
 \begin{lstlisting}
-logmass.clampAt(contData,2)
+logmass.clampAt(contData,3)
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -201,21 +197,21 @@ monitors[1] = mnScreen(printgen=10, sigma, rootlogmass, meanlogmass, stdevlogmas
 a file monitor that does the same thing, but directly into a file:
 {\tt \small \begin{snugshade*}
 \begin{lstlisting}
-monitors[2] = mnFile(filename="output/placmass.trace", printgen=10, separator = "       ", sigma, rootlogmass, meanlogmass, stdevlogmass)
+monitors[2] = mnFile(filename="output/primates_mass.trace", printgen=10, separator = TAB, sigma, rootlogmass, meanlogmass, stdevlogmass)
 \end{lstlisting}
 \end{snugshade*}}
 
 a file monitor for the ancestral reconstruction of traits along the entire tree (in newick format):
 {\tt \small \begin{snugshade*}
 \begin{lstlisting}
-monitors[3] = mnFile(filename="output/placmass.logmass", printgen=10, separator = "       ", logmass)
+monitors[3] = mnFile(filename="output/primates_mass.traits", printgen=10, separator = TAB, logmass)
 \end{lstlisting}
 \end{snugshade*}}
 
 and a general model monitor:
 {\tt \small \begin{snugshade*}
 \begin{lstlisting}
-monitors[4] = mnModel(filename="output/placmass.log", printgen=10, separator = " ")
+monitors[4] = mnModel(filename="output/primates_mass.log", printgen=10, separator = TAB)
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -223,7 +219,7 @@ We can finally create a mcmc, and run it for a good 100 000 cycles:
 {\tt \small \begin{snugshade*}
 \begin{lstlisting}
 mymcmc = mcmc(mymodel, monitors, moves)
-mymcmc.burnin(generations=100,tuningInterval=100)
+mymcmc.burnin(generations=10000,tuningInterval=500)
 mymcmc.run(100000)
 \end{lstlisting}
 \end{snugshade*}}
@@ -449,7 +445,7 @@ create the model
 mymodel <- model(kappa)
 \end{lstlisting}
 \end{snugshade*}}
-\item
+
 make a screen monitor that tracks correlation coefficients and mean Brownian values:
 {\tt \small \begin{snugshade*}
 \begin{lstlisting}
