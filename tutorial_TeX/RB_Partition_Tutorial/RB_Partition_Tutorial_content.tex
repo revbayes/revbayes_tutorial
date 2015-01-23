@@ -1,6 +1,43 @@
 \section{Overview}
 
 
+This tutorial demonstrates how to accommodate variation in the substitution process across sites of an alignment.
+In the preceding tutorials, we assumed that all sites in an alignment evolved under an identical substitution process.
+This assumption is likely to be violated in real datasets.  
+Here, we will demonstrate how to specify---and select among---alternative \emph{mixed models} using \RevBayes.
+This is commonly referred to as partitioned-data analysis, where two or more subsets of sites in our alignment are assumed to evolve under distinct processes.
+% and different partition configurations of aligned DNA sequences. 
+
+\subsection{Requirements}
+We assume that you have previously completed the following tutorials:
+\begin{itemize}
+\item RB\_Getting\_Started
+\item RB\_Data\_Tutorial
+\item RB\_CTMC\_Tutorial
+\item RB\_BayesFactor\_Tutorial
+\end{itemize}
+Accordingly, we will assume that you know how to execute and load data into \RevBayes, are familiar with some basic commands, and know how to perform Bayes factor comparisons to select among competing substitution models.
+
+
+
+%%%%%%%%
+%%   Data   %%
+%%%%%%%%
+\section{Data and files}
+
+We provide several data files that we will use in this tutorial; these are the same datasets that we have used in previous tutorials.
+In the \cl{data} folder, you will find the following files
+\begin{itemize}
+\item
+\cl{primates\_cytb.nex}: Alignment of the \textit{cytochrome b} subunit from 23 primates representing 14 of the 16 families (\textit{Indriidae} and \textit{Callitrichidae} are missing).
+\item
+\cl{primates\_16s.nex}: Alignment of the \textit{16s ribosomal RNA} gene from the same 23 primates species.
+\item
+\cl{primates\_cox2.nex}: Alignment of the \textit{COX-2} gene from the same 23 primates species.
+\end{itemize}
+
+
+
 \section{Introduction}
 
 Variation in the evolutionary process across the sites of nucleotide sequence alignments is well established, and is an increasingly pervasive feature of datasets composed of gene regions sampled from multiple loci and/or different genomes.
@@ -776,8 +813,9 @@ RevBayes > mymodel <- model(topology)
 Questions about this tutorial can be directed to: \\\vspace{-10mm}
 \begin{itemize}
 \item Tracy Heath (email: \href{mailto:tracyh@berkeley.edu}{tracyh@berkeley.edu}) \\\vspace{-8mm}
+\item Sebastian H\"{o}hna (email: \href{mailto:sebastian.hoehna@gmail.com}{sebastian.hoehna@gmail.com}) \\\vspace{-8mm}
 \item Michael Landis (email: \href{mailto:mlandis@berkeley.edu}{mlandis@berkeley.edu}) \\\vspace{-8mm} 
-\item Sebastian H\"{o}hna (email: \href{mailto:sebastian.hoehna@gmail.com}{sebastian.hoehna@gmail.com})
+\item Brian R. Moore (email: \href{mailto:brianmoore@ucdavis.edu}{brianmoore@ucdavis.edu}) \\\vspace{-8mm}
 \end{itemize}
 
 

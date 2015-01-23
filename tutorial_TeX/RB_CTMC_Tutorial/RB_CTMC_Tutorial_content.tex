@@ -439,12 +439,13 @@ For example, we might allow stationary frequencies, $\pi$, to be unequal, and al
 This corresponds to the substitution model proposed by \citet[][HKY]{Hasegawa1985}, which is specified with the following instantaneous-rate matrix: 
 \begin{equation*}
 Q_{HKY} = \begin{pmatrix} 
-{*} & {\kappa\pi_C} & {\pi_G} & {\pi_T} \\ 
-{\kappa\pi_A} & {*} & {\pi_C} & {\pi_T} \\ 
-{\pi_A} & {\pi_C} & {*} & {\kappa\pi_T} \\ 
-{\pi_A} & {\pi_C} & {\kappa\pi_G} & {*}  
+{\cdot} 			& {\kappa\pi_C} 	& {\pi_G} 			& {\pi_T} \\ 
+{\kappa\pi_A} 		& {\cdot} 			& {\pi_C} 			& {\pi_T} \\ 
+{\pi_A} 			& {\pi_C} 			& {\cdot} 			& {\kappa\pi_T} \\ 
+{\pi_A} 			& {\pi_C} 			& {\kappa\pi_G} 	& {\cdot}  
 \end{pmatrix} \mbox{  .}
 \end{equation*}
+[The diagonal ${\cdot}$ entries are equal to the negative sum of the elements in the corresponding row.] 
 
 \noindent \\ \impmark Use the file \cl{JukesCantor.Rev} as a starting point for the HKY analysis.
 
@@ -500,7 +501,7 @@ This should be all for the HKY model.
 	Are the estimated base frequencies similar to the empirical base frequencies? 
 	The empirical base frequencies are the frequencies of the characters in the alignment, which can be computed with \RevBayes~by \cl{data.empiricalBaseFrequencies()}.
 \item Is the inferred rate of transition substitutions higher than the rate of transversion substitutions? If so, by how much?
-\item Like the HKY model, the Felsenstein 1981 (F81)substitution model has unequal stationary frequencies, but it assumes equal transition-transversion rates \citep{Felsenstein1981}.
+\item Like the HKY model, the Felsenstein 1981 (F81) substitution model has unequal stationary frequencies, but it assumes equal transition-transversion rates \citep{Felsenstein1981}.
 	Can you set up the F81 model and run an analysis?
 \item Complete the table of the phylogenetic relationship of Tarsiers.
 \end{itemize}
@@ -823,8 +824,8 @@ moves[mi++] = mvSlide(pinvar)
 Questions about this tutorial can be directed to: \\\vspace{-10mm}
 \begin{itemize}
 \item Tracy Heath (email: \href{mailto:tracyh@berkeley.edu}{tracyh@berkeley.edu}) \\\vspace{-8mm}
-\item Michael Landis (email: \href{mailto:mlandis@berkeley.edu}{mlandis@berkeley.edu}) \\\vspace{-8mm} 
 \item Sebastian H\"{o}hna (email: \href{mailto:sebastian.hoehna@gmail.com}{sebastian.hoehna@gmail.com}) \\\vspace{-8mm}
+\item Michael Landis (email: \href{mailto:mlandis@berkeley.edu}{mlandis@berkeley.edu}) \\\vspace{-8mm} 
 \item Brian R. Moore (email: \href{mailto:brianmoore@ucdavis.edu}{brianmoore@ucdavis.edu}) \\\vspace{-8mm}
 \end{itemize}
 
