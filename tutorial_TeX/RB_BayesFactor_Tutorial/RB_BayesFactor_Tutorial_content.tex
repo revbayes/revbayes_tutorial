@@ -220,7 +220,7 @@ ps.marginal()
 \item GTR+I+G model
 \end{itemize}
 \item Enter the marginal likelihood estimate for each model in the corresponding cell of Table~\ref{tab:ml_cytb}.
-\item Repeat the above marginal likelihood analyses for the \textit{MT-ND1 gene} and enter these values in Table~\ref{tab:ml_nd1}.
+\item Repeat the above marginal likelihood analyses for the \textit{mt-COX2 gene} and enter results in Table~\ref{tab:ml_cox2}.
 \item Which is the best fitting substitution model?
 \end{itemize}
 
@@ -262,7 +262,7 @@ Any other model ($M_9$) & \hspace{3mm} & \TextField[name=gene1_m91,backgroundcol
 \begin{Form}
 \begin{table}[h]
 \centering
-\caption{\small Estimated marginal likelihoods for different substitution models of the ND1 gene$^*$.}
+\caption{\small Estimated marginal likelihoods for different substitution models of the cox2 gene$^*$.}
 \begin{tabular}{l c c c c}
 \hline
 \multicolumn{1}{l}{\textbf{ }} &\multicolumn{1}{r}{\textbf{ }} & \multicolumn{3}{c}{\textbf{Marginal lnL estimates}} \\ 
@@ -289,7 +289,7 @@ Any other model ($M_9$) & \hspace{3mm} & \TextField[name=gene2_m91,backgroundcol
 \hline
 {\footnotesize{$^*$you can edit this table}}\\
 \end{tabular}
-\label{tab:ml_nd1}
+\label{tab:ml_cox2}
 \end{table}
 \end{Form}
 
@@ -373,7 +373,7 @@ However, there are several additional issues to consider before proceeding along
 In the analyses that we performed in this tutorial, we assumed that all sites in an alignment evolved under an identical substitution process.
 It is well established that this assumption is likely to be violated in real datasets.
 Various aspects of the substitution process---the stationary frequencies, exchangeability rates, degree of ASRV, etc.---may vary across sites of our sequence alignment.
-For example, the nature of the substitution process may vary between codon positions in protein-coding genes, between stem and loop regions of ribosomal genes, or between different gene and/or genomic regions. 
+For example, the nature of the substitution process may vary between codon positions of protein-coding genes, between stem and loop regions of ribosomal genes, or between different gene and/or genomic regions. 
 It is equally well established that failure to accommodate this \textit{process heterogeneity}---variation in the nature of the substitution process across the alignment---will cause biased estimates of the tree topology, branch lengths and other phylogenetic model parameters.
 We can accommodate process heterogeneity by adopting a \emph{mixed-model} approach, where two or more subsets of sites are allowed to evolve under distinct substitution processes.
 We will demonstrate how to specify---and select among---alternative mixed models using \RevBayes~in a separate tutorial, RB\_PartitionedData\_Tutorial.
@@ -388,16 +388,19 @@ This approach is based on the following premise: if the candidate model provides
 We will demonstrate how to assess model adequacy using \RevBayes~in a separate tutorial, RB\_ModelAdequacy\_Tutorial.
 
 \subsection{Accommodating Model Uncertainty}
-Model selection entails ranking a set of candidate models according to their relative fit to the data at hand.Even if we have exhaustively evaluated all possible candidate models and accurately assessed the relative fit of each model to a given dataset, it may nevertheless be unwise to condition our inference on the best model.This relates to the issue of model uncertainty.Imagine, for example, that there are several (possibly many) alternative models that provide a similarly good fit to a given dataset (Figure~\ref{model_uncertainty}).In such scenarios, conditioning inference on \textit{any single model} (even the `best') ignores uncertainty in the chosen model and will cause estimates to be biased.This scenario is apt to become increasingly plausible as the size of the candidate model pool continues to grow.If the fit of the data to the best model is substantially better than the fit to the other models, conditioning on the best model (i.e., making it a fixed assumption of the analysis) may be justifiable. 
-Conversely, if the fit of the data to the best model is only marginally better than the fit to the other models, model averaging may be necessary. 
-The Bayesian perspective on this problem is ``If there is uncertainty in model specification, let's integrate it out!'' 
-Specifically, for a given model, we treat each model parameter as a random variable and average inferences over the prior probability density for that parameter to accommodate for uncertainty in the parameters. 
-The idea here is to treat the MODEL as a random variable, and average estimates over the expanse of model space, while simultaneously averaging over prior probability densities for each parameter of each model.
-Because different models may differ in the number of free parameters, this entails changes in the dimensionality of parameter space, which is accommodated by using a trans-dimensional MCMC algorithm that jumps between dimensions in model space. 
-The proportion of time that the RJ MCMC visits a given model is an approximation of the posterior probability of that model.
-Model uncertainty can be addressed by means of \textit{model averaging}---parameters are estimated under each of the candidate models, and then summarized as the weighted average over the candidate models, where the weighting is based on the probability of each candidate model.%Within a maximum likelihood framework, for example, we might accommodate the effect of substitution model uncertainty on parameter estimates by calculating the AIC weight of each candidate model, performing maximum-likelihood estimation under each model, and then calculating the model-averaged estimate for each parameter \citep[{\it e.g.},][]{pisani04}.The Bayesian framework provides a more natural approach for accommodating model uncertainty; we simply adopt the perspective that models (like the parameters within each model) are themselves random variables.Bayesian model averaging has been implemented for various phylogenetic problems using reversible-jump MCMC, where the chain integrates over the joint prior probability density of a given model in the usual manner, but also `jumps' between models, visiting each model in proportion to its marginal probability.For example, rjMCMC has been used to average over the pool of $203$ substitution models corresponding to all possible combinations of the six exchangeability parameters \citep{huelsenbeck04}.Analyses of empirical datasets demonstrate that the credible set typically contains many substitution models.Moreover, accommodating this source of uncertainty has been shown to impact parameters of interest, providing less biased estimates of the topological variance and corresponding clade probabilities \citep {huelsenbeck04}.%Similar results have been shown for methods that average over relaxed-clock models \citep{li10}:
+Even when we have carefully assessed the relative and absolute fit of candidate models to our dataset, it may nevertheless be unwise to condition our inference on the best model.%correctly ranked the relative fit of a pool of candidate models to our dataset, and assessed adequacy of the best model, 
+Imagine, for example, that there are several (possibly many) alternative models that provide a similarly good fit to our given dataset.%This is apt to become increasingly plausible as the size of the candidate model pool continues to grow.%[Consider, for example, that there are 203 members of GTR substitution model family.]   In such scenarios, conditioning inference on \textit{any} single model (even the `best') ignores uncertainty in the chosen model, which will cause estimates to be biased.This is the issue of \emph{model uncertainty}.
+%Model uncertainty can be addressed by means of \textit{model averaging}---parameters are estimated under each of the candidate models, and then summarized as the weighted average over the candidate models, where the weighting is based on the probability of each candidate model.The Bayesian framework provides a natural approach for accommodating model uncertainty by means of \textit{model averaging}; we simply adopt the perspective that models (like standard parameters) are random variables, and integrate the inference over the distribution of candidate models.We will demonstrate how to accommodate model uncertainty using \RevBayes~in a separate tutorial, RB\_ModelAveraging\_Tutorial.
+%If the fit of the data to the best model is substantially better than the fit to the other models, conditioning on the best model (i.e., making it a fixed assumption of the analysis) may be justifiable. 
+%Conversely, if the fit of the data to the best model is only marginally better than the fit to the other models, model averaging may be necessary. 
+%The Bayesian perspective on this problem is ``If there is uncertainty in model specification, let's integrate it out!'' 
+%Specifically, for a given model, we treat each model parameter as a random variable and average inferences over the prior probability density for that parameter to accommodate for uncertainty in the parameters. 
+%The idea here is to treat the MODEL as a random variable, and average estimates over the expanse of model space, while simultaneously averaging over prior probability densities for each parameter of each model.
+%Because different models may differ in the number of free parameters, this entails changes in the dimensionality of parameter space, which is accommodated by using a trans-dimensional MCMC algorithm that jumps between dimensions in model space. 
+%The proportion of time that the RJ MCMC visits a given model is an approximation of the posterior probability of that model.
+%%%%Bayesian model averaging has been implemented for various phylogenetic problems using reversible-jump MCMC, where the chain integrates over the joint prior probability density of a given model in the usual manner, but also `jumps' between models, visiting each model in proportion to its marginal probability.%For example, rjMCMC has been used to average over the pool of $203$ substitution models corresponding to all possible combinations of the six exchangeability parameters \citep{huelsenbeck04}.%Analyses of empirical datasets demonstrate that the credible set typically contains many substitution models.%Moreover, accommodating this source of uncertainty has been shown to impact parameters of interest, providing less biased estimates of the topological variance and corresponding clade probabilities \citep {huelsenbeck04}.%Similar results have been shown for methods that average over relaxed-clock models \citep{li10}:
 %typically, many relaxed-clock model have considerable marginal posterior probability ({\it i.e.}, the credible set of models contains several models), and averaging over models results in better estimates of uncertainty in divergence-time estimates \citep{li10}
-We will demonstrate how to accommodate model uncertainty using \RevBayes~in a separate tutorial, RB\_ModelAveraging\_Tutorial.
+%We will demonstrate how to accommodate model uncertainty using \RevBayes~in a separate tutorial, RB\_ModelAveraging\_Tutorial.
 
 
 
