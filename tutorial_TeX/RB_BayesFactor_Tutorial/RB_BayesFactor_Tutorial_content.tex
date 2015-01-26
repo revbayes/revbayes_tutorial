@@ -27,8 +27,8 @@ In the \cl{data} folder, you will find the following files
 \begin{itemize}
 \item
 \cl{primates\_cytb.nex}: Alignment of the \textit{cytochrome b} subunit from 23 primates representing 14 of the 16 families (\textit{Indriidae} and \textit{Callitrichidae} are missing).
-\item
-\cl{primates\_16s.nex}: Alignment of the \textit{16s ribosomal RNA} gene from the same 23 primates species.
+%\item
+%\cl{primates\_16s.nex}: Alignment of the \textit{16s ribosomal RNA} gene from the same 23 primates species.
 \item
 \cl{primates\_cox2.nex}: Alignment of the \textit{COX-2} gene from the same 23 primates species.
 \end{itemize}
@@ -128,7 +128,7 @@ To perform a stepping-stone simulation, we need to specify (1) the \emph{number}
 \centering
 \fbox{\includegraphics[width=\textwidth,angle=0]{\ResourcePath figures/ss.pdf}}
 \caption{\small Estimating marginal likelihoods using stepping-stone simulation. 
-Estimating the the marginal likelihood involves integrating the likelihood of the data over the entire prior probability density for the model parameters.
+Estimating the marginal likelihood involves integrating the likelihood of the data over the entire prior probability density for the model parameters.
 MCMC algorithms target the posterior probability density, which is typically concentrated in a small region of the prior probability density (A).
 Accordingly, standard MCMC simulation cannot provide unbiased estimates of the marginal likelihood because it will typically fail to explore most of the prior density.
 %Consequently, these marginal likelihood estimates will be biased. 
@@ -420,9 +420,37 @@ Imagine, for example, that there are several (possibly many) alternative models 
 
 
 %
-%\newpage
-%\section{Partitioned Analysis}
-%Now that you have identified the best substitution model for each of the two genes, we will run a joint analysis under both genes: a partitioned analysis.
+\newpage
+\begin{Form}
+\begin{table}[h]
+\centering
+\caption{\small Marginal likelihoods for various substitution models estimated using \texttt{MrBayes}.}
+\begin{tabular}{l c c c c c c}
+\hline
+\multicolumn{1}{l}{\textbf{ }} &\multicolumn{1}{r}{\textbf{ }} & \multicolumn{5}{c}{\textbf{Marginal lnL estimates}} \\ 
+\cline{3-7}
+\multicolumn{1}{l}{\textbf{Substitution Model}} & \multicolumn{1}{r}{\hspace{3mm}} & \multicolumn{1}{c}{\textbf{run 1}} & \multicolumn{1}{r}{\hspace{3mm}} & \multicolumn{1}{c}{\textbf{run 2}} & \multicolumn{1}{r}{\hspace{3mm}} & \multicolumn{1}{c}{\textbf{mean}} \\ 
+\hline
+JC ($M_1$) & \hspace{15mm} 					&-15839.35  		& \hspace{3mm} & -15838.77  		& \hspace{3mm} & -15839.02\\
+\hline
+F81 ($M_2$) & \hspace{15mm} 				& -15459.19   		& \hspace{3mm} & -15459.16 			& \hspace{3mm} &  -15459.17\\
+\hline
+HKY ($M_3$) & \hspace{15mm} 				&  -14821.19 		& \hspace{3mm} &  -14821.48  		& \hspace{3mm} & -14821.32 \\
+\hline
+GTR ($M_4$) & \hspace{15mm} 				& -14572.03  		& \hspace{3mm} &  -14572.64   		& \hspace{3mm} &  -14572.29\\
+\hline
+GTR+$\Gamma$ ($M_5$) & \hspace{15mm} 		& -13241.33  		& \hspace{3mm} & -13241.78   		& \hspace{3mm} & -13241.53 \\
+\hline
+GTR+I ($M_6$)  & \hspace{15mm} 				&-13472.73  		& \hspace{3mm} & -13472.79   		& \hspace{3mm} &  -13472.76\\
+\hline
+GTR+$\Gamma$+I ($M_7$) & \hspace{15mm} 	&-13472.58 		& \hspace{3mm} & -13473.03  		& \hspace{3mm} & -13472.78 \\
+\hline
+\hline
+%{\footnotesize{$^*$you can edit this table}}\\
+\end{tabular}
+\label{tab:ml_cytb}
+\end{table}
+\end{Form}
 
 
 
