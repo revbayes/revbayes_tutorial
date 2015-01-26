@@ -122,6 +122,22 @@ When the posterior probability is raised to the power of 1 (typically the first 
 By contrast, when the posterior probability is raised to the power of 0 (typically the last stepping stone), samples are drawn from the prior.
 To perform a stepping-stone simulation, we need to specify (1) the \emph{number} of stepping stones (power posteriors) that we will use to traverse the path between the posterior and the prior (e.g., we specify 50 or 100 stones), (2) the \emph{spacing} of the stones between the posterior and prior (e.g., we may specify that the stones are distributed according to a beta distribution), (3) the number of samples to (and thinning) of samples to be drawn from each stepping stone, and (4) the direction we will take (i.e., from the posterior to the prior or vice versa).
 
+
+
+\begin{figure}[h!]
+\centering
+\fbox{\includegraphics[width=\textwidth,angle=0]{\ResourcePath figures/ss.pdf}}
+\caption{\small Estimating marginal likelihoods using stepping-stone simulation. 
+Estimating the the marginal likelihood involves integrating the likelihood of the data over the entire prior probability density for the model parameters.
+MCMC algorithms target the posterior probability density, which is typically concentrated in a small region of the prior probability density (A).
+Accordingly, standard MCMC simulation cannot provide unbiased estimates of the marginal likelihood because it will typically fail to explore most of the prior density.
+%Consequently, these marginal likelihood estimates will be biased. 
+(B) Stepping-stone algorithms estimate the marginal likelihood by means of a series of MCMC-like simulations, where the likelihood is iterativey raised to a series of powers, effectivey forcing the simulation to more fully explore the prior density of the model parameters.
+Here, six uniformly spaced stones span the posterior, where the power posterior is $\beta=6/6=1$, to the prior, where the power posterior is $\beta=0/6=0$.}
+\label{fig:jc}
+\end{figure}
+
+
 %With a fully specified model, we can set up the \cl{powerPosterior()} analysis to create a file of `powers' and likelihoods from which we can estimate the marginal likelihood using stepping-stone or path sampling. 
 This method computes a vector of powers from a beta distribution, then executes an MCMC run for each power step while raising the likelihood to that power. In this implementation, the vector of powers starts with 1, sampling the likelihood close to the posterior and incrementally sampling closer and closer to the prior as the power decreases. 
 
@@ -298,8 +314,7 @@ Any other model ($M_9$) & \hspace{3mm} & \TextField[name=gene2_m91,backgroundcol
 
 
 \FloatBarrier
-\section{Compute Bayes Factors and Select Model}
-
+\section{Computing Bayes Factors and Model Selection}
 
 Now that we have estimates of the marginal likelihood for each of our the candidate substitution models, we can evaluate their relative fit to the datasets using Bayes factors.
 Phylogenetic programs log-transform the likelihood values to avoid \href{http://en.wikipedia.org/wiki/Arithmetic_underflow}{underflow}: multiplying likelihoods (numbers $< 1$) generates numbers that are too small to be held in computer memory.
@@ -371,7 +386,7 @@ However, there are several additional issues to consider before proceeding along
 
 \subsection{Accommodating Process Heterogeneity}
 In the analyses that we performed in this tutorial, we assumed that all sites in an alignment evolved under an identical substitution process.
-It is well established that this assumption is likely to be violated in real datasets.
+It is well established that this assumption is frequently violated in real datasets.
 Various aspects of the substitution process---the stationary frequencies, exchangeability rates, degree of ASRV, etc.---may vary across sites of our sequence alignment.
 For example, the nature of the substitution process may vary between codon positions of protein-coding genes, between stem and loop regions of ribosomal genes, or between different gene and/or genomic regions. 
 It is equally well established that failure to accommodate this \textit{process heterogeneity}---variation in the nature of the substitution process across the alignment---will cause biased estimates of the tree topology, branch lengths and other phylogenetic model parameters.
