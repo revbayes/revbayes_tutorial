@@ -1,0 +1,55 @@
+# source("/Users/mlandis/projects/revbayes_tutorial/RB_Biogeography_DEC_tutorial/RevBayes_scripts/model_DEC_n3.Rev")
+
+fp = "/Users/mlandis/projects/revbayes_tutorial/RB_Biogeography_DEC_tutorial/"
+data_fn = fp + "data/primates_bg_n3.tsv"
+tree_fn = fp + "data/primates_tree.tre"
+
+# helper variables
+mvi = 1 # index to add MCMC moves
+mni = 1 # index to add monitors
+
+# hard coded for now
+n_areas = 3
+n_areas_tmp = n_areas
+n_states = floor(2^n_areas_tmp)
+
+# read data as natural numbers
+d = readTSVCharacterData(data_fn, type="NaturalNumbers")
+
+# want to convert binary SS -> decimal NN
+# ...
+
+names = d.names()
+t ~ dnBDP(rootAge=60.,lambda=1.,names=names)
+#t <- readTrees(tree_fn)[1]
+clock_bg ~ dnExp(10)
+
+# load the 3-area DEC model with same rates
+#source(fp + "RevBayes_scripts/DEC_n3_same_rate.Rev")
+
+# ... or use the 3-area DEC model with different rates
+source(fp + "RevBayes_scripts/DEC_n3_diff_rate.Rev")
+
+# ... or use the n-area DEC model, determined by n_areas
+# Using this requires editing the .Rev file.
+# source(fp + "RevBayes_scripts/DEC_general.Rev")
+
+# build ctmc
+m ~ dnPhyloCTMCClado( tree=t, Q=q, cladoProbs=clado_prob, branchRates=clock_bg, nSites=1, type="NaturalNumbers" )
+m.clamp(d)
+
+# make model
+mdl = model(m)
+str(m)
+
+# moves
+mv[mvi++] = mvScale(clock_bg, weight=5)
+
+# monitors
+mn[mni++] = mnScreen(clock_bg, dispersal_rate, dispersal_rate[2], dispersal_rate[3], extirpation_rate, allopatry_prob, sympatry_prob)
+mn[mni++] = mnFile(clock_bg, dispersal_rate[1], dispersal_rate[2], dispersal_rate[3],  extirpation_rate, allopatry_prob, sympatry_prob, file=fp + "output/out.txt")
+
+# mcmc
+ch = mcmc(mv,mn,mdl)
+ch.run(1000)
+
