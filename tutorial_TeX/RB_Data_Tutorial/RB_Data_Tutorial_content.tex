@@ -158,7 +158,7 @@ data
 %BRM: note that the ``origination'' lists the name of the first gene in the concatenated alignment
 
 
-\subsection{Excluding Taxa}
+\subsection{Excluding/Including Taxa}
 We can exclude species from an alignment that is currently in memory using the \cl{removeTaxa} function.
 For example, we could exclude the outgroup species \textit{Saimiri sciureus} from our concatenated primate alignment (\cl{data}) by typing:
 
@@ -184,9 +184,67 @@ data.names()
 \end{lstlisting}
 \end{snugshade*}}
 
-\subsection{Excluding Sites or Genes}
+\subsection{Excluding/Including Sites or Genes}
+We can exclude a single site (or set of sites) from an alignment that is currently in memory using the \cl{excludeCharacter} function.
+For example, we could exclude the first site in our concatenated primate alignment (\cl{data}) by typing:
 
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+excludeCharacter([1])
+\end{lstlisting}
+\end{snugshade*}}
+[Note that sites of an alignment are indexed from 1 to $N$.]
+We can confirm the removal of a site by checking the number of remaining sites:
 
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+data.nchar()
+|*   1851
+\end{lstlisting}
+\end{snugshade*}}
+The number of sites has decreased by one, as expected.
+We can return the excluded site to our alignment using the \cl{includeCharacter} function:
+
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+includeCharacter([1])
+\end{lstlisting}
+\end{snugshade*}}
+
+%We can then confirm the inclusion of the excluded site by checking the number of alignment length:
+%{\tt \begin{snugshade*}
+%\begin{lstlisting}
+%data.nchar()
+%|*   1852
+%\end{lstlisting}
+%\end{snugshade*}}
+%The number of sites has increased by one, as expected.
+
+We can similarly exclude/include a range of sites, {\it e.g.}, corresponding to a gene region.
+Here, we will exclude all $1141$ sites comprising the cytb gene region from our concatenated alignment:
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+data.excludeCharacter(1:1141)
+\end{lstlisting}
+\end{snugshade*}}
+
+We can check the number of remaining sites :
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+data.nchar()
+|*   711
+\end{lstlisting}
+\end{snugshade*}}
+which comprise the cox2 gene region. 
+We can easily return the excluded cytb sequences by typing:
+
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+data.includeCharacter(1:1141)
+\end{lstlisting}
+\end{snugshade*}}
+
+It is also possible to exclude/include all sites using the \cl{excludeAll} and \cl{includeAll} commands.
 
 
 
