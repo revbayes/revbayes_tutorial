@@ -228,16 +228,15 @@ data.excludeCharacter(1:1141)
 \end{lstlisting}
 \end{snugshade*}}
 
-We can check the number of remaining sites :
+We can check the number of remaining sites, which comprise the cox2 gene region:
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 data.nchar()
 |*   711
 \end{lstlisting}
 \end{snugshade*}}
-which comprise the cox2 gene region. 
-We can easily return the excluded cytb sequences by typing:
 
+We can easily return the excluded cytb sequences by typing:
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 data.includeCharacter(1:1141)
