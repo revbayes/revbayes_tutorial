@@ -46,7 +46,7 @@ str(m)
 mv[mvi++] = mvScale(clock_bg, weight=5)
 
 # monitors
-mn[mni++] = mnScreen(clock_bg, dispersal_rate, dispersal_rate[2], dispersal_rate[3], extirpation_rate, allopatry_prob, sympatry_prob)
+mn[mni++] = mnScreen(clock_bg, dispersal_rate[1], dispersal_rate[2], dispersal_rate[3], extirpation_rate, allopatry_prob, sympatry_prob)
 mn[mni++] = mnFile(clock_bg, dispersal_rate[1], dispersal_rate[2], dispersal_rate[3],  extirpation_rate, allopatry_prob, sympatry_prob, file=fp + "output/out.txt")
 
 # mcmc
