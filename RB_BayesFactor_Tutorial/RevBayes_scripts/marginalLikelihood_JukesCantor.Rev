@@ -104,6 +104,7 @@ monitors[2] = mnFile(filename="output/primates_cytb_JC_posterior.trees",printgen
 pow_p = powerPosterior(mymodel, moves, monitors, "output/pow_p_noclock_JC.out", cats=50, sampleFreq=10) 
 pow_p.burnin(generations=10000,tuningInterval=250)
 pow_p.run(generations=1000)  
+pow_p.runStone(10,generations=1000)  
 
 ### Use stepping-stone sampling to calculate marginal likelihoods
 ss = steppingStoneSampler(file="output/pow_p_noclock_JC.out", powerColumnName="power", likelihoodColumnName="likelihood")
