@@ -418,7 +418,7 @@ Once the character evolution model has been created, we can attach our sequence 
 phyloSeq.clamp(data)
 \end{lstlisting}
 \end{snugshade*}}
-When this function is called, RevBayes sets each of the stochastic nodes representing the tip nodes of the tree to the sequence corresponding to that species in the alignment. 
+When this function is called, \RevBayes~sets each of the stochastic nodes representing the tip nodes of the tree to the sequence corresponding to that species in the alignment. 
 This essentially tells the program that this is where the DAG ends and the states of the tip nodes are fixed. 
 
 Now we can wrap up the whole model to conveniently access the DAG. To do this, we only need to give the \cl{model()} function a single node. With this node, the \cl{model()} function can find all of the other nodes by following the arrows in the graphical model:
@@ -448,7 +448,7 @@ The monitor functions are all called \cl{mn*}, where \cl{*} is the wildcard repr
 First, we will initialize the model monitor using the \cl{mnModel} function. This creates a new monitor variable that will output the states for all model parameters when passed into a MCMC function. 
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-monitors[1] <- mnModel(filename="output/conifer_uniform.log", printgen=100)
+monitors[1] = mnModel(filename="output/conifer_uniform.log", printgen=100)
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -456,7 +456,7 @@ The \cl{mnFile} monitor will record the states for only the parameters passed in
 
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-monitors[2] <- mnFile(filename="output/conifer_uniform.trees",printgen=100, phylogeny)
+monitors[2] = mnFile(filename="output/conifer_uniform.trees",printgen=100, phylogeny)
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -464,7 +464,7 @@ monitors[2] <- mnFile(filename="output/conifer_uniform.trees",printgen=100, phyl
 Finally, create a screen monitor that will report the states of specified variables to the screen with \cl{mnScreen}:
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-monitors[3] <- mnScreen(printgen=10, separator = " | ", tree_length)
+monitors[3] = mnScreen(printgen=10, separator = " | ", tree_length)
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -473,7 +473,7 @@ monitors[3] <- mnScreen(printgen=10, separator = " | ", tree_length)
 With a fully specified model, a set of monitors, and a set of moves, we can now set up the MCMC algorithm that will sample parameter values in proportion to their posterior probability. The \cl{mcmc()} function will create our MCMC object:
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-mymcmc <- mcmc(mymodel, monitors, moves)
+mymcmc = mcmc(mymodel, monitors, moves)
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -489,7 +489,7 @@ mymcmc.burnin(generations=10000,tuningInterval=1000)
 Now, run the MCMC:
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-RevBayes > mymcmc.run(generations=30000)
+mymcmc.run(generations=30000)
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -498,13 +498,13 @@ When the analysis is complete, you will have the monitor files in your output di
 
 \textbf{\textit{Summarize the MCMC Output}}
 
-Methods for visualizing the marginal densities of parameter values are not currently available in RevBayes. Thus, it is important to use programs like Tracer \citep{rambaut09} to evaluate mixing and non-convergence. (RevBayes does, however, have a tool for convergence assessment called \cl{beca}.)
+Methods for visualizing the marginal densities of parameter values are not currently available in \RevBayes. Thus, it is important to use programs like Tracer \citep{rambaut09} to evaluate mixing and non-convergence. (RevBayes does, however, have a tool for convergence assessment called \cl{beca}.)
 
-RevBayes can also summarize the tree samples by reading in the tree-trace file:
+\RevBayes~can also summarize the tree samples by reading in the tree-trace file:
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-RevBayes > treetrace <- readTreeTrace("output/conifer_uniform.trees")
-RevBayes > treetrace.summarize()
+treetrace = readTreeTrace("output/conifer_uniform.trees")
+treetrace.summarize()
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -512,7 +512,7 @@ RevBayes > treetrace.summarize()
 The \cl{mapTree()} function will summarize the tree samples and write the maximum a posteriori tree to file:
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-RevBayes > mapTree(treetrace,"output/conifer_uniform_map.tre")
+mapTree(treetrace,"output/conifer_uniform_map.tre")
 \end{lstlisting}
 \end{snugshade*}}
 
