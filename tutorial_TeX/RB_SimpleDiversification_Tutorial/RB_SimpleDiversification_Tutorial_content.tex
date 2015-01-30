@@ -14,55 +14,10 @@ After each model is specified, you will estimate the marginal likelihood of the 
 Finally, you will estimate speciation and extinction rates using Markov chain Monte Carlo (MCMC) under the model supported by the data.
 
 
-\bigskip
-\subsection{Getting Started}
-
-
-This tutorial assumes that you have already downloaded, compiled, and installed \RevBayes. 
-We also recommend that---if you are working on a Unix machine---you put the {\tt rb} binary in your path.
-
-For the exercises outlined in this tutorial, we will use \RevBayes~interactively by typing commands in the command-line console.
-The format of this exercise uses \colorbox{shadecolor}{\tt lavender blush shaded boxes} to delineate important steps. 
-The various \RevBayes~commands and syntax are specified using \cl{typewriter text}. 
-And the specific commands that you should type (or copy/paste) into \RevBayes~are indicated by shaded box and prompt. For example, after opening the \RevBayes~program, you can create a constant node \cl{x}:
-
-{\tt \begin{snugshade*}
-\begin{lstlisting}
-x <- 12.0
-\end{lstlisting}
-\end{snugshade*}}
-
-For this step, type (or paste) in the line contents: \cl{x <- 12.0}. The prompt, \cl{>}, that you see in the RevBayes console is not replicated here so that you do not inadvertently copy and paste it with the \Rev~syntax
-
-Multi-line entries, particularly loops, will also be displayed in boxes without the \cl{>} prompt so that they can be copied and pasted wholly. 
-{\tt \begin{snugshade*}
-\begin{lstlisting}
-for( i in 1:12 ){
-  y[i] ~ dnExponential(1.0)
-}
-\end{lstlisting}
-\end{snugshade*}}
-
-
-%Screen output resulting from the execution of a function or command will be in \colorbox{shadecolor}{\textcolor{outputcol}{\cl{forest green typewriter text in a shaded box}}}: 
-%
-%{\tt\begin{snugshade*}
-%{\textcolor{outputcol}{ 
-%\begin{lstlisting}
-%Successfully read one character matrix from file `data/conifer\_dna.nex'
-%\end{lstlisting}}}
-%\end{snugshade*}}
-
-
-This tutorial also includes hyperlinks: bibliographic citations are {\textcolor{citescol}{burnt orange}} and link to the full citation in the references, external URLs are {\textcolor{urlscol}{cerulean}}, and internal references to figures and equations are {\textcolor{linkscol}{purple}}.
-
-The various exercises in this tutorial take you through the steps required to perform phylogenetic analyses of the example datasets. 
-%In addition, we have provided the output files for every exercise so you can verify your results. (Note that since the MCMC runs you perform will start from different random seeds, the output files resulting from your analyses \textit{will not} be identical to the ones we provide you.)
+\subsection{The ``Observed'' Data}
 
 \exs{Download data and \Rev~files from: 
 \href{http://bit.ly/1tEDwTg}{http://bit.ly/1tEDwTg}}
-
-\subsection{The ``Observed'' Data}
 
 The tree in this exercise contains a subset of the taxa resulting from the divergence-time analysis of 274 placental mammal species by \citet{dosReis2012}. 
 The tree comprises all living bear species (8 taxa) plus two outgroups---the gray wolf and spotted seal.
@@ -80,51 +35,13 @@ In this exercise, this time tree is treated as an ``observation'', and we are es
 \end{figure}
 
 \bigskip
-\subsection{Launch RevBayes}
-
-Execute the \RevBayes~binary. If this program is in your path, then you can simply type in your Unix terminal:
-\colorbox{shadecolor}{\cl{rb}}
-
-When you execute the program, you will see the program information, including the current version number the URL for the RevBayes Project: \href{http://www.RevBayes.com}{RevBayes.com}.
-Additionally, RevBayes has a number of resources documenting the syntax, walkthroughs of methods, and general help tools.
-Some of these resources are given below, but please consult the \href{http://www.RevBayes.com}{website} for more information.
-
-\bigskip
-\subsubsection{Getting Help}
-
-In the RevBayes console, you can query the help system for any function by typing \cl{?} followed by the function name. 
-For example, if you would like detailed information about the \cl{mean()} function type:
-{\tt \begin{snugshade*}
-\begin{lstlisting}
-?mean
-\end{lstlisting}
-\end{snugshade*}}
-
-This will provide a description of the function as well as information about the argument and return types. 
-The function help also gives a working example of the use of the function:
-{\tt \begin{snugshade*}
-\begin{lstlisting}
-# compute the mean of some random draws from a normal distribution
-x <- rnorm(n=10, 5,1)
-mean(x)
-\end{lstlisting}
-\end{snugshade*}}
-
-\bigskip
-\subsubsection{RevBayes Users' Forum}
-
-An email list has been created for users of RevBayes to discuss RevBayes-related topics, including: RevBayes installation and use, scripting and programming, phylogenetics, population genetics, models of evolution, graphical models, etc. The forum is hosted by Google Groups:
-
-\exs{\href{http://bit.ly/107aW2R}{revbayes-users}}
-
-\bigskip
-\subsection{Specifying Constant-Rate Birth-Death Models}\label{secModelSpec} 
+\section{Specifying Constant-Rate Birth-Death Models}\label{secModelSpec} 
 
 Before evaluating the relative support for different models, we must first specify them in the \Rev~language.
 In this section, we will walk through specifying three different variants of the birth-death process model and estimating the marginal likelihood under each one. 
 
 \bigskip
-\subsubsection{Pure-Birth Model}\label{yuleModSec}
+\subsection{Pure-Birth Model}\label{yuleModSec}
 %{\large \textcolor{mycol}{\textsc{Pure-Birth Model}}}
 
 The simplest branching model is the \textit{pure-birth process} described by \citet{yule24}. 
@@ -163,7 +80,7 @@ Furthermore, there are approximately 147 described caniform species, so we will 
 
 \exs{The full Yule-model specification is in the file called \href{https://github.com/revbayes/revbayes/raw/development/tutorials/RB_TimeTree_Tutorials/RB_Diversification_Exercise/RB_diversification_files/RevBayes_scripts/m_Yule_bears.Rev}{\cl{m\_Yule\_bears.Rev}}.}
 
-\textbf{\textit{Read the tree}}
+\subsubsection{Read the tree}
 
 Begin by reading in the observed tree from Figure \ref{bearTree}. 
 
@@ -188,7 +105,7 @@ mi = 1
 \end{lstlisting}
 \end{snugshade*}}
 
-\textbf{\textit{Birth rate}}
+\subsubsection{Birth rate}
 
 The model we are specifying only has three nodes (Fig.~\ref{yuleGMfig2}). 
 We can specify the birth rate $\lambda$, the rate-parameter $\nu$ of the exponential hyperprior on $\lambda$, and the conditional dependency of the two parameters all in one line of \Rev~code.
@@ -211,7 +128,7 @@ moves[mi++] = mvScale(birth_rate,lambda=1,tune=true,weight=3)
 \end{lstlisting}
 \end{snugshade*}}
 
-\textbf{\textit{Sampling probability}}
+\subsubsection{Sampling probability}
 
 Our prior belief is that we have sampled 10 out of 147 living caniform species. 
 To account for this we can set the sampling parameter as a constant node with a value of 0.068
@@ -222,7 +139,7 @@ rho <- 0.068
 \end{snugshade*}}
 
 
-\textbf{\textit{Root age}}
+\subsubsection{Root age}
 
 Any stochastic branching process must be conditioned on a time that represents the start of the process. 
 Typically, this parameter is the \textit{origin time} and it is assumed that the process started with \textit{one} lineage. 
@@ -238,7 +155,7 @@ root_time <- treeHeight(T)
 \end{lstlisting}
 \end{snugshade*}}
 
-\textbf{\textit{The time tree}}
+\subsubsection{The time tree}
 
 Now we have all of the parameters we need to specify the full pure-birth model. 
 We can initialize the stochastic node representing the time tree.
@@ -299,7 +216,7 @@ Viewing the model graph is helpful for identifying any problems prior to running
 \end{figure}
 
 
-\textbf{\textit{Estimating the marginal likelihood of the model}}
+\subsubsection{Estimating the marginal likelihood of the model}
 
 With a fully specified model, we can set up the \cl{powerPosterior()} analysis to create a file of `powers' and likelihoods from which we can estimate the marginal likelihood using stepping-stone or path sampling. 
 This method computes a vector of powers from a beta distribution, then executes an MCMC run for each power step while raising the likelihood to that power. In this implementation, the vector of powers starts with 1, sampling the likelihood close to the posterior and incrementally sampling closer and closer to the prior as the power decreases. 
@@ -356,7 +273,7 @@ ps.marginal()
 \end{snugshade*}}
 
 \bigskip
-\subsubsection{Birth-Death Process}\label{birthDeathSec}
+\section{Birth-Death Process}\label{birthDeathSec}
 
 The pure-birth model does not account for  extinction, thus it assumes that every lineage at the start of the process will have sampled descendants at time 0.
 This assumption is fairly unrealistic for most phylogenetic datasets on a macroevolutionary time scale since the fossil record provides evidence of extinct lineages.
@@ -407,7 +324,7 @@ There are approximately 147 described caniform species, so we will fix the param
 \exs{The full birth-death, fixed sampling model specification is in the file called \href{https://github.com/revbayes/revbayes/raw/development/tutorials/RB_TimeTree_Tutorials/RB_Diversification_Exercise/RB_diversification_files/RevBayes_scripts/m_BD_bears.Rev}{\cl{m\_BD\_bears.Rev}}.}
 
 
-\textbf{\textit{Clear the workspace and read the tree}}
+\subsection{Clear the workspace and read the tree}
 
 It is best to remove all of the previous model variables created in the previous section.
 {\tt \begin{snugshade*}
@@ -432,7 +349,7 @@ mi = 1
 \end{lstlisting}
 \end{snugshade*}}
 
-\textbf{\textit{Diversification and turnover}}
+\subsection{Diversification and turnover}
 
 The diversification and turnover are the parameters which we will treat as stochastic nodes in our model. 
 We will assume an exponential prior on \cl{diversification} and assign it a scale move.
@@ -451,7 +368,7 @@ moves[mi++] = mvSlide(turnover,delta=1.0,tune=true,weight=3.0)
 \end{lstlisting}
 \end{snugshade*}}
 
-\textbf{\textit{Birth rate and death rate}}
+\subsection{Birth rate and death rate}
 
 The birth and death rates are both deterministic nodes. 
 Refer to Equation \ref{lambdamufxns}. Note that both the birth rate and death rate are functions of $d$ and $r$.
@@ -469,7 +386,7 @@ death_rate := abs(turnover * diversification / (1.0 - turnover))
 \end{lstlisting}
 \end{snugshade*}}
 
-\textbf{\textit{The sampling probability}}
+\subsection{The sampling probability}
 
 If we assume that the 147 described caniform species represent all of the living caniforms on Earth, then it is quite reasonable to fix the parameter $\rho$ to a known value.
 {\tt \begin{snugshade*}
@@ -478,7 +395,7 @@ rho <- 0.068
 \end{lstlisting}
 \end{snugshade*}}
 
-\textbf{\textit{Root age}}
+\subsection{Root age}
 
 Get the value for the root from the \citet{dosReis2012} tree.
 
@@ -488,7 +405,7 @@ root_time <- treeHeight(T)
 \end{lstlisting}
 \end{snugshade*}}
 
-\textbf{\textit{The time tree}}
+\subsection{The time tree}
 
 Initialize the stochastic node representing the time tree.
 {\tt \begin{snugshade*}
@@ -526,7 +443,7 @@ mymodel.graph("output/m_BD_bears_GM.dot", bg="LightSteelBlue2")
 
 
 
-\textbf{\textit{Estimating the marginal likelihood of the model}}
+\subsection{Estimating the marginal likelihood of the model}
 
 \exs{The \Rev~file for performing this analysis: \href{https://github.com/revbayes/revbayes/raw/development/tutorials/RB_TimeTree_Tutorials/RB_Diversification_Exercise/RB_diversification_files/RevBayes_scripts/mlnl_BD_bears.Rev}{\cl{mlnl\_BD\_bears.Rev}}.}
 
@@ -557,7 +474,7 @@ ps.marginal()
 
 
 \bigskip
-\subsection{Compute Bayes Factors and Select Model}
+\section{Compute Bayes Factors and Select Model}
 
 
 Now that we have estimates of the marginal likelihood under each of our different models, we can evaluate their relative plausibility using Bayes factors.
@@ -612,7 +529,7 @@ Supported model? & \hspace{3mm} &  \TextField[name=ml13,backgroundcolor={1 .85 .
 Do these data support a model without extinction ($\mu=0$)? %\TextField[name=ml13,backgroundcolor={1 .85 .85},color={1 0 0},height=4ex]{}
 
 \bigskip
-\subsection{Estimate Speciation and Extinction Rates}
+\section{Estimate Speciation and Extinction Rates}
 
 After comparing the marginal likelihoods using Bayes factors, you will discover which model is best supported by the data. 
 With this model, we can now estimate posterior probability of the the global rate of speciation (and extinction if the birth-death model is used) given our observed tree.
@@ -624,7 +541,7 @@ With this model, we can now estimate posterior probability of the the global rat
 \exs{The \Rev~file for performing this analysis: \href{https://github.com/revbayes/revbayes/raw/development/tutorials/RB_TimeTree_Tutorials/RB_Diversification_Exercise/RB_diversification_files/RevBayes_scripts/mcmc_BD_bears.Rev}{\cl{mcmc\_BD\_bears.Rev}} or  \href{https://github.com/revbayes/revbayes/raw/development/tutorials/RB_TimeTree_Tutorials/RB_Diversification_Exercise/RB_diversification_files/RevBayes_scripts/mcmc_Yule_bears.Rev}{\cl{mcmc\_Yule\_bears.Rev}}.}
 
 
-\textbf{\textit{Clear the workspace and load the preferred model}}
+\subsection{Clear the workspace and load the preferred model}
 
 It is best to remove all of the previous model variables created in the previous section.
 {\tt \begin{snugshade*}
@@ -666,7 +583,7 @@ mymodel = model(birth_rate)
 \end{snugshade*}}
 
 
-\textbf{\textit{Set up parameter monitors}}
+\subsection{Set up parameter monitors}
 
 
 {\tt \begin{snugshade*}
@@ -678,7 +595,7 @@ monitors[2] = mnScreen(printgen=1000, birth_rate)
 
 Note that if your preferred model was the Yule process, then you would only have the \cl{birth\_rate} parameter listed in the \cl{mnFile} monitor.
 
-\textbf{\textit{Run MCMC}}
+\subsection{Run MCMC}
 
 {\tt \begin{snugshade*}
 \begin{lstlisting}
@@ -727,4 +644,4 @@ Questions about this tutorial can be directed to: \\\vspace{-10mm}
 
 
 \bibliographystyle{sysbio}
-\bibliography{\ResourcePath master_refs}
+\bibliography{\ResourcePath refs}

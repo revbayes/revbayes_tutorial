@@ -1,13 +1,17 @@
-
+\bigskip
+\begin{center}
+\textbf{\Large \color{red}This tutorial is currently under construction/revision.}
+\end{center}
+\bigskip
 
 \section{Overview: Gene tree-species tree models}
 
-Ever since Zuckerkandl and Pauling \citep{Zuckerkandl1965a}, people have recognised that phylogenies reconstructed from homologous gene sequences could differ from species phylogenies.
-As molecular sequences accumulated, the link between gene trees and species trees started to be modelled. 
+Ever since \cite{Zuckerkandl1965a}, people have recognized that phylogenies reconstructed from homologous gene sequences could differ from species phylogenies.
+As molecular sequences accumulated, the link between gene trees and species trees started to be modeled. 
 The first models were based on parsimony, and aimed for instance at reconciling a gene tree with a species tree by minimizing the number of events of gene duplication and gene loss. 
 In the past dozen years, probabilistic models have been proposed to reconstruct gene trees and species trees in a rigorous statistical framework.
 Models and algorithms have quickly grown in complexity, to model biological processes with increasing realism, to accommodate several processes at the same time, or to handle genome-scale data sets.
-In this overview we will not detail these models, and we invite the interested reader to take a look at recent reviews (e.g. \citep{Szollosi28072014}).
+In this overview we will not detail these models, and we invite the interested reader to take a look at recent reviews (\EG \citep{Szollosi28072014}).
 
 \subsection{Processes of discord}
 There are several reasons why a gene tree may differ from a species tree. 
@@ -19,20 +23,20 @@ Incomplete lineage sorting will be discussed in more details in the following su
 
 \begin{figure}[h!]
 \centering
-\fbox{\includegraphics[width=5.8in,angle=0]{RB_GTST_Tutorial/figures/DupTransILS.pdf}}
+\fbox{\includegraphics[width=5.8in,angle=0]{\ResourcePath figures/DupTransILS.pdf}}
 \caption{\small The processes of discord. The species tree is represented as a tubular structure. Gene trees are blue and red lines running along the species trees. a) A gene tree that perfectly matches the species tree. b) The gene tree and the species tree differ because of gene duplications and losses. c)  The gene tree and the species tree differ because of gene transfer and gene loss. d)  The gene tree and the species tree differ because of incomplete lineage sorting.   [Replicated from Fig.~2 in \citet{Boussau2009}.]}
 \label{fig1}
 \end{figure}
 
 Fig. \ref{fig1} suggests that for all processes the gene tree can be seen as the product of a branching process operating inside the species tree.
-As a consequence, all processes are modelled as some type of birth-death process.
+As a consequence, all processes are modeled as some type of birth-death process.
 For duplication/loss models, birth correspond to gene duplication events, and death to gene loss events.
 Transfers can be added to the model by introducing another type of birth, with a child lineage appearing in another branch of the species tree.
-Incomplete lineage sorting is also modelled with a birth-death type of model, the coalescent.
+Incomplete lineage sorting is also modeled with a birth-death type of model, the coalescent.
 All these models can be made heterogeneous, by allowing different sets of parameters for different branches of the species tree.
 This is useful to model differences in rates of duplication, loss or transfer among species, or to model different effective population sizes in a species tree.
-In RevBayes so far only models of incomplete lineage sorting have been implemented (models of duplication and loss and transfer will soon be added).
-Thanks to RevBayes modular design, there is quite a lot of flexibility in specifying the model, for instance by allowing different parameters to different branches of the species tree, and the gene tree-species tree model could be combined to other types of models, for instance models of trait evolution.
+In \RevBayes~so far only models of incomplete lineage sorting have been implemented (models of duplication and loss and transfer will soon be added).
+Thanks to \RevBayes~modular design, there is quite a lot of flexibility in specifying the model, for instance by allowing different parameters to different branches of the species tree, and the gene tree-species tree model could be combined to other types of models, for instance models of trait evolution.
 
 
 \subsection{Gene tree discordance is a problem for species tree reconstruction}
@@ -89,7 +93,7 @@ Once branch lengths on the species tree are measured in coalescent time units, i
 
 \begin{figure}[h!]
 \centering
-\fbox{\includegraphics[width=5.8in,angle=0]{RB_GTST_Tutorial/figures/RannalaYang.pdf}}
+\fbox{\includegraphics[width=5.8in,angle=0]{\ResourcePath figures/RannalaYang.pdf}}
 \caption{\small The multispecies coalescent. A) A gene tree, including 3 human alleles, 2 Chimp alleles, one Gorilla allele, and one Orang-outan allele. $\tau$ parameters are speciation times, $t$ parameters are divergence time in the gene tree, the grey squares represent the ancestral populations, with their respeciive sizes.  B) The corresponding species tree. In this model, the speciation times define minimal boundaries for allele divergence times. [Replicated from Fig.~1 in \citet{Rannala2003a}.]}
 \label{fig2}
 \end{figure}
@@ -106,8 +110,6 @@ Scripts are all placed in {\footnotesize \emph{$tutorials/RB\_GeneTreeSpeciesTre
 \end{center}
 \end{framed}}
 \vspace{5mm}
-
-{\begin{framed}
 
 \begin{center}
 \emph{First RevBayes exercise: simulating gene trees under the multispecies coalescent}
@@ -216,7 +218,6 @@ speciesTree.rescale(0.1)
 \emph{Using the functions above, it is possible to look at the species tree in coalescent time units (which is very convenient). How would you do that?}
 
 \emph{Do these observations seem coherent with the multispecies coalescent presentation above?}
-\end{framed}}
 
 
 
@@ -321,11 +322,11 @@ n_branches <- 2 * n_species - 3 # number of branches in a rooted tree
 
 The species-tree birth-death model:
 
- {\tt \begin{snugshade*}
+{\tt \begin{snugshade*}
 \begin{lstlisting}
 # Species names
 for (i in 1:n_species) {
-	s_names[i] <- "Species_"+i
+   s_names[i] <- "Species_"+i
 }
 speciation ~ dnExp(10.0)
 extinction ~ dnExp(10.0)
@@ -345,9 +346,9 @@ The gene-tree multispecies coalescent model
 \begin{lstlisting}
 # Build the mapping between sequence names and species names.
 for (i in 1:n_species) {
-	for (j in 1:n_alleles) {
-		taxa[(i-1)*n_alleles+j] <- taxon(taxonName=s_names[i]+"_"+j, speciesName=s_names[i])
-	}
+   for (j in 1:n_alleles) {
+       taxa[(i-1)*n_alleles+j] <- taxon(taxonName=s_names[i]+"_"+j, speciesName=s_names[i])
+   }
 }
 # Set the effective population size
 Ne ~ dnGamma(shape=0.5,rate=0.5)
@@ -1045,24 +1046,7 @@ Questions about this tutorial can be directed to: \\\vspace{-10mm}
 \item Sebastian H\"{o}hna (email: \href{mailto:sebastian.hoehna@gmail.com}{sebastian.hoehna@gmail.com})
 \end{itemize}
 
-\href{http://creativecommons.org/licenses/by/4.0/}{\includegraphics[scale=0.8]{shared_figures/ccby.eps}}This tutorial was written by \href{http://phylo.bio.ku.edu/content/tracy-heath}{Bastien Boussau}; licensed under a \href{http://creativecommons.org/licenses/by/4.0/}{Creative Commons Attribution 4.0 International License}. 
-
-Version dated: \today
-
 
 \bibliographystyle{mbe}
-\bibliography{bib_tex/master_refs}
-
-%\nocite{sukumaran10,rannala96,robert02,rodrigue08,ronquist09,Rubinstein1981,simon01,Smith1993,Suchard2005,verdinelli95,wong08,Yang2007,Yang2005,yang97b}
-%\newpage
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%  REFERENCES  
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-%{\renewcommand{\bibsection}{\section*{Relevant References}}
-
-
-%\bibliography{bib_tex/biblio.bib}
-
+\bibliography{\ResourcePath refs}
 
