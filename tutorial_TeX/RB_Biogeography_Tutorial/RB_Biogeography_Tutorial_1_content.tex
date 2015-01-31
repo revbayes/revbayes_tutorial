@@ -1,57 +1,4 @@
-\title{Historical biogeography in RevBayes}
-\author{Michael J. Landis \\ \href{mailto:mlandis@berkeley.edu}{\texttt{mlandis@berkeley.edu}}}
-
-\section{Introduction}
-
-This lab describes how to perform Bayesian inference of historical biogeography using RevBayes. 
-
-
-\subsection*{\textbf{Outline}}
-\begin{tabular}{ll}
-{\bf I. Introduction} & \\
-& a) Workspace setup \\
-& b) Range evolution models and data augmentation \\
-{\bf II. DEC in RevBayes} & \\
-& a) Tree, range, and geographic input \\
-& b) DEC as a graphical model \\
-& c) Monitors, moves, and MCMC \\
-& d) Model selection with Bayes factors \\
-{\bf III. Output and Analysis} & \\
-& a) MCMC output in Tracer \\
-& b) Ancestral range output \\
-& c) Animate ancestral ranges \\
-\end{tabular}
-
-\noindent \\ \impmark These little arrows indicate lines containing key information to progress through the lab. The rest of the text gives context for why we're taking these steps or what to make of results.
-
-\subsection{Handy links for this lab}
-
-\begin{tabular}{ll}
-RevBayes & \url{https://github.com/revbayes/revbayes} \\
-Lab zip file & \href{https://github.com/revbayes/revbayes/raw/development/tutorials/RB\_Biogeography\_tutorial/RB\_biogeo\_files.zip}{{\tt https://github.com/revbayes/revbayes/.../RB\_biogeo\_files.zip}} \\
-Phylowood software & \url{http://mlandis.github.io/phylowood} \\
-Phylowood manual & \url{https://github.com/mlandis/phylowood/wiki} \\
-Tracer & \url{http://tree.bio.ed.ac.uk/software/tracer}
-%DendroPy manual & \url{http://pythonhosted.org/DendroPy/} \\
-%matplotlib manual & \url{http://matplotlib.org/} \\
-%NumPy manual & \url{http://www.numpy.org/}
-
-\end{tabular}
-
-\subsection{Setting up your workspace}
-
-The practical part of the lab will analyze a small dataset of 19 taxa distributed over 4 biogeographic areas.
-Parts of the lab will require entering terminal commands, which will assume you are using the Unix shell \texttt{bash}.
-Just ask for help if the commands don't seem to work.
-
-\noindent \\ \impmark Portions of this lab require Python is installed. No packages are needed.
-
-\noindent \\ \impmark This tutorial will assume you have successfully installed RevBayes and can be called from your current working directory.
-
-\noindent \\ \impmark Download and unzip the lab zip file, {\tt RB\_biogeo\_files.zip}.
-
-%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%
+\section{Dispersal-Extinction-Cladogenesis model}
 
 \subsection{Motivation}
 
@@ -67,7 +14,7 @@ For example, if taxon $B$ is present only in areas 2 and 3 out of $N=3$ areas, i
 If we apply the labels A, B, and C to our three areas, this bit vector can also be represented as a set: $X_B=011$ is the same as $X_B = \{ B, C \}$, or $X_B=BC$ for short.
 The data matrix, $\textbf{X}$, is analogous to a multiple sequence alignment where each element in the data matrix reports a discrete value for a homologous character shared by all taxa at column $j$.
 
-\section{Modeling anagenic range evolution}
+\subsection{Modeling anagenic range evolution}
 
 Next, we need a model of anagenic range evolution.
 Since we have discrete characters we'll use the continuous-time Markov chain, which allows us to compute transition probability of a character changing from $i$ to $j$ in time $t$ through matrix exponentiation
@@ -151,35 +98,16 @@ Unfortunately, since this sort of model scales poorly, and DEC models remain the
 \caption{Graphical model of DEC. The tree plate's topology is fixed by $T$, where each internal node has both an anagenic and cladogenic random variable ($X_i^{\text{an}}$ and $X_i^{\text{cl}}$, resp.) that represents an ancestral species before and after it speciated. Anagenic change is modeled by a continuous time Markov process, where $Q_{DE}$ is the instantaneous rate matrix of area gain and loss, as parameterized by $\lambda$. The geographic distance rate modifier function, $\eta$, takes in the geographical distances and strata as $G$, and the distance power parameter, $\beta$. Cladogenic change is modeled by $P_C$, a Dirichlet-distributed simplex with a flat prior.}
 \end{figure}
 
-The rest of this tutorial will describe how to assemble the input, run the analysis, assess the output, and visualize the results.
+The rest of this tutorial will describe how to run a simple DEC analysis using RevBayes.
 
 \newpage
 
 %%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%
-\subsection{Input}
-
-For this tutorial, we'll use a dataset for 19 species of $Psychotria$ whose range spans the Hawaiian archipelago.
-The dataset was originally reported in \citet{nepokroeff03} and analyzed using the maximum likelihood method, LAGRANGE, by \citet{ree08}.
-We'll use this dataset for three reasons.
-First, it is relatively small, meaning we can produce results quickly.
-Second, the Hawaiian archipelago can be broken into naturally discrete areas and has a well-characterized geographical history that is uncomplicated to model.
-Third, it has previously been analyzed, which provides some basis for comparison to other methods.
-To simplify things, this model will assume we live in a gentler world where presence-absence characters are known without error.
-
-For larger datasets to play with, see {\tt input/sim\_aus\_50tip\_33area.*} for a simulated model where all cladogenic events were sympatric (wide and narrow only). 
 
 
-\subsection{RevBayes Analysis}
 
-There are six major parts to the analysis.
 
-First, we need to read in the input files and assign analysis settings.
-Second, we need to construct our model.
-Third, we need to assign moves and monitors to our model parameters for use with Markov chain Monte Carlo (MCMC).
-Fourth, we will run an MCMC analysis assuming a complex model.
-Fifth, we will compare the complex model with a simple model using Bayes factors.
-Finally, we'll analyze our MCMC output.
 
 
 \bibliography{bayes}
