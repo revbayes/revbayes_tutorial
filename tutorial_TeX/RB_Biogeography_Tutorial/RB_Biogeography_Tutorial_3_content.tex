@@ -2,6 +2,16 @@
 
 \setlength{\parindent}{0pt}
 
+\subsection{Data augmentation}
+
+XXX
+
+\subsection{Distance-dependent dispersal function}
+
+Minimize the number of parameters.
+XXX
+
+%setwd("/Users/mlandis/projects/RB_Biogeography_tutorial/")
 \noindent \\ \impmark Open the RevBayes console
 
 \begin{snugshade}
@@ -13,11 +23,11 @@ $ revbayes
 First, we'll assign all our input files to {\tt String} variables.
 \begin{snugshade}
 \begin{lstlisting}
-RevBayes > in_fp   <- "./input/"
-RevBayes > data_fn <- "psychotria_range.nex"
-RevBayes > area_fn <- "hawaii_dynamic.atlas.txt"
-RevBayes > out_fp  <- "./output/"
-RevBayes > out_str <- "bg_2rate"
+in_fp   <- "./data/"
+data_fn <- "psychotria_range.nex"
+area_fn <- "hawaii_dynamic.atlas.txt"
+out_fp  <- "./output/"
+out_str <- "bg_2rate"
 \end{lstlisting}
 \end{snugshade}
 
@@ -25,23 +35,19 @@ Then we'll create our range data, tree, and atlas objects
 
 \begin{snugshade}
 \begin{lstlisting}
-RevBayes > data  <- readDiscreteCharacterData(in_fp + data_fn)
-RevBayes > tree  <- readTrees(in_fp + data_fn)[1]
-RevBayes > atlas <- readAtlas(in_fp + area_fn)
+data  <- readDiscreteCharacterData(in_fp + data_fn)
+tree  <- readTrees(in_fp + data_fn)[1]
+atlas <- readAtlas(in_fp + area_fn)
 \end{lstlisting}
 \end{snugshade}
 
-%Verify the data and tree share the same number of taxa and the data and atlas share the same number of characters
-%
-%\begin{snugshade}
-%\begin{lstlisting}
-%RevBayes > data.ntaxa() == tree.ntips()
-%   true
-%RevBayes > data.nchar() == atlas.nareas()
-%   true
-%\end{lstlisting}
-%\end{snugshade}
-
+Finally, we'll be using a few helper variables to create or move and monitor vectors
+\begin{snugshade}
+\begin{lstlisting}
+mvi = 1
+mni = 1
+\end{lstlisting}
+\end{snugshade}
 
 \subsection{Creating the model}
 
@@ -51,10 +57,24 @@ First, for $\lambda$, we will create a vector of two rates, where {\tt glr[1]} c
 Each rate will be drawn from an exponential distribution with rate 10.0 (mean 0.1).
 Because our tree is in units of millions of years, this means our prior expectation is that any given species undergoes one dispersal or extinction event per area per ten million years.
 
-To introduce this to the model, type
+%setwd("/Users/mlandis/projects/RB_Biogeography_tutorial/")
+
+Let's declare the distributions for these priors along with their MCMC moves
+
 \begin{snugshade}
 \begin{lstlisting}
-RevBayes > for (i in 1:2) glr[i] ~ dnExponential(10.0)
+for (i in 1:2) {
+	glr[i]       ~ dnExponential(10.0)
+	moves[mvi++] = mvScale(x=glr[i], lambda=0.5, tune=true, weight=5.0)
+}
+\end{lstlisting}
+\end{snugshade}
+
+These are then inserted into the rate matrix {\tt $q_area$}, which gives the average rate of area gain and loss per area.
+
+\begin{snugshade}
+\begin{lstlisting}
+q_area := fnFreeBinary(glr)
 \end{lstlisting}
 \end{snugshade}
 
@@ -63,14 +83,20 @@ Remember that values of $\beta$ far from zero means distance is important.
 So, if we we assign a prior that pulls $\beta$ towards zero, then posterior values of $\beta$ far from zero indicate the range data are informative of the importance of distance to dispersal.
 We'll use an exponential distribution with rate 10.0 (mean 0.1) as a prior for {\tt dp}.
 
+\begin{snugshade}
+\begin{lstlisting}
+dp ~ dnExponential(10.0)
+moves[mvi++] = mvScale(x=dp, lambda=0.5, tune=true, weight=5.0)
+\end{lstlisting}
+\end{snugshade}
+
 We will also create a deterministic node to modify the rate of dispersal between areas by evaluating {\tt dp} and {\tt atlas}.
 This node is determined by the function {\tt fnBiogeoGRM}, where GRM stands for ``geographical rate modifier'', and plays the role of the $\eta(\cdot)$ rate-modifier function mentioned earlier.
 We will tell the {\tt fnBiogeoGRM} function to modify dispersal rates based on distances and whether or not the area exists during an epoch.
 
 \begin{snugshade}
 \begin{lstlisting}
-RevBayes > dp ~ dnExponential(10.0)
-RevBayes > grm := fnBiogeoGRM(atlas=atlas, distancePower=dp, useAvailable=true, useDistance=true)
+grm := fnBiogeoGRM(atlas=atlas, distancePower=dp, useAvailable=true, useDistance=true)
 \end{lstlisting}
 \end{snugshade}
 
@@ -81,18 +107,22 @@ In addition, we'll inform the function of the number of areas in our analysis an
 
 \begin{snugshade}
 \begin{lstlisting}
-RevBayes > Q := fnBiogeoDE(gainLossRates=glr, geoRateMod=grm, numAreas=4, forbidExtinction=true)
+q_range := fnBiogeoDE(gainLossRates=q_area, geoRateMod=grm, numAreas=4, forbidExtinction=true)
 \end{lstlisting}
 \end{snugshade}
 
 To extract information for the frequencies of different cladogenic event types, we will create a Dirichlet-distributed stochastic node.
 The simplex is over three events, subset sympatry (index 0), allopatry (index 1), and widespread sympatry (index 2), but not over narrow sympatry whose range size is one.
-The prior parameter {\tt [1,1,1]} is known as a flat prior, meaning all event types are expected to occur at equal frequency.
+The prior parameter {\tt [1,1,0.1]} is known as a flat prior, meaning all event types are expected to occur at equal frequency.
 If there is information in the data of a dominant cladogenic mode of range evolution, the posterior simplex values in {\tt csf} will reflect this.
 
 \begin{snugshade}
 \begin{lstlisting}
-RevBayes > csf ~ dnDirichlet([1,1,1])
+csf ~ dnDirichlet([1.,1.,0.5])
+narrow_sympatry     := csf[1]
+allopatry           := csf[2]
+widespread_sympatry := csf[3]
+moves[mvi++] = mvSimplexElementScale(csf, alpha=10.0, tune=true, weight=4.0)
 \end{lstlisting}
 \end{snugshade}
 
@@ -102,56 +132,7 @@ To create the distribution, we must pass it our {\tt tree} and {\tt Q} objects, 
 
 \begin{snugshade}
 \begin{lstlisting}
-RevBayes > M ~ dnPhyloDACTMC(tree=tree, Q=Q, C=csf, type="biogeo", forbidExtinction=true, useCladogenesis=true)
-\end{lstlisting}
-\end{snugshade}
-
-So we may evaluate the graphical model's likelihood, we tell the CTMC to observe the {\tt data} object, which will prime the model with data-augmented character histories.
-Now {\tt M} has a defined likelihood value.
-\begin{snugshade}
-\begin{lstlisting}
-RevBayes > M.clamp(data)
-RevBayes > M.lnProb
-   -56.0288
-\end{lstlisting}
-\end{snugshade}
-
-Finally, we encapsulate our graphical model into a {\tt Model} object, which can learn the model's structure and dependencies from any model parameter.
-\begin{snugshade}
-\begin{lstlisting}
-RevBayes > my_model <- model(glr)
-\end{lstlisting}
-\end{snugshade}
-
-\subsection{Running an MCMC analysis}
-
-Now that we have our {\tt Model} object, we can soon run an MCMC analysis.
-Remember that MCMC approximates the posterior distribution by repeatedly proposing new model parameter values, accepting or rejecting those new parameter values based on the model likelihood (and on biases in the proposal distribution), then reporting the sampled parameter values.
-
-First, let's assign moves to our model parameters.
-These parameters are all supported for real positive values, which is appropriate for use with scale-multipler proposal, {\tt mvScale()}.
-To inspect our model parameter types and the proposal argument types, enter
-
-\begin{snugshade}
-\begin{lstlisting}
-RevBayes > type(dp)
-   RealPos
-RevBayes > type(glr)
-   RealPos[]
-RevBayes > mvScale
-   Move_Scale function (RealPos x, RealPos lambda, Bool tune, RealPos weight)
-\end{lstlisting}
-\end{snugshade}
-
-The arguments for {\tt mvScale} are fairly typical as far as RevBayes {\tt Move} objects go: {\tt x} is the stochastic node the {\tt Move} will update, {\tt lambda} is proportional to how radically different proposed parameter values will tend to be, {\tt tune} allows {\tt lambda} to be adjusted automatically as the MCMC runs, and {\tt weight} tells the MCMC how many times to perform the {\tt Move} during a single MCMC generation (e.g., {\tt weight=2.0)} means each generation will call that {\tt Move} for the parameter {\tt x} twice).
-
-
-\begin{snugshade}
-\begin{lstlisting}
-RevBayes > moves[1] <- mvScale(x=glr[1], lambda=0.5, tune=false, weight=5.0)
-RevBayes > moves[2] <- mvScale(x=glr[2], lambda=0.5, tune=false, weight=5.0)
-RevBayes > moves[3] <- mvScale(x=dp, 	 lambda=0.5, tune=false, weight=5.0)
-RevBayes > moves[4] <- mvSimplexElementScale(csf, alpha=10.0, tune=false, weight=4.0)
+M ~ dnPhyloDACTMC(tree=tree, Q=q_range, C=csf, type="biogeo", forbidExtinction=true, useCladogenesis=true)
 \end{lstlisting}
 \end{snugshade}
 
@@ -174,34 +155,47 @@ Below, we use two moves of each type with {\tt lambda=0.2} and {\tt lambda=1.0} 
 Indicating {\tt type="biogeo"} informs the {\tt Move} object to be aware of special character history constraints, such as cladogenic events and forbidden null ranges.
 The {\tt weight} parameter should be assigned a value proportional to the number of nodes in the analysis to ensure proper mixing.
 
-Let's create the character history moves as follows.
+Let's create the character history moves as follows: conservative character history updates for paths and nodes, with {\tt lambda=0.2}
 
 \begin{snugshade}
 \begin{lstlisting}
-RevBayes > n_nodes  <- tree.nnodes()
-RevBayes > moves[5] <- mvNodeCHRS(ctmc=M, qmap=Q, tree=tree, lambda=0.2, type="biogeo", weight=2.0*n_nodes)
-RevBayes > moves[6] <- mvPathCHRS(ctmc=M, qmap=Q, tree=tree, lambda=0.2, type="biogeo", weight=2.0*n_nodes)
-RevBayes > moves[7] <- mvNodeCHRS(ctmc=M, qmap=Q, tree=tree, lambda=1.0, type="biogeo", weight=n_nodes)
-RevBayes > moves[8] <- mvPathCHRS(ctmc=M, qmap=Q, tree=tree, lambda=1.0, type="biogeo", weight=n_nodes)
+moves[mvi++] = mvCharacterHistory(ctmc=M, qmap=q_range, tree=tree, lambda=0.2, type="Biogeo", graph="node", proposal="rejection", weight=40.0)
+moves[mvi++] = mvCharacterHistory(ctmc=M, qmap=q_range, tree=tree, lambda=0.2, type="Biogeo", graph="branch", proposal="rejection", weight=40.0)
 \end{lstlisting}
 \end{snugshade}
 
-Now that we have moves for all our parameters and the character histories, we'll proceed with assigning {\tt Monitor} objects to record their values.
-The first two {\tt Monitor} objects are fairly standard and found in most RevBayes MCMC analyses.
-{\tt mnScreen} reports the values for any nodes assigned to {\tt RevObject ...} every {\tt printgen} generations to the terminal screen.
-{\tt mnModel} reports the values for all nodes in the {\tt Model} object every {\tt printgen} generations to the file assigned to {\tt filename}, which is delimited by the {\tt separator} character.
+and the same proposals for more drastic character history updates, with {\tt lambda=1.0}
 
 \begin{snugshade}
 \begin{lstlisting}
-RevBayes > mnScreen
-   Mntr_Screen function (RevObject ..., Natural printgen, Bool posterior, Bool
-   likelihood, Bool prior)
-RevBayes > monitors[1] <- mnScreen(printgen=10, glr, dp, csf)
-RevBayes > mnModel
-   Mntr_Model function (String filename, Natural printgen, String separator,
-   Bool posterior, Bool likelihood, Bool prior, Bool append, Bool
-   stochasticOnly)
-RevBayes > monitors[2] <- mnModel(filename=out_fp+params_fn, printgen=10)
+moves[mvi++] = mvCharacterHistory(ctmc=M, qmap=q_range, tree=tree, lambda=1.0, type="Biogeo", graph="node", proposal="rejection", weight=10.0)
+moves[mvi++] = mvCharacterHistory(ctmc=M, qmap=q_range, tree=tree, lambda=1.0, type="Biogeo", graph="branch", proposal="rejection", weight=10.0)
+\end{lstlisting}
+\end{snugshade}
+
+So we may evaluate the graphical model's likelihood, we tell the CTMC to observe the {\tt data} object, which will prime the model with data-augmented character histories.
+Now {\tt M} has a defined likelihood value.
+\begin{snugshade}
+\begin{lstlisting}
+M.clamp(data)
+M.lnProbability()
+   -56.0288
+\end{lstlisting}
+\end{snugshade}
+
+Finally, we encapsulate our graphical model into a {\tt Model} object, which can learn the model's structure and dependencies from any model parameter.
+\begin{snugshade}
+\begin{lstlisting}
+my_model = model(M)
+\end{lstlisting}
+\end{snugshade}
+
+First, we'll create monitors for our simple parameters
+
+\begin{snugshade}
+\begin{lstlisting}
+monitors[mni++] = mnScreen(glr, dp, narrow_sympatry, allopatry, widespread_sympatry, printgen=10)
+monitors[mni++] = mnFile(glr, dp, narrow_sympatry, allopatry, widespread_sympatry, filename=out_fp+params_fn, printgen=10)
 \end{lstlisting}
 \end{snugshade}
 
@@ -215,15 +209,8 @@ How to read these file formats will be discussed in more detail in Section \ref{
 
 \begin{snugshade}
 \begin{lstlisting}
-RevBayes > mnCharHistoryNewick
-   Mntr_CharacterHistoryNewickFile function (String filename,
-   AbstractCharacterData ctmc, TimeTree tree, Natural printgen, String
-   separator, Bool posterior, Bool likelihood, Bool prior, Bool append, String
-   style = events|counts
-   , String type = biogeo
-   )
-RevBayes > monitors[3] <- mnCharHistoryNewick(filename=fp+out_str+".events.txt", ctmc=M, tree=tree, printgen=100, style="events")
-RevBayes > monitors[4] <- mnCharHistoryNewick(filename=fp+out_str+".counts.txt", ctmc=M, tree=tree, printgen=100, style="counts")
+monitors[mni++] = mnCharHistoryNewick(filename=fp+out_str+".events.txt", ctmc=M, tree=tree, printgen=100, style="events")
+monitors[mni++] = mnCharHistoryNewick(filename=fp+out_str+".counts.txt", ctmc=M, tree=tree, printgen=100, style="counts")
 \end{lstlisting}
 \end{snugshade}
 
@@ -233,27 +220,22 @@ We will also discuss this file's format in more detail later in the tutorial.
 
 \begin{snugshade}
 \begin{lstlisting}
-RevBayes > mnCharHistoryNhx
-   Mntr_CharacterHistoryNhxFile function (String filename, AbstractCharacterData
-   ctmc, TimeTree tree, RlAtlas atlas, Natural samplegen, Natural maxgen,
-   Probability burnin, String separator, Bool posterior, Bool likelihood, Bool
-   prior, String type = biogeo
-   )
-RevBayes > monitors[5] <- mnCharHistoryNhx(filename=fp+out_str+".nhx.txt", ctmc=M, tree=tree, atlas=atlas, samplegen=100, maxgen=25000, burnin=0.2)
+monitors[mni++] = mnCharHistoryNhx(filename=fp+out_str+".nhx.txt", ctmc=M, tree=tree, atlas=atlas, samplegen=100, maxgen=25000, burnin=0.2)
 \end{lstlisting}
 \end{snugshade}
 
+WE CAN REPLACE THIS USING WRITETREE->FIGTREE
 Before we run the MCMC, we'd like to get the node index of the ancestor 
 When analysing the output, we'll take some special interest in the branch for the most recent common ancestor of {\it P. kaduana} and {\it P. hatheway}.
 We will identify this lineage by its index, 23, which is meaningful only for a fixed tree topology,
 \begin{snugshade}
 \begin{lstlisting}
-RevBayes > names = tree.names()
-RevBayes > names[15]
+> names = tree.names()
+> names[15]
    P_kaduana_PuuKukuiAS
-RevBayes > names[16]
+> names[16]
    P_hathewayi_1
-RevBayes > mrcaIndex(tree=tree,clade=clade(names[15],names[16]))
+> mrcaIndex(tree=tree,clade=clade(names[15],names[16]))
    23
 \end{lstlisting}
 \end{snugshade}
@@ -266,11 +248,7 @@ For this, we create an {\tt Mcmc} object, which we give our {\tt Move} vector, o
 
 \begin{snugshade}
 \begin{lstlisting}
-RevBayes > mcmc
-   MCMC function (Model model, Monitor[] monitors, Move[] moves, String
-   moveschedule = sequential|random|single
-   )
-RevBayes > my_mcmc <- mcmc(my_model, monitors, moves)
+my_mcmc = mcmc(my_model, monitors, moves)
 \end{lstlisting}
 \end{snugshade}
 
@@ -280,8 +258,7 @@ After burn-in is complete, we call {\tt run()}, where we begin recording valid p
 
 \begin{snugshade}
 \begin{lstlisting}
-RevBayes > my_mcmc.burnin(generations=1000, tuningInterval=50)
-RevBayes > my_mcmc.run(generations=25000)
+my_mcmc.run(generations=25000)
 \end{lstlisting}
 \end{snugshade}
 
@@ -290,131 +267,14 @@ You can modify this file as you like then re-run the analysis by typing
 
 \begin{snugshade}
 \begin{lstlisting}
-RevBayes > source("./scripts/biogeography_DEC_2rate.Rev")
+source("./scripts/biogeography_DEC_2rate.Rev")
 \end{lstlisting}
 \end{snugshade}
 
-\subsection{Model selection using Bayes factors}
 
-Bayes factors (BFs) are used to select which of two models better describes the observed data, $\mathbf{X}_{obs}$, and are computed as the ratio of marginal likelihoods for those two models.
-One might prefer to analytically compute the marginal likelihood, but it's the same intractable quantity we intentionally avoid computing when using MCMC in a Bayesian context.
-Instead, we must estimate the marginal likelihood from our posterior distribution samples.
-Here, we will use thermodynamic integration \citep{lartillot06} and stepping-stone approximation \citep{xie10}.
-The exact details of these techniques will not be covered here, but there is an important practical point to mention: both methods rely on computing a number of ``power posterior'' distributions.
-Computing more power posteriors increases the marginal likelihood estimator's accuracy at the cost of computational time.
+\subsection{Output}
 
-Moving on, we'll compute the Bayes factor to compare a simple one-rate model, which asserts the rate of area gain and loss are always equal, to a two-rate model which allows these rates to vary independently.
-Rather than specifying the model manually, we will load (source) the model definition from a file then enter the commands to compute its marginal likelihood.
-For faster results, we will use two separate RevBayes sessions, one for each model.
-For each session, the power posterior analysis run for 1000 generations during burn-in then 1000 generations per each of 30 power posterior categories.
-
-First session:
-\begin{snugshade}
-\begin{lstlisting}
-RevBayes > source("./scripts/biogeography_DEC_1rate.Rev")
-RevBayes > pp_fn <- out_fp + out_str + ".pp.txt"
-RevBayes > pow_p <- powerPosterior(my_model, moves, pp_fn, cats=30) 
-RevBayes > pow_p.burnin(generations=1000,tuningInterval=100)
-RevBayes > pow_p.run(generations=5000)
-\end{lstlisting}
-\end{snugshade}
-
-Second session:
-\begin{snugshade}
-\begin{lstlisting}
-RevBayes > source("./scripts/biogeography_DEC_2rate.Rev")
-RevBayes > pp_fn <- out_fp + out_str + ".pp.txt"
-RevBayes > pow_p <- powerPosterior(my_model, moves, pp_fn, cats=30) 
-RevBayes > pow_p.burnin(generations=1000,tuningInterval=100)
-RevBayes > pow_p.run(generations=5000)  
-\end{lstlisting}
-\end{snugshade}
-
-Each power posterior analysis will write their contents to the file given in {\tt pp\_fn}.
-These files are {\tt bg\_1rate.pp.txt} and {\tt bg\_2rate.pp.txt} for the simple and complex models, respectively.
-This may take a few minutes.
-When complete, the power posterior files may then be used to compute marginal likelihoods.
-For example, from the RevBayes session analyzing the simple one-rate model
-
-\begin{snugshade}
-\begin{lstlisting}
-RevBayes > ss <- steppingStoneSampler(file=pp_fn)
-RevBayes > ss.marginal() 
-RevBayes > ps <- pathSampler(file=pp_fn)
-RevBayes > ps.marginal() 
-\end{lstlisting}
-\end{snugshade}
-
-For a given model, the path sampling and stepping stone sampling methods should produce similar marginal likelihood estimates.
-Values should be within one log likelihood unit of one another.
-If the values are extremely different, this may indicate {\tt powerPosterior} should be re-run with a larger number of {\tt cats}.
-We chose {\tt cats=30} which should suffice, and we see no problem.
-Then from the complex two-rate model RevBayes session using the same commands as above.
-Finally, we can compute the Bayes factor, which is simply the ratio of marginal likelihoods.
-
-\begin{snugshade}
-\begin{lstlisting}
-RevBayes > exp(-51.7202)/exp(-52.3158)
-   1.81412
-\end{lstlisting}
-\end{snugshade}
-
-A value of one would mean both models had equal marginal likelihoods.
-A value less than one would indicate the first model, the simple model, had a larger marginal likelihood, and was therefore favored by model testing.
-But that's not the case, the value is greater than one, and the complex two-rate model is favored.
-Similar to frequentist interpretations of significance for p-values, there is no universal and objective criterion of significance with Bayes factors, but most would agree a factor of 1.8 (or 1.0/1.8) indicates weak support for one model over the other.
-
-\section{Output}
-
-\subsection{Sampled parameters from {\tt ScreenMonitor}}
-
-The {\tt mnScreen} monitor reports model parameter values to the screen, where each row corresponds to the current accepted MCMC state, and each column reports some model feature, such as the model likelihood or a parameter value.
-Every 20 iterations, this monitor re-prints the column headers.
-
-\begin{snugshade}
-%\begin{lstlisting}[basicstyle=\tiny \listingsfont, columns=texcl]
-\begin{lstlisting}%[basicstyle=\tiny \listingsfont]
-RevBayes > my_mcmc.run(generations=25000)
-
-Running MCMC simulation for 25000 iterations
-The simulator uses 8 different moves in a random
-move schedule with 241 moves per iteration
-
-Iteration   |   Posterior  |          dp  |      glr[1]  |      glr[2]  |      csf[1]  |      csf[2]  |      csf[3]
--------------------------------------------------------------------------------------------------------------------
-0           |    -51.3307  |   0.0570518  |    0.175137  |   0.0580957  |    0.330891  |    0.255308  |    0.413801
-10          |    -54.4257  |   0.0416423  |    0.166936  |    0.178402  |   0.0549136  |    0.148854  |    0.796233
-20          |    -58.0696  |   0.0991853  |    0.136495  |    0.122135  |    0.308418  |    0.448892  |    0.242689
-30          |    -46.5049  |     0.10676  |   0.0958918  |   0.0959592  |    0.543837  |    0.363871  |   0.0922922
-40          |    -42.8697  |    0.173549  |    0.158565  |   0.0662419  |    0.569416  |    0.126439  |    0.304145
-50          |    -43.5319  |    0.117868  |    0.196497  |   0.0523307  |    0.440269  |    0.257171  |     0.30256
-
-...
-\end{lstlisting}
-\end{snugshade}
-
-For the complex 2-rate model, our model parameters are {\tt dp}, the distance power parameter, and the rates of area loss and gain, {\tt glr[1]} and {\tt glr[2]}, respectively, and the frequencies for subset sympatry, allopatry, and widespread sympatry {\tt csf[1]}, {\tt csf[2]}, and {\tt csf[3]}, respectively. 
-If you notice the value of some parameter is rarely updated from iteration to iteration, the MCMC is probably mixing poorly therefore it's not generating samples from the posterior distribution (the MCMC's stationary distribution).
-In this case, you may want to re-run the analysis with different arguments for the {\tt Move} object assigned to that parameter.
-
-\subsection{Sampled parameters from {\tt ModelMonitor}}
-
-This tab-delimited file contains parameter samples from the posterior distribution.
-As with the {\tt ScreenMonitor}, columns are model or parameter values and rows are MCMC cycles.
-
-\begin{framed}
-\begin{lstlisting}%[basicstyle=\tiny \listingsfont, columns=texcl]
-Iteration  Posterior  Likelihood    Prior  glr[1]  glr[2]  dp  csf[1]  csf[2]  csf[3]
-0           -51.3307    -56.0288  4.69806  0.175137  0.0580957  0.057051  0.330891  0.255308  0.413801
-10          -54.4257    -58.1568  3.73110  0.166936  0.1784020  0.041642  0.054913  0.148854  0.796233
-20          -58.0696    -62.0923  4.02274  0.136495  0.1221350  0.099185  0.308418  0.448892  0.242689
-30          -46.5049    -51.1197  4.61480  0.095891  0.0959592  0.106760  0.543837  0.363871  0.092292
-40          -42.8697    -46.4870  3.61735  0.158565  0.0662419  0.173549  0.569416  0.126439  0.304145
-50          -43.5319    -47.4659  3.93394  0.196497  0.0523307  0.117868  0.440269  0.257171  0.302560
-
-...
-\end{lstlisting}
-\end{framed}
+\subsubsection{Sampled parameters from {\tt ScreenMonitor}}
 
 \noindent \\ \impmark Open Tracer, select the fields for the posterior probability and area gain rate, {\tt glr[2]}, then click the Joint-Marginal tab.
 
@@ -651,3 +511,129 @@ Now that the masking effects are in place, you're free to interact with other ma
 In addition, the area of marker sizes is only distributed among unmasked lineages.
 
 \noindent \\ \impmark Visit \texttt{https://github.com/mlandis/phylowood/wiki} to learn more about Phylowood.
+
+
+
+%%%%%%%%%%%% GRAVEYARD %%%%%%%%%%%%%%%
+
+
+
+%%\subsection{Model selection using Bayes factors}
+%%
+%%Bayes factors (BFs) are used to select which of two models better describes the observed data, $\mathbf{X}_{obs}$, and are computed as the ratio of marginal likelihoods for those two models.
+%%One might prefer to analytically compute the marginal likelihood, but it's the same intractable quantity we intentionally avoid computing when using MCMC in a Bayesian context.
+%%Instead, we must estimate the marginal likelihood from our posterior distribution samples.
+%%Here, we will use thermodynamic integration \citep{lartillot06} and stepping-stone approximation \citep{xie10}.
+%%The exact details of these techniques will not be covered here, but there is an important practical point to mention: both methods rely on computing a number of ``power posterior'' distributions.
+%%Computing more power posteriors increases the marginal likelihood estimator's accuracy at the cost of computational time.
+%%
+%%Moving on, we'll compute the Bayes factor to compare a simple one-rate model, which asserts the rate of area gain and loss are always equal, to a two-rate model which allows these rates to vary independently.
+%%Rather than specifying the model manually, we will load (source) the model definition from a file then enter the commands to compute its marginal likelihood.
+%%For faster results, we will use two separate RevBayes sessions, one for each model.
+%%For each session, the power posterior analysis run for 1000 generations during burn-in then 1000 generations per each of 30 power posterior categories.
+%%
+%%First session:
+%%\begin{snugshade}
+%%\begin{lstlisting}
+%%RevBayes > source("./scripts/biogeography_DEC_1rate.Rev")
+%%RevBayes > pp_fn <- out_fp + out_str + ".pp.txt"
+%%RevBayes > pow_p <- powerPosterior(my_model, moves, pp_fn, cats=30) 
+%%RevBayes > pow_p.burnin(generations=1000,tuningInterval=100)
+%%RevBayes > pow_p.run(generations=5000)
+%%\end{lstlisting}
+%%\end{snugshade}
+%%
+%%Second session:
+%%\begin{snugshade}
+%%\begin{lstlisting}
+%%RevBayes > source("./scripts/biogeography_DEC_2rate.Rev")
+%%RevBayes > pp_fn <- out_fp + out_str + ".pp.txt"
+%%RevBayes > pow_p <- powerPosterior(my_model, moves, pp_fn, cats=30) 
+%%RevBayes > pow_p.burnin(generations=1000,tuningInterval=100)
+%%RevBayes > pow_p.run(generations=5000)  
+%%\end{lstlisting}
+%%\end{snugshade}
+%%
+%%Each power posterior analysis will write their contents to the file given in {\tt pp\_fn}.
+%%These files are {\tt bg\_1rate.pp.txt} and {\tt bg\_2rate.pp.txt} for the simple and complex models, respectively.
+%%This may take a few minutes.
+%%When complete, the power posterior files may then be used to compute marginal likelihoods.
+%%For example, from the RevBayes session analyzing the simple one-rate model
+%%
+%%\begin{snugshade}
+%%\begin{lstlisting}
+%%RevBayes > ss <- steppingStoneSampler(file=pp_fn)
+%%RevBayes > ss.marginal() 
+%%RevBayes > ps <- pathSampler(file=pp_fn)
+%%RevBayes > ps.marginal() 
+%%\end{lstlisting}
+%%\end{snugshade}
+%
+%For a given model, the path sampling and stepping stone sampling methods should produce similar marginal likelihood estimates.
+%Values should be within one log likelihood unit of one another.
+%If the values are extremely different, this may indicate {\tt powerPosterior} should be re-run with a larger number of {\tt cats}.
+%We chose {\tt cats=30} which should suffice, and we see no problem.
+%Then from the complex two-rate model RevBayes session using the same commands as above.
+%Finally, we can compute the Bayes factor, which is simply the ratio of marginal likelihoods.
+%
+%\begin{snugshade}
+%\begin{lstlisting}
+%RevBayes > exp(-51.7202)/exp(-52.3158)
+%   1.81412
+%\end{lstlisting}
+%\end{snugshade}
+%
+%A value of one would mean both models had equal marginal likelihoods.
+%A value less than one would indicate the first model, the simple model, had a larger marginal likelihood, and was therefore favored by model testing.
+%But that's not the case, the value is greater than one, and the complex two-rate model is favored.
+%Similar to frequentist interpretations of significance for p-values, there is no universal and objective criterion of significance with Bayes factors, but most would agree a factor of 1.8 (or 1.0/1.8) indicates weak support for one model over the other.
+
+
+
+%The {\tt mnScreen} monitor reports model parameter values to the screen, where each row corresponds to the current accepted MCMC state, and each column reports some model feature, such as the model likelihood or a parameter value.
+%Every 20 iterations, this monitor re-prints the column headers.
+%
+%\begin{snugshade}
+%%\begin{lstlisting}[basicstyle=\tiny \listingsfont, columns=texcl]
+%\begin{lstlisting}%[basicstyle=\tiny \listingsfont]
+%RevBayes > my_mcmc.run(generations=25000)
+%
+%Running MCMC simulation for 25000 iterations
+%The simulator uses 8 different moves in a random
+%move schedule with 241 moves per iteration
+%
+%Iteration   |   Posterior  |          dp  |      glr[1]  |      glr[2]  |      csf[1]  |      csf[2]  |      csf[3]
+%-------------------------------------------------------------------------------------------------------------------
+%0           |    -51.3307  |   0.0570518  |    0.175137  |   0.0580957  |    0.330891  |    0.255308  |    0.413801
+%10          |    -54.4257  |   0.0416423  |    0.166936  |    0.178402  |   0.0549136  |    0.148854  |    0.796233
+%20          |    -58.0696  |   0.0991853  |    0.136495  |    0.122135  |    0.308418  |    0.448892  |    0.242689
+%30          |    -46.5049  |     0.10676  |   0.0958918  |   0.0959592  |    0.543837  |    0.363871  |   0.0922922
+%40          |    -42.8697  |    0.173549  |    0.158565  |   0.0662419  |    0.569416  |    0.126439  |    0.304145
+%50          |    -43.5319  |    0.117868  |    0.196497  |   0.0523307  |    0.440269  |    0.257171  |     0.30256
+%
+%...
+%\end{lstlisting}
+%\end{snugshade}
+%
+%For the complex 2-rate model, our model parameters are {\tt dp}, the distance power parameter, and the rates of area loss and gain, {\tt glr[1]} and {\tt glr[2]}, respectively, and the frequencies for subset sympatry, allopatry, and widespread sympatry {\tt csf[1]}, {\tt csf[2]}, and {\tt csf[3]}, respectively. 
+%If you notice the value of some parameter is rarely updated from iteration to iteration, the MCMC is probably mixing poorly therefore it's not generating samples from the posterior distribution (the MCMC's stationary distribution).
+%In this case, you may want to re-run the analysis with different arguments for the {\tt Move} object assigned to that parameter.
+%
+%\subsection{Sampled parameters from {\tt ModelMonitor}}
+%
+%This tab-delimited file contains parameter samples from the posterior distribution.
+%As with the {\tt ScreenMonitor}, columns are model or parameter values and rows are MCMC cycles.
+%
+%\begin{framed}
+%\begin{lstlisting}%[basicstyle=\tiny \listingsfont, columns=texcl]
+%Iteration  Posterior  Likelihood    Prior  glr[1]  glr[2]  dp  csf[1]  csf[2]  csf[3]
+%0           -51.3307    -56.0288  4.69806  0.175137  0.0580957  0.057051  0.330891  0.255308  0.413801
+%10          -54.4257    -58.1568  3.73110  0.166936  0.1784020  0.041642  0.054913  0.148854  0.796233
+%20          -58.0696    -62.0923  4.02274  0.136495  0.1221350  0.099185  0.308418  0.448892  0.242689
+%30          -46.5049    -51.1197  4.61480  0.095891  0.0959592  0.106760  0.543837  0.363871  0.092292
+%40          -42.8697    -46.4870  3.61735  0.158565  0.0662419  0.173549  0.569416  0.126439  0.304145
+%50          -43.5319    -47.4659  3.93394  0.196497  0.0523307  0.117868  0.440269  0.257171  0.302560
+%
+%...
+%\end{lstlisting}
+%\end{framed}
