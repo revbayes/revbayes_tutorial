@@ -1,0 +1,51 @@
+\section{Introduction}
+
+This lab describes how to perform Bayesian inference of historical biogeography using RevBayes. 
+
+
+\subsection*{\textbf{Outline}}
+\begin{tabular}{ll}
+{\bf I. Introduction} & \\
+& a) Workspace setup \\
+& b) Range evolution models and data augmentation \\
+{\bf II. DEC in RevBayes} & \\
+& a) Tree, range, and geographic input \\
+& b) DEC as a graphical model \\
+& c) Monitors, moves, and MCMC \\
+& d) Model selection with Bayes factors \\
+{\bf III. Output and Analysis} & \\
+& a) MCMC output in Tracer \\
+& b) Ancestral range output \\
+& c) Animate ancestral ranges \\
+\end{tabular}
+
+\noindent \\ \impmark These little arrows indicate lines containing key information to progress through the lab. The rest of the text gives context for why we're taking these steps or what to make of results.
+
+\subsection{Handy links for this lab}
+
+\begin{tabular}{ll}
+RevBayes & \url{https://github.com/revbayes/revbayes} \\
+Lab zip file & \href{https://github.com/revbayes/revbayes/raw/development/tutorials/RB\_Biogeography\_tutorial/RB\_biogeo\_files.zip}{{\tt https://github.com/revbayes/revbayes/.../RB\_biogeo\_files.zip}} \\
+Phylowood software & \url{http://mlandis.github.io/phylowood} \\
+Phylowood manual & \url{https://github.com/mlandis/phylowood/wiki} \\
+Tracer & \url{http://tree.bio.ed.ac.uk/software/tracer}
+%DendroPy manual & \url{http://pythonhosted.org/DendroPy/} \\
+%matplotlib manual & \url{http://matplotlib.org/} \\
+%NumPy manual & \url{http://www.numpy.org/}
+
+\end{tabular}
+
+\subsection{Setting up your workspace}
+
+The practical part of the lab will analyze a small dataset of 19 taxa distributed over 4 biogeographic areas.
+Parts of the lab will require entering terminal commands, which will assume you are using the Unix shell \texttt{bash}.
+Just ask for help if the commands don't seem to work.
+
+\noindent \\ \impmark Portions of this lab require Python is installed. No packages are needed.
+
+\noindent \\ \impmark This tutorial will assume you have successfully installed RevBayes and can be called from your current working directory.
+
+\noindent \\ \impmark Download and unzip the lab zip file, {\tt RB\_biogeo\_files.zip}.
+
+%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%
