@@ -1,0 +1,2 @@
+Iteration	Posterior	Likelihood	Prior	csf[1]	csf[2]	csf[3]	csf[1]	narrow_sympatry	csf[2]	allopatry	csf[3]	widespread_sympatry	glr[1]	glr[2]	dp
+0	-58.7775	-66.0674	7.28998	0.53729	0.0574853	0.405225	0.53729	0.53729	0.0574853	0.0574853	0.405225	0.405225	0.0663998	0.0710421	0.00709915
