@@ -68,7 +68,7 @@ The first section of this exercise involves:
 \fbox{\includegraphics[width=\textwidth,angle=0]{\ResourcePath figures/jc_graphical_model.pdf}}
 \caption{\small Graphical model representation of a simple phylogenetic model. 
 The graphical model shows the dependencies between the parameters.
-Here, the rate matrix $Q$ is constant variable because it is fixed and does not depend on any parameters.
+Here, the rate matrix $Q$ is a constant variable because it is fixed and does not depend on any parameters.
 The only free parameters of this model, the unconstrained Jukes-Cantor model, are the tree topology $\Psi$ and the branch lengths $\nu_i$.}
 \label{fig:jc}
 \end{figure}
@@ -107,7 +107,7 @@ If everything loaded properly, then you should see the program initiate the Mark
 If you continue to let this run, then you will see it output the states of the Markov chain once the MCMC analysis begins. 
 (It is worth noting, however, that the file \cl{JukesCantor.Rev} performs shorter runs with fewer generations for the purposes of illustration.)
 
-Ultimately, this is how you will execute most analyses in \RevBayes~, with the full specification of the model and analyses contained in the sourced files. 
+Ultimately, this is how you will execute most analyses in \RevBayes, with the full specification of the model and analyses contained in the sourced files. 
 You could easily run this entire analysis on your own data by substituting your data file name for that in the model-specification file. 
 However, it is important to understand the components of the model to be able to take full advantage of the flexibility and richness of \RevBayes.
 Furthermore, without inspecting the \Rev~scripts sourced in \cl{JukesCantor.Rev}, you may end up inadvertently performing inappropriate analyses on your dataset, which would be a waste of your time and CPU cycles. 
@@ -373,7 +373,8 @@ We are interested in the phylogenetic relationship of the Tarsiers. Therefore, w
 \RevBayes~can summarize the sampled trees by reading in the tree-trace file:
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-treetrace = readTreeTrace("output/primates_cytb_JC_posterior.trees", treetype="non-clock")
+treetrace = readTreeTrace("output/primates_cytb_JC_posterior.trees",
+                             treetype="non-clock")
 treetrace.summarize()
 \end{lstlisting}
 \end{snugshade*}}
