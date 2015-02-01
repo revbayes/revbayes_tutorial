@@ -67,9 +67,9 @@ monitors[mni++] = mnFile(r_gain, r_loss, dp, narrow_sympatry, allopatry, widespr
 monitors[mni++] = mnCharHistoryNewick(filename=out_fp+out_str+".events.txt", ctmc=M, tree=tree, printgen=10, style="events")
 monitors[mni++] = mnCharHistoryNewick(filename=out_fp+out_str+".counts.txt", ctmc=M, tree=tree, printgen=10, style="counts")
 
-monitors[mni++] = mnCharHistoryNhx(filename=out_fp+out_str+".phw.txt", ctmc=M, tree=tree, atlas=atlas, samplegen=10, maxgen=25000, burnin=0.2)
+monitors[mni++] = mnCharHistoryNhx(filename=out_fp+out_str+".phw.txt", ctmc=M, tree=tree, atlas=atlas, samplegen=10, maxgen=5000, burnin=0.2)
 
 my_mcmc = mcmc(my_model, monitors, moves)
 
-my_mcmc.run(generations=50000)
+my_mcmc.run(generations=5000)
 
