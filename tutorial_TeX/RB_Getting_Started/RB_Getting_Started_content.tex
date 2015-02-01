@@ -25,22 +25,23 @@ When you execute the program with an additional filename, \EG
 \exs{\cl{\$ rb my\_analysis.Rev}}
 then \RevBayes~will run all commands specified in your file.
 
-You may want to run \RevBayes~in parallel.
+You may want to run \RevBayes~in parallel using multiple processes.
 This can be done by starting \RevBayes~with
 \exs{\cl{\$ mpirun -np 4 rb-mpi}}
 which starts 4 processes of \RevBayes.
 You may want to change the number of processes depending on your available hardware.
 
-The format of this exercise uses \colorbox{shadecolor}{\tt lavender blush shaded boxes} to delineate code examples that you should type into \RevBayes. 
+The format of the exercises uses \colorbox{shadecolor}{\tt lavender blush shaded boxes} to delineate code examples that you should type into \RevBayes. 
 For example, after opening the \RevBayes~program, you can load your data file:
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-data_ITS <- readDiscreteCharacterData("data/fagus_ITS.nex")
+data <- readDiscreteCharacterData("data/primates_cytb.nex")
 \end{lstlisting}
 \end{snugshade*}}
 
-Multi-line entries, particularly loops, will often be displayed in boxes.
+%Multi-line entries, particularly loops, will often be displayed in boxes.
 The \cl{RevBayes >} prompt that you see in your terminal is omitted so that the examples can be copied and pasted wholly. 
+This is especially useful for larger command blocks, particularly loops, which will often be displayed in boxes
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 for( i in 1:12 ){
@@ -54,7 +55,7 @@ The various \RevBayes~commands and syntax within the text are specified using \c
 Most tutorials also includes hyperlinks: bibliographic citations are {\textcolor{citescol}{burnt orange}} and link to the full citation in the references, external URLs are {\textcolor{urlscol}{cerulean}}, and internal references to figures and equations are {\textcolor{linkscol}{purple}}.
 
 The various exercises in this tutorial take you through the steps required to perform phylogenetic analyses of the example datasets. 
-In addition, we have provided the output files for every exercise so you can verify your results. (Note that since the MCMC runs you perform will start from different random seeds, the output files resulting from your analyses \textit{will not} be identical to the ones we provide you.)
+In addition, we have provided the \Rev~scripts and output files for some exercise so you can verify your results. (Note that since the MCMC runs you perform will start from different random seeds, the output files resulting from your analyses \textit{will not} be identical to the ones we provide you.)
 
 
 \bigskip
@@ -115,7 +116,7 @@ The stochastic variable $\sigma$ is exponentially distributed with fixed value f
 
 In \RevBayes~models and analyses are specified using an interpreted language called \Rev. 
 \Rev~bears similarities to the compiled language in WinBUGS and the interpreted \R~language. 
-Setting up and executing a statistical analysis in \RevBayes~requires the user to specify all of the parameters of their model and the type of analysis (\EG, an MCMC run). 
+Setting up and executing a statistical analysis in \RevBayes~requires the user to specify all of the parameters of their model and the type of analysis (\EG an MCMC run). 
 By using an interpreted language, \RevBayes~enables the practitioner to build complex, hierarchical models and to check the current states of variables while building the model. 
 This will be very useful in the beginning.
 Later on you, when you run very complex analyses, you may want to write \Rev-scripts.
@@ -142,6 +143,7 @@ For example, the variance parameter of a normal distribution needs to be a posit
 \cl{\rbdn} & \hspace{10mm} &  stochastic variable\\
 \cl{:=} & \hspace{10mm} &  deterministic variable\\
 \cl{node.clamp(data)} & \hspace{10mm} &  clamped variable\\
+\cl{=} & \hspace{10mm} &  inference (\IE non-model) variable\\
 \cl{for(i in 1:N)\{...\}} & \hspace{10mm} &  plate\\
 \hline
 \end{tabular}
@@ -228,7 +230,7 @@ for( i in 1:7 ) {
 }
 \end{lstlisting}
 \end{snugshade*}}
-The \cl{for} loop executes the statement \cl{x[i] ~ dnLognormal(mu, sigma)} for different values of $i$ repeatedly, where $i$ takes the values 1 to 7.
+The \cl{for} loop executes the statement \cl{x[i] $\sim$ dnLognormal(mu, sigma)} for different values of $i$ repeatedly, where $i$ takes the values 1 to 7.
 Thus, we created a vector $x$ of seven variables, each being independent and identically distributed (\IID).
 
 A clamped node/variable has observed data attached to it. 
@@ -266,10 +268,24 @@ Additionally, \RevBayes~will print the correct usage of a function if you only t
 {\tt \small \begin{snugshade*}
 \begin{lstlisting}
 mcmc
-|*   MCMC function (Model model, Monitor[] monitors, Move[] moves, String moveschedule = "sequential" | "random" | "single"
+|*   MCMC function (Model model, Monitor[] monitors, Move[] moves, String moveschedule = "sequential" | "random" | "single", Natural nruns)
 \end{lstlisting}
 \end{snugshade*}}
 
+If you typed in \cl{?dnNorm} and you didn't see the help but got instead an error message then you have most likely an incorrect path variable to the help directory.
+You can check the current path to help directory by
+{\tt \small \begin{snugshade*}
+\begin{lstlisting}
+getOption("helpdir")
+|*   "/Users/hoehna/Software-Development/revbayes-development/help"
+\end{lstlisting}
+\end{snugshade*}}
+Check where the help files on your system are and then set the correct path
+{\tt \small \begin{snugshade*}
+\begin{lstlisting}
+setOption("helpdir", "/Users/hoehna/Software-Development/revbayes-development/help")
+\end{lstlisting}
+\end{snugshade*}}
 
 \bigskip
 \subsection{RevBayes Users' Forum}
