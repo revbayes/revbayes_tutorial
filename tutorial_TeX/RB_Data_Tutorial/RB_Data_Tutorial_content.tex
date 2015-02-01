@@ -109,13 +109,62 @@ data.ntaxa()
 \end{lstlisting}
 \end{snugshade*}}
 
-{\tt \begin{snugshade*}
-\begin{lstlisting}
-data.names()	
-|*    [ "Saimiri_sciureus", "Callicebus_donacophilus", "Cebus_albifrons", ...]
-\end{lstlisting}
-\end{snugshade*}}
+Available \textit{member functions} for the data variable are listed in Table \ref{tab:mem_fns}.
 
+
+\begin{table}[h!]
+\centering
+\caption{\small Available member functions for the data variable.} \label{tab:mem_fns}
+\centering
+\begin{tabularx}{\textwidth}{ll}
+\toprule
+	Function name 	  				& Type							 \\
+	\midrule
+	\cl{chartype} 	 					& 	 String function () 				\\ 
+	 \rowcolor{gray!25}
+ 	\cl{excludeAll} 	 					& 	 void function () 				\\ 
+ 	\cl{excludeCharacter}	 			& 	 void function (Natural ) 			\\ 
+	\rowcolor{gray!25}
+ 	\cl{excludeCharacter}	 			& 	 void function (Natural [ ]) 			\\ 
+ 	\cl{getEmpiricalBaseFrequencies} 	 	& 	 Simplex function ()				\\ 
+	\rowcolor{gray!25}
+ 	\cl{getNumInvariantSites} 	 		& 	 Natural function ()				\\ 
+ 	\cl{includeAll} 	 					& 	 void function ()				\\ 
+	\rowcolor{gray!25}
+ 	\cl{includeCharacter} 	 			& 	 void function (Natural )			\\ 
+ 	\cl{includeCharacter} 	 			& 	 void function (Natural [ ] )			 \\ 
+	\rowcolor{gray!25}
+ 	\cl{ishomologous} 	 				& 	 Bool function ()				\\ 
+ 	\cl{methods} 	 					& 	 void function ()				\\ 
+	\rowcolor{gray!25}
+ 	\cl{names} 	 					& 	 String [ ] function ()				\\ 
+ 	\cl{nchar} 	 					& 	 Natural function ()				\\ 
+	\rowcolor{gray!25}
+ 	\cl{ntaxa} 	 						& 	 Natural function ()				\\ 
+ 	\cl{removeTaxa} 	 				& 	 void function (String )			\\ 
+	\rowcolor{gray!25}
+ 	\cl{removeTaxa} 	 				& 	 void function (String [ ] )			\\ 
+ 	\cl{setCodonPartition} 	 			& 	 void function (Natural )			\\ 
+	\rowcolor{gray!25}
+ 	\cl{setCodonPartition} 	 			& 	 void function (Natural [ ] )			\\ 
+ 	\cl{setNumStatesPartition} 	 		& 	 void function (Natural )			\\ 
+	\rowcolor{gray!25}
+ 	\cl{setTaxonName} 	 				& 	 void function (String current, String new)	\\ 
+ 	\cl{show} 	 						& 	 void function ()				\\ 
+	\rowcolor{gray!25}
+ 	\cl{size} 	 						& 	 Natural function ()				\\ 
+	\bottomrule
+\end{tabularx}
+\end{table}
+
+
+%{\tt \begin{snugshade*}
+%\begin{lstlisting}
+%data.names()	
+%|*    [ "Saimiri_sciureus", "Callicebus_donacophilus", "Cebus_albifrons", ...]
+%\end{lstlisting}
+%\end{snugshade*}}
+%
 
 %BRM: I think we may want to provide a (semi) comprehensive list of member functions/attributes here, at least common ones, perhaps in a table?
 %If so, can you tell me where to find them??
@@ -247,12 +296,12 @@ It is also possible to exclude/include all sites using the \cl{excludeAll} and \
 
 
 
-\section{Discrete-Trait Data}
-
-
-
-\section{Continuous-Trait Data}
-
+%\section{Discrete-Trait Data}
+%
+%
+%
+%\section{Continuous-Trait Data}
+%
 
 \section{Biogeographical Data}
 
@@ -317,9 +366,6 @@ Some geographic problems are more amenable to discretization: for instance, the 
 For many geographic problems, however, it may unclear how to perform this discretization.
 Much like morphological analyses, you might decide to choose areas based on expert opinion, based on some model, or using some ``naive'' uniform discretization.
 This procedure is not part of the tutorial, but you should be aware that area definitions are not always obvious or objective.
-
-
-\newpage
 
 \noindent \\ \impmark  Open the file \texttt{examples/hawaii\_dynamic.atlas.txt}.
 
@@ -392,5 +438,5 @@ Questions about this tutorial can be directed to: \\\vspace{-10mm}
 \end{itemize}
 
 
-\bibliographystyle{mbe}
-\bibliography{bib_tex/master_refs}
+%\bibliographystyle{mbe}
+%\bibliography{bib_tex/master_refs}
