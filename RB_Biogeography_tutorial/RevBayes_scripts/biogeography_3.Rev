@@ -23,6 +23,14 @@ for (i in 1:2) {
 #glr[1] <- 0.05
 #glr[2] <- 0.2
 q_area := fnFreeBinary(glr)
+r_gain := glr[1]
+r_loss := glr[2]
+r_gain
+r_loss
+glr
+q_area
+
+#dsadas
 
 dp ~ dnExponential(100.0)
 moves[mvi++] = mvScale(x=dp, lambda=0.5, weight=5.0)
@@ -30,12 +38,13 @@ moves[mvi++] = mvScale(x=dp, lambda=0.5, weight=5.0)
 grm := fnBiogeoGRM(atlas=atlas, distancePower=dp, useAvailable=true, useDistance=true)
 
 q_range := fnBiogeoDE(gainLossRates=q_area, geoRateMod=grm, numAreas=4, forbidExtinction=true)
+#q_range := fnBiogeoDE(gainLossRates=q_area, numAreas=4, forbidExtinction=true)
 
-csf ~ dnDirichlet([1.,1.,0.5])
+csf ~ dnDirichlet([1.,1.,1.])
 narrow_sympatry     := csf[1]
 allopatry           := csf[2]
 widespread_sympatry := csf[3]
-moves[mvi++] = mvSimplex(csf, alpha=10.0, numCats=3, offset=1.0, weight=5.0)
+moves[mvi++] = mvSimplexElementScale(csf, alpha=10.0, weight=5.0)
 
 M ~ dnPhyloDACTMC(tree=tree, Q=q_range, C=csf, type="Biogeo", forbidExtinction=true, useCladogenesis=true)
 M.clamp(data)
@@ -50,8 +59,9 @@ moves[mvi++] = mvCharacterHistory(ctmc=M, qmap=q_range, tree=tree, lambda=1.0, t
 my_model = model(M)
 
 
-monitors[mni++] = mnScreen(glr, dp, narrow_sympatry, allopatry, widespread_sympatry, printgen=100)
-monitors[mni++] = mnModel(filename=out_fp+out_str+".params.txt", printgen=10)
+#monitors[mni++] = mnScreen(glr, dp, narrow_sympatry, allopatry, widespread_sympatry, printgen=100)
+monitors[mni++] = mnScreen(r_gain, r_loss, dp, narrow_sympatry, allopatry, widespread_sympatry, printgen=100)
+monitors[mni++] = mnFile(r_gain, r_loss, dp, narrow_sympatry, allopatry, widespread_sympatry, filename=out_fp+out_str+".params.txt", printgen=10)
 
 
 monitors[mni++] = mnCharHistoryNewick(filename=out_fp+out_str+".events.txt", ctmc=M, tree=tree, printgen=10, style="events")
@@ -61,5 +71,5 @@ monitors[mni++] = mnCharHistoryNhx(filename=out_fp+out_str+".phw.txt", ctmc=M, t
 
 my_mcmc = mcmc(my_model, monitors, moves)
 
-my_mcmc.run(generations=5000)
+my_mcmc.run(generations=50000)
 
