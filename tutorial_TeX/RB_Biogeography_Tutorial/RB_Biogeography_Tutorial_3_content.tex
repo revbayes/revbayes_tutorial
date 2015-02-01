@@ -4,21 +4,59 @@
 
 \subsection{Data augmentation}
 
-XXX
+Remember matrix exponentiation integrates over all \textit{unobserved} transition events during time $t$.
+The likelihood of beginning in character $i$ and ending in character $j$ can be computed easily when the explicit series of event types and times are known.
+While we will never know the exact history of events, we can use stochastic mapping in conjunction with Markov chain Monte Carlo (MCMC) to repeatedly sample range evolution histories that are consistent with the ranges observed in the study taxa at the tips of the phylogeny.
+This technique is an adaptation of the data-augmented phylogenetic method first described by \citet{robinson03}, and was first applied to tertiary structure-dependent evolution of protein-coding nucleotide sequences.
+
+This is the strategy we will use to infer the posterior distribution approximated by 
+\newline{Prob$\left( \textbf{X}_{aug}, \theta \mid \textbf{X}_{obs}, T, M \right)$}, where $\textbf{X}_{obs}$ is the range data observed at the tips, $\textbf{X}_{aug}$ is the distribution of ancestral range reconstructions over the phylogeny, $T$, where $\textbf{X}_{aug}$ is inferred jointly with the parameters, $\theta$, assuming the range evolution model, $M$, that describes $\textbf{Q}$ above.
+Ancestral range reconstructions are often of primary interest in phylogenetic biogeographic analyses, which are generated with support values as a by-product of the MCMC analysis.
+
+You may wonder why matrix exponentiation works fine for molecular substitution models and large multiple sequence alignments.
+Molecular substitution models typically assume each site in the multiple sequence alignment evolves independently, which may be justified because recombination degrades linkage disequilibrium over geological timescales.
+Conveniently, this keeps \textbf{Q} small even for datasets with many sites.
+
+\subsection{Large rate matrices}
+
+This matrix can be represented compactly as the rate function
+\[
+q^{(a)}_{\textbf{y},\textbf{z}} =
+\begin{cases}
+\lambda_0 & \text{if $z_a=0$} \\
+\lambda_1 & \text{if $z_a=1$} \\
+0 & \text{\textbf{y} and \textbf{z} differ in more than one area}
+\end{cases}.
+\]
+
+where $\textbf{y}$ and $\textbf{z}$ are the ``from'' and ``to'' ranges and $a$ is the area that changes.
+For example, $q^{(1)}_{011,111}$ is the rate of range expansion for $011 \rightarrow 111$ to gain area $1$.
+Note the rate of more than one event occurring simultaneously is zero, so a range must expand twice by one area in order to expand by two areas.
+This model is analogous to the Jukes-Cantor model for three independent characters with binary states, except the all-zero ``null range'' is forbidden.
+
+
 
 \subsection{Distance-dependent dispersal function}
 
-Minimize the number of parameters.
-XXX
+Lastly, we may reasonably expect that a range expansion event into an area depends on which nearby areas are currently inhabited, which imposes non-independence between characters.
+The transition rate might then appear as
+\[
+q^{(a)}_{\textbf{y},\textbf{z}} =
+\begin{cases}
+\lambda_0 & \text{if $z_a=0$}  \\
+\lambda_1 \eta(\textbf{y}, \textbf{z}, a, \beta) & \text{if $z_a=1$} \\
+0 & \mathbf{y} = 00...0 \\
+0 & \text{\textbf{y} and \textbf{z} differ in more than one area}
+\end{cases}.
+\]
 
-%setwd("/Users/mlandis/projects/RB_Biogeography_tutorial/")
-\noindent \\ \impmark Open the RevBayes console
+For this tutorial, you can take $\eta(\cdot)$ to adjust the rate of range expansion into area $a$ by considering how close it is to the current range, $\textbf{y}$ relative to the closeness of all other areas unoccupied by the taxon.
+The $\beta$ parameter rescales the importance of geographic distance between two areas by a power law.
+Importantly, $\eta(\cdot) = 1$ when $\beta=0$, meaning geographic distance between areas is irrelevant.
+Moreover, when $\beta > 0$, $\eta(\cdot) < 1$ when area $a$ is relatively distant and $\eta(\cdot) > 1$ when area $a$ is relatively close.
 
-\begin{snugshade}
-\begin{lstlisting}
-$ revbayes
-\end{lstlisting}
-\end{snugshade}
+
+\subsection{Analysis}
 
 First, we'll assign all our input files to {\tt String} variables.
 \begin{snugshade}
@@ -53,7 +91,7 @@ mni = 1
 
 Here, we will compose our rate matrix, {\bf Q}, parameterized by the transition rates, $\lambda$, and the distance dependent dispersal power parameter, $\beta$.
 
-First, for $\lambda$, we will create a vector of two rates, where {\tt glr[1]} corresponds to the rate of area loss (local extinction) and {\tt glr[2]} corresponds to the rate of area gain (dispersal).
+First, for $\lambda$, we will create a vector of two rates, where {\tt glr[1]} corresponds to the rate of area gain (dispersal) and {\tt glr[2]} corresponds to the rate of area loss (local extinction).
 Each rate will be drawn from an exponential distribution with rate 10.0 (mean 0.1).
 Because our tree is in units of millions of years, this means our prior expectation is that any given species undergoes one dispersal or extinction event per area per ten million years.
 
@@ -270,6 +308,10 @@ You can modify this file as you like then re-run the analysis by typing
 source("./scripts/biogeography_DEC_2rate.Rev")
 \end{lstlisting}
 \end{snugshade}
+
+
+\subsection{Exercises}
+
 
 
 \subsection{Output}

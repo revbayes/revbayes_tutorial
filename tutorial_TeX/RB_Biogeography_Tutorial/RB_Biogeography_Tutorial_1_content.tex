@@ -58,9 +58,8 @@ Of course, this model can be specified for more than three areas.
 
 Let's consider what happens to the size of \textbf{Q} when the number of areas, $N$, becomes large.
 For three areas, \textbf{Q} is size $8 \times 8$.
-For ten areas, \textbf{Q} is size $2^{10} \times 2^{10} = 1024 \times 1024$, which approaches the largest size matrix that can be exponentiated in a practical amount of time.
+For ten areas, \textbf{Q} is size $2^{10} \times 2^{10} = 1024 \times 1024$, which approaches the largest size matrices that can be exponentiated in a practical amount of time.
 For biogeographic inference under large numbers of areas, see the Tutorial XXX \citep{landis13}.
-
 
 
 \subsection{Modeling cladogenic range evolution}
@@ -338,7 +337,7 @@ clado_prob := fnCladoProbs(clado_type_prob, b, n_areas, 2)
 \end{lstlisting}
 \end{snugshade}
 
-Add a parameter for a biogeographical clock, which scales the overalll rate of range evolution.
+Add a parameter for a biogeographical clock, which scales the overall rate of range evolution.
 As a prior, an exponential distribution with rate 10 generates one dispersal or extinction event per 10 million years.
 
 \begin{snugshade}
