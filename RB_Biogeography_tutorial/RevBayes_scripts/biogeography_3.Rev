@@ -1,0 +1,75 @@
+# source("/Users/mlandis/projects/revbayes_tutorial/RB_Biogeography_tutorial/RevBayes_scripts/biogeography_3.Rev")
+
+
+setwd("/Users/mlandis/projects/RB_Biogeography_tutorial/")
+
+in_fp   <- "./data/"
+data_fn <- "psychotria_range.nex"
+area_fn <- "hawaii_dynamic.atlas.txt"
+out_fp  <- "./output/"
+out_str <- "bg_2rate"
+
+data  <- readDiscreteCharacterData(in_fp + data_fn)
+tree  <- readTrees(in_fp + data_fn)[1]
+atlas <- readAtlas(in_fp + area_fn)
+
+mvi = 1
+mni = 1
+
+for (i in 1:2) {
+	glr[i]       ~ dnExponential(10.0)
+	moves[mvi++] = mvScale(x=glr[i], lambda=0.5, weight=5.0)
+}
+#glr[1] <- 0.05
+#glr[2] <- 0.2
+q_area := fnFreeBinary(glr)
+r_gain := glr[1]
+r_loss := glr[2]
+r_gain
+r_loss
+glr
+q_area
+
+#dsadas
+
+dp ~ dnExponential(100.0)
+moves[mvi++] = mvScale(x=dp, lambda=0.5, weight=5.0)
+
+grm := fnBiogeoGRM(atlas=atlas, distancePower=dp, useAvailable=true, useDistance=true)
+
+q_range := fnBiogeoDE(gainLossRates=q_area, geoRateMod=grm, numAreas=4, forbidExtinction=true)
+#q_range := fnBiogeoDE(gainLossRates=q_area, numAreas=4, forbidExtinction=true)
+
+csf ~ dnDirichlet([1.,1.,1.])
+narrow_sympatry     := csf[1]
+allopatry           := csf[2]
+widespread_sympatry := csf[3]
+moves[mvi++] = mvSimplexElementScale(csf, alpha=10.0, weight=5.0)
+
+M ~ dnPhyloDACTMC(tree=tree, Q=q_range, C=csf, type="Biogeo", forbidExtinction=true, useCladogenesis=true)
+M.clamp(data)
+M.lnProbability()
+
+moves[mvi++] = mvCharacterHistory(ctmc=M, qmap=q_range, tree=tree, lambda=0.1, type="Biogeo", graph="node", proposal="rejection", weight=100.0)
+moves[mvi++] = mvCharacterHistory(ctmc=M, qmap=q_range, tree=tree, lambda=0.1, type="Biogeo", graph="branch", proposal="rejection", weight=100.0)
+moves[mvi++] = mvCharacterHistory(ctmc=M, qmap=q_range, tree=tree, lambda=1.0, type="Biogeo", graph="node", proposal="rejection", weight=40.0)
+moves[mvi++] = mvCharacterHistory(ctmc=M, qmap=q_range, tree=tree, lambda=1.0, type="Biogeo", graph="branch", proposal="rejection", weight=40.0)
+
+
+my_model = model(M)
+
+
+#monitors[mni++] = mnScreen(glr, dp, narrow_sympatry, allopatry, widespread_sympatry, printgen=100)
+monitors[mni++] = mnScreen(r_gain, r_loss, dp, narrow_sympatry, allopatry, widespread_sympatry, printgen=100)
+monitors[mni++] = mnFile(r_gain, r_loss, dp, narrow_sympatry, allopatry, widespread_sympatry, filename=out_fp+out_str+".params.txt", printgen=10)
+
+
+monitors[mni++] = mnCharHistoryNewick(filename=out_fp+out_str+".events.txt", ctmc=M, tree=tree, printgen=10, style="events")
+monitors[mni++] = mnCharHistoryNewick(filename=out_fp+out_str+".counts.txt", ctmc=M, tree=tree, printgen=10, style="counts")
+
+monitors[mni++] = mnCharHistoryNhx(filename=out_fp+out_str+".phw.txt", ctmc=M, tree=tree, atlas=atlas, samplegen=10, maxgen=25000, burnin=0.2)
+
+my_mcmc = mcmc(my_model, monitors, moves)
+
+my_mcmc.run(generations=50000)
+
