@@ -2,7 +2,7 @@
 
 fp = "/Users/mlandis/projects/revbayes_tutorial/RB_Biogeography_DEC_tutorial/"
 data_fn = fp + "data/primates_bg_n3.tsv"
-tree_fn = fp + "data/primates_tree.tre"
+tree_fn = fp + "data/primates.tree"
 
 # helper variables
 mvi = 1 # index to add MCMC moves
@@ -19,9 +19,9 @@ d = readTSVCharacterData(data_fn, type="NaturalNumbers")
 # want to convert binary SS -> decimal NN
 # ...
 
-names = d.names()
-t ~ dnBDP(rootAge=60.,lambda=1.,names=names)
-#t <- readTrees(tree_fn)[1]
+#names = d.names()
+#t ~ dnBDP(rootAge=60.,lambda=1.,names=names)
+t <- readTrees(tree_fn)[1]
 clock_bg ~ dnExp(10)
 
 # load the 3-area DEC model with same rates
