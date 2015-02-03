@@ -4,8 +4,11 @@
 
 \subsection{Data augmentation}
 
-Remember matrix exponentiation integrates over all \textit{unobserved} transition events during time $t$.
-The likelihood of beginning in character $i$ and ending in character $j$ can be computed easily when the explicit series of event types and times are known.
+For small rate matrices, transition probabilities of beginning in state $i$ and ending in state $j$ equal the matrix exponential of the underlying rate matrix, scaled by the elapsed time of the process.
+This integrates over all unobserved transition events during the time interval $t$.
+Unfortunately, computing the matrix exponential scales poorly as the state space increases, ($O(n^4)$ for $n$ states).
+
+Alternatively, the probability of beginning in state $i$ and ending in state $j$ can be computed easily when the explicit series of event types and times are known.
 While we will never know the exact history of events, we can use stochastic mapping in conjunction with Markov chain Monte Carlo (MCMC) to repeatedly sample range evolution histories that are consistent with the ranges observed in the study taxa at the tips of the phylogeny.
 This technique is an adaptation of the data-augmented phylogenetic method first described by \citet{robinson03}, and was first applied to tertiary structure-dependent evolution of protein-coding nucleotide sequences.
 
