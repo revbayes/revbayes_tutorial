@@ -232,7 +232,7 @@ Now you know everything there is about creating the different types of variables
 
 
 
-\subsubsection*{Simple variable manipulation and other types of assignments}
+\subsubsection{Simple variable manipulation and other types of assignments}
 \Rev~provides some convenience variable manipulation operations that are equivalent to variable manipulations in other programming languages such as C/C++, Java and Python.
 You can increment (\cl{++}) and decrement (\cl{--}) a variable.
 The increment operation increases the current value of a variable by 1 and the decrement operation decreases the value by 1.
@@ -256,7 +256,7 @@ index *= 2                       # double the current value
 \end{snugshade*}}
 These variable manipulations will come in very handy for indices of vectors/arrays.
 
-\subsubsection*{Vectors}
+\subsubsection{Vectors}
 Common values in \RevBayes~are of scalar types.
 That means, that not everything is a vector by default.
 Instead, you can create a vector using three different ways.
@@ -316,7 +316,7 @@ v.size()
 \end{snugshade*}} 
 
 
-\subsubsection*{Control Structures}
+\subsubsection{Control Structures}
 In this next part we will learn about control structures in \Rev. 
 The first control structure that we will look at is the \cl{for} loop.
 \cl{for} loop execute a single statement or a block of 
@@ -374,7 +374,7 @@ fib
 \end{lstlisting}
 \end{snugshade*}}
 
-\subsubsection*{User Defined Functions}
+\subsubsection{User Defined Functions}
 In \Rev~you can write your own functions as well.
 The syntax for writing function is:
 {\tt \begin{snugshade*}
@@ -459,7 +459,7 @@ This exercise will demonstrate how to approximate the posterior distribution of 
 The focus here lies in the Metropolis algorithm, Bayesian inference, and model specification---but not in the model or the data. 
 After completing this computer exercise, you should be familiar with the basic Metropolis algorithm, analyzing output generated from a MCMC algorithm, and performing standard Bayesian inference.
 
-\subsection*{Model and Data}
+\subsection{Model and Data}
 We will use the data example from \cite{gelman95} (Table \ref{tab:airlineFatalities}). 
 A summary is given in table \ref{tab:airlineFatalities}.
 \begin{table}[!hbtp]
@@ -499,9 +499,9 @@ dpoisson(y[i],exp(alpha+beta*x[i]))
 \end{lstlisting}
 \end{snugshade*}}
 
-\subsection*{Problems}
+\subsection{Problems}
 
-\subsubsection*{Metropolis Algorithm}%
+\subsubsection{Metropolis Algorithm}%
 
 The source file for this sub-exercise \cl{airline\_fatalities\_part1.Rev}.
 
@@ -621,7 +621,7 @@ In the next section we will use the built-in MCMC algorithm of \RevBayes.
 
 
 
-\subsubsection*{MCMC analysis using the built-in algorithm in \RevBayes}
+\subsubsection{MCMC analysis using the built-in algorithm in \RevBayes}
 Before starting with this new approach it would be good if you either start a new \RevBayes~session or clear all previous variables using the \cl{clear} function.
 Currently we may have some minor memory problems and if you get stuck it may help to restart \RevBayes.
 
@@ -699,7 +699,7 @@ mymcmc.run(generations=3000)
 And now we are done {\LARGE \smiley}
 
 
-\subsubsection*{Posterior Distribution of $\alpha$ and $\beta$}
+\subsubsection{Posterior Distribution of $\alpha$ and $\beta$}
  
 Report the posterior mean and 95\% credible intervals for $\alpha$ and $\beta$. 
 Additionally, plot the posterior distribution of $\alpha$ and $\beta$ by plotting a histogram of the samples. 
@@ -748,7 +748,7 @@ We will analyze a dataset coal-mine accidents.
 The values are the dates of major (more than 10 casualties) coal-mining disasters in the UK from 1851 to 1962. 
 
 
-\subsection*{A model for disasters}
+\subsection{A model for disasters}
 
 A common model for the number of events that occur over a period of time is a Poisson process, in which the number of events in disjoint time-intervals are independent and Poisson-distributed. 
 We will discretize and look at the yearly number of accidents. 
@@ -867,7 +867,7 @@ mymcmc.run(generations=3000)
 
 
 \bigskip
-\subsection*{Batch Mode}
+\subsection{Batch Mode}
 
 If you wish to run this exercise in batch mode, the files are provided for you. 
 
@@ -876,14 +876,6 @@ You can carry out these batch commands by providing the file name when you execu
 \exs{\cl{\$ rb RevBayes\_scripts airline\_fatalities\_part2.Rev}}
 \exs{\cl{\$ rb RevBayes\_scripts coalmine\_accidents.Rev}}
 
-
-
-\bigskip
-\section*{Useful Links}
-
-\begin{itemize}
-\item RevBayes: \href{https://github.com/revbayes/code}{https://github.com/revbayes/code} \\ \vspace{-7mm}
-\end{itemize}
 
 Questions about this tutorial can be directed to: \\\vspace{-10mm}
 \begin{itemize}
