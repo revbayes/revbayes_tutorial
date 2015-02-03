@@ -463,7 +463,7 @@ A good move on variables drawn from a Dirichlet distribution is the \cl{mvSimple
 This move randomly takes an element from the simplex, proposes a new value for it drawn from a Beta distribution, and then rescales all values of the simplex to sum to 1 again.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-moves[++mi] = mvSimplexElementScale(pi, weight=4.0)
+moves[++mi] = mvSimplexElementScale(pi)
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -478,7 +478,7 @@ Again, we need to specify a move for this new stochastic variable.
 A simple scaling move should do the job.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-moves[++mi] = mvScale(kappa, weight=1.0)
+moves[++mi] = mvScale(kappa)
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -500,7 +500,7 @@ This should be all for the HKY model.
 \item Are the resulting estimates of the base frequencies equal? 
 	If not, how much do they differ? 
 	Are the estimated base frequencies similar to the empirical base frequencies? 
-	The empirical base frequencies are the frequencies of the characters in the alignment, which can be computed with \RevBayes~by \cl{data.empiricalBaseFrequencies()}.
+	The empirical base frequencies are the frequencies of the characters in the alignment, which can be computed with \RevBayes~by \cl{data.getEmpiricalBaseFrequencies()}.
 \item Is the inferred rate of transition substitutions higher than the rate of transversion substitutions? If so, by how much?
 \item Like the HKY model, the Felsenstein 1981 (F81) substitution model has unequal stationary frequencies, but it assumes equal transition-transversion rates \citep{Felsenstein1981}.
 	Can you set up the F81 model and run an analysis?
@@ -592,7 +592,7 @@ The Dirichlet prior on our parameter \cl{er} creates a \href{http://en.wikipedia
 
 {\tt\small \begin{snugshade*}
 \begin{lstlisting}
-moves[++mi] <- mvSimplexElementScale(er, weight=3) 
+moves[++mi] = mvSimplexElementScale(er) 
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -609,7 +609,7 @@ The node \cl{pi} represents the $\pi$ node in Figure \ref{fig:gtr}.
 Now add the simplex scale move on the stationary frequencies to the moves vector:
 {\tt \small \begin{snugshade*}
 \begin{lstlisting}
-moves[++mi] <- mvSimplexElementScale(pi, weight=2)  
+moves[++mi] = mvSimplexElementScale(pi)  
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -792,6 +792,13 @@ Then, as usual, we add a move to change this stochastic variable; we'll used a s
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 moves[mi++] = mvSlide(pinvar)
+\end{lstlisting}
+\end{snugshade*}}
+
+Finally, that you need to call the \cl{PhyloCTMC} constructor to include the new\cl{pinvar} parameter:
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+seq ~ dnPhyloCTMC(tree=phylogeny, Q=Q, siteRates=gamma_rates , pInv=pinvar, type="DNA")
 \end{lstlisting}
 \end{snugshade*}}
 
