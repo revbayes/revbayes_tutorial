@@ -3,7 +3,7 @@
 # RevBayes Example: Bayesian inference of phylogeny using a Jukes-Cantor model
 # 
 # This file: Runs the full MCMC on a single gene under the Jukes-Cantor 
-#            subsitution model using an unconstrained (unrooted) tree model.
+#            substitution model using an unconstrained (unrooted) tree model.
 #
 # authors: Sebastian Hoehna, Tracy A. Heath, Michael Landis and Brian R. Moore
 #
