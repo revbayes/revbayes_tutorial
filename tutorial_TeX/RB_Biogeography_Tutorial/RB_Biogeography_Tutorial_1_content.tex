@@ -1,12 +1,6 @@
 \section{Dispersal-Extinction-Cladogenesis model}
 
-\subsection{Motivation}
-
-XXX
-
 \subsection{Model and method}
-
-This section contains a brief description of the data, model, parameters, and method used in BayArea.
 
 First, we define the range for taxon $i$ as the bit vector $X_i$, where $X_{i,j} = 1$ if the taxon is present in area $j$ and $X_{i,j} = 0$ if the taxon is absent.
 Each taxon range is a bit vector of length $N$ areas.
@@ -88,8 +82,8 @@ Like above, for three areas, there are 8 states, and $8 \times 8 \times 8 = 512$
 
 The DEC model ignores speciation events hidden by extinction or incomplete taxon sampling.
 The probability of cladogenesis and local extinction events would ideally be linked to a birth-death process, as it is in the GeoSSE model \citep{goldberg11}.
-Unfortunately, since this sort of model scales poorly, and DEC models remain the only option when the geography has more than two or three areas.
-
+Unfortunately, since the numerical method for SSE models scale poorly, and DEC models remain the only option when the geography has more than two or three areas.
+For more than ten areas, we need data augmentation to integrate over range evolution, which is used in Section XXX.
 
 \begin{figure}[H]
 \centering
@@ -97,7 +91,7 @@ Unfortunately, since this sort of model scales poorly, and DEC models remain the
 \caption{Graphical model of DEC. The tree plate's topology is fixed by $T$, where each internal node has both an anagenic and cladogenic random variable ($X_i^{\text{an}}$ and $X_i^{\text{cl}}$, resp.) that represents an ancestral species before and after it speciated. Anagenic change is modeled by a continuous time Markov process, where $Q_{DE}$ is the instantaneous rate matrix of area gain and loss, as parameterized by $\lambda$. The geographic distance rate modifier function, $\eta$, takes in the geographical distances and strata as $G$, and the distance power parameter, $\beta$. Cladogenic change is modeled by $P_C$, a Dirichlet-distributed simplex with a flat prior.}
 \end{figure}
 
-The rest of this tutorial will describe how to run a simple DEC analysis using RevBayes.
+The rest of this section will describe how to run a simple DEC analysis using RevBayes.
 
 \newpage
 
@@ -106,27 +100,24 @@ The rest of this tutorial will describe how to run a simple DEC analysis using R
 
 \subsubsection{Specifying a simple DEC model}
 
-We'll use a dataset for XXX primates whose ranges are over three areas: Africa, Eurasia, and the New World.
-Read in the dataset
+We'll use a dataset for 23 primates, which are the same taxa as used in Section XXX. To keep the model simple, we'll ranges are over three areas: the New World, Africa, and Eurasia.
+For simplicity, we'll assume their phylogeny is time-calibrated, errorless, and fixed.
 
-
+First, set your working directory.
 
 \begin{snugshade}
 \begin{lstlisting}
-
+setwd("/Users/arwallace/projects/RB_Biogeography_tutorial/")
 \end{lstlisting}
 \end{snugshade}
-
-
-For simplicity, we'll assume
 
 First we'll create some {\tt String} variables for file handling
 
 \begin{snugshade}
 \begin{lstlisting}
-fp = "/Users/mlandis/projects/revbayes_tutorial/RB_Biogeography_DEC_tutorial/"
+fp = "./"
 data_fn = fp + "data/primates_bg_n3.tsv"
-tree_fn = fp + "data/primates_tree.tre"
+tree_fn = fp + "data/primates.tree"
 \end{lstlisting}
 \end{snugshade}
 
@@ -134,7 +125,15 @@ then read in our character data
 
 \begin{snugshade}
 \begin{lstlisting}
-d = readTSVCharacterData(data_fn, type="NaturalNumbers")
+data = readTSVCharacterData(data_fn, type="NaturalNumbers")
+\end{lstlisting}
+\end{snugshade}
+
+and our tree
+
+\begin{snugshade}
+\begin{lstlisting}
+tree <- readTrees(tree_fn)[1]
 \end{lstlisting}
 \end{snugshade}
 
@@ -142,19 +141,10 @@ Next, compute the number of states from the number of areas
 
 \begin{snugshade}
 \begin{lstlisting}
-n_areas = d.nchar()
-n_states = 2^d.nchar()
+n_areas = data.nchar()
+n_states = 2^data.nchar()
 \end{lstlisting}
 \end{snugshade}
-
-We assume the tree is known from an independent time calibration analysis
-
-\begin{snugshade}
-\begin{lstlisting}
-t <- readTrees(tree_fn)[1]
-\end{lstlisting}
-\end{snugshade}
-
 
 Declare index variables for our move and monitor vectors for future use
 
@@ -165,31 +155,26 @@ mni = 1
 \end{lstlisting}
 \end{snugshade}
 
-
-Next, we'll begin to construct the rate matrix for anagenic events.
-
-First create a matrix, 8-by-8 in size, initialized with all zeroes
+Now, we'll begin to construct the rate matrix for anagenic events. First create a matrix, 8-by-8 in size, initialized with all zeroes
 
 \begin{snugshade}
 \begin{lstlisting}
-for (i in 1:8) {
-    for (j in 1:8) {
+for (i in 1:n_states) {
+    for (j in 1:n_states) {
         r[i][j] <- 0.
     }
 }
 \end{lstlisting}
 \end{snugshade}
 
-Now we need to populate the non-zero rate matrix elements, which are in terms of dispersal and extinction rates.
-
-For this exercise, we'll use one dispersal rate and one extinction rate, and wait until later to relax this assumption.
+Now we need to populate the non-zero rate matrix elements, which are in terms of dispersal and extinction rates. We'll use one dispersal rate and one extinction rate for this tutorial, and explore more complex models in later sections.
 
 First, create a extinction rate parameter and assign it a scale move
 
 \begin{snugshade}
 \begin{lstlisting}
-r_d ~ dnExp(10.)
-mv[mvi++] = mvScale(r_d)
+r_e ~ dnExp(10.)
+mv[mvi++] = mvScale(r_e, weight=5)
 \end{lstlisting}
 \end{snugshade}
 
@@ -197,8 +182,8 @@ Before assigning the rates to the rate matrix, we'll create a vector to hold the
 
 \begin{snugshade}
 \begin{lstlisting}
-for (i in 1:3) {
-    extirpation_rate[i] := r_e
+for (i in 1:n_areas) {
+    e[i] := r_e
 }
 \end{lstlisting}
 \end{snugshade}
@@ -207,8 +192,8 @@ Now create the dispersal rate and scale move
 
 \begin{snugshade}
 \begin{lstlisting}
-r_e ~ dnExp(10.)
-mv[mvi++] = mvScale(r_e)
+r_d ~ dnExp(10.)
+mv[mvi++] = mvScale(r_d, weight=5)
 \end{lstlisting}
 \end{snugshade}
 
@@ -216,10 +201,10 @@ then assign the between-area dispersal rates as determined by {\tt $r_d$}
 
 \begin{snugshade}
 \begin{lstlisting}
-for (i in 1:3) {
-    for (j in 1:3) {
+for (i in 1:n_areas) {
+    for (j in 1:n_areas) {
         if (i != j) {
-            dispersal_rate[i][j] := r_d
+            d[i][j] := r_d
         }
     }
 }
@@ -227,56 +212,53 @@ for (i in 1:3) {
 \end{snugshade}
 
 Next, we'll populate the non-zero rate matrix elements.
-Rates are indexed by the natural number value of the range, e.g. range 010 is state 3.
+Rates are indexed by the natural number value of the range, e.g. the range spanning Eurasia and Africa is coded as 011, which is state 4.
 
-First assign the range contraction rates
+First assign the extinction (range loss) rates
 
 \begin{snugshade}
 \begin{lstlisting}
-r[4][2] := extirpation_rate[2]   # 011 -> 001 : Extirpate in area 2
-r[4][3] := extirpation_rate[3]   # 011 -> 010 : Extirpate in area 3
-r[6][2] := extirpation_rate[1]   # 101 -> 001 : Extirpate in area 1
-r[6][5] := extirpation_rate[3]   # 101 -> 100 : Extirpate in area 3
-r[7][3] := extirpation_rate[1]   # 110 -> 010 : Extirpate in area 1
-r[7][5] := extirpation_rate[2]   # 110 -> 100 : Extirpate in area 2
-r[8][4] := extirpation_rate[1]   # 111 -> 011 : Extirpate in area 1
-r[8][6] := extirpation_rate[2]   # 111 -> 101 : Extirpate in area 2
-r[8][7] := extirpation_rate[3]   # 111 -> 110 : Extirpate in area 3
+r[4][2] := e[2]                 # 011 -> 001 : Extirpate in area 2
+r[4][3] := e[3]                 # 011 -> 010 : Extirpate in area 3
+r[6][2] := e[1]                 # 101 -> 001 : Extirpate in area 1
+r[6][5] := e[3]                 # 101 -> 100 : Extirpate in area 3
+r[7][3] := e[1]                 # 110 -> 010 : Extirpate in area 1
+r[7][5] := e[2]                 # 110 -> 100 : Extirpate in area 2
+r[8][4] := e[1]                 # 111 -> 011 : Extirpate in area 1
+r[8][6] := e[2]                 # 111 -> 101 : Extirpate in area 2
+r[8][7] := e[3]                 # 111 -> 110 : Extirpate in area 3
 \end{lstlisting}
 \end{snugshade}
 
-then the range expansion rates
+then the dispersal (range gain) rates
 
 \begin{snugshade}
 \begin{lstlisting}
-r[2][4] := dispersal_rate[3][2]       # 001 -> 011 : Disperse from area 3 to 2
-r[2][6] := dispersal_rate[3][1]       # 001 -> 101 : Disperse from area 3 to 1
-r[3][4] := dispersal_rate[2][3]       # 010 -> 011 : Disperse from area 2 to 3
-r[3][7] := dispersal_rate[2][1]       # 010 -> 110 : Disperse from area 2 to 1
-r[5][6] := dispersal_rate[1][3]       # 100 -> 101 : Disperse from area 1 to 3
-r[5][7] := dispersal_rate[1][2]       # 100 -> 110 : Disperse from area 1 to 2
-r[4][8] := dispersal_rate[2][1] +  # 011 -> 111 : Disperse from area 2 to 1
-            dispersal_rate[3][1]      #                     and from area 3 to 1
-r[6][8] := dispersal_rate[1][2] +  # 101 -> 111 : Disperse from area 1 to 2
-            dispersal_rate[3][2]      #                     and from area 3 to 2                        
-r[7][8] := dispersal_rate[1][3] +  # 110 -> 111 : Disperse from area 1 to 3 
-            dispersal_rate[2][3]      #                     and from area 2 to 3
+r[2][4] := d[3][2]              # 001 -> 011 : Disperse from area 3 to 2
+r[2][6] := d[3][1]              # 001 -> 101 : Disperse from area 3 to 1
+r[3][4] := d[2][3]              # 010 -> 011 : Disperse from area 2 to 3
+r[3][7] := d[2][1]              # 010 -> 110 : Disperse from area 2 to 1
+r[5][6] := d[1][3]              # 100 -> 101 : Disperse from area 1 to 3
+r[5][7] := d[1][2]              # 100 -> 110 : Disperse from area 1 to 2
+r[4][8] := d[2][1] + d[3][1]  # 011 -> 111 : Disperse from area 2 to 1 and from 3 to 1
+r[6][8] := d[1][2] + d[3][2]  # 101 -> 111 : Disperse from area 1 to 2 and from 3 to 2
+r[7][8] := d[1][3] + d[2][3]  # 110 -> 111 : Disperse from area 1 to 3 and from 2 to 3
 \end{lstlisting}
 \end{snugshade}
 
 Show the value of {\tt r} and compare it to the matrix in Equation (XX).
 
-So far, we only have the desired parameterization of the rate matrix, but we still haven't created a rate matrix function.
+Of course we did not need to declare {\tt d} and {\tt e} to assign {\tt r}, but we'll see these intermediate variables act as a template expose the structure of {\tt r} for modification.
 
-Converting the vector-of-vectors, {\tt r}, into a simplex allows us to use existing rate matrix functions.
+So far, we only have the desired parameterization of the rate matrix, but we still haven't created a rate matrix function. Converting the vector-of-vectors, {\tt r}, into a simplex allows us to use existing rate matrix functions. 
 
 First, we'll convert {\tt r} into a one-dimensional vector, skipping the diagonal elements.
 
 \begin{snugshade}
 \begin{lstlisting}
 k <- 1
-for (i in 1:8) {
-    for (j in 1:8) {
+for (i in 1:n_states) {
+    for (j in 1:n_states) {
         if (i != j) {
             er_nat[k] := r[i][j]
             k += 1
@@ -286,27 +268,26 @@ for (i in 1:8) {
 \end{lstlisting}
 \end{snugshade}
 
-Finally, we use the DEC rate matrix structure to create the rate matrix, {\tt q}.
+Finally, normalize {\tt er\_nat} using a simplex, then pass the resulting exchangeability rates as arguments into the rate matrix function, {\tt q}.
 
 \begin{snugshade}
 \begin{lstlisting}
 er := simplex(er_nat)
-bf <- simplex(rep(1,8))
+bf <- simplex(rep(1,n_states))
 q := fnFreeK(er, bf)
 \end{lstlisting}
 \end{snugshade}
 
-This gives us our three-area DEC anagenic rate matrix.
+This yields the desired three-area DEC rate matrix modeling anagenic character change. In contrast, cladogenic event probabilites are given by a transition probability matrix and do not require a rate matrix.
 
-Cladogenic event probabilites are given by a transition probability matrix.
-
-First, we will create a flat prior on the probability of allopatry versus sympatry at cladogenesis.
+First, we will create a vector of prior weights on cladogenesis events. Here, we assign a flat prior to all cladogenic events
 
 \begin{snugshade}
 \begin{lstlisting}
-allopatry_weight <- 1.0
-sympatry_weight <- 1.0
-clado_type_weights <- simplex(allopatry_weight, sympatry_weight)
+widespread_sympatry_wt <- 1.0
+subset_sympatry_wt     <- 1.0
+allopatry_wt           <- 1.0
+clado_prior            <- [ widespread_sympatry_wt, subset_sympatry_wt, allopatry_wt ]
 \end{lstlisting}
 \end{snugshade}
 
@@ -314,8 +295,8 @@ then create the distribution over cladogenic event types and add its MCMC move
 
 \begin{snugshade}
 \begin{lstlisting}
-clado_type_prob ~ dnDirichlet( clado_type_weights )
-mv[mvi++] = mvSimplex(clado_type_prob, alpha=10., numCats=2, offset=1.0)
+clado_type             ~ dnDirichlet(clado_prior)
+mv[mvi++]               = mvSimplexElementScale(clado_type, alpha=10, weight=5)
 \end{lstlisting}
 \end{snugshade}
 
@@ -323,8 +304,9 @@ To give the simplex elements descriptive names when monitored, assign the values
 
 \begin{snugshade}
 \begin{lstlisting}
-allopatry_prob := clado_type_prob[1]
-sympatry_prob := clado_type_prob[2]
+widespread_sympatry    := clado_type[1]
+subset_sympatry        := clado_type[2]
+allopatry              := clado_type[3]
 \end{lstlisting}
 \end{snugshade}
 
@@ -347,25 +329,23 @@ mv[mvi++] = mvScale(clock_bg, weight=5)
 \end{lstlisting}
 \end{snugshade}
 
-Finally, all our model components are encapsulated in the dnPhyloCTMCClado distribution.
+Finally, all our model components are encapsulated in the {\tt dnPhyloCTMCClado} distribution, which is similar to {\tt dnPhyloCTMC} except specialized to integrate over cladogenic events. Although this dataset has three areas, it is recognized single character with states valued from 1 to $2^3$, hence {\tt nSites=1}.
 
 \begin{snugshade}
 \begin{lstlisting}
-m ~ dnPhyloCTMCClado( tree=t, Q=q, cladoProbs=clado_prob, branchRates=clock_bg, nSites=1, type="NaturalNumbers" )
+m ~ dnPhyloCTMCClado( tree=tree, Q=q, cladoProbs=clado_prob, branchRates=clock_bg, nSites=1, type="NaturalNumbers" )
 \end{lstlisting}
 \end{snugshade}
 
-Attach the observed ranges to the model.
+The remaining tasks should be familiar by now, so we can proceed briskly. Attach the observed ranges to the model.
 
 \begin{snugshade}
 \begin{lstlisting}
-m.clamp(d)
+m.clamp(data)
 \end{lstlisting}
 \end{snugshade}
 
-The remaining tasks should be familiar by now.
-
-Create the model object
+Compose the model.
 
 \begin{snugshade}
 \begin{lstlisting}
@@ -373,11 +353,12 @@ mdl = model(m)
 \end{lstlisting}
 \end{snugshade}
 
-Add monitors
+Add the monitors.
+
 \begin{snugshade}
 \begin{lstlisting}
-mn[mni++] = mnScreen(clock_bg, dispersal_rate[1], dispersal_rate[2], dispersal_rate[3], extirpation_rate, allopatry_prob, sympatry_prob)
-mn[mni++] = mnFile(clock_bg, dispersal_rate[1], dispersal_rate[2], dispersal_rate[3],  extirpation_rate, allopatry_prob, sympatry_prob, file=fp + "output/out.txt")
+mn[mni++] = mnScreen(clock_bg, d[1][2], d[1][3], d[2][1], d[2][3], d[3][1], d[3][2], e[1], e[2], e[3], widespread_sympatry, subset_sympatry, allopatry)
+mn[mni++] = mnFile(clock_bg, d[1][2], d[1][3], d[2][1], d[2][3], d[3][1], d[3][2], e[1], e[2], e[3], widespread_sympatry, subset_sympatry, allopatry, file=fp + "output/out.txt")
 \end{lstlisting}
 \end{snugshade}
 
@@ -385,20 +366,22 @@ Create the MCMC object, and run the chain after burn-in.
 \begin{snugshade}
 \begin{lstlisting}
 ch = mcmc(mv,mn,mdl)
-ch.burnin(1000)
+ch.burnin(1000, 10)
 ch.run(10000)
 \end{lstlisting}
 \end{snugshade}
 
 \subsubsection{Per-area rates}
 
+Biologically, there is nothing to say all areas are induce local extinctions at equal rates, as done above.
+Ecological factors, geographical distances, etc. might cause these parameters to be weakly correlated or completely uncorrelated.
 Rather than constraining all events of a type to share a common rate, instead you might give each area it's own extinction parameter
 
 \begin{snugshade}
 \begin{lstlisting}
 for (i in 1:3) {
-    extirpation_rate[i] ~ dnExp(10.)
-    mv[mvi++] = mvScale(extirpation_rate[i])
+    e[i] ~ dnExp(10.)
+    mv[mvi++] = mvScale(e, weight=5)
 }
 \end{lstlisting}
 \end{snugshade}
@@ -410,20 +393,33 @@ or give each ordered pair of areas a it's own dispersal rate
 for (i in 1:3) {
     for (j in 1:3) {
         if (i != j) {
-            dispersal_rate[i][j] ~ dnExp(10.)
-            mv[mvi++] = mvScale(dispersal_rate[i][j])
+            d[i][j] ~ dnExp(10.)
+            mv[mvi++] = mvScale(d[i][j], weight=5)
         }
     }
 }
 \end{lstlisting}
 \end{snugshade}
 
+This parameterization is identical to matrix introduced in Eq XXX.
+In Section XXX, we'll extend this idea further to parameterize features of range evolution, and incorporate paleogeological information.
+
 \subsubsection{Exercises}
 
 \begin{itemize}
-\item Using Bayes factors, determine if the data support the ``common rate'' model over the ``per-area'' rate model.
-\item Set the Dirichlet prior on cladogenic event types to heavily favor allopatry events. Using Tracer, describe how changing the cladogenesis prior affects the dispersal rate when compared with the ``common rate'' model.
+\item Widespread sympatric speciation is thought to be evolutionarily rare. Set the Dirichlet prior on cladogenic event types to heavily disfavor these events. Using Tracer, describe how changing the cladogenesis prior affects the extinction rate when compared with the ``common rate'' model.
+\item (1 of 2) Saving your commands to a file, create a script to produce the ``per-area'' rate model.
+\item (2 of 2) Determine if the data support the ``common rate'' model over the ``per-area'' rate model. Use the stepping stone method to compute marginal likelihoods, which will let you compute Bayes factors for model selection (see Section XXX).
+\item (Advanced) Using what you learned in this tutorial and the CTMC tutorial (Section XXX), perform a joint analysis of molecular and biogeographic evolution for primates. Introduce a common prior for the molecular and biogeographical clocks, e.g.
+\begin{snugshade}
+\begin{lstlisting}
+clock_mol       ~ dnExp(10.)
+clock_scale_bg  ~ dnGamma(2.,2.)
+clock_bg        := clock_mol * clock_scale_bg
+\end{lstlisting}
+\end{snugshade}
 \end{itemize}
+
 
 
 \bibliography{bayes}

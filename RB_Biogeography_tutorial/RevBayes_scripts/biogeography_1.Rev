@@ -1,6 +1,8 @@
-# source("/Users/mlandis/projects/revbayes_tutorial/RB_Biogeography_DEC_tutorial/RevBayes_scripts/model_DEC_n3.Rev")
+# source("/Users/mlandis/projects/revbayes_tutorial/RB_Biogeography_tutorial/RevBayes_scripts/biogeography_1.Rev")
 
-fp = "/Users/mlandis/projects/revbayes_tutorial/RB_Biogeography_DEC_tutorial/"
+setwd("/Users/mlandis/projects/RB_Biogeography_tutorial/")
+
+fp = "./"
 data_fn = fp + "data/primates_bg_n3.tsv"
 tree_fn = fp + "data/primates.tree"
 
@@ -14,7 +16,7 @@ n_areas_tmp = n_areas
 n_states = floor(2^n_areas_tmp)
 
 # read data as natural numbers
-d = readTSVCharacterData(data_fn, type="NaturalNumbers")
+data = readTSVCharacterData(data_fn, type="NaturalNumbers")
 
 # want to convert binary SS -> decimal NN
 # ...
@@ -25,10 +27,10 @@ t <- readTrees(tree_fn)[1]
 clock_bg ~ dnExp(10)
 
 # load the 3-area DEC model with same rates
-#source(fp + "RevBayes_scripts/DEC_n3_same_rate.Rev")
+source(fp + "RevBayes_scripts/DEC_n3_same_rate.Rev")
 
 # ... or use the 3-area DEC model with different rates
-source(fp + "RevBayes_scripts/DEC_n3_diff_rate.Rev")
+#source(fp + "RevBayes_scripts/DEC_n3_diff_rate.Rev")
 
 # ... or use the n-area DEC model, determined by n_areas
 # Using this requires editing the .Rev file.
@@ -36,20 +38,22 @@ source(fp + "RevBayes_scripts/DEC_n3_diff_rate.Rev")
 
 # build ctmc
 m ~ dnPhyloCTMCClado( tree=t, Q=q, cladoProbs=clado_prob, branchRates=clock_bg, nSites=1, type="NaturalNumbers" )
-m.clamp(d)
+m.clamp(data)
 
 # make model
 mdl = model(m)
-str(m)
+#str(m)
 
 # moves
 mv[mvi++] = mvScale(clock_bg, weight=5)
 
 # monitors
-mn[mni++] = mnScreen(clock_bg, dispersal_rate[1], dispersal_rate[2], dispersal_rate[3], extirpation_rate, allopatry_prob, sympatry_prob)
-mn[mni++] = mnFile(clock_bg, dispersal_rate[1], dispersal_rate[2], dispersal_rate[3],  extirpation_rate, allopatry_prob, sympatry_prob, file=fp + "output/out.txt")
+mn[mni++] = mnScreen(clock_bg, d[1][2], d[1][3], d[2][1], d[2][3], d[3][1], d[3][2], e[1], e[2], e[3], widespread_sympatry, subset_sympatry, allopatry)
+#mn[mni++] = mnScreen(clock_bg, r_d, r_e, widespread_sympatry, subset_sympatry, allopatry)
+mn[mni++] = mnFile(clock_bg, d[1][2], d[1][3], d[2][1], d[2][3], d[3][1], d[3][2], e[1], e[2], e[3], widespread_sympatry, subset_sympatry, allopatry, file=fp + "output/out.txt")
 
 # mcmc
 ch = mcmc(mv,mn,mdl)
-ch.run(1000)
+ch.burnin(1000,10)
+ch.run(10000)
 
