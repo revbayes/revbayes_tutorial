@@ -5,6 +5,7 @@ setwd("/Users/mlandis/projects/RB_Biogeography_tutorial/")
 fp = "./"
 data_fn = fp + "data/primates_bg_n3.tsv"
 tree_fn = fp + "data/primates.tree"
+out_str = "bg_1"
 
 # helper variables
 mvi = 1 # index to add MCMC moves
@@ -22,8 +23,7 @@ data = readTSVCharacterData(data_fn, type="NaturalNumbers")
 # ...
 
 #names = d.names()
-#t ~ dnBDP(rootAge=60.,lambda=1.,names=names)
-t <- readTrees(tree_fn)[1]
+tree <- readTrees(tree_fn)[1]
 
 # clock
 clock_bg ~ dnExp(10)
@@ -40,18 +40,16 @@ source(fp + "RevBayes_scripts/DEC_n3_same_rate.Rev")
 # source(fp + "RevBayes_scripts/DEC_general.Rev")
 
 # build ctmc
-m ~ dnPhyloCTMCClado( tree=t, Q=q, cladoProbs=clado_prob, branchRates=clock_bg, nSites=1, type="NaturalNumbers" )
+m ~ dnPhyloCTMCClado( tree=tree, Q=q, cladoProbs=clado_prob, branchRates=clock_bg, nSites=1, type="NaturalNumbers" )
 m.clamp(data)
 
 # make model
 mdl = model(m)
 #str(m)
 
-
 # monitors
 mn[mni++] = mnScreen(clock_bg, d[1][2], d[1][3], d[2][1], d[2][3], d[3][1], d[3][2], e[1], e[2], e[3], widespread_sympatry, subset_sympatry, allopatry)
-#mn[mni++] = mnScreen(clock_bg, r_d, r_e, widespread_sympatry, subset_sympatry, allopatry)
-mn[mni++] = mnFile(clock_bg, d[1][2], d[1][3], d[2][1], d[2][3], d[3][1], d[3][2], e[1], e[2], e[3], widespread_sympatry, subset_sympatry, allopatry, file=fp + "output/out.txt")
+mn[mni++] = mnFile(clock_bg, d[1][2], d[1][3], d[2][1], d[2][3], d[3][1], d[3][2], e[1], e[2], e[3], widespread_sympatry, subset_sympatry, allopatry, file="./output/"+out_str+".params.txt")
 
 # mcmc
 ch = mcmc(mv,mn,mdl)

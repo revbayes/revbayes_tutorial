@@ -52,7 +52,7 @@
                     "name": "Eur"
                 }, 
                 {
-                    "latitude": 65.0, 
+                    "latitude": 45.0, 
                     "longitude": 65.0, 
                     "name": "As_C"
                 }, 
@@ -62,8 +62,8 @@
                     "name": "As_E"
                 }, 
                 {
-                    "latitude": 5.0, 
-                    "longitude": 110.0, 
+                    "latitude": 20.0, 
+                    "longitude": 105.0, 
                     "name": "As_SE"
                 }, 
                 {
@@ -72,7 +72,7 @@
                     "name": "As_NE"
                 }, 
                 {
-                    "latitude": 20.0, 
+                    "latitude": 10.0, 
                     "longitude": -5.0, 
                     "name": "Afr_W"
                 }, 

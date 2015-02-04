@@ -103,7 +103,7 @@ The rest of this section will describe how to run a simple DEC analysis using Re
 We'll use a dataset for 23 primates, which are the same taxa as used in Section XXX. To keep the model simple, we'll ranges are over three areas: the New World, Africa, and Eurasia.
 For simplicity, we'll assume their phylogeny is time-calibrated, errorless, and fixed.
 
-First, set your working directory.
+First, set your working directory,
 
 \begin{snugshade}
 \begin{lstlisting}
@@ -111,17 +111,18 @@ setwd("/Users/arwallace/projects/RB_Biogeography_tutorial/")
 \end{lstlisting}
 \end{snugshade}
 
-First we'll create some {\tt String} variables for file handling
+create some {\tt String} variables for file handling,
 
 \begin{snugshade}
 \begin{lstlisting}
 fp = "./"
 data_fn = fp + "data/primates_bg_n3.tsv"
 tree_fn = fp + "data/primates.tree"
+out_fn  = fp + "output/bg_1"
 \end{lstlisting}
 \end{snugshade}
 
-then read in our character data
+then read in our character data,
 
 \begin{snugshade}
 \begin{lstlisting}
@@ -358,7 +359,7 @@ Add the monitors.
 \begin{snugshade}
 \begin{lstlisting}
 mn[mni++] = mnScreen(clock_bg, d[1][2], d[1][3], d[2][1], d[2][3], d[3][1], d[3][2], e[1], e[2], e[3], widespread_sympatry, subset_sympatry, allopatry)
-mn[mni++] = mnFile(clock_bg, d[1][2], d[1][3], d[2][1], d[2][3], d[3][1], d[3][2], e[1], e[2], e[3], widespread_sympatry, subset_sympatry, allopatry, file=fp + "output/out.txt")
+mn[mni++] = mnFile(clock_bg, d[1][2], d[1][3], d[2][1], d[2][3], d[3][1], d[3][2], e[1], e[2], e[3], widespread_sympatry, subset_sympatry, allopatry, file=out_fn+".params.txt")
 \end{lstlisting}
 \end{snugshade}
 
@@ -409,6 +410,7 @@ In Section XXX, we'll extend this idea further to parameterize features of range
 
 \begin{itemize}
 \item Widespread sympatric speciation is thought to be evolutionarily rare. Set the Dirichlet prior on cladogenic event types to heavily disfavor these events. Using Tracer, describe how changing the cladogenesis prior affects the extinction rate when compared with the ``common rate'' model.
+\item How would you constraint the rate matrix to allow ranges of size two at largest.
 \item (1 of 2) Saving your commands to a file, create a script to produce the ``per-area'' rate model.
 \item (2 of 2) Determine if the data support the ``common rate'' model over the ``per-area'' rate model. Use the stepping stone method to compute marginal likelihoods, which will let you compute Bayes factors for model selection (see Section XXX).
 \item (Advanced) Using what you learned in this tutorial and the CTMC tutorial (Section XXX), perform a joint analysis of molecular and biogeographic evolution for primates. Introduce a common prior for the molecular and biogeographical clocks, e.g.
