@@ -173,7 +173,7 @@ q_area := fnFreeBinary(glr)
 Next, we will create {\tt dp} to represent the $\beta$ parameter, which determines the importance of geographical distance to dispersal.
 Remember that values of $\beta$ far from zero means distance is important.
 So, if we we assign a prior that pulls $\beta$ towards zero, then posterior values of $\beta$ far from zero indicate the range data are informative of the importance of distance to dispersal.
-We'll use an exponential distribution with rate 10.0 (mean 0.1) as a prior for {\tt dp}.
+We'll use an exponential distribution with mean 1.0 as a prior for {\tt dp}.
 
 \begin{snugshade}
 \begin{lstlisting}
@@ -327,13 +327,23 @@ my_mcmc.run(generations=ngen)
 \end{lstlisting}
 \end{snugshade}
 
+\subsubsection{Exercises}
+
+\begin{itemize}
+\item How sensitive are the rates of area gain and loss to the prior distribution on {\tt dp} ($\beta$)?
+\end{itemize}
+
 \subsection{Analysis output}
 
 You will need a node-indexed phylogeny to interpret ancestral state reconstructions. First, open FigTree and load the Newick tree stored in {\tt data/primates.tree.index.tre}. Expand ``Node Labels'' and change ``Display'' to the custom node label. All sampled characters have a node index, which corresponds to the branch ancestral to the indexed node.
 
+\begin{centering}
 \includegraphics[width=4in]{figures/figtree_node_label}
+\end{centering}
 
-\subsection{Biogeographic event counts from {\tt mnCharHistoryNewick}}
+We'll focus some attention on node 42, the most recent common ancestor of chimps and macaques, designated as the Old World most recent common ancestor (MRCA).
+
+\subsubsection{Biogeographic event counts from {\tt mnCharHistoryNewick}}
 
 Recording stochastic mappings in a Tracer-compatible format requires some summarization.
 This monitor generates a tab-delimited file where the number of events of each type for each branch is recorded.
@@ -341,148 +351,91 @@ This monitor generates a tab-delimited file where the number of events of each t
 Open {\tt ./output/bg\_3.counts.txt} in a text editor.
 
 \begin{framed}
-\begin{lstlisting}%[basicstyle=\tiny \listingsfont, columns=texcl]
-Iteration  Posterior  Likelihood    Prior	t_s0	t_s1	t_c0	t_c1	t_c2	t_c3	b0_s0	b0_s1	b0_c	...
-0           -51.3307    -56.0288  4.69806	9	9	18	0	0	0	1	1	0	...	
-10          -54.4257    -58.1568  3.73110	9	10	17	0	0	1	1	1	0	...
-20          -58.0696    -62.0923  4.02274	11	9	15	2	1	0	2	1	1	...
-30          -46.5049    -51.1197  4.61480	8	8	18	0	0	0	1	1	0	...
-40          -42.8697    -46.4870  3.61735	7	7	18	0	0	0	1	1	0	...
-50          -43.5319    -47.4659  3.93394	7	7	18	0	0	0	1	1	0	...
+\begin{lstlisting}[style=textboxSmall]  % \listingsfont, columns=texcl]
+kkkddd
+Iter	Posterior	Likelihood	Prior	t_s0	t_s1	t_c0	t_c1	t_c2	t_c3	b0_s0	b0_s1	b0_c	...
+0	-6518.54	-6519.25	0.706823	977	839	22	0	0	0	38	28	0	...
+10	-583.147	-585.333	2.186240	66	37	3	7	9	3	2	1	2	...
+20	-296.540	-297.340	0.799755	20	25	15	1	3	3	0	1	0	...
+30	-276.284	-277.257	0.972918	17	24	14	0	4	4	0	1	0	...
+40	-266.569	-266.948	0.379624	18	23	15	1	3	3	0	1	3	...
 ...
 \end{lstlisting}
 \end{framed}
 
-For example, {\tt b2\_s1} gives the number of areas that are gained for the branch leading to the node indexed 2.
-{\tt b2\_c} gives the cladogenic event type that gives rise to the node indexed 2, where narrow sympatry, subset sympatry, allopatry, and widespread sympatry are recorded as {\tt 0}, {\tt 1}, {\tt 2}, and {\tt 3}, respectively. The columns {\tt t\_s0} and {\tt t\_s1} give the sum of events over all branches. {\tt t\_c0}, {\tt t\_c1}, and {\tt t\_c2} give the total number of narrow sympatric, subset sympatric, allopatric, and widespread sympatric cladogenic events over the entire tree.
+For example, {\tt b0\_s1} gives the number of areas that are gained for the branch leading to the node indexed 0.
+Referencing FigTree, we see this corresponds to chimpanzees.
+{\tt b0\_c} gives the cladogenic event type that gives rise to the chimp lineage, where narrow sympatry, widespread sympatry, subset sympatry, and allopatry are recorded as {\tt 0}, {\tt 1}, {\tt 2}, and {\tt 3}, respectively. The columns {\tt t\_s0} and {\tt t\_s1} give the sum of events over all branches. {\tt t\_c0}, {\tt t\_c1}, {\tt t\_c2}, and {\tt t\_c3} give the total number of narrow sympatric, widespread sympatric, subset sympatric, and allopatric cladogenic events over the entire tree.
 
 \subsection{Biogeographic event histories from {\tt mnCharHistoryNewick}}
 
 For more detailed data exploration, this analysis also provides annotated Newick strings with the complete character mappings for the tree.
+(This file format is a bit unwieldy and under revision.)
 
 \noindent \\ \impmark Open {\tt ./output/bg\_3.events.txt} in a text editor.
-
-\begin{framed}
-\begin{lstlisting}%[basicstyle=\tiny \listingsfont, columns=texcl]
-Iteration  Posterior  Likelihood  Prior  Tree
-Iteration	Posterior	Likelihood	Prior	Tree
-0	-51.3307	-56.0288	4.69806	((((((((P_hawaiiensis_WaikamoiL1[&index=18;nd=0010;pa=0010;ev={}]:0.96 ...
-10	-54.4257	-58.1568	3.7311	((((((((P_hawaiiensis_WaikamoiL1[&index=18;nd=0010;pa=0010;ev={}]:0.96 ...
-20	-58.0696	-62.0923	4.02274	((((((((P_hawaiiensis_WaikamoiL1[&index=18;nd=0010;pa=0010;ev={}]:0.96 ...
-30	-46.5049	-51.1197	4.6148	((((((((P_hawaiiensis_WaikamoiL1[&index=18;nd=0010;pa=0010;ev={}]:0.96 ...
-40	-42.8697	-46.4870	3.61735	((((((((P_hawaiiensis_WaikamoiL1[&index=18;nd=0010;pa=0010;ev={}]:0.96 ...
-50	-43.5319	-47.4659	3.93394	((((((((P_hawaiiensis_WaikamoiL1[&index=18;nd=0010;pa=0010;ev={}]:0.96 ...
-
-...
-\end{lstlisting}
-\end{framed}
 
 Each iteration records the data-augmented character history (stochastic mapping) using metadata labels, which, for an internal node, looks like
 
 \begin{snugshade}
 \begin{lstlisting}
-[&index=23;nd=0110;pa=0010;ch0=0010;ch1=0110;cs=s;bn=16;ev={{t:0.2513,a:1.1195,s:1,i:1}}
+[&index=42;nd=0000000000000101000000000;pa=0000000000000100000000000;ch0=0000000000000101000000000;ch1=0000000000000001000000000;cs=s;bn=41;ev={{t:0.138033,a:39.4458,s:1,i:15}}]
 \end{lstlisting}
 \end{snugshade}
 
-{\tt index=23} indicates this branch leads to the node indexed 23.
-The branch began in the ancestral state {\tt pa=0100} and terminated in the state {\tt nd=0110}.
-Since this node is not a tip node, it represents a speciation event, so the daughter ranges are also given, {\tt ch0=0010} and {\tt ch1=0110}.
+Having consulted FigTree earlier, we know node 42 is the Old World MRCA.
+The branch began with the range {\tt pa=0000000000000100000000000} and terminated in the state {\tt nd=0000000000000101000000000}.
+Since this node is not a tip node, it represents a speciation event, so the daughter ranges are also given, {\tt ch0=0000000000000101000000000} and {\tt ch1=0000000000000001000000000}.
 The cladogenic state for this speciation event was subset sympatric, {\tt cs=s}, rather than sympatric (wide or narrow; {\tt w} or  {\tt n}) or allopatric ({\tt a}).
-Anagenic dispersal and extinction events occurring along the lineage leading to node 19 are recorded in {\tt events}, where each event has a time (relative to the absolute branch length), absolute age, state (into), and character index ({\tt t}, {\tt a}, {\tt s}, {\tt i}, resp.).
-For this posterior sample of the character history for the branch leading to node 22, the species range expanded into Oahu at age 1.1195.
 
-To manipulate this data format, we'll use Python scripts. Below are a few examples of interesting posterior features.
+Anagenic dispersal and extinction events occurring along the lineage leading to node 42 are recorded in {\tt ev}, where each event has a time (relative to the absolute branch length), absolute age, state (into), and character index ({\tt t}, {\tt a}, {\tt s}, {\tt i}, resp.).
+Potentially, {\tt ev} contains multiple events.
+For this posterior sample, the MRCA of chimps and macaques dispersed into East Africa 39.4458 million years ago, which is consistent with the ranges recorded by {\tt pa} and {\tt nd}.
+
+Although we have stochastic mappings under the posterior distribution, the remaining challenge is to summarize them into something useful. The Python script {\tt bg\_parse.py} is provided to manipulate this data format. Below are a few examples of interesting features of the posterior.
 
 \noindent \\ \impmark  Open a Python console and read in the events.
 
 \begin{snugshade}
 \begin{lstlisting}
-> cd scripts
-> python27
+> cd RevBayes_scripts
+> python
 
 ...
 
 >>> from bg_parse import *
->>> dd=get_events(fn="../output/bg_2rate.events")
+>>> d=get_events(fn="../output/bg_3.events.txt")
 \end{lstlisting}
 \end{snugshade}
 
-By default, {\tt get\_events()} extracts a dictionary where each node index maps to a branch's character history as reported in {\tt ./input/bg\_2rate.events.txt}. 
-Each branch is a dictionary whose keys are various parts of the MCMC state and whose values the MCMC samples.
+By default, {\tt get\_events()} extracts a dictionary-of-dictionaries from the posterior event samples.
+The first key corresponds to the node (branch) whose MCMC samples you'd like to retrieve, while the second dictionary's keys are the columns correspond to MCMC states and values specific to that node. For example, say we are interested in the last five cladogenic states sampled for node 42, Old World MRCA,
 \begin{snugshade}
 \begin{lstlisting}
->>> dd[23].keys()
-['ch1', 'iteration', 'bn', 'nd', 'ch0', 'prior', 'posterior', 'cs', 'ev', 'likelihood']
->>> dd[23]['posterior'][0:5]
-[-48.6952, -60.1832, -53.2286, -57.5778, -53.4633]
+>>> dd[42].keys()
+['ch1', 'iteration', 'bn', 'nd', 'ch0', 'prior', 'posterior', 'pa', 'cs', 'ev', 'likelihood']
+>>> dd[42]['cs'][-5:]
+['widespread_sympatry', 'widespread_sympatry', 'widespread_sympatry', 'widespread_sympatry', 'widespread_sympatry']
 \end{lstlisting}
 \end{snugshade}
 
-To get the $n=1$ highest-valued sample for a branch by its posterior value
+To get the {\tt n=1} highest-valued sample for a branch by its posterior value
 \begin{snugshade}
 \begin{lstlisting}
->>> get_best(dd[23],n=1,p='posterior')
-{'prior': [4.48225], 'iteration': [14890], 'bn': [22], 'nd': [[0, 1, 1, 0]], 'ch0': [[0, 1, 1, 0]], 'ch1': [[0, 0, 1, 0]], 'posterior': [-34.7139], 'pa': [[0, 1, 0, 0]], 'cs': ['subset_sympatry'], 'ev': [[{'age': 1.5637, 'state': 1, 'idx': 2, 'time': 0.8611}]], 'likelihood': [-39.1962]}
+>>> get_best(dd[42],n=1,p='posterior')
+{'prior': [-0.524716], 'iteration': [46700], 'bn': [41], 'nd': [[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0]], 'ch0': [[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0]], 'ch1': [[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0]], 'posterior': [-95.7676], 'pa': [[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0]], 'cs': ['widespread_sympatry'], 'ev': [[]], 'likelihood': [-95.2429]}
 \end{lstlisting}
 \end{snugshade}
 
-To get the probability that area $i$ and area $j$ are both part of the species range as the branch for node 23 terminates, just before the speciation event
-\begin{snugshade}
-\begin{lstlisting}
->>> get_area_pair(dd[23])
-[[0.0816, 0.0188, 0.0628, 0.0000],
- [0.0188, 0.7081, 0.4390, 0.0000],
- [0.0628, 0.4390, 0.7141, 0.0000],
- [0.0000, 0.0000, 0.0000, 0.0000]]
-\end{lstlisting}
-\end{snugshade}
-showing area 3 was occupied nearly with probability 0.71 and both areas 2 and 3 were occupied with probability 0.44.
-Note, Hawaii was submerged until approximately 0.5 million years ago, and thus the probability of being in that area is 0.0.
+More data-exploration functions are found in {\tt bg\_parse.py}.
 
-If the range is size one during a speciation event, the cladogenic event state is always narrow sympatric, {\tt `narrow\_sympatry'}.
-But given the opportunity for non-sympatric events, i.e. that the range is larger than size one, we can get the probability of cladogenic state using
-For the probability for cladogenic event state given the range was larger than size one
-\begin{snugshade}
-\begin{lstlisting}
->>> get_clado_state(dd[23])
-{'allopatry': 0.0224, 'subset_sympatry': 0.1463, 'widespread_sympatry': 0.3183, 'narrow_sympatry': 0.5130}
->>> get_clado_state(dd[23],minSize=2)
-{'allopatry': 0.0460, 'subset_sympatry': 0.3005, 'widespread_sympatry': 0.6535, 'narrow_sympatry': 0.0000}
->>> get_clado_state(get_best(dd[23],n=100),minSize=2)
-{'allopatry': 0.1290, 'subset_sympatry': 0.6774, 'widespread_sympatry': 0.1936, 'narrow_sympatry': 0.0000}
-\end{lstlisting}
-\end{snugshade}
-
-Depending on your question, different aspects of the posterior cladogenic state will interest you.
-Narrow sympatry is the favored ancestral state, but wide sympatry is favored for ranges of size $n>1$.
-However, when we look at the 100 most probable samples, subset sympatry becomes most favored.
-
-More script functions are found in {\tt ./scripts/bg\_parse.py}.
-
-\subsection{New Hampshire extended format file (\texttt{./output/bg\_2rate.nhx})}
+\subsection{Phylowood animation file (\texttt{./output/bg\_3.nhx.txt})}
 
 Because this data is very high-dimensional, we'll use an external data exploration tool to look at range evolution.
-
-This file summarizes the input and output from a BayArea analysis using NEXUS format containing a New Hampshire eXtended (NHX) tree string.
-NHX allows you to annotate nodes in a Newick string with meta-information, which BayArea uses to report the probabilities in the \texttt{my\_run.area\_probs.txt} file.
-The \texttt{geo} block gives the geographical latitudes and longitudes for the areas in the order they are reported as probabilities.
-Like the \texttt{my\_run.area\_probs.txt} file, this file is not written until the analysis is complete.
-This annotation is used for the two visualization programs covered in the next section, Phylowood and BayArea-Fig.
-The anatomy of the Phylowood and BayArea-Fig settings blocks will also be explained there.
-
-\section{Visualization}
-
-Here we'll explore two options for visualizing ancestral range reconstructions.
-I'll walk you through some of the basic functionality, but feel free to play around as you like.
-
-\subsection{Phylowood}
-
-Phylowood generates interactive animations to explore biogeographic reconstructions.
+This file summarizes the MCMC output from a RevBayes biogeographical analysis as a Nexus-formatted file, which is used by Phylowood to generate interactive animations to explore biogeographic reconstructions.
 
 \noindent \\ \impmark Open \texttt{http://mlandis.github.io/phylowood}.
 
-\noindent \\ \impmark Drag and drop \texttt{./output/bg\_2rate.nhx.txt} into the text field.
+\noindent \\ \impmark Drag and drop \texttt{./output/bg\_3.nhx.txt} into the text field.
 
 \begin{figure}[H]
 \centering
@@ -491,6 +444,8 @@ Phylowood generates interactive animations to explore biogeographic reconstructi
 \end{figure}
 
 \noindent \\ \impmark Click the Play button to view the animation. \\
+
+Notice the primate MRCA range is very widespread with six areas. This is
 
 There are three control panels to help you filter data: the media panel, the map panel, and the phylogeny panel.
 The media buttons correspond to Beginning, Slow/Rewind, Play, Stop, Fast Forward, Ending (from left to right).
@@ -529,13 +484,13 @@ Phylowood also offers a masking effect that persists until an unmask command is 
 \begin{figure}[H]
 \centering
 \includegraphics[width=4in]{figures/phw_br23}
-\caption{Phylowood frame highlighting the posterior range for the most recent common ancestor of {\it P. mauiensis} and {\it P. hawaiiensis}.}
+\caption{Phylowood frame highlighting the posterior range for Old World MRCA.}
 \end{figure}
 
 Now that the masking effects are in place, you're free to interact with other map components.
 In addition, the area of marker sizes is only distributed among unmasked lineages.
 
-\noindent \\ \impmark Visit \texttt{https://github.com/mlandis/phylowood/wiki} to learn more about Phylowood.
+Visit \texttt{https://github.com/mlandis/phylowood/wiki} to learn more about Phylowood.
 
 
 

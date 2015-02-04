@@ -6,11 +6,14 @@ fp      = "./"
 area_fn = fp + "data/earth25.still.atlas.txt"
 data_fn = fp + "data/primates_bg_n25.nex"
 tree_fn = fp + "data/primates.tree"
-out_fn  = fp + "output/bg_3"
+out_fn  = fp + "output/bg_3.2"
 
 data  <- readDiscreteCharacterData(data_fn)
 tree  <- readTrees(tree_fn)[1]
 atlas <- readAtlas(area_fn)
+
+n_areas = atlas.nAreas()
+n_nodes = tree.nnodes()
 
 mvi = 1
 mni = 1
@@ -35,7 +38,7 @@ r_loss := glr[2]
 q_area := fnFreeBinary(glr)
 
 # distance power parameter
-dp ~ dnExp(1.0)
+dp ~ dnExp(10)
 moves[mvi++] = mvScale(x=dp, lambda=0.5, weight=5.0)
 
 # geographical distance rate modifier
@@ -57,10 +60,10 @@ m.clamp(data)
 m.lnProbability()
 
 # data augmentation proposals
-moves[mvi++] = mvCharacterHistory(ctmc=m, qmap=q_range, tree=tree, lambda=0.05, type="Biogeo", graph="node", proposal="rejection", weight=100.0)
-moves[mvi++] = mvCharacterHistory(ctmc=m, qmap=q_range, tree=tree, lambda=0.05, type="Biogeo", graph="branch", proposal="rejection", weight=100.0)
-moves[mvi++] = mvCharacterHistory(ctmc=m, qmap=q_range, tree=tree, lambda=1.0, type="Biogeo", graph="node", proposal="rejection", weight=40.0)
-moves[mvi++] = mvCharacterHistory(ctmc=m, qmap=q_range, tree=tree, lambda=1.0, type="Biogeo", graph="branch", proposal="rejection", weight=40.0)
+moves[mvi++] = mvCharacterHistory(ctmc=m, qmap=q_range, tree=tree, lambda=0.1, type="Biogeo", graph="node", proposal="rejection", weight=n_nodes*5)
+moves[mvi++] = mvCharacterHistory(ctmc=m, qmap=q_range, tree=tree, lambda=0.1, type="Biogeo", graph="branch", proposal="rejection", weight=n_nodes*5)
+moves[mvi++] = mvCharacterHistory(ctmc=m, qmap=q_range, tree=tree, lambda=0.5, type="Biogeo", graph="node", proposal="rejection", weight=n_nodes*2)
+moves[mvi++] = mvCharacterHistory(ctmc=m, qmap=q_range, tree=tree, lambda=0.5, type="Biogeo", graph="branch", proposal="rejection", weight=n_nodes*2)
 
 # create the model
 my_model = model(m)
