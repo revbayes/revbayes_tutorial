@@ -527,9 +527,12 @@ perSiteRates[3] := abs(1.0 - siteRateDiff)   # specify the type here
 perSiteRates[4] := abs(1.0 - siteRateDiff)
 \end{lstlisting}
 \end{snugshade*}}
-The remaining functions are the same as in the previous example
+You could have specified many other prior distribution on the relative rate (or ratio) such as a uniform prior distribution and then use logit or hyperbolic tangent transformation.
+The only important factor is that the rates are somehow normalized because we use the global, shared rate \cl{sigma}.
+Using the beta distribution makes the rates automatically normalized because the two different rates sum to one. Note that in the previous all four rates summed to 1.0 and here the two different rates sum to 1.0. This has the effect that we should estimate the global rate \cl{sigma} to be half of what you estimated previously. You may want to check this once you ran the analysis and loaded the output into \Tracer. 
 
 
+The remaining functions are the same as in the previous example.
 
 
 \subsection*{Exercises}
@@ -540,29 +543,62 @@ Run the analysis.
 \item
 Using \cl{Tracer}, visualize the posterior distribution on the per site rate parameter \cl{perSiteRates}.
 \item 
-What is the posterior probability that \cl{siteRateDiff} is larger than 0.5 (\IE having a larger rate of evolution for body size)?
+Does the value of equal rate (\cl{siteRateDiff}=0.5) fall into the 95\% credible interval?
+\item
+If the rate does not fall into the 95\% credible interval, should we reject the hypothesis that the underlying rates are equal?
 \end{itemize}
 
 \vspace{5cm}
+
+
+
 
 
 
 \subsection{Model selection}
-Our previous analysis explored the parameters of rate
+Our previous analysis explored the parameters of the rate of evolution. You will have seen that the rate of evolution was smaller for the ECV compared with the rate of evolution of body size. However, we did not perform a statistical test to reject the hypothesis if the underlying rates between the different characters are significantly different. Therefore, we will perform a marginal likelihood estimation for all three model: 1) the equal rates, 2) the independent rates, and 3) the shared rates.
+
+\noindent \\ \impmark You need to adopt the three scripts of your previous analysis.
+
+Previously you created an \cl{mymcmc} object using the \cl{mcmc} function. Now, you need to replace this object with the power posterior MCMC object.
+{\tt \small \begin{snugshade*}
+\begin{lstlisting}
+pow_p = powerPosterior(mymodel, moves, monitors, "output/pow_p_BM_equal.out", cats=100, sampleFreq=10) 
+\end{lstlisting}
+\end{snugshade*}}
+Next, you need to run the burnin and afterwards run the power posterior sampler. This will create 101 output files (100 stepping stones and one for the posterior) logging the values into the monitors that you have specified before (we recommend you not to use a screen monitor). You could look into each of these files to check that you obtain sufficiently many samples for each stone.
+{\tt \small \begin{snugshade*}
+\begin{lstlisting}
+pow_p.burnin(generations=10000,tuningInterval=250)
+pow_p.run(generations=10000)  
+\end{lstlisting}
+\end{snugshade*}}
+Use stepping-stone sampling to calculate marginal likelihoods.
+{\tt \small \begin{snugshade*}
+\begin{lstlisting}
+ss = steppingStoneSampler(file="output/pow_p_MultiBM_equal.out", powerColumnName="power", likelihoodColumnName="likelihood")
+ss.marginal() 
+\end{lstlisting}
+\end{snugshade*}}
+\RevBayes~will print to the screen the estimated marginal likelihood. Write down this value and repeat the exercise for the other two models.
+
 
 
 \subsection*{Exercises}
 
 \begin{itemize}
 \item
-Run the analysis.
+Run the three different marginal likelihood estimations and write down the marginal likelihood.
 \item
-Using \cl{Tracer}, visualize the posterior distribution on the per site rate parameter \cl{perSiteRates}.
-\item 
-What is the posterior probability that \cl{siteRateDiff} is larger than 0.5 (\IE having a larger rate of evolution for body size)?
+Compute the log-Bayes factors by taking the difference of the alternative model (independent rates \& shared rates) and the null hypothesis (equal rates).
+\item
+Is any of the log-Bayes factors larger than 1.16 for substantial support of the alternative hypothesis (or 2.3 for strong support)?
 \end{itemize}
 
 \vspace{5cm}
+
+
+
 
 
 %\subsection{Beyond Brownian models}
@@ -607,23 +643,26 @@ What is the posterior probability that \cl{siteRateDiff} is larger than 0.5 (\IE
 
 
 
+
 \section{Estimating the phylogeny from continuous character data}
-Instead of remaining fixed to a pre-defined value, the tree should now be moved during the MCMC.
-
+In the motivation we argued that the phylogeny should be estimated together with the parameters of the evolutionary process. Only for simplicity we used fixed trees in the previous exercises.
+Instead of using a tree fixed to a pre-defined value, the tree should now be moved during the MCMC.
 Implementing this joint model in \RevBayes~is just a matter of adding the following features to the model defined in the previous section (after duplicating the script).
-You may want to use either the REML or phylogenetic covariance approach for computational efficient (\IE good MCMC mixing) although the data augmentation is generally possible too.
+You may want to use the REML approach for computational efficient (\IE good MCMC mixing) although the phylogenetic covariance matrix and the data augmentation are generally possible too.
 
 
-in the moves section, you should add moves for divergence times:
-you would add topology moves here (again, only in a second step):
+We need to get some useful variables from the data so that we will be able to specify the tree prior below. These variables are the number of tips, the number of nodes and the names of the species which we all can query from the continuous character data object.
 {\tt \small \begin{snugshade*}
 \begin{lstlisting}
-moves[++mi] = mvNNI(psi, weight=5.0)
-moves[++mi] = mvFNPR(psi, weight=5.0)
+numTips = contData.ntaxa()
+names = contData.names()
+numNodes = numTips * 2 - 1
 \end{lstlisting}
 \end{snugshade*}}
 
-Instead of having a fixed tree as in the previous, we should now define a \cl{random} tree. We use a birth death prior with prior distributions on the \cl{diversification} rate and \cl{turnover} rate.
+Instead of having a fixed tree as in the previous, we should now define a \emph{random} tree. We use a birth death prior with prior distributions on the \cl{diversification} rate and \cl{turnover} rate.
+The \cl{diversification} rate corresponds to the rate of growth of the tree and the \cl{turnover} rate corresponds to the rate how quickly a species is replaced by a new one.
+This parametrization has the advantage that we can use meaningful prior distributions from the fossil record.
 {\tt \small \begin{snugshade*}
 \begin{lstlisting}
 diversification ~ dnLognormal(0,1)
@@ -637,8 +676,7 @@ speciation := diversification + turnover
 extinction := turnover
 \end{lstlisting}
 \end{snugshade*}}
-Instead, you could also use directly the speciation and extinction rates are themselves endowed with some diffuse exponential prior.
-
+Instead, you could also use directly the speciation and extinction rates, \EG endowed with some diffuse exponential prior.
 {\tt \small \begin{snugshade*}
 \begin{lstlisting}
 # rescaling moves on speciation and extinction rates
@@ -646,16 +684,16 @@ moves[++mi] = mvScale(diversification, lambda=1, tune=true, weight=3.0)
 moves[++mi] = mvScale(turnover, lambda=1, tune=true, weight=3.0)
 \end{lstlisting}
 \end{snugshade*}}
-
+The phylogeny that we used are obviously not a complete sample of all the species and you should take the incomplete sampling into account. We will simply use an empirical estimate of the fraction of species which we included in this study. For more information about incomplete taxon sampling see \cite{Hohna2011} and \cite{Hohna2014a}. 
 {\tt \small \begin{snugshade*}
 \begin{lstlisting}
 sampling_fraction <- 23 / 270     # 23 out of the ~ 270 primate species
 \end{lstlisting}
 \end{snugshade*}}
-
+Now we are able to specify of tree variable \cl{psi} which is drawn from a constant rate birth-death process. We will condition the age of the tree to be 75 million years old which is approximately the crown age of primates, although this estimate is still debated. We only condition here on the crown age for simplicity because we do not use any other fossil calibration.
 {\tt \small \begin{snugshade*}
 \begin{lstlisting}
-psi ~ dnBDP(lambda=speciation, mu=extinction, rho=sampling_fraction, rootAge=1.0, nTaxa=nTaxa, names=names)
+psi ~ dnBDP(lambda=speciation, mu=extinction, rho=sampling_fraction, rootAge=75, nTaxa=numTips, names=names)
 \end{lstlisting}
 \end{snugshade*}}
 Note that, here, we do not have included any fossil information: we are merely doing \emph{relative} dating. 
@@ -674,14 +712,14 @@ We also need moves on the tree topology to estimate the phylogeny. The two moves
 moves[++mi] = mvNNI(psi, weight=5.0)
 moves[++mi] = mvFNPR(psi, weight=5.0)\end{lstlisting}
 \end{snugshade*}}
-
+We are essentially done now. We  only need to add a new monitor for the tree so that we can monitor and build the maximum a posteriori tree later.
 {\tt \small \begin{snugshade*}
 \begin{lstlisting}
-monitors[2] = mnFile(filename="output/primates_mass.trees", printgen=10, separator = TAB, psi)
+monitors[3] = mnFile(filename="output/primates_mass_multiBM_tree.trees", printgen=100, separator = TAB, psi)
 \end{lstlisting}
 \end{snugshade*}}
 
-\noindent \\ \impmark Don't forget to change the output file names in the monitors, otherwise your old analyses files will be overwritten.
+\noindent \\ \impmark A short analysis of 50 000 iterations will be sufficient.
 
 
 \subsection*{Exercises}
@@ -696,9 +734,9 @@ Look at the estimated tree and compare it to the tree you used before.
 \item 
 How does the posterior distribution of \cl{sigma} looks compared with the first and second analysis?
 \item
-Calculate the 95\% credible set of trees using the \cl{treetrace.summary()} command.
+Compute the posterior probabilities of each tree using the \cl{treetrace.summarize()} command.
 \item
-How many trees to you get in the 95\% credible set?
+What is the posterior probability of the best tree?
 \end{itemize}
 
 \vspace{5cm}
@@ -709,9 +747,9 @@ How many trees to you get in the 95\% credible set?
 
 
 
-\section{Accounting for uncertainty in divergence times}
+\section{Including information about the tree from molecular data}
 
-Starting from the model implemented in the last section, we now want to account for phylogenetic uncertainty using information contained in molecular data. As first pointed out by \cite{Huelsenbeck:2003p999}, this can easily be done in a Bayesian framework, through the use of a joint model combining sequence data and quantitative traits. Specifically:
+Starting from the model implemented in the last section, we now want to account for phylogenetic uncertainty using information contained in molecular data. As first pointed out by \cite{Huelsenbeck2003}, this can easily be done in a Bayesian framework, through the use of a joint model combining sequence data and quantitative traits. Specifically:
 \begin{itemize}
 \item
 two data sets are loaded: one for sequence data and one for quantitative traits
@@ -733,42 +771,30 @@ the substitution model is conditioned on the molecular sequence data.
 
 \subsection{Programming the model in \RevBayes}
 
-create a substitution model, just like what you probably did in previous sessions. In a first step, you can use a simple GTR model, without any rate variation, neither among sites nor among branches.
-
-load the sequence data matrix specified in \cl{data/plac40\_4fold.nex} and condition (or clamp) the substitution model to this dataset.
-
-finally, you should add moves for the parameters of the substitution model.
-
+First, we create a substitution model, just like what you probably did in previous tutorial (\EG RB\_CTMC\_Tutorial). 
+In a first step, we will use a GTR+Gamma model.
+Start by loading the sequence data matrix specified in \cl{data/primates\_cytb.nex}.
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+seqData <- readDiscreteCharacterData("data/primates_cytb.nex")
+\end{lstlisting}
+\end{snugshade*}}
+We can use a flat Dirichlet prior density on the exchangeability rates \cl{er} and the the base frequencies \cl{pi}.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 er_prior <- v(1,1,1,1,1,1) 
 er ~ dnDirichlet(er_prior)
-\end{lstlisting}
-\end{snugshade*}}
-
-{\tt\small \begin{snugshade*}
-\begin{lstlisting}
-moves[++mi] = mvSimplexElementScale(er) 
-\end{lstlisting}
-\end{snugshade*}}
-
-We can use the same type of distribution as a prior on the 4 stationary frequencies ($\pi_A, \pi_C, \pi_G, \pi_T$) since these parameters also represent proportions. 
-Specify a flat Dirichlet prior density on the base frequencies:
-{\tt \begin{snugshade*}
-\begin{lstlisting}
 pi_prior <- v(1,1,1,1) 
 pi ~ dnDirichlet(pi_prior)
 \end{lstlisting}
 \end{snugshade*}}
-
-The node \cl{pi} represents the $\pi$ node in Figure \ref{fig:gtr}.
-Now add the simplex scale move on the stationary frequencies to the moves vector:
+Now add the simplex scale move one each the exchangeability rates \cl{er} and the stationary frequencies \cl{pi} to the moves vector:
 {\tt \small \begin{snugshade*}
 \begin{lstlisting}
+moves[++mi] = mvSimplexElementScale(er) 
 moves[++mi] = mvSimplexElementScale(pi)  
 \end{lstlisting}
 \end{snugshade*}}
-
 We can finish setting up this part of the model by creating a deterministic node for the GTR instantaneous-rate matrix \cl{Q}. 
 The \cl{fnGTR()} function takes a set of exchangeability rates and a set of base frequencies to compute the instantaneous-rate matrix used when calculating the likelihood of our model.
 {\tt \begin{snugshade*}
@@ -776,38 +802,45 @@ The \cl{fnGTR()} function takes a set of exchangeability rates and a set of base
 Q := fnGTR(er,pi)
 \end{lstlisting}
 \end{snugshade*}}
-
+The next part of the substitution process is the rate variation among sites. We will model this using the commonly applied 4 discrete gamma categories which only have a single parameter \cl{alpha}.
+Let us specify the rate of \cl{alpha} to 0.05 (thus the mean will be 20.0).
 {\tt\begin{snugshade*}
 \begin{lstlisting}
-shape_prior <- 0.05                                                                             
+alpha_prior <- 0.05                                                                             
 \end{lstlisting}
 \end{snugshade*}}
-% I changed this from ``alpha_prior'' to match the description in the text
-
-Then create a stochastic node called \cl{alpha} with an exponential prior (this represents the stochastic node for the $\alpha$-shape parameter in Figure \ref{fig:gtrg}):
-% The GTR+G graphical model figure was not previously included...I added a modified version below that 
-% horizontally compressed the GTR part of the model; the modified version is called `gtrg_graphical_model_2.'
-% I changed this from \cl{shape} in tis sentence to \cl{alpha} so that it matched the description in the code and the GTR + G graphical model description
+Then create a stochastic node called \cl{alpha} with an exponential prior:
 {\tt\begin{snugshade*}
 \begin{lstlisting}
-alpha ~ dnExponential(shape_prior)
+alpha ~ dnExponential(alpha_prior)
 \end{lstlisting}
 \end{snugshade*}}
-
 Initialize the \cl{gamma\_rates} deterministic node vector using the  \cl{fnDiscretizeGamma()} function with \cl{4} bins:
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 gamma_rates := fnDiscretizeGamma( alpha, alpha, 4 )
 \end{lstlisting}
 \end{snugshade*}}
-
-Note that here, by convention, we set $k = 4$.
 The random variable that controls the rate variation is the stochastic node \cl{alpha}. 
-% I changed this from \cl{shape} in tis sentence to \cl{alpha} so that it matched the description in the code and the GTR + G graphical model description
 We will apply a simple scale move to this parameter.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 moves[++mi] = mvScale(alpha, weight=2.0)
+\end{lstlisting}
+\end{snugshade*}}
+This finishes the substitution process part of the model.
+
+Then next part of the model is the clock model. Here we need a clock model because we work on a time tree. We use our exponentiated uniform distribution to specify a flat prior distribution which is scale invariant.
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+logClockRate ~ dnUniform(-5,5)
+clockRate := 10^logClockRate
+\end{lstlisting}
+\end{snugshade*}}
+We will apply a sliding window move to the \cl{\cl{logClockRate}}.
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+moves[++mi] = mvSlide(logClockRate, delta=0.1, tune=true, weight=2.0)
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -815,17 +848,35 @@ Remember that you need to call the \cl{PhyloCTMC} constructor to include the new
 % This sentence was incomplete previously; I think the revised version is correct.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-seq ~ dnPhyloCTMC(tree=phylogeny, Q=Q, siteRates=gamma_rates , type="DNA")
+seq ~ dnPhyloCTMC(tree=psi, Q=Q, siteRates=gamma_rates, branchRates=clockRate, type="DNA")
+\end{lstlisting}
+\end{snugshade*}}
+Finally we need to attach the molecular sequence data to our model.
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+seq.clamp(seqData)
+\end{lstlisting}
+\end{snugshade*}}
+You may have wondered how the continuous trait model and the molecular sequence model are combined.
+This happened automatically when you used the same tree parameter \cl{psi} for both models. 
+Since both models share now the same parameter, they will be used for a joint analyses.
+The model function thus will construct the joint model graph for the continuous trait model as well as the molecular sequence model.
+
+After you ran the MCMC analyses, read in the tree trace. We will assume that you used a tree monitor and called the file \emph{output/primates\_joint.trees}. Change the name if you used a different one.
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+treetrace = readTreeTrace("output/primates_joint.trees", "clock")
+\end{lstlisting}
+\end{snugshade*}}
+Then build the maximum a posteriori tree.
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+map = mapTree( file="primates_joint.tree", treetrace )
 \end{lstlisting}
 \end{snugshade*}}
 
 
-
-
-Write this model and make sure that it runs when you give it to \cl{RevBayes}. Once this is the case, don't spend too much time analyzing the results and quickly turn to the model introduced in the next section.
-
-
-\noindent \\ \impmark Don't forget to change the output file names in the monitors, otherwise your old analyses files will be overwritten.
+Write this model and make sure that it runs when you give it to \RevBayes.
 
 
 \subsection*{Exercises}
@@ -834,11 +885,9 @@ Write this model and make sure that it runs when you give it to \cl{RevBayes}. O
 \item
 Run the analysis.
 \item
-Using \cl{Tracer}, visualize the posterior distribution on the rate parameter \cl{sigma} and the \cl{rootlogmass} and the internal states.
+Using \cl{Tracer}, visualize the posterior distribution on the rate parameter \cl{sigma} and compare it to the previous analyses.
 \item 
-How does the posterior distribution of \cl{sigma} looks compared with the first and second analysis?
-\item
-Calculate the 95\% credible interval for the rate of evolution of the log of body mass ($\sigma$) and the \cl{rootlogmass}. Have they changed?
+Look at the MAP tree which you estimated now.
 \end{itemize}
 
 \vspace{5cm}
@@ -847,19 +896,19 @@ Calculate the 95\% credible interval for the rate of evolution of the log of bod
 
 
 
-\section{Autocorrelated relaxed molecular clock}
-
-In the previous model, no consideration was given to the problem of rate variation among lineages --
-we bluntly used a strict clock. This is of course problematic, in particular at the phylogenetic scale considered here ($\approx$ 75 million years), where we know that there is substantial rate variation. In addition, we know that substitution rates across branches are \emph{auto-correlated} in the present case.
+%\section{Autocorrelated relaxed molecular clock}
+%
+%In the previous model, no consideration was given to the problem of rate variation among lineages --
+%we bluntly used a strict clock. This is of course problematic, in particular at the phylogenetic scale considered here ($\approx$ 75 million years), where we know that there is substantial rate variation. In addition, we know that substitution rates across branches are \emph{auto-correlated} in the present case.
 %: typically, entire orders, such as rodents, are fast evolving, whereas other orders like Cetartiodactyla are slowly evolving.
 %In other words, nearby lineages along the phylogeny tend to be characterized by similar substitution rates.
-
-You have perhaps already seen an autocorrelated relaxed clock model in the molecular dating session (ACLN). You could easily recruit it in the present context (a good exercise to try after the workshop: modify the model suggested in the previous section so as to replace the strict clock by the ACLN model).
-
-Here, however, we will derive the autocorrelated clock in a slightly different way. This derivation will be less straightforward, but more useful for what we want to do next.
-Specifically, we will first model the logarithm of the instant substitution rate as a Brownian motion, just like we did for body mass in section \ref{univariate}. Then, we will exponentiate this Brownian process and take branch-specific averages, which we will finally plug into the substitution model as the \cl{branchRates} argument.
-
-\noindent \\ \impmark Hint: You can simply use a Brownian motion for the \cl{logbranchrates} and then exponentiate the rates (\cl{branchrates := exp(logbranchrates)}).
+%
+%You have perhaps already seen an autocorrelated relaxed clock model in the molecular dating session (ACLN). You could easily recruit it in the present context (a good exercise to try after the workshop: modify the model suggested in the previous section so as to replace the strict clock by the ACLN model).
+%
+%Here, however, we will derive the autocorrelated clock in a slightly different way. This derivation will be less straightforward, but more useful for what we want to do next.
+%Specifically, we will first model the logarithm of the instant substitution rate as a Brownian motion, just like we did for body mass in section \ref{univariate}. Then, we will exponentiate this Brownian process and take branch-specific averages, which we will finally plug into the substitution model as the \cl{branchRates} argument.
+%
+%\noindent \\ \impmark Hint: You can simply use a Brownian motion for the \cl{logbranchrates} and then exponentiate the rates (\cl{branchrates := exp(logbranchrates)}).
 
 
 
