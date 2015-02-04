@@ -4,14 +4,17 @@
 
 \subsection{Data augmentation}
 
-Remember matrix exponentiation integrates over all \textit{unobserved} transition events during time $t$.
-The likelihood of beginning in character $i$ and ending in character $j$ can be computed easily when the explicit series of event types and times are known.
+For small rate matrices, transition probabilities of beginning in state $i$ and ending in state $j$ equal the matrix exponential of the underlying rate matrix, scaled by the elapsed time of the process.
+This integrates over all unobserved transition events during the time interval $t$.
+Unfortunately, computing the matrix exponential scales poorly as the state space increases, i.e. $O(n^4)$ for $n$ states.
+
+Alternatively, the probability of beginning in state $i$ and ending in state $j$ can be computed easily when the explicit series of event types and times are known.
 While we will never know the exact history of events, we can use stochastic mapping in conjunction with Markov chain Monte Carlo (MCMC) to repeatedly sample range evolution histories that are consistent with the ranges observed in the study taxa at the tips of the phylogeny.
-This technique is an adaptation of the data-augmented phylogenetic method first described by \citet{robinson03}, and was first applied to tertiary structure-dependent evolution of protein-coding nucleotide sequences.
+This technique is called data augmentation, and was first applied in phylogenetics to tertiary structure-dependent evolution of protein-coding nucleotide sequences \citep{robinson03}.
 
 This is the strategy we will use to infer the posterior distribution approximated by 
 \newline{Prob$\left( \textbf{X}_{aug}, \theta \mid \textbf{X}_{obs}, T, M \right)$}, where $\textbf{X}_{obs}$ is the range data observed at the tips, $\textbf{X}_{aug}$ is the distribution of ancestral range reconstructions over the phylogeny, $T$, where $\textbf{X}_{aug}$ is inferred jointly with the parameters, $\theta$, assuming the range evolution model, $M$, that describes $\textbf{Q}$ above.
-Ancestral range reconstructions are often of primary interest in phylogenetic biogeographic analyses, which are generated with support values as a by-product of the MCMC analysis.
+Ancestral range reconstructions are often of primary interest in phylogenetic biogeographic analyses, which are generated as stochastic mappings with support values as a by-product data augmentation.
 
 You may wonder why matrix exponentiation works fine for molecular substitution models and large multiple sequence alignments.
 Molecular substitution models typically assume each site in the multiple sequence alignment evolves independently, which may be justified because recombination degrades linkage disequilibrium over geological timescales.
@@ -34,8 +37,6 @@ For example, $q^{(1)}_{011,111}$ is the rate of range expansion for $011 \righta
 Note the rate of more than one event occurring simultaneously is zero, so a range must expand twice by one area in order to expand by two areas.
 This model is analogous to the Jukes-Cantor model for three independent characters with binary states, except the all-zero ``null range'' is forbidden.
 
-
-
 \subsection{Distance-dependent dispersal function}
 
 Lastly, we may reasonably expect that a range expansion event into an area depends on which nearby areas are currently inhabited, which imposes non-independence between characters.
@@ -54,32 +55,57 @@ For this tutorial, you can take $\eta(\cdot)$ to adjust the rate of range expans
 The $\beta$ parameter rescales the importance of geographic distance between two areas by a power law.
 Importantly, $\eta(\cdot) = 1$ when $\beta=0$, meaning geographic distance between areas is irrelevant.
 Moreover, when $\beta > 0$, $\eta(\cdot) < 1$ when area $a$ is relatively distant and $\eta(\cdot) > 1$ when area $a$ is relatively close.
+See \citet{landis13} for a full description of the model.
 
+\subsection{Specifying a data augmented DEC model}
 
-\subsection{Analysis}
+As previously, start by setting your working directory,
 
-First, we'll assign all our input files to {\tt String} variables.
 \begin{snugshade}
 \begin{lstlisting}
-in_fp   <- "./data/"
-data_fn <- "psychotria_range.nex"
-area_fn <- "hawaii_dynamic.atlas.txt"
-out_fp  <- "./output/"
-out_str <- "bg_2rate"
+setwd("/Users/arwallace/projects/RB_Biogeography_tutorial/")
 \end{lstlisting}
 \end{snugshade}
 
-Then we'll create our range data, tree, and atlas objects
+then create helper variables for file handling,
 
 \begin{snugshade}
 \begin{lstlisting}
-data  <- readDiscreteCharacterData(in_fp + data_fn)
+fp      = "./"
+area_fn = fp + "data/earth25.still.atlas.txt"
+data_fn = fp + "data/primates_bg_n25.nex"
+tree_fn = fp + "data/primates.tree"
+out_str = "bg_3"
+\end{lstlisting}
+\end{snugshade}
+
+read in our tree,
+
+\begin{snugshade}
+\begin{lstlisting}
 tree  <- readTrees(in_fp + data_fn)[1]
-atlas <- readAtlas(in_fp + area_fn)
 \end{lstlisting}
 \end{snugshade}
 
-Finally, we'll be using a few helper variables to create or move and monitor vectors
+populate our range observations,
+
+\begin{snugshade}
+\begin{lstlisting}
+data    = readDiscreteCharacterData(in_fp + data_fn)
+\end{lstlisting}
+\end{snugshade}
+
+and read in our geographical information (for details, see Section XX).
+
+\begin{snugshade}
+\begin{lstlisting}
+atlas   = readAtlas(in_fp + area_fn)
+n_areas = atlas.nAreas()
+\end{lstlisting}
+\end{snugshade}
+
+Lastly, create index variables to populate our move and monitor vectors,
+
 \begin{snugshade}
 \begin{lstlisting}
 mvi = 1
@@ -87,28 +113,56 @@ mni = 1
 \end{lstlisting}
 \end{snugshade}
 
-\subsection{Creating the model}
-
-Here, we will compose our rate matrix, {\bf Q}, parameterized by the transition rates, $\lambda$, and the distance dependent dispersal power parameter, $\beta$.
-
-First, for $\lambda$, we will create a vector of two rates, where {\tt glr[1]} corresponds to the rate of area gain (dispersal) and {\tt glr[2]} corresponds to the rate of area loss (local extinction).
-Each rate will be drawn from an exponential distribution with rate 10.0 (mean 0.1).
-Because our tree is in units of millions of years, this means our prior expectation is that any given species undergoes one dispersal or extinction event per area per ten million years.
-
-%setwd("/Users/mlandis/projects/RB_Biogeography_tutorial/")
-
-Let's declare the distributions for these priors along with their MCMC moves
+and assign the number of generations to run the MCMC analysis
 
 \begin{snugshade}
 \begin{lstlisting}
-for (i in 1:2) {
-	glr[i]       ~ dnExponential(10.0)
-	moves[mvi++] = mvScale(x=glr[i], lambda=0.5, tune=true, weight=5.0)
-}
+ngen = 500000
 \end{lstlisting}
 \end{snugshade}
 
-These are then inserted into the rate matrix {\tt $q_area$}, which gives the average rate of area gain and loss per area.
+To later interpret ancestral state monitors phylogenetically, save a copy of {\tt tree} annotated with internal node indexes.
+
+\begin{snugshade}
+\begin{lstlisting}
+write(tree,filename=tree_fn+".index.tre")
+\end{lstlisting}
+\end{snugshade}
+
+Proceeding with the model configuration, we'll first create our rate matrix that determines the rate of per-area gain and loss given the current geographical layout of the range.
+In RevBayes, data-augmented CTMC analyses require {\tt RateMap} functions to determine event rates, which differ from the familiar {\tt RateMatrix} functions that include {\tt fnJC} and {\tt fnGTR} as members.
+In their simplest form, {\tt RateMap} functions generate the rates of change over the full set of characters, where each character evolves according to a provided {\tt RateMatrix} function.
+Additionally, a {\tt RateMap} accepts a rate modifier function that induces some correlation structure to character change evolution.
+In this section, we'll be creating a biogeographic {\tt RateMap} function for the dispersal-extinction process given above.
+
+First, create a biogeographical clock to scale the rate of range evolution.
+
+\begin{snugshade}
+\begin{lstlisting}
+clock_bg ~ dnExp(10)
+moves[mvi++] = mvScale(clock_bg, lambda=0.5, weight=5.0)
+\end{lstlisting}
+\end{snugshade}
+
+Next, instantiate a simplex of gain and loss rates, distributed by a flat Dirichlet prior,
+
+\begin{snugshade}
+\begin{lstlisting}
+glr ~ dnDirichlet([1,1])
+moves[mvi++] = mvSimplexElementScale(glr, alpha=30.0, weight=5.0)
+\end{lstlisting}
+\end{snugshade}
+
+and use deterministic nodes to assign the rates nicknames.
+
+\begin{snugshade}
+\begin{lstlisting}
+r_gain := glr[1]
+r_loss := glr[2]
+\end{lstlisting}
+\end{snugshade}
+
+Insert the simplex into the rate matrix {\tt $q_area$}, which gives the average rate of area gain and loss per area.
 
 \begin{snugshade}
 \begin{lstlisting}
@@ -116,10 +170,10 @@ q_area := fnFreeBinary(glr)
 \end{lstlisting}
 \end{snugshade}
 
-Next, we will create {\tt dp}, which determines the importance of geographical distance to dispersal.
+Next, we will create {\tt dp} to represent the $\beta$ parameter, which determines the importance of geographical distance to dispersal.
 Remember that values of $\beta$ far from zero means distance is important.
 So, if we we assign a prior that pulls $\beta$ towards zero, then posterior values of $\beta$ far from zero indicate the range data are informative of the importance of distance to dispersal.
-We'll use an exponential distribution with rate 10.0 (mean 0.1) as a prior for {\tt dp}.
+We'll use an exponential distribution with mean 1.0 as a prior for {\tt dp}.
 
 \begin{snugshade}
 \begin{lstlisting}
@@ -134,106 +188,100 @@ We will tell the {\tt fnBiogeoGRM} function to modify dispersal rates based on d
 
 \begin{snugshade}
 \begin{lstlisting}
-grm := fnBiogeoGRM(atlas=atlas, distancePower=dp, useAvailable=true, useDistance=true)
+grm := fnBiogeoGRM(atlas=atlas, distancePower=dp, useDistance=true)
 \end{lstlisting}
 \end{snugshade}
 
 Now we need a deterministic node to represent the rate matrix, {\bf Q}.
 To determine the value of this node, we'll use the function {\tt fnBiogeoDE} to assign our model parameters to transition rates as described in the introduction.
-As input, we'll pass our gain and loss rates, {\tt glr}, and our geographical rate modifier, {\tt grm}.
+As input, we'll pass our gain and loss rates, {\tt q\_area}, our geographical rate modifier, {\tt grm}, and the biogeographical clock {\tt clock\_bg}.
 In addition, we'll inform the function of the number of areas in our analysis and whether we will allow species to be absent in all areas (i.e. have the null range).
 
 \begin{snugshade}
 \begin{lstlisting}
-q_range := fnBiogeoDE(gainLossRates=q_area, geoRateMod=grm, numAreas=4, forbidExtinction=true)
+q_range := fnBiogeoDE(gainLossRates=q_area, branchRates=clock_bg, geoRateMod=grm, numAreas=n_areas, forbidExtinction=true)
 \end{lstlisting}
 \end{snugshade}
 
-To extract information for the frequencies of different cladogenic event types, we will create a Dirichlet-distributed stochastic node.
-The simplex is over three events, subset sympatry (index 0), allopatry (index 1), and widespread sympatry (index 2), but not over narrow sympatry whose range size is one.
-The prior parameter {\tt [1,1,0.1]} is known as a flat prior, meaning all event types are expected to occur at equal frequency.
-If there is information in the data of a dominant cladogenic mode of range evolution, the posterior simplex values in {\tt csf} will reflect this.
+As with the simple DEC model, we assign a flat Dirichlet prior over cladogenic event type probabilities
 
 \begin{snugshade}
 \begin{lstlisting}
-csf ~ dnDirichlet([1.,1.,0.5])
-narrow_sympatry     := csf[1]
-allopatry           := csf[2]
-widespread_sympatry := csf[3]
-moves[mvi++] = mvSimplexElementScale(csf, alpha=10.0, tune=true, weight=4.0)
+clado_prob ~ dnDirichlet( [1, 1, 1] )
+widespread_sympatry := clado_prob[1]
+subset_sympatry     := clado_prob[2]
+allopatry           := clado_prob[3]
+moves[mvi++] = mvSimplexElementScale(clado_prob, alpha=20.0, weight=5.0)
 \end{lstlisting}
 \end{snugshade}
 
-For the model's final node, we create the stochastic node for the continuous-time Markov chain (CTMC).
-This node's distribution is {\tt dnPhyloDACTMC} where {\tt DA} indicates the CTMC uses data-augmentation to compute the likelihood rather than Felsenstein's pruning algorithm.
-To create the distribution, we must pass it our {\tt tree} and {\tt Q} objects, but additionally inform the distribution that it will be using a biogeographic model, that it will introduce the simple cladogenic range evolution events described in \citet{ree08} ({\tt useCladogenesis=true}), and that it will assign zero probability to a transition away from the null range state.
+Finally, the data evolve according to a phylogenetic CTMC process. Here, we decalre a stochastic node using {\tt dnPhyloDACTMC} where {\tt DA} indicates the distribution requires data augmentation to compute the likelihood rather than Felsenstein's pruning algorithm.
+To create the distribution, we must pass it our {\tt tree} and {\tt q\_range} objects, but additionally inform the distribution that it will be using a biogeographic model, that it will introduce the simple cladogenic range evolution events described in \citet{ree08} ({\tt useCladogenesis=true}), and that it will assign zero probability to a transition away from the null range state.
 
 \begin{snugshade}
 \begin{lstlisting}
-M ~ dnPhyloDACTMC(tree=tree, Q=q_range, C=csf, type="biogeo", forbidExtinction=true, useCladogenesis=true)
+m ~ dnPhyloDACTMC(tree=tree, Q=q_range, cladoProbs=clado_prob, type="Biogeo", forbidExtinction=true, useCladogenesis=true)
 \end{lstlisting}
 \end{snugshade}
 
-In addition to proposing new model parameter values, we must also propose new data-augmented states and events to properly integrate over the space of possible range histories.
-The major challenge to sampling character histories is ensuring the character histories are consistent with the observations at the tip of the tree.
+
+So we may evaluate the graphical model's likelihood, we tell the CTMC to observe the {\tt data} object, which then primes the model with data-augmented character histories.
+Now {\tt m} has a defined likelihood value.
+\begin{snugshade}
+\begin{lstlisting}
+m.clamp(data)
+m.lnProbability()
+   -156.0288
+\end{lstlisting}
+\end{snugshade}
+
+To integrate over the space of possible range histories, we still need to add moves to propose new data augmented histories.
+The major challenge to sampling character histories is ensuring the character histories are consistent with the observations at the tips of the tree.
 The proposals in this tutorial use \citet{nielsen02}'s rejection sampling algorithm, with some modifications to account for cladogenic events and epoch-based rate matrices.
 
 The basic idea is simple.
 Each time a character history proposal is called, it selects a node at random from the tree.
-Path history proposals ({\tt mvPathCHRS()}) propose a new character history for the lineage leading to that node.
-Node history proposals ({\tt mvNodeCHRS()}) propose a new character history for the node and for the three lineages incident to that node.
-The character history proposal also samples some number of areas to update, ranging from one to all of the areas.
+Branch history proposals propose a new character history to a single randomly-chosen branch.
+Node history proposals propose a new character history for the three branches connecting to a randomly chosen node, in addition to the cladogenic state of the node itself.
+
+For each proposal, each character's history is resampled with probability {\tt lambda} -- i.e. {\tt lambda=0.01} resamples 1\% of characters, while {\tt lambda=1.} resamples all characters.
 Once the new character history is proposed, the likelihood of the model is evaluated and the MCMC accepts or rejects the new state according to e.g. the Metropolis-Hastings algorithm.
 
-Because these {\tt Move} objects update the character histories stored in the data-augmented CTMC node, e.g. {\tt M},
-they require access to a {\tt TimeTree} object to know which lineages are sisters and whether the lineages span various epochs, and a {\tt RateMap\_Biogeography} object to propose new character histories.
-The {\tt lambda} argument gives what proportion of areas' character histories to update.
-Here, if {\tt lambda=0.2}, then the proposal will redraw character histories for each area with probability 0.2 (in addition to one random area with probability 1).
-Below, we use two moves of each type with {\tt lambda=0.2} and {\tt lambda=1.0} for partial and full character history updates, respectively.
-Indicating {\tt type="biogeo"} informs the {\tt Move} object to be aware of special character history constraints, such as cladogenic events and forbidden null ranges.
-The {\tt weight} parameter should be assigned a value proportional to the number of nodes in the analysis to ensure proper mixing.
+Cladogenic events require special considerations during sampling, so we indicate {\tt type="Biogeo"}.
+Currently, only rejection-sampling is available for cladogenic histories, hence {\tt proposal="rejection"}. Finally, we apply high {\tt weight} values to the proposals since the larger the state space is, the more character history proposals needed to effectively integrate over the space of sample paths.
 
-Let's create the character history moves as follows: conservative character history updates for paths and nodes, with {\tt lambda=0.2}
+Let's create the character history moves as follows: conservative character history updates for paths and nodes, with {\tt lambda=0.05}
 
 \begin{snugshade}
 \begin{lstlisting}
-moves[mvi++] = mvCharacterHistory(ctmc=M, qmap=q_range, tree=tree, lambda=0.2, type="Biogeo", graph="node", proposal="rejection", weight=40.0)
-moves[mvi++] = mvCharacterHistory(ctmc=M, qmap=q_range, tree=tree, lambda=0.2, type="Biogeo", graph="branch", proposal="rejection", weight=40.0)
+moves[mvi++] = mvCharacterHistory(ctmc=m, qmap=q_range, tree=tree, lambda=0.05, type="Biogeo", graph="node", proposal="rejection", weight=100.0)
+moves[mvi++] = mvCharacterHistory(ctmc=m, qmap=q_range, tree=tree, lambda=0.05, type="Biogeo", graph="branch", proposal="rejection", weight=100.0)
 \end{lstlisting}
 \end{snugshade}
 
-and the same proposals for more drastic character history updates, with {\tt lambda=1.0}
+and the same proposals for more radical character history updates, with {\tt lambda=1.0}
 
 \begin{snugshade}
 \begin{lstlisting}
-moves[mvi++] = mvCharacterHistory(ctmc=M, qmap=q_range, tree=tree, lambda=1.0, type="Biogeo", graph="node", proposal="rejection", weight=10.0)
-moves[mvi++] = mvCharacterHistory(ctmc=M, qmap=q_range, tree=tree, lambda=1.0, type="Biogeo", graph="branch", proposal="rejection", weight=10.0)
+moves[mvi++] = mvCharacterHistory(ctmc=m, qmap=q_range, tree=tree, lambda=1.0, type="Biogeo", graph="node", proposal="rejection", weight=40.0)
+moves[mvi++] = mvCharacterHistory(ctmc=m, qmap=q_range, tree=tree, lambda=1.0, type="Biogeo", graph="branch", proposal="rejection", weight=40.0)
 \end{lstlisting}
 \end{snugshade}
 
-So we may evaluate the graphical model's likelihood, we tell the CTMC to observe the {\tt data} object, which will prime the model with data-augmented character histories.
-Now {\tt M} has a defined likelihood value.
+Next, create the model object,
+
 \begin{snugshade}
 \begin{lstlisting}
-M.clamp(data)
-M.lnProbability()
-   -56.0288
+my_model = model(m)
 \end{lstlisting}
 \end{snugshade}
 
-Finally, we encapsulate our graphical model into a {\tt Model} object, which can learn the model's structure and dependencies from any model parameter.
-\begin{snugshade}
-\begin{lstlisting}
-my_model = model(M)
-\end{lstlisting}
-\end{snugshade}
-
-First, we'll create monitors for our simple parameters
+and monitors for our simple parameters.
 
 \begin{snugshade}
 \begin{lstlisting}
-monitors[mni++] = mnScreen(glr, dp, narrow_sympatry, allopatry, widespread_sympatry, printgen=10)
-monitors[mni++] = mnFile(glr, dp, narrow_sympatry, allopatry, widespread_sympatry, filename=out_fp+params_fn, printgen=10)
+monitors[mni++] = mnScreen(clock_bg, r_gain, r_loss, dp, subset_sympatry, allopatry, widespread_sympatry, printgen=100)
+monitors[mni++] = mnFile(clock_bg, r_gain, r_loss, dp, subset_sympatry, allopatry, widespread_sympatry, filename=out_fn+".params.txt", printgen=10)
 \end{lstlisting}
 \end{snugshade}
 
@@ -241,48 +289,29 @@ Like any parameter, we can sample the augmented range histories from the MCMC to
 This is statistically equivalent to generating ancestral state reconstructions from a posterior distribution via stochastic mapping.
 We will extract these reconstructions using special monitors designed for the {\tt dnPhyloDACTMC} distribution.
 
-Next, we will create {\tt Mntr\_CharacterHistoryNewickFile} objects to record the sampled character history states for each node in the tree.
-This {\tt Monitor} has two {\tt style} options: {\tt counts} reports the number of gains and losses per branch in a tab-delimited Tracer-readable format;  {\tt events} reports richer information of what happens along a branch, anagenically and cladogenically, using an extended Newick format.
+Next, we will create {\tt mnCharHistoryNewick} monitors to record the sampled character history states for each node in the tree.
+This monitor has two {\tt style} options: {\tt counts} reports the number of gains and losses per branch in a tab-delimited Tracer-readable format;  {\tt events} reports richer information of what happens along a branch, anagenically and cladogenically, using an extended Newick format.
 How to read these file formats will be discussed in more detail in Section \ref{sec:posterior}.
 
 \begin{snugshade}
 \begin{lstlisting}
-monitors[mni++] = mnCharHistoryNewick(filename=fp+out_str+".events.txt", ctmc=M, tree=tree, printgen=100, style="events")
-monitors[mni++] = mnCharHistoryNewick(filename=fp+out_str+".counts.txt", ctmc=M, tree=tree, printgen=100, style="counts")
+monitors[mni++] = mnCharHistoryNewick(filename=out_fn+".events.txt", ctmc=m, tree=tree, printgen=100, style="events")
+monitors[mni++] = mnCharHistoryNewick(filename=out_fn+".counts.txt", ctmc=m, tree=tree, printgen=100, style="counts")
+
 \end{lstlisting}
 \end{snugshade}
 
-As our last monitor, the {\tt Mntr\_CharacterHistoryNhxFile} records character history values throughout the MCMC analysis, then stores some simple posterior summary statistics as a Nexus file.
-These summary statistics could be computed from the previously mentioned {\tt Monitor} output files, but {\tt mnCharHistoryNhx} provides a simple way to produce Phylowood-compatible files.
+As our last monitor,{\tt mnCharHistoryNhx} records character history values throughout the MCMC analysis, then stores some simple posterior summary statistics as a Nexus file.
+These summary statistics could be computed from the previously mentioned monitor output files, but {\tt mnCharHistoryNhx} provides a simple way to produce Phylowood-compatible files.
 We will also discuss this file's format in more detail later in the tutorial.
 
 \begin{snugshade}
 \begin{lstlisting}
-monitors[mni++] = mnCharHistoryNhx(filename=fp+out_str+".nhx.txt", ctmc=M, tree=tree, atlas=atlas, samplegen=100, maxgen=25000, burnin=0.2)
+monitors[mni++] = mnCharHistoryNhx(filename=out_fn+".phw.txt", ctmc=m, tree=tree, atlas=atlas, samplegen=10, maxgen=ngen, burnin=0.5)
 \end{lstlisting}
 \end{snugshade}
 
-WE CAN REPLACE THIS USING WRITETREE->FIGTREE
-Before we run the MCMC, we'd like to get the node index of the ancestor 
-When analysing the output, we'll take some special interest in the branch for the most recent common ancestor of {\it P. kaduana} and {\it P. hatheway}.
-We will identify this lineage by its index, 23, which is meaningful only for a fixed tree topology,
-\begin{snugshade}
-\begin{lstlisting}
-> names = tree.names()
-> names[15]
-   P_kaduana_PuuKukuiAS
-> names[16]
-   P_hathewayi_1
-> mrcaIndex(tree=tree,clade=clade(names[15],names[16]))
-   23
-\end{lstlisting}
-\end{snugshade}
-
-
-\subsection{Running an MCMC analysis}
-
-Now all that's left is to configure and run our MCMC analysis.
-For this, we create an {\tt Mcmc} object, which we give our {\tt Move} vector, our {\tt Monitor} vector, and our {\tt Model object}
+Finally, create the MCMC object
 
 \begin{snugshade}
 \begin{lstlisting}
@@ -290,216 +319,123 @@ my_mcmc = mcmc(my_model, monitors, moves)
 \end{lstlisting}
 \end{snugshade}
 
-MCMC typically requires some period of burn-in before it reaches stationarity, i.e. from a random starting point, it takes some time for the chain to produce valid samples from the posterior distribution.
-By running {\tt burnin()}, we tell the {\tt Mcmc} object to propose and reject new states but {\it not} to record anything to file.
-After burn-in is complete, we call {\tt run()}, where we begin recording valid posterior samples under our model.
+and run
 
 \begin{snugshade}
 \begin{lstlisting}
-my_mcmc.run(generations=25000)
+my_mcmc.run(generations=ngen)
 \end{lstlisting}
 \end{snugshade}
 
-Everything we've done is contained in the file {\tt biogeography\_DEC\_2rate.Rev}.
-You can modify this file as you like then re-run the analysis by typing
+\subsubsection{Exercises}
 
-\begin{snugshade}
-\begin{lstlisting}
-source("./scripts/biogeography_DEC_2rate.Rev")
-\end{lstlisting}
-\end{snugshade}
+\begin{itemize}
+\item How sensitive are the rates of area gain and loss to the prior distribution on {\tt dp} ($\beta$)?
+\end{itemize}
 
+\subsection{Analysis output}
 
-\subsection{Exercises}
+You will need a node-indexed phylogeny to interpret ancestral state reconstructions. First, open FigTree and load the Newick tree stored in {\tt data/primates.tree.index.tre}. Expand ``Node Labels'' and change ``Display'' to the custom node label. All sampled characters have a node index, which corresponds to the branch ancestral to the indexed node.
 
+\begin{centering}
+\includegraphics[width=4in]{figures/figtree_node_label}
+\end{centering}
 
+We'll focus some attention on node 42, the most recent common ancestor of chimps and macaques, designated as the Old World most recent common ancestor (MRCA).
 
-\subsection{Output}
-
-\subsubsection{Sampled parameters from {\tt ScreenMonitor}}
-
-\noindent \\ \impmark Open Tracer, select the fields for the posterior probability and area gain rate, {\tt glr[2]}, then click the Joint-Marginal tab.
-
-\begin{figure}[H]
-\centering
-\includegraphics[width=3in]{figures/joint_rgain_posterior}
-\caption{Joint-marginal distribution of posterior and area gain rate, $\lambda_1$.}
-\end{figure}
-
-Here, we see a strong negative correlation between the posterior probability and the area gain rate, which is expected.
-Next, click the Estimates tab then select the three {\tt csf} parameters.
-
-\begin{figure}[H]
-\centering
-\includegraphics[width=3in]{figures/clado_freq_posterior}
-\caption{Mean values for the cladogenic state frequency simplex, where {\tt csf[1]}, {\tt csf[2]}, and {\tt csf[3]} correspond to subset sympatry, allopatry, and wide sympatry whose mean posterior values are 0.45, 0.30, and 0.25, respectively.}
-\end{figure}
-
-
-\subsection{Biogeographic event counts from {\tt mnCharHistoryNewick}}
+\subsubsection{Biogeographic event counts from {\tt mnCharHistoryNewick}}
 
 Recording stochastic mappings in a Tracer-compatible format requires some summarization.
 This monitor generates a tab-delimited file where the number of events of each type for each branch is recorded.
 
-\noindent \\ \impmark Open {\tt ./output/bg\_2rate.counts.txt} in a text editor.
+Open {\tt ./output/bg\_3.counts.txt} in a text editor.
 
 \begin{framed}
-\begin{lstlisting}%[basicstyle=\tiny \listingsfont, columns=texcl]
-Iteration  Posterior  Likelihood    Prior	t_s0	t_s1	t_c0	t_c1	t_c2	t_c3	b0_s0	b0_s1	b0_c	...
-0           -51.3307    -56.0288  4.69806	9	9	18	0	0	0	1	1	0	...	
-10          -54.4257    -58.1568  3.73110	9	10	17	0	0	1	1	1	0	...
-20          -58.0696    -62.0923  4.02274	11	9	15	2	1	0	2	1	1	...
-30          -46.5049    -51.1197  4.61480	8	8	18	0	0	0	1	1	0	...
-40          -42.8697    -46.4870  3.61735	7	7	18	0	0	0	1	1	0	...
-50          -43.5319    -47.4659  3.93394	7	7	18	0	0	0	1	1	0	...
+\begin{lstlisting}[style=textboxSmall]  % \listingsfont, columns=texcl]
+kkkddd
+Iter	Posterior	Likelihood	Prior	t_s0	t_s1	t_c0	t_c1	t_c2	t_c3	b0_s0	b0_s1	b0_c	...
+0	-6518.54	-6519.25	0.706823	977	839	22	0	0	0	38	28	0	...
+10	-583.147	-585.333	2.186240	66	37	3	7	9	3	2	1	2	...
+20	-296.540	-297.340	0.799755	20	25	15	1	3	3	0	1	0	...
+30	-276.284	-277.257	0.972918	17	24	14	0	4	4	0	1	0	...
+40	-266.569	-266.948	0.379624	18	23	15	1	3	3	0	1	3	...
 ...
 \end{lstlisting}
 \end{framed}
 
-For example, {\tt b2\_s1} gives the number of areas that are gained for the branch leading to the node indexed 2.
-{\tt b2\_c} gives the cladogenic event type that gives rise to the node indexed 2, where narrow sympatry, subset sympatry, allopatry, and widespread sympatry are recorded as {\tt 0}, {\tt 1}, {\tt 2}, and {\tt 3}, respectively. The columns {\tt t\_s0} and {\tt t\_s1} give the sum of events over all branches. {\tt t\_c0}, {\tt t\_c1}, and {\tt t\_c2} give the total number of narrow sympatric, subset sympatric, allopatric, and widespread sympatric cladogenic events over the entire tree.
-
-Because the expected number of gain events should be proportional to the area gain rate, we expect to see the same negative correlation between posterior probability and number of events as we did with the posterior and rate in the {\tt parameters.txt} file.
-
-Open Tracer, select the fields for the posterior probability and the number of gained areas over the tree, {\tt t1}, then click the Joint-Marginal tab.
-
-\begin{figure}[H]
-\centering
-\includegraphics[width=3in]{figures/joint_ngain_posterior}
-\caption{Joint-marginal distribution of posterior and number dispersal events summed over the tree.}
-\end{figure}
-
-One interesting facet of this output is there are never fewer than six events.
-In fact, since we assume a stratified geography and that only one event may occur per instant, it is impossible to describe the data we see at the tips with fewer than six gain events.
-That is, six gain events is part of the maximum parsimony solution.
+For example, {\tt b0\_s1} gives the number of areas that are gained for the branch leading to the node indexed 0.
+Referencing FigTree, we see this corresponds to chimpanzees.
+{\tt b0\_c} gives the cladogenic event type that gives rise to the chimp lineage, where narrow sympatry, widespread sympatry, subset sympatry, and allopatry are recorded as {\tt 0}, {\tt 1}, {\tt 2}, and {\tt 3}, respectively. The columns {\tt t\_s0} and {\tt t\_s1} give the sum of events over all branches. {\tt t\_c0}, {\tt t\_c1}, {\tt t\_c2}, and {\tt t\_c3} give the total number of narrow sympatric, widespread sympatric, subset sympatric, and allopatric cladogenic events over the entire tree.
 
 \subsection{Biogeographic event histories from {\tt mnCharHistoryNewick}}
 
 For more detailed data exploration, this analysis also provides annotated Newick strings with the complete character mappings for the tree.
+(This file format is a bit unwieldy and under revision.)
 
-\noindent \\ \impmark Open {\tt ./output/bg\_2rate.events.txt} in a text editor.
-
-\begin{framed}
-\begin{lstlisting}%[basicstyle=\tiny \listingsfont, columns=texcl]
-Iteration  Posterior  Likelihood  Prior  Tree
-Iteration	Posterior	Likelihood	Prior	Tree
-0	-51.3307	-56.0288	4.69806	((((((((P_hawaiiensis_WaikamoiL1[&index=18;nd=0010;pa=0010;ev={}]:0.96 ...
-10	-54.4257	-58.1568	3.7311	((((((((P_hawaiiensis_WaikamoiL1[&index=18;nd=0010;pa=0010;ev={}]:0.96 ...
-20	-58.0696	-62.0923	4.02274	((((((((P_hawaiiensis_WaikamoiL1[&index=18;nd=0010;pa=0010;ev={}]:0.96 ...
-30	-46.5049	-51.1197	4.6148	((((((((P_hawaiiensis_WaikamoiL1[&index=18;nd=0010;pa=0010;ev={}]:0.96 ...
-40	-42.8697	-46.4870	3.61735	((((((((P_hawaiiensis_WaikamoiL1[&index=18;nd=0010;pa=0010;ev={}]:0.96 ...
-50	-43.5319	-47.4659	3.93394	((((((((P_hawaiiensis_WaikamoiL1[&index=18;nd=0010;pa=0010;ev={}]:0.96 ...
-
-...
-\end{lstlisting}
-\end{framed}
+\noindent \\ \impmark Open {\tt ./output/bg\_3.events.txt} in a text editor.
 
 Each iteration records the data-augmented character history (stochastic mapping) using metadata labels, which, for an internal node, looks like
 
 \begin{snugshade}
 \begin{lstlisting}
-[&index=23;nd=0110;pa=0010;ch0=0010;ch1=0110;cs=s;bn=16;ev={{t:0.2513,a:1.1195,s:1,i:1}}
+[&index=42;nd=0000000000000101000000000;pa=0000000000000100000000000;ch0=0000000000000101000000000;ch1=0000000000000001000000000;cs=s;bn=41;ev={{t:0.138033,a:39.4458,s:1,i:15}}]
 \end{lstlisting}
 \end{snugshade}
 
-{\tt index=23} indicates this branch leads to the node indexed 23.
-The branch began in the ancestral state {\tt pa=0100} and terminated in the state {\tt nd=0110}.
-Since this node is not a tip node, it represents a speciation event, so the daughter ranges are also given, {\tt ch0=0010} and {\tt ch1=0110}.
+Having consulted FigTree earlier, we know node 42 is the Old World MRCA.
+The branch began with the range {\tt pa=0000000000000100000000000} and terminated in the state {\tt nd=0000000000000101000000000}.
+Since this node is not a tip node, it represents a speciation event, so the daughter ranges are also given, {\tt ch0=0000000000000101000000000} and {\tt ch1=0000000000000001000000000}.
 The cladogenic state for this speciation event was subset sympatric, {\tt cs=s}, rather than sympatric (wide or narrow; {\tt w} or  {\tt n}) or allopatric ({\tt a}).
-Anagenic dispersal and extinction events occurring along the lineage leading to node 19 are recorded in {\tt events}, where each event has a time (relative to the absolute branch length), absolute age, state (into), and character index ({\tt t}, {\tt a}, {\tt s}, {\tt i}, resp.).
-For this posterior sample of the character history for the branch leading to node 22, the species range expanded into Oahu at age 1.1195.
 
-To manipulate this data format, we'll use Python scripts. Below are a few examples of interesting posterior features.
+Anagenic dispersal and extinction events occurring along the lineage leading to node 42 are recorded in {\tt ev}, where each event has a time (relative to the absolute branch length), absolute age, state (into), and character index ({\tt t}, {\tt a}, {\tt s}, {\tt i}, resp.).
+Potentially, {\tt ev} contains multiple events.
+For this posterior sample, the MRCA of chimps and macaques dispersed into East Africa 39.4458 million years ago, which is consistent with the ranges recorded by {\tt pa} and {\tt nd}.
+
+Although we have stochastic mappings under the posterior distribution, the remaining challenge is to summarize them into something useful. The Python script {\tt bg\_parse.py} is provided to manipulate this data format. Below are a few examples of interesting features of the posterior.
 
 \noindent \\ \impmark  Open a Python console and read in the events.
 
 \begin{snugshade}
 \begin{lstlisting}
-> cd scripts
-> python27
+> cd RevBayes_scripts
+> python
 
 ...
 
 >>> from bg_parse import *
->>> dd=get_events(fn="../output/bg_2rate.events")
+>>> d=get_events(fn="../output/bg_3.events.txt")
 \end{lstlisting}
 \end{snugshade}
 
-By default, {\tt get\_events()} extracts a dictionary where each node index maps to a branch's character history as reported in {\tt ./input/bg\_2rate.events.txt}. 
-Each branch is a dictionary whose keys are various parts of the MCMC state and whose values the MCMC samples.
+By default, {\tt get\_events()} extracts a dictionary-of-dictionaries from the posterior event samples.
+The first key corresponds to the node (branch) whose MCMC samples you'd like to retrieve, while the second dictionary's keys are the columns correspond to MCMC states and values specific to that node. For example, say we are interested in the last five cladogenic states sampled for node 42, Old World MRCA,
 \begin{snugshade}
 \begin{lstlisting}
->>> dd[23].keys()
-['ch1', 'iteration', 'bn', 'nd', 'ch0', 'prior', 'posterior', 'cs', 'ev', 'likelihood']
->>> dd[23]['posterior'][0:5]
-[-48.6952, -60.1832, -53.2286, -57.5778, -53.4633]
+>>> dd[42].keys()
+['ch1', 'iteration', 'bn', 'nd', 'ch0', 'prior', 'posterior', 'pa', 'cs', 'ev', 'likelihood']
+>>> dd[42]['cs'][-5:]
+['widespread_sympatry', 'widespread_sympatry', 'widespread_sympatry', 'widespread_sympatry', 'widespread_sympatry']
 \end{lstlisting}
 \end{snugshade}
 
-To get the $n=1$ highest-valued sample for a branch by its posterior value
+To get the {\tt n=1} highest-valued sample for a branch by its posterior value
 \begin{snugshade}
 \begin{lstlisting}
->>> get_best(dd[23],n=1,p='posterior')
-{'prior': [4.48225], 'iteration': [14890], 'bn': [22], 'nd': [[0, 1, 1, 0]], 'ch0': [[0, 1, 1, 0]], 'ch1': [[0, 0, 1, 0]], 'posterior': [-34.7139], 'pa': [[0, 1, 0, 0]], 'cs': ['subset_sympatry'], 'ev': [[{'age': 1.5637, 'state': 1, 'idx': 2, 'time': 0.8611}]], 'likelihood': [-39.1962]}
+>>> get_best(dd[42],n=1,p='posterior')
+{'prior': [-0.524716], 'iteration': [46700], 'bn': [41], 'nd': [[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0]], 'ch0': [[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0]], 'ch1': [[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0]], 'posterior': [-95.7676], 'pa': [[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0]], 'cs': ['widespread_sympatry'], 'ev': [[]], 'likelihood': [-95.2429]}
 \end{lstlisting}
 \end{snugshade}
 
-To get the probability that area $i$ and area $j$ are both part of the species range as the branch for node 23 terminates, just before the speciation event
-\begin{snugshade}
-\begin{lstlisting}
->>> get_area_pair(dd[23])
-[[0.0816, 0.0188, 0.0628, 0.0000],
- [0.0188, 0.7081, 0.4390, 0.0000],
- [0.0628, 0.4390, 0.7141, 0.0000],
- [0.0000, 0.0000, 0.0000, 0.0000]]
-\end{lstlisting}
-\end{snugshade}
-showing area 3 was occupied nearly with probability 0.71 and both areas 2 and 3 were occupied with probability 0.44.
-Note, Hawaii was submerged until approximately 0.5 million years ago, and thus the probability of being in that area is 0.0.
+More data-exploration functions are found in {\tt bg\_parse.py}.
 
-If the range is size one during a speciation event, the cladogenic event state is always narrow sympatric, {\tt `narrow\_sympatry'}.
-But given the opportunity for non-sympatric events, i.e. that the range is larger than size one, we can get the probability of cladogenic state using
-For the probability for cladogenic event state given the range was larger than size one
-\begin{snugshade}
-\begin{lstlisting}
->>> get_clado_state(dd[23])
-{'allopatry': 0.0224, 'subset_sympatry': 0.1463, 'widespread_sympatry': 0.3183, 'narrow_sympatry': 0.5130}
->>> get_clado_state(dd[23],minSize=2)
-{'allopatry': 0.0460, 'subset_sympatry': 0.3005, 'widespread_sympatry': 0.6535, 'narrow_sympatry': 0.0000}
->>> get_clado_state(get_best(dd[23],n=100),minSize=2)
-{'allopatry': 0.1290, 'subset_sympatry': 0.6774, 'widespread_sympatry': 0.1936, 'narrow_sympatry': 0.0000}
-\end{lstlisting}
-\end{snugshade}
-
-Depending on your question, different aspects of the posterior cladogenic state will interest you.
-Narrow sympatry is the favored ancestral state, but wide sympatry is favored for ranges of size $n>1$.
-However, when we look at the 100 most probable samples, subset sympatry becomes most favored.
-
-More script functions are found in {\tt ./scripts/bg\_parse.py}.
-
-\subsection{New Hampshire extended format file (\texttt{./output/bg\_2rate.nhx})}
+\subsection{Phylowood animation file (\texttt{./output/bg\_3.nhx.txt})}
 
 Because this data is very high-dimensional, we'll use an external data exploration tool to look at range evolution.
-
-This file summarizes the input and output from a BayArea analysis using NEXUS format containing a New Hampshire eXtended (NHX) tree string.
-NHX allows you to annotate nodes in a Newick string with meta-information, which BayArea uses to report the probabilities in the \texttt{my\_run.area\_probs.txt} file.
-The \texttt{geo} block gives the geographical latitudes and longitudes for the areas in the order they are reported as probabilities.
-Like the \texttt{my\_run.area\_probs.txt} file, this file is not written until the analysis is complete.
-This annotation is used for the two visualization programs covered in the next section, Phylowood and BayArea-Fig.
-The anatomy of the Phylowood and BayArea-Fig settings blocks will also be explained there.
-
-\section{Visualization}
-
-Here we'll explore two options for visualizing ancestral range reconstructions.
-I'll walk you through some of the basic functionality, but feel free to play around as you like.
-
-\subsection{Phylowood}
-
-Phylowood generates interactive animations to explore biogeographic reconstructions.
+This file summarizes the MCMC output from a RevBayes biogeographical analysis as a Nexus-formatted file, which is used by Phylowood to generate interactive animations to explore biogeographic reconstructions.
 
 \noindent \\ \impmark Open \texttt{http://mlandis.github.io/phylowood}.
 
-\noindent \\ \impmark Drag and drop \texttt{./output/bg\_2rate.nhx.txt} into the text field.
+\noindent \\ \impmark Drag and drop \texttt{./output/bg\_3.nhx.txt} into the text field.
 
 \begin{figure}[H]
 \centering
@@ -508,6 +444,8 @@ Phylowood generates interactive animations to explore biogeographic reconstructi
 \end{figure}
 
 \noindent \\ \impmark Click the Play button to view the animation. \\
+
+Notice the primate MRCA range is very widespread with six areas. This is
 
 There are three control panels to help you filter data: the media panel, the map panel, and the phylogeny panel.
 The media buttons correspond to Beginning, Slow/Rewind, Play, Stop, Fast Forward, Ending (from left to right).
@@ -546,13 +484,13 @@ Phylowood also offers a masking effect that persists until an unmask command is 
 \begin{figure}[H]
 \centering
 \includegraphics[width=4in]{figures/phw_br23}
-\caption{Phylowood frame highlighting the posterior range for the most recent common ancestor of {\it P. mauiensis} and {\it P. hawaiiensis}.}
+\caption{Phylowood frame highlighting the posterior range for Old World MRCA.}
 \end{figure}
 
 Now that the masking effects are in place, you're free to interact with other map components.
 In addition, the area of marker sizes is only distributed among unmasked lineages.
 
-\noindent \\ \impmark Visit \texttt{https://github.com/mlandis/phylowood/wiki} to learn more about Phylowood.
+Visit \texttt{https://github.com/mlandis/phylowood/wiki} to learn more about Phylowood.
 
 
 

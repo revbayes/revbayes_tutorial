@@ -13,13 +13,13 @@
 # base rates of area gain and loss
 r_d ~ dnExp(10.)
 r_e ~ dnExp(10.)
-mv[mvi++] = mvScale(r_d)
-mv[mvi++] = mvScale(r_e)
+mv[mvi++] = mvScale(r_d, weight=5)
+mv[mvi++] = mvScale(r_e, weight=5)
 
 # per-area extinction rates
 # ... for area i
 for (i in 1:3) {
-    extirpation_rate[i] := r_e
+    e[i] := r_e
 }
 # How would you assign area 3 to have twice the extirpation rate as area 1 or 2?
 # How would you assign each area its own extirpation rate?
@@ -29,7 +29,7 @@ for (i in 1:3) {
 for (i in 1:3) { 							# ... from area i
     for (j in 1:3) {    					# ... to area j 
         if (i != j) {       				# ... ignoring self-dispersal events
-            dispersal_rate[i][j] := r_d
+            d[i][j] := r_d
         }
     }
 }
@@ -46,32 +46,29 @@ for (i in 1:8) {
 }
 
 # Assign local extinction (extirpation) rates to `r`.
-r[4][2] := extirpation_rate[2]   # 011 -> 001 : Extirpate in area 2
-r[4][3] := extirpation_rate[3]   # 011 -> 010 : Extirpate in area 3
-r[6][2] := extirpation_rate[1]   # 101 -> 001 : Extirpate in area 1
-r[6][5] := extirpation_rate[3]   # 101 -> 100 : Extirpate in area 3
-r[7][3] := extirpation_rate[1]   # 110 -> 010 : Extirpate in area 1
-r[7][5] := extirpation_rate[2]   # 110 -> 100 : Extirpate in area 2
-r[8][4] := extirpation_rate[1]   # 111 -> 011 : Extirpate in area 1
-r[8][6] := extirpation_rate[2]   # 111 -> 101 : Extirpate in area 2
-r[8][7] := extirpation_rate[3]   # 111 -> 110 : Extirpate in area 3
+r[4][2] := e[2]               # 011 -> 001 : Extirpate in area 2
+r[4][3] := e[3]               # 011 -> 010 : Extirpate in area 3
+r[6][2] := e[1]               # 101 -> 001 : Extirpate in area 1
+r[6][5] := e[3]               # 101 -> 100 : Extirpate in area 3
+r[7][3] := e[1]               # 110 -> 010 : Extirpate in area 1
+r[7][5] := e[2]               # 110 -> 100 : Extirpate in area 2
+r[8][4] := e[1]               # 111 -> 011 : Extirpate in area 1
+r[8][6] := e[2]               # 111 -> 101 : Extirpate in area 2
+r[8][7] := e[3]               # 111 -> 110 : Extirpate in area 3
 
 # Assign dispersal rates to `r`.
-r[2][4] := dispersal_rate[3][2]                         # 001 -> 011 : Disperse from area 3 to 2
-r[2][6] := dispersal_rate[3][1]                         # 001 -> 101 : Disperse from area 3 to 1
-r[3][4] := dispersal_rate[2][3]                         # 010 -> 011 : Disperse from area 2 to 3
-r[3][7] := dispersal_rate[2][1]                         # 010 -> 110 : Disperse from area 2 to 1
-r[5][6] := dispersal_rate[1][3]                         # 100 -> 101 : Disperse from area 1 to 3
-r[5][7] := dispersal_rate[1][2]                         # 100 -> 110 : Disperse from area 1 to 2
-r[4][8] := dispersal_rate[2][1] + dispersal_rate[3][1]  # 011 -> 111 : Disperse from area 2 to 1
-                                                        #                   and from area 3 to 1
-r[6][8] := dispersal_rate[1][2] + dispersal_rate[3][2]  # 101 -> 111 : Disperse from area 1 to 2
-                                                        #                   and from area 3 to 2
-r[7][8] := dispersal_rate[1][3] + dispersal_rate[2][3]  # 110 -> 111 : Disperse from area 1 to 3
-                                                        #                   and from area 2 to 3
+r[2][4] := d[3][2]            # 001 -> 011 : Disperse from area 3 to 2
+r[2][6] := d[3][1]            # 001 -> 101 : Disperse from area 3 to 1
+r[3][4] := d[2][3]            # 010 -> 011 : Disperse from area 2 to 3
+r[3][7] := d[2][1]            # 010 -> 110 : Disperse from area 2 to 1
+r[5][6] := d[1][3]            # 100 -> 101 : Disperse from area 1 to 3
+r[5][7] := d[1][2]            # 100 -> 110 : Disperse from area 1 to 2
+r[4][8] := d[2][1] + d[3][1]  # 011 -> 111 : Disperse from area 2 to 1 and from 3 to 1
+r[6][8] := d[1][2] + d[3][2]  # 101 -> 111 : Disperse from area 1 to 2 and from 3 to 2
+r[7][8] := d[1][3] + d[2][3]  # 110 -> 111 : Disperse from area 1 to 3 and from 2 to 3
                         
 # Show the contents of `r`.
-r
+# r
 
 # Does this look as expected? What patterns do you see?
 # What series of events might occur to get from state 5 (100) to state 2 (001)?
@@ -94,13 +91,21 @@ bf <- simplex(rep(1,8))
 q := fnFreeK(er, bf)
 
 # create the cladogenesis transition probability matrix
-allopatry_weight <- 0.5
-sympatry_weight <- 0.5
-clado_type_prob ~ dnDirichlet( simplex(allopatry_weight, sympatry_weight) )
-mv[mvi++] = mvSimplex(clado_type_prob, alpha=10., numCats=2, offset=1.0)
+widespread_sympatry_wt <- 0.1
+subset_sympatry_wt     <- 1.0
+allopatry_wt           <- 1.0
+clado_prior            <- [ widespread_sympatry_wt, subset_sympatry_wt, allopatry_wt ]
+
+# create prior on event types
+clado_type             ~ dnDirichlet(clado_prior)
+#mv[mvi++]              = mvSimplex(clado_type, alpha=50., numCats=3, offset=1.0)
+mv[mvi++]               = mvSimplexElementScale(clado_type, alpha=10, weight=5)
+#clado_type <- simplex( clado_prior )
 
 # for easy monitoring
-allopatry_prob := clado_type_prob[1]
-sympatry_prob := clado_type_prob[2]
+widespread_sympatry    := clado_type[1]
+subset_sympatry        := clado_type[2]
+allopatry              := clado_type[3]
+
 b <- simplex(1,1)
-clado_prob := fnCladoProbs(clado_type_prob, b, n_areas, 2)
+clado_prob := fnCladoProbs(clado_type, b, n_areas, 2)

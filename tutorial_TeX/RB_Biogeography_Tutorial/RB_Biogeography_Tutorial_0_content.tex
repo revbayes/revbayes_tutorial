@@ -1,51 +1,52 @@
 \section{Introduction}
 
-This lab describes how to perform Bayesian inference of historical biogeography using RevBayes. 
-
+How did species come to live where they're found today?
+Observing where species live today, we can leverage phylogenetic and geological information to model their distribution as the outcome of biogeographic processes to answer this.
+These natural processes require some additional considerations, such as how ranges are inherited following speciation events, and how geological events might influence dispersal rates.
+Using Revbayes for biogeographic inference, standard Bayesian techniques are available, such as model selection, Metropolis-coupled MCMC, and stochastic mapping.
+This tutorial describes how to perform Bayesian inference of historical biogeography using RevBayes. 
+Currently, this primarily covers range evolution models, where a species may occupy multiple discrete areas simultaneously.
+Tutorials to model individual specimens' geographical locations (sometimes called phylogeographic models) are under development.
 
 \subsection*{\textbf{Outline}}
 \begin{tabular}{ll}
-{\bf I. Introduction} & \\
-& a) Workspace setup \\
-& b) Range evolution models and data augmentation \\
-{\bf II. DEC in RevBayes} & \\
-& a) Tree, range, and geographic input \\
-& b) DEC as a graphical model \\
-& c) Monitors, moves, and MCMC \\
-& d) Model selection with Bayes factors \\
-{\bf III. Output and Analysis} & \\
-& a) MCMC output in Tracer \\
-& b) Ancestral range output \\
-& c) Animate ancestral ranges \\
+{\bf I. Range evolution} & \\
+& a) Dispersal-Extinction-Cladogenesis \\
+& b) Model \\
+{\bf II. Advanced features} & \\
+& a) Epoch model \\
+& b) GIS layers \\
+& c) Ancestral range reconstructs \\
+{\bf III. Data augmented biogeography} & \\
+& a) BayArea \\
+& b) Model \\
+& c) Phylowood animation \\
 \end{tabular}
 
-\noindent \\ \impmark These little arrows indicate lines containing key information to progress through the lab. The rest of the text gives context for why we're taking these steps or what to make of results.
+%\noindent \\ \impmark These little arrows indicate lines containing key information to progress through the lab. The rest of the text gives context for why we're taking these steps or what to make of results.
+%
+%\subsection{Handy links for this lab}
 
-\subsection{Handy links for this lab}
+%\begin{tabular}{ll}
+%RevBayes & \url{https://github.com/revbayes/revbayes} \\
+%Lab zip file & \href{https://github.com/revbayes/revbayes/raw/development/tutorials/RB\_Biogeography\_tutorial/RB\_biogeo\_files.zip}{{\tt https://github.com/revbayes/revbayes/.../RB\_biogeo\_files.zip}} \\
+%Phylowood software & \url{http://mlandis.github.io/phylowood} \\
+%Phylowood manual & \url{https://github.com/mlandis/phylowood/wiki} \\
+%Tracer & \url{http://tree.bio.ed.ac.uk/software/tracer}
+%
+%\end{tabular}
 
-\begin{tabular}{ll}
-RevBayes & \url{https://github.com/revbayes/revbayes} \\
-Lab zip file & \href{https://github.com/revbayes/revbayes/raw/development/tutorials/RB\_Biogeography\_tutorial/RB\_biogeo\_files.zip}{{\tt https://github.com/revbayes/revbayes/.../RB\_biogeo\_files.zip}} \\
-Phylowood software & \url{http://mlandis.github.io/phylowood} \\
-Phylowood manual & \url{https://github.com/mlandis/phylowood/wiki} \\
-Tracer & \url{http://tree.bio.ed.ac.uk/software/tracer}
-%DendroPy manual & \url{http://pythonhosted.org/DendroPy/} \\
-%matplotlib manual & \url{http://matplotlib.org/} \\
-%NumPy manual & \url{http://www.numpy.org/}
-
-\end{tabular}
-
-\subsection{Setting up your workspace}
-
-The practical part of the lab will analyze a small dataset of 19 taxa distributed over 4 biogeographic areas.
-Parts of the lab will require entering terminal commands, which will assume you are using the Unix shell \texttt{bash}.
-Just ask for help if the commands don't seem to work.
-
-\noindent \\ \impmark Portions of this lab require Python is installed. No packages are needed.
-
-\noindent \\ \impmark This tutorial will assume you have successfully installed RevBayes and can be called from your current working directory.
-
-\noindent \\ \impmark Download and unzip the lab zip file, {\tt RB\_biogeo\_files.zip}.
+%\subsection{Setting up your workspace}
+%
+%The practical part of the lab will analyze a small dataset of 19 taxa distributed over 4 biogeographic areas.
+%Parts of the lab will require entering terminal commands, which will assume you are using the Unix shell \texttt{bash}.
+%Just ask for help if the commands don't seem to work.
+%
+%\noindent \\ \impmark Portions of this lab require Python is installed. No packages are needed.
+%
+%\noindent \\ \impmark This tutorial will assume you have successfully installed RevBayes and can be called from your current working directory.
+%
+%\noindent \\ \impmark Download and unzip the lab zip file, {\tt RB\_biogeo\_files.zip}.
 
 %%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%
