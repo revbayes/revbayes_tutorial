@@ -29,10 +29,6 @@ moves[mvi++] = mvScale(clock_bg, lambda=0.5, weight=5.0)
 # area gain-loss rate simplex
 glr ~ dnDirichlet([1,1])
 moves[mvi++] = mvSimplexElementScale(glr, alpha=50.0, weight=5.0)
-#for (i in 1:2) {
-#	glr[i] ~ dnExp(10.)
-#	moves[mvi++] = mvScale(glr[i], lambda=0.5, weight=5.0)
-#}
 
 # nicknames for gain-loss rate elements
 r_gain := glr[1]
@@ -42,7 +38,6 @@ r_loss := glr[2]
 q_area := fnFreeBinary(glr)
 
 # distance power parameter
-#dp <- 0.00001
 dp ~ dnExp(1)
 moves[mvi++] = mvScale(x=dp, lambda=0.5, weight=5.0)
 
@@ -53,12 +48,11 @@ grm := fnBiogeoGRM(atlas=atlas, distancePower=dp, useAvailable=false, useDistanc
 q_range := fnBiogeoDE(gainLossRates=q_area, branchRates=clock_bg, geoRateMod=grm, numAreas=atlas.nAreas(), forbidExtinction=true)
 
 # cladogenesis probabilities
-clado_prob <- simplex( [1,1,1] )
-#clado_prob ~ dnDirichlet([1,1,1])
+clado_prob ~ dnDirichlet([1,1,1])
 widespread_sympatry := clado_prob[1]
 subset_sympatry     := clado_prob[2]
 allopatry           := clado_prob[3]
-#moves[mvi++] = mvSimplexElementScale(clado_prob, alpha=50.0, weight=5.0)
+moves[mvi++] = mvSimplexElementScale(clado_prob, alpha=50.0, weight=5.0)
 
 
 # the model
