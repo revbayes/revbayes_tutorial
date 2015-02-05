@@ -91,9 +91,9 @@ bf <- simplex(rep(1,8))
 q := fnFreeK(er, bf)
 
 # create the cladogenesis transition probability matrix
-widespread_sympatry_wt <- 0.1
-subset_sympatry_wt     <- 1.0
-allopatry_wt           <- 1.0
+widespread_sympatry_wt <- 1
+subset_sympatry_wt     <- 5
+allopatry_wt           <- 5
 clado_prior            <- [ widespread_sympatry_wt, subset_sympatry_wt, allopatry_wt ]
 
 # create prior on event types

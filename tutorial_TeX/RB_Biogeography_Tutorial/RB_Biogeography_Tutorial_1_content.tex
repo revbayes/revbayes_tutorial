@@ -147,8 +147,8 @@ Next, compute the number of states from the number of areas
 
 \begin{snugshade}
 \begin{lstlisting}
-n_areas = data.nchar()
-n_states = 2^data.nchar()
+n_areas = 3
+n_states = 2^n_areas
 \end{lstlisting}
 \end{snugshade}
 
@@ -320,8 +320,7 @@ Then create the cladogenic transition probability matrix
 
 \begin{snugshade}
 \begin{lstlisting}
-b <- simplex(1,1)
-clado_prob := fnCladoProbs(clado_type_prob, b, n_areas, 2)
+clado_prob := fnCladoProbs(clado_type_prob, n_areas, 2)
 \end{lstlisting}
 \end{snugshade}
 
