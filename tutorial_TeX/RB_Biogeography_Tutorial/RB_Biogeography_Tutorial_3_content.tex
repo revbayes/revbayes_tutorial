@@ -20,8 +20,8 @@ Just as MCMC evaluates the posterior distribution for sampled parameter values, 
 Thus, ancestral range reconstructions are a by-product of data augmentation, which are often of primary interest to biogeographers.
 
 You may wonder why matrix exponentiation works fine for molecular substitution models and large multiple sequence alignments.
-It is the non-independence of character evolution that induces large state spaces.
-Molecular substitution models typically assume each character in alignment evolves independently, which is sometimes justified by the ability of recombination to degrade linkage disequilibrium over geological time scales.
+It is the non-independence of character evolution that induces large state spaces, along with cladogenic processes that affect the entire set of characters (e.g. non-identical range inheritance following speciation).
+Molecular substitution models typically assume each character in an alignment evolves independently, which may be justified by the ability of recombination to degrade linkage disequilibrium over geological time scales.
 Conveniently, this keeps \textbf{Q} small even for datasets with many sites.
 
 \subsection{Large rate matrices and distance-dependent dispersal}
@@ -333,7 +333,8 @@ my_mcmc.run(generations=ngen)
 \end{lstlisting}
 \end{snugshade}
 
-This may take some time if you're following this tutorial in a lab setting, so pre-analysed output files are also provided in {\tt ./completed\_output}.
+The posterior surface over character histories is highly multimodal, so this analysis takes a long time to mix.
+If you're following this tutorial in a lab setting, you should proceed using the pre-analysed output files provided in {\tt ./completed\_output}.
 
 \subsection{Analysis output}
 \label{sec:bg_out}
@@ -500,131 +501,4 @@ Visit \texttt{https://github.com/mlandis/phylowood/wiki} to learn more about Phy
 
 \begin{itemize}
 \item (Under construction.)
-%\item How sensitive are the rates of area gain and loss to the prior distribution on {\tt dp} ($\beta$)?
-%\item Run the analysis once with {\tt lambda=1.} for all {\tt mvCharacterHistory} proposals, and again with {\tt lambda=0.01}. The same number of proposals are run in each case. How d
 \end{itemize}
-
-
-%%%%%%%%%%%% GRAVEYARD %%%%%%%%%%%%%%%
-
-
-
-%%\subsection{Model selection using Bayes factors}
-%%
-%%Bayes factors (BFs) are used to select which of two models better describes the observed data, $\mathbf{X}_{obs}$, and are computed as the ratio of marginal likelihoods for those two models.
-%%One might prefer to analytically compute the marginal likelihood, but it's the same intractable quantity we intentionally avoid computing when using MCMC in a Bayesian context.
-%%Instead, we must estimate the marginal likelihood from our posterior distribution samples.
-%%Here, we will use thermodynamic integration \citep{lartillot06} and stepping-stone approximation \citep{xie10}.
-%%The exact details of these techniques will not be covered here, but there is an important practical point to mention: both methods rely on computing a number of ``power posterior'' distributions.
-%%Computing more power posteriors increases the marginal likelihood estimator's accuracy at the cost of computational time.
-%%
-%%Moving on, we'll compute the Bayes factor to compare a simple one-rate model, which asserts the rate of area gain and loss are always equal, to a two-rate model which allows these rates to vary independently.
-%%Rather than specifying the model manually, we will load (source) the model definition from a file then enter the commands to compute its marginal likelihood.
-%%For faster results, we will use two separate RevBayes sessions, one for each model.
-%%For each session, the power posterior analysis run for 1000 generations during burn-in then 1000 generations per each of 30 power posterior categories.
-%%
-%%First session:
-%%\begin{snugshade}
-%%\begin{lstlisting}
-%%RevBayes > source("./scripts/biogeography_DEC_1rate.Rev")
-%%RevBayes > pp_fn <- out_fp + out_str + ".pp.txt"
-%%RevBayes > pow_p <- powerPosterior(my_model, moves, pp_fn, cats=30) 
-%%RevBayes > pow_p.burnin(generations=1000,tuningInterval=100)
-%%RevBayes > pow_p.run(generations=5000)
-%%\end{lstlisting}
-%%\end{snugshade}
-%%
-%%Second session:
-%%\begin{snugshade}
-%%\begin{lstlisting}
-%%RevBayes > source("./scripts/biogeography_DEC_2rate.Rev")
-%%RevBayes > pp_fn <- out_fp + out_str + ".pp.txt"
-%%RevBayes > pow_p <- powerPosterior(my_model, moves, pp_fn, cats=30) 
-%%RevBayes > pow_p.burnin(generations=1000,tuningInterval=100)
-%%RevBayes > pow_p.run(generations=5000)  
-%%\end{lstlisting}
-%%\end{snugshade}
-%%
-%%Each power posterior analysis will write their contents to the file given in {\tt pp\_fn}.
-%%These files are {\tt bg\_1rate.pp.txt} and {\tt bg\_2rate.pp.txt} for the simple and complex models, respectively.
-%%This may take a few minutes.
-%%When complete, the power posterior files may then be used to compute marginal likelihoods.
-%%For example, from the RevBayes session analyzing the simple one-rate model
-%%
-%%\begin{snugshade}
-%%\begin{lstlisting}
-%%RevBayes > ss <- steppingStoneSampler(file=pp_fn)
-%%RevBayes > ss.marginal() 
-%%RevBayes > ps <- pathSampler(file=pp_fn)
-%%RevBayes > ps.marginal() 
-%%\end{lstlisting}
-%%\end{snugshade}
-%
-%For a given model, the path sampling and stepping stone sampling methods should produce similar marginal likelihood estimates.
-%Values should be within one log likelihood unit of one another.
-%If the values are extremely different, this may indicate {\tt powerPosterior} should be re-run with a larger number of {\tt cats}.
-%We chose {\tt cats=30} which should suffice, and we see no problem.
-%Then from the complex two-rate model RevBayes session using the same commands as above.
-%Finally, we can compute the Bayes factor, which is simply the ratio of marginal likelihoods.
-%
-%\begin{snugshade}
-%\begin{lstlisting}
-%RevBayes > exp(-51.7202)/exp(-52.3158)
-%   1.81412
-%\end{lstlisting}
-%\end{snugshade}
-%
-%A value of one would mean both models had equal marginal likelihoods.
-%A value less than one would indicate the first model, the simple model, had a larger marginal likelihood, and was therefore favored by model testing.
-%But that's not the case, the value is greater than one, and the complex two-rate model is favored.
-%Similar to frequentist interpretations of significance for p-values, there is no universal and objective criterion of significance with Bayes factors, but most would agree a factor of 1.8 (or 1.0/1.8) indicates weak support for one model over the other.
-
-
-
-%The {\tt mnScreen} monitor reports model parameter values to the screen, where each row corresponds to the current accepted MCMC state, and each column reports some model feature, such as the model likelihood or a parameter value.
-%Every 20 iterations, this monitor re-prints the column headers.
-%
-%\begin{snugshade}
-%%\begin{lstlisting}[basicstyle=\tiny \listingsfont, columns=texcl]
-%\begin{lstlisting}%[basicstyle=\tiny \listingsfont]
-%RevBayes > my_mcmc.run(generations=25000)
-%
-%Running MCMC simulation for 25000 iterations
-%The simulator uses 8 different moves in a random
-%move schedule with 241 moves per iteration
-%
-%Iteration   |   Posterior  |          dp  |      glr[1]  |      glr[2]  |      csf[1]  |      csf[2]  |      csf[3]
-%-------------------------------------------------------------------------------------------------------------------
-%0           |    -51.3307  |   0.0570518  |    0.175137  |   0.0580957  |    0.330891  |    0.255308  |    0.413801
-%10          |    -54.4257  |   0.0416423  |    0.166936  |    0.178402  |   0.0549136  |    0.148854  |    0.796233
-%20          |    -58.0696  |   0.0991853  |    0.136495  |    0.122135  |    0.308418  |    0.448892  |    0.242689
-%30          |    -46.5049  |     0.10676  |   0.0958918  |   0.0959592  |    0.543837  |    0.363871  |   0.0922922
-%40          |    -42.8697  |    0.173549  |    0.158565  |   0.0662419  |    0.569416  |    0.126439  |    0.304145
-%50          |    -43.5319  |    0.117868  |    0.196497  |   0.0523307  |    0.440269  |    0.257171  |     0.30256
-%
-%...
-%\end{lstlisting}
-%\end{snugshade}
-%
-%For the complex 2-rate model, our model parameters are {\tt dp}, the distance power parameter, and the rates of area loss and gain, {\tt glr[1]} and {\tt glr[2]}, respectively, and the frequencies for subset sympatry, allopatry, and widespread sympatry {\tt csf[1]}, {\tt csf[2]}, and {\tt csf[3]}, respectively. 
-%If you notice the value of some parameter is rarely updated from iteration to iteration, the MCMC is probably mixing poorly therefore it's not generating samples from the posterior distribution (the MCMC's stationary distribution).
-%In this case, you may want to re-run the analysis with different arguments for the {\tt Move} object assigned to that parameter.
-%
-%\subsection{Sampled parameters from {\tt ModelMonitor}}
-%
-%This tab-delimited file contains parameter samples from the posterior distribution.
-%As with the {\tt ScreenMonitor}, columns are model or parameter values and rows are MCMC cycles.
-%
-%\begin{framed}
-%\begin{lstlisting}%[basicstyle=\tiny \listingsfont, columns=texcl]
-%Iteration  Posterior  Likelihood    Prior  glr[1]  glr[2]  dp  csf[1]  csf[2]  csf[3]
-%0           -51.3307    -56.0288  4.69806  0.175137  0.0580957  0.057051  0.330891  0.255308  0.413801
-%10          -54.4257    -58.1568  3.73110  0.166936  0.1784020  0.041642  0.054913  0.148854  0.796233
-%20          -58.0696    -62.0923  4.02274  0.136495  0.1221350  0.099185  0.308418  0.448892  0.242689
-%30          -46.5049    -51.1197  4.61480  0.095891  0.0959592  0.106760  0.543837  0.363871  0.092292
-%40          -42.8697    -46.4870  3.61735  0.158565  0.0662419  0.173549  0.569416  0.126439  0.304145
-%50          -43.5319    -47.4659  3.93394  0.196497  0.0523307  0.117868  0.440269  0.257171  0.302560
-%
-%...
-%\end{lstlisting}
-%\end{framed}

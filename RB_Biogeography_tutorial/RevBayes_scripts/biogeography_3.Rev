@@ -6,7 +6,7 @@ fp      = "./"
 area_fn = fp + "data/earth25.still.atlas.txt"
 data_fn = fp + "data/primates_bg_n25.nex"
 tree_fn = fp + "data/primates.tree"
-out_fn  = fp + "output/bg_3.3"
+out_fn  = fp + "output/bg_3.E"
 data  <- readDiscreteCharacterData(data_fn)
 tree  <- readTrees(tree_fn)[1]
 atlas <- readAtlas(area_fn)
@@ -71,8 +71,8 @@ moves[mvi++] = mvCharacterHistory(ctmc=m, qmap=q_range, tree=tree, lambda=0.01, 
 moves[mvi++] = mvCharacterHistory(ctmc=m, qmap=q_range, tree=tree, lambda=0.01, type="Biogeo", graph="branch", proposal="rejection", weight=n_nodes*2)
 moves[mvi++] = mvCharacterHistory(ctmc=m, qmap=q_range, tree=tree, lambda=0.20, type="Biogeo", graph="node", proposal="rejection", weight=n_nodes*5)
 moves[mvi++] = mvCharacterHistory(ctmc=m, qmap=q_range, tree=tree, lambda=0.20, type="Biogeo", graph="branch", proposal="rejection", weight=n_nodes*5)
-moves[mvi++] = mvCharacterHistory(ctmc=m, qmap=q_range, tree=tree, lambda=0.80, type="Biogeo", graph="node", proposal="rejection", weight=n_nodes*2)
-moves[mvi++] = mvCharacterHistory(ctmc=m, qmap=q_range, tree=tree, lambda=0.80, type="Biogeo", graph="branch", proposal="rejection", weight=n_nodes*2)
+moves[mvi++] = mvCharacterHistory(ctmc=m, qmap=q_range, tree=tree, lambda=1.00, type="Biogeo", graph="node", proposal="rejection", weight=n_nodes*2)
+moves[mvi++] = mvCharacterHistory(ctmc=m, qmap=q_range, tree=tree, lambda=1.00, type="Biogeo", graph="branch", proposal="rejection", weight=n_nodes*2)
 
 # create the model
 my_model = model(m)
