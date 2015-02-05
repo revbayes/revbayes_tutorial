@@ -107,5 +107,4 @@ widespread_sympatry    := clado_type[1]
 subset_sympatry        := clado_type[2]
 allopatry              := clado_type[3]
 
-b <- simplex(1,1)
-clado_prob := fnCladoProbs(clado_type, b, n_areas, 2)
+clado_prob := fnCladoProbs(clado_type, n_areas, 2)

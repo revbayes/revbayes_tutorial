@@ -6,7 +6,7 @@ fp      = "./"
 area_fn = fp + "data/earth25.still.atlas.txt"
 data_fn = fp + "data/primates_bg_n25.nex"
 tree_fn = fp + "data/primates.tree"
-out_fn  = fp + "output/bg_3.1"
+out_fn  = fp + "output/bg_3.4"
 data  <- readDiscreteCharacterData(data_fn)
 tree  <- readTrees(tree_fn)[1]
 atlas <- readAtlas(area_fn)
@@ -16,7 +16,7 @@ n_nodes = tree.nnodes()
 
 mvi = 1
 mni = 1
-ngen = 100000
+ngen = 500000
 
 # save a copy of the tree with node indexes (for later use)
 write(tree,filename=tree_fn+".index.tre")
@@ -53,7 +53,7 @@ grm := fnBiogeoGRM(atlas=atlas, distancePower=dp, useAvailable=false, useDistanc
 q_range := fnBiogeoDE(gainLossRates=q_area, branchRates=clock_bg, geoRateMod=grm, numAreas=atlas.nAreas(), forbidExtinction=true)
 
 # cladogenesis probabilities
-clado_prob ~ dnDirichlet( [0.1,1.,1.] )
+clado_prob ~ dnDirichlet( [1,10,10] )
 #clado_prob <- simplex(1,1,1)
 widespread_sympatry := clado_prob[1]
 subset_sympatry     := clado_prob[2]

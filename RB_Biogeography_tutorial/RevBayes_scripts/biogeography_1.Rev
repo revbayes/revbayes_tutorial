@@ -35,10 +35,6 @@ source(fp + "RevBayes_scripts/DEC_n3_same_rate.Rev")
 # ... or use the 3-area DEC model with different rates
 #source(fp + "RevBayes_scripts/DEC_n3_diff_rate.Rev")
 
-# ... or use the n-area DEC model, determined by n_areas
-# Using this requires editing the .Rev file.
-# source(fp + "RevBayes_scripts/DEC_general.Rev")
-
 # build ctmc
 m ~ dnPhyloCTMCClado( tree=tree, Q=q, cladoProbs=clado_prob, branchRates=clock_bg, nSites=1, type="NaturalNumbers" )
 m.clamp(data)
