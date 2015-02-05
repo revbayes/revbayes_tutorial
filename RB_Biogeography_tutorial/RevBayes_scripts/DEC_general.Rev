@@ -1,17 +1,5 @@
 # source("/Users/mlandis/projects/rb_lagrange/code/rb_lagrange.Rev")
 
-# atlas = readAtlas("../data/hawaii_dynamic.atlas.txt")
-# data = readDiscreteCharacterData("../data/psychotria.nex")
-# tree = readTree("../data/psychotria.nex")
-
-# hard coded for now
-
-# does not work with current vector initialization
-#extirpation <- [ 1.100, 1.020, 1.003 ]
-#dispersal <- [ [1.100,1.020,1.003], [2.100,2.020,2.003], [3.100,3.020,3.003] ]
-
-
-
 # works for current initialization
 dispersal[1][2] <- 1.020
 dispersal[1][3] <- 1.003

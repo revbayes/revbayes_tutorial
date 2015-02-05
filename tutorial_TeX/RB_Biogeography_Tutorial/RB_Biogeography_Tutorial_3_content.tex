@@ -1,8 +1,10 @@
 \section{Large numbers of areas}
+\label{sec:bayarea}
 
 \setlength{\parindent}{0pt}
 
 \subsection{Data augmentation}
+\label{sec:data_aug}
 
 For small rate matrices, transition probabilities of beginning in state $i$ and ending in state $j$ equal the matrix exponential of the underlying rate matrix, scaled by the elapsed time of the process.
 This integrates over all unobserved transition events during the time interval $t$.
@@ -10,19 +12,22 @@ Unfortunately, computing the matrix exponential scales poorly as the state space
 
 Alternatively, the probability of beginning in state $i$ and ending in state $j$ can be computed easily when the explicit series of event types and times are known.
 While we will never know the exact history of events, we can use stochastic mapping in conjunction with Markov chain Monte Carlo (MCMC) to repeatedly sample range evolution histories that are consistent with the ranges observed in the study taxa at the tips of the phylogeny.
-This technique is called data augmentation, and was first applied in phylogenetics to tertiary structure-dependent evolution of protein-coding nucleotide sequences \citep{robinson03}.
+This technique is called data augmentation. It was first applied in phylogenetics to tertiary structure-dependent evolution of protein-coding nucleotide sequences \citep{robinson03}, and later extended to range evolution in \citet{landis13}.
 
-This is the strategy we will use to infer the posterior distribution approximated by 
-\newline{Prob$\left( \textbf{X}_{aug}, \theta \mid \textbf{X}_{obs}, T, M \right)$}, where $\textbf{X}_{obs}$ is the range data observed at the tips, $\textbf{X}_{aug}$ is the distribution of ancestral range reconstructions over the phylogeny, $T$, where $\textbf{X}_{aug}$ is inferred jointly with the parameters, $\theta$, assuming the range evolution model, $M$, that describes $\textbf{Q}$ above.
-Ancestral range reconstructions are often of primary interest in phylogenetic biogeographic analyses, which are generated as stochastic mappings with support values as a by-product data augmentation.
+Using data augmentation, we will approximate {Prob$\left( \textbf{X}_{aug}, \theta \mid \textbf{X}_{obs}, T, M \right)$}, where $\textbf{X}_{obs}$ is the range data observed at the tips, $\textbf{X}_{aug}$ is the distribution of ancestral range reconstructions over the phylogeny, $T$, where $\textbf{X}_{aug}$ is inferred jointly with the parameters, $\theta$, assuming the range evolution model, $M$, that describes $\textbf{Q}$ above.
+From a Bayesian perspective, $\textbf{X}_{aug}$ is effectively treated as part of the parameter space in the posterior distribution.
+Just as MCMC evaluates the posterior distribution for sampled parameter values, the same is done for sampled character histories.
+Thus, ancestral range reconstructions are a by-product of data augmentation, which are often of primary interest to biogeographers.
 
 You may wonder why matrix exponentiation works fine for molecular substitution models and large multiple sequence alignments.
-Molecular substitution models typically assume each site in the multiple sequence alignment evolves independently, which may be justified because recombination degrades linkage disequilibrium over geological timescales.
+It is the non-independence of character evolution that induces large state spaces, along with cladogenic processes that affect the entire set of characters (e.g. non-identical range inheritance following speciation).
+Molecular substitution models typically assume each character in an alignment evolves independently, which may be justified by the ability of recombination to degrade linkage disequilibrium over geological time scales.
 Conveniently, this keeps \textbf{Q} small even for datasets with many sites.
 
-\subsection{Large rate matrices}
+\subsection{Large rate matrices and distance-dependent dispersal}
+\label{sec:rate_map}
 
-This matrix can be represented compactly as the rate function
+A rate matrix may be represented compactly as the rate function
 \[
 q^{(a)}_{\textbf{y},\textbf{z}} =
 \begin{cases}
@@ -32,14 +37,12 @@ q^{(a)}_{\textbf{y},\textbf{z}} =
 \end{cases}.
 \]
 
-where $\textbf{y}$ and $\textbf{z}$ are the ``from'' and ``to'' ranges and $a$ is the area that changes.
-For example, $q^{(1)}_{011,111}$ is the rate of range expansion for $011 \rightarrow 111$ to gain area $1$.
+where $\textbf{y}$ and $\textbf{z}$ are the ``from'' and ``to'' ranges and $a$ is the area that changes, $\lambda_0$ is the per-area rate of loss, and $\lambda_1$ is the per-area rate of gain.
+For example, $q^{(1)}_{011,111}$ is the rate of range expansion for $011 \rightarrow 111$ to gain area $1$, which equals $\lambda_1$.
 Note the rate of more than one event occurring simultaneously is zero, so a range must expand twice by one area in order to expand by two areas.
 This model is analogous to the Jukes-Cantor model for three independent characters with binary states, except the all-zero ``null range'' is forbidden.
 
-\subsection{Distance-dependent dispersal function}
-
-Lastly, we may reasonably expect that a range expansion event into an area depends on which nearby areas are currently inhabited, which imposes non-independence between characters.
+Extending this idea, we may reasonably expect that a range expansion event into an area depends on which nearby areas are currently inhabited, which imposes non-independence between characters.
 The transition rate might then appear as
 \[
 q^{(a)}_{\textbf{y},\textbf{z}} =
@@ -56,6 +59,8 @@ The $\beta$ parameter rescales the importance of geographic distance between two
 Importantly, $\eta(\cdot) = 1$ when $\beta=0$, meaning geographic distance between areas is irrelevant.
 Moreover, when $\beta > 0$, $\eta(\cdot) < 1$ when area $a$ is relatively distant and $\eta(\cdot) > 1$ when area $a$ is relatively close.
 See \citet{landis13} for a full description of the model.
+
+{\bf \framebox{?}} Write down a rate function where the per-area rates of gain and loss depend on the number of currently occupied areas.
 
 \subsection{Specifying a data augmented DEC model}
 
@@ -133,7 +138,7 @@ Proceeding with the model configuration, we'll first create our rate matrix that
 In RevBayes, data-augmented CTMC analyses require {\tt RateMap} functions to determine event rates, which differ from the familiar {\tt RateMatrix} functions that include {\tt fnJC} and {\tt fnGTR} as members.
 In their simplest form, {\tt RateMap} functions generate the rates of change over the full set of characters, where each character evolves according to a provided {\tt RateMatrix} function.
 Additionally, a {\tt RateMap} accepts a rate modifier function that induces some correlation structure to character change evolution.
-In this section, we'll be creating a biogeographic {\tt RateMap} function for the dispersal-extinction process given above.
+In this section, we'll be creating a biogeographic {\tt RateMap} function for the dispersal-extinction process given in Section \ref{sec:rate_map}.
 
 First, create a biogeographical clock to scale the rate of range evolution.
 
@@ -226,6 +231,7 @@ m ~ dnPhyloDACTMC(tree=tree, Q=q_range, cladoProbs=clado_prob, type="Biogeo", fo
 
 
 So we may evaluate the graphical model's likelihood, we tell the CTMC to observe the {\tt data} object, which then primes the model with data-augmented character histories.
+
 Now {\tt m} has a defined likelihood value.
 \begin{snugshade}
 \begin{lstlisting}
@@ -237,7 +243,7 @@ m.lnProbability()
 
 To integrate over the space of possible range histories, we still need to add moves to propose new data augmented histories.
 The major challenge to sampling character histories is ensuring the character histories are consistent with the observations at the tips of the tree.
-The proposals in this tutorial use \citet{nielsen02}'s rejection sampling algorithm, with some modifications to account for cladogenic events and epoch-based rate matrices.
+The proposals in this tutorial use \citet{nielsen02}'s rejection sampling algorithm, with some modifications to account for cladogenic events and epoch-based rate maps.
 
 The basic idea is simple.
 Each time a character history proposal is called, it selects a node at random from the tree.
@@ -291,7 +297,7 @@ We will extract these reconstructions using special monitors designed for the {\
 
 Next, we will create {\tt mnCharHistoryNewick} monitors to record the sampled character history states for each node in the tree.
 This monitor has two {\tt style} options: {\tt counts} reports the number of gains and losses per branch in a tab-delimited Tracer-readable format;  {\tt events} reports richer information of what happens along a branch, anagenically and cladogenically, using an extended Newick format.
-How to read these file formats will be discussed in more detail in Section \ref{sec:posterior}.
+How to read these file formats will be discussed in more detail in Section \ref{sec:bg_out}.
 
 \begin{snugshade}
 \begin{lstlisting}
@@ -307,7 +313,7 @@ We will also discuss this file's format in more detail later in the tutorial.
 
 \begin{snugshade}
 \begin{lstlisting}
-monitors[mni++] = mnCharHistoryNhx(filename=out_fn+".phw.txt", ctmc=m, tree=tree, atlas=atlas, samplegen=10, maxgen=ngen, burnin=0.5)
+monitors[mni++] = mnCharHistoryNhx(filename=out_fn+".phw.txt", ctmc=m, tree=tree, atlas=atlas, samplegen=100, maxgen=ngen, burnin=0.5)
 \end{lstlisting}
 \end{snugshade}
 
@@ -327,13 +333,11 @@ my_mcmc.run(generations=ngen)
 \end{lstlisting}
 \end{snugshade}
 
-\subsubsection{Exercises}
-
-\begin{itemize}
-\item How sensitive are the rates of area gain and loss to the prior distribution on {\tt dp} ($\beta$)?
-\end{itemize}
+The posterior surface over character histories is highly multimodal, so this analysis takes a long time to mix.
+If you're following this tutorial in a lab setting, you should proceed using the pre-analysed output files provided in {\tt ./completed\_output}.
 
 \subsection{Analysis output}
+\label{sec:bg_out}
 
 You will need a node-indexed phylogeny to interpret ancestral state reconstructions. First, open FigTree and load the Newick tree stored in {\tt data/primates.tree.index.tre}. Expand ``Node Labels'' and change ``Display'' to the custom node label. All sampled characters have a node index, which corresponds to the branch ancestral to the indexed node.
 
@@ -408,6 +412,7 @@ Although we have stochastic mappings under the posterior distribution, the remai
 \end{snugshade}
 
 By default, {\tt get\_events()} extracts a dictionary-of-dictionaries from the posterior event samples.
+A dictionary is very much like a vector, so this can be thought of as similar to a two-dimensional matrix.
 The first key corresponds to the node (branch) whose MCMC samples you'd like to retrieve, while the second dictionary's keys are the columns correspond to MCMC states and values specific to that node. For example, say we are interested in the last five cladogenic states sampled for node 42, Old World MRCA,
 \begin{snugshade}
 \begin{lstlisting}
@@ -492,128 +497,8 @@ In addition, the area of marker sizes is only distributed among unmasked lineage
 
 Visit \texttt{https://github.com/mlandis/phylowood/wiki} to learn more about Phylowood.
 
+\subsection{Exercises}
 
-
-%%%%%%%%%%%% GRAVEYARD %%%%%%%%%%%%%%%
-
-
-
-%%\subsection{Model selection using Bayes factors}
-%%
-%%Bayes factors (BFs) are used to select which of two models better describes the observed data, $\mathbf{X}_{obs}$, and are computed as the ratio of marginal likelihoods for those two models.
-%%One might prefer to analytically compute the marginal likelihood, but it's the same intractable quantity we intentionally avoid computing when using MCMC in a Bayesian context.
-%%Instead, we must estimate the marginal likelihood from our posterior distribution samples.
-%%Here, we will use thermodynamic integration \citep{lartillot06} and stepping-stone approximation \citep{xie10}.
-%%The exact details of these techniques will not be covered here, but there is an important practical point to mention: both methods rely on computing a number of ``power posterior'' distributions.
-%%Computing more power posteriors increases the marginal likelihood estimator's accuracy at the cost of computational time.
-%%
-%%Moving on, we'll compute the Bayes factor to compare a simple one-rate model, which asserts the rate of area gain and loss are always equal, to a two-rate model which allows these rates to vary independently.
-%%Rather than specifying the model manually, we will load (source) the model definition from a file then enter the commands to compute its marginal likelihood.
-%%For faster results, we will use two separate RevBayes sessions, one for each model.
-%%For each session, the power posterior analysis run for 1000 generations during burn-in then 1000 generations per each of 30 power posterior categories.
-%%
-%%First session:
-%%\begin{snugshade}
-%%\begin{lstlisting}
-%%RevBayes > source("./scripts/biogeography_DEC_1rate.Rev")
-%%RevBayes > pp_fn <- out_fp + out_str + ".pp.txt"
-%%RevBayes > pow_p <- powerPosterior(my_model, moves, pp_fn, cats=30) 
-%%RevBayes > pow_p.burnin(generations=1000,tuningInterval=100)
-%%RevBayes > pow_p.run(generations=5000)
-%%\end{lstlisting}
-%%\end{snugshade}
-%%
-%%Second session:
-%%\begin{snugshade}
-%%\begin{lstlisting}
-%%RevBayes > source("./scripts/biogeography_DEC_2rate.Rev")
-%%RevBayes > pp_fn <- out_fp + out_str + ".pp.txt"
-%%RevBayes > pow_p <- powerPosterior(my_model, moves, pp_fn, cats=30) 
-%%RevBayes > pow_p.burnin(generations=1000,tuningInterval=100)
-%%RevBayes > pow_p.run(generations=5000)  
-%%\end{lstlisting}
-%%\end{snugshade}
-%%
-%%Each power posterior analysis will write their contents to the file given in {\tt pp\_fn}.
-%%These files are {\tt bg\_1rate.pp.txt} and {\tt bg\_2rate.pp.txt} for the simple and complex models, respectively.
-%%This may take a few minutes.
-%%When complete, the power posterior files may then be used to compute marginal likelihoods.
-%%For example, from the RevBayes session analyzing the simple one-rate model
-%%
-%%\begin{snugshade}
-%%\begin{lstlisting}
-%%RevBayes > ss <- steppingStoneSampler(file=pp_fn)
-%%RevBayes > ss.marginal() 
-%%RevBayes > ps <- pathSampler(file=pp_fn)
-%%RevBayes > ps.marginal() 
-%%\end{lstlisting}
-%%\end{snugshade}
-%
-%For a given model, the path sampling and stepping stone sampling methods should produce similar marginal likelihood estimates.
-%Values should be within one log likelihood unit of one another.
-%If the values are extremely different, this may indicate {\tt powerPosterior} should be re-run with a larger number of {\tt cats}.
-%We chose {\tt cats=30} which should suffice, and we see no problem.
-%Then from the complex two-rate model RevBayes session using the same commands as above.
-%Finally, we can compute the Bayes factor, which is simply the ratio of marginal likelihoods.
-%
-%\begin{snugshade}
-%\begin{lstlisting}
-%RevBayes > exp(-51.7202)/exp(-52.3158)
-%   1.81412
-%\end{lstlisting}
-%\end{snugshade}
-%
-%A value of one would mean both models had equal marginal likelihoods.
-%A value less than one would indicate the first model, the simple model, had a larger marginal likelihood, and was therefore favored by model testing.
-%But that's not the case, the value is greater than one, and the complex two-rate model is favored.
-%Similar to frequentist interpretations of significance for p-values, there is no universal and objective criterion of significance with Bayes factors, but most would agree a factor of 1.8 (or 1.0/1.8) indicates weak support for one model over the other.
-
-
-
-%The {\tt mnScreen} monitor reports model parameter values to the screen, where each row corresponds to the current accepted MCMC state, and each column reports some model feature, such as the model likelihood or a parameter value.
-%Every 20 iterations, this monitor re-prints the column headers.
-%
-%\begin{snugshade}
-%%\begin{lstlisting}[basicstyle=\tiny \listingsfont, columns=texcl]
-%\begin{lstlisting}%[basicstyle=\tiny \listingsfont]
-%RevBayes > my_mcmc.run(generations=25000)
-%
-%Running MCMC simulation for 25000 iterations
-%The simulator uses 8 different moves in a random
-%move schedule with 241 moves per iteration
-%
-%Iteration   |   Posterior  |          dp  |      glr[1]  |      glr[2]  |      csf[1]  |      csf[2]  |      csf[3]
-%-------------------------------------------------------------------------------------------------------------------
-%0           |    -51.3307  |   0.0570518  |    0.175137  |   0.0580957  |    0.330891  |    0.255308  |    0.413801
-%10          |    -54.4257  |   0.0416423  |    0.166936  |    0.178402  |   0.0549136  |    0.148854  |    0.796233
-%20          |    -58.0696  |   0.0991853  |    0.136495  |    0.122135  |    0.308418  |    0.448892  |    0.242689
-%30          |    -46.5049  |     0.10676  |   0.0958918  |   0.0959592  |    0.543837  |    0.363871  |   0.0922922
-%40          |    -42.8697  |    0.173549  |    0.158565  |   0.0662419  |    0.569416  |    0.126439  |    0.304145
-%50          |    -43.5319  |    0.117868  |    0.196497  |   0.0523307  |    0.440269  |    0.257171  |     0.30256
-%
-%...
-%\end{lstlisting}
-%\end{snugshade}
-%
-%For the complex 2-rate model, our model parameters are {\tt dp}, the distance power parameter, and the rates of area loss and gain, {\tt glr[1]} and {\tt glr[2]}, respectively, and the frequencies for subset sympatry, allopatry, and widespread sympatry {\tt csf[1]}, {\tt csf[2]}, and {\tt csf[3]}, respectively. 
-%If you notice the value of some parameter is rarely updated from iteration to iteration, the MCMC is probably mixing poorly therefore it's not generating samples from the posterior distribution (the MCMC's stationary distribution).
-%In this case, you may want to re-run the analysis with different arguments for the {\tt Move} object assigned to that parameter.
-%
-%\subsection{Sampled parameters from {\tt ModelMonitor}}
-%
-%This tab-delimited file contains parameter samples from the posterior distribution.
-%As with the {\tt ScreenMonitor}, columns are model or parameter values and rows are MCMC cycles.
-%
-%\begin{framed}
-%\begin{lstlisting}%[basicstyle=\tiny \listingsfont, columns=texcl]
-%Iteration  Posterior  Likelihood    Prior  glr[1]  glr[2]  dp  csf[1]  csf[2]  csf[3]
-%0           -51.3307    -56.0288  4.69806  0.175137  0.0580957  0.057051  0.330891  0.255308  0.413801
-%10          -54.4257    -58.1568  3.73110  0.166936  0.1784020  0.041642  0.054913  0.148854  0.796233
-%20          -58.0696    -62.0923  4.02274  0.136495  0.1221350  0.099185  0.308418  0.448892  0.242689
-%30          -46.5049    -51.1197  4.61480  0.095891  0.0959592  0.106760  0.543837  0.363871  0.092292
-%40          -42.8697    -46.4870  3.61735  0.158565  0.0662419  0.173549  0.569416  0.126439  0.304145
-%50          -43.5319    -47.4659  3.93394  0.196497  0.0523307  0.117868  0.440269  0.257171  0.302560
-%
-%...
-%\end{lstlisting}
-%\end{framed}
+\begin{itemize}
+\item (Under construction.)
+\end{itemize}

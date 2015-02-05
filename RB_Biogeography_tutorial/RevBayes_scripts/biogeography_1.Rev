@@ -19,9 +19,6 @@ n_states = floor(2^n_areas_tmp)
 # read data as natural numbers
 data = readTSVCharacterData(data_fn, type="NaturalNumbers")
 
-# want to convert binary SS -> decimal NN
-# ...
-
 #names = d.names()
 tree <- readTrees(tree_fn)[1]
 
@@ -34,10 +31,6 @@ source(fp + "RevBayes_scripts/DEC_n3_same_rate.Rev")
 
 # ... or use the 3-area DEC model with different rates
 #source(fp + "RevBayes_scripts/DEC_n3_diff_rate.Rev")
-
-# ... or use the n-area DEC model, determined by n_areas
-# Using this requires editing the .Rev file.
-# source(fp + "RevBayes_scripts/DEC_general.Rev")
 
 # build ctmc
 m ~ dnPhyloCTMCClado( tree=tree, Q=q, cladoProbs=clado_prob, branchRates=clock_bg, nSites=1, type="NaturalNumbers" )
