@@ -11,6 +11,7 @@ Typically, decimal representation is not used in discussion, but it is useful to
 \subsection{Modeling anagenic range evolution}
 
 How might we model the dynamics of species range evolution?
+In this section, we'll cover the Dispersal-Extinction-Cladogenesis model proposed by \citet{ree05}.
 To begin, we'll focus on anagenesis, evolution that occurs between speciation events.
 Since we have discrete characters we'll use the continuous-time Markov chain, which allows us to compute transition probability of a character changing from $i$ to $j$ in time $t$ through matrix exponentiation
 \[
@@ -42,21 +43,20 @@ The rates in the transition matrix for three areas might appear as
 \]
 where $e = ( e_A, e_B, e_C )$ are the (local) extinction rates per area, and $d = ( d_{AB}, d_{AC}, d_{BC}, d_{CB}, d_{CA}, d_{BA})$ are the dispersal rates between areas.
 
-{\bf Q: For the three-area DEC rate matrix above, what is the rate of leaving state 101? That is, what is the absolute value of the diagonal term in the rate matrix for $Q_{AB,AB}$? }
+{\bf \framebox{?} For the three-area DEC rate matrix above, what is the rate of leaving state 101? That is, what is the absolute value of the diagonal term in the rate matrix for $Q_{AB,AB}$? }
 
 Note the rate of more than one event occurring simultaneously is zero, so a range must expand twice by one area in order to expand by two areas.
 
-{\bf Q: What series of events might explain a transition from range $ABC$ to range $A$? From range $AB$ to range $C$?}
+{\bf \framebox{?} What series of events might explain a transition from range $ABC$ to range $A$? From range $AB$ to range $C$?}
 
 Of course, this model can be specified for more than three areas.
 
-{ \bf Q: Imagine a DEC rate matrix with four areas, $ABCD$. What would be the dispersal rate for $Q_{BC,BCD}$? How many states does a DEC rate matrix with four areas have? What is the relationship between the number of areas and the number of states under the DEC model? }
+{ \bf \framebox{?} Imagine a DEC rate matrix with four areas, $ABCD$. What would be the dispersal rate for $Q_{BC,BCD}$? How many states does a DEC rate matrix with four areas have? What is the relationship between the number of areas and the number of states under the DEC model? }
 
 Let's consider what happens to the size of \textbf{Q} when the number of areas, $N$, becomes large.
 For three areas, \textbf{Q} is size $8 \times 8$.
 For ten areas, \textbf{Q} is size $2^{10} \times 2^{10} = 1024 \times 1024$, which approaches the largest size matrices that can be exponentiated in a practical amount of time.
 For twenty areas, \textbf{Q} is size $2^{20} \times 2^{20} \approx 10^6 \times 10^6$, exponentiation is not viable.
-For biogeographic inference under large numbers of areas, see the Tutorial XXX \citep{landis13}.
 
 
 \subsection{Modeling cladogenic range evolution}
@@ -76,19 +76,19 @@ Under allopatric cladogenesis, the ancestral range is split evenly among daughte
 Both daughter lineages inherit the entire ancestral species range following widespread sympatric cladogenic events.
 For an excellent overview of described state transitions for cladogenic events, see \citet{matzke13}.
 
-{\bf Q: What are the 6 possible states in the daughter lineages after cladogenesis given the state is $AB$ before cladogenesis?}
+{\bf \framebox{?} What are the 6 possible states in the daughter lineages after cladogenesis given the state is $AB$ before cladogenesis?}
 
 The probabilities of anagenic change along lineages must account for all combinations of starting states and ending states.
 For 3 areas, there are 8 states, and thus $8 \times 8 = 64$ probability terms for pairs of states.
 For cladogenic change, we need transition probabilities for all combinations of states before cladogenesis, after cladogenesis for the left lineage, and after cladogenesis for the right lineage.
 Like above, for three areas, there are 8 states, and $8 \times 8 \times 8 = 512$ cladogenic probability terms.
 
-{\bf Q: For three areas, there are 3 + 12 + 6 = 21 possible sympatry events and 6 + 6 = 12 possible allopatry events. How many terms in the cladogenesis matrix are zero?}
+{\bf \framebox{?} For three areas, there are 3 + 12 + 6 = 21 possible sympatry events and 6 + 6 = 12 possible allopatry events. How many terms in the cladogenesis matrix are zero?}
 
 The DEC model ignores speciation events hidden by extinction or incomplete taxon sampling.
 The probability of cladogenesis and local extinction events would ideally be linked to a birth-death process, as it is in the GeoSSE model \citep{goldberg11}.
 Unfortunately, since the numerical method for SSE models scale poorly, and DEC models remain the only option when the geography has more than two or three areas.
-For more than ten areas, we need data augmentation to integrate over range evolution, which is used in Section XXX.
+For more than ten areas, data augmentation may be used to infer ancestral ranges, as described in Section \ref{sec:bayarea}.
 
 \begin{figure}[H]
 \centering
@@ -105,7 +105,7 @@ The rest of this section will describe how to run a simple DEC analysis using Re
 
 \subsubsection{Specifying a simple DEC model}
 
-We'll use a dataset for 23 primates, which are the same taxa as used in Section XXX. To keep the model simple, we'll ranges are over three areas: the New World, Africa, and Eurasia.
+We'll use the primate dataset with 23 taxa. To keep the model simple, we'll discretize their ranges into areas: the New World, Africa, and Eurasia.
 For simplicity, we'll assume their phylogeny is time-calibrated, errorless, and fixed.
 
 First, set your working directory,
@@ -173,7 +173,9 @@ for (i in 1:n_states) {
 \end{lstlisting}
 \end{snugshade}
 
-Now we need to populate the non-zero rate matrix elements, which are in terms of dispersal and extinction rates. We'll use one dispersal rate and one extinction rate for this tutorial, and explore more complex models in later sections.
+Now we need to populate the non-zero rate matrix elements, which are in terms of dispersal and extinction rates.
+We'll use one dispersal rate and one extinction rate for this tutorial, and explore more complex models in later sections.
+For later reference, this will be called the ``common rate'' model.
 
 First, create a extinction rate parameter and assign it a scale move
 
@@ -252,7 +254,7 @@ r[7][8] := d[1][3] + d[2][3]  # 110 -> 111 : Disperse from area 1 to 3 and from 
 \end{lstlisting}
 \end{snugshade}
 
-Show the value of {\tt r} and compare it to the matrix in Equation (XX).
+Show the value of {\tt r} and compare it to the matrix in Section 2.2.
 
 Of course we did not need to declare {\tt d} and {\tt e} to assign {\tt r}, but we'll see these intermediate variables act as a template expose the structure of {\tt r} for modification.
 
@@ -316,7 +318,7 @@ allopatry              := clado_type[3]
 \end{lstlisting}
 \end{snugshade}
 
-Then create the cladogenic transition probability matrix
+Then create the cladogenic transition probability matrix, which assigns probabilities to cladogenic event classes accoridng to {\tt clado\_type\_prob}
 
 \begin{snugshade}
 \begin{lstlisting}
@@ -410,14 +412,16 @@ for (i in 1:3) {
 This parameterization is identical to matrix introduced in Eq XXX.
 In Section XXX, we'll extend this idea further to parameterize features of range evolution, and incorporate paleogeological information.
 
-\subsubsection{Exercises}
+\subsection{Exercises}
+
+Exercises are independent of each other, except for Exercises 3a and 3b.
 
 \begin{itemize}
-\item Widespread sympatric speciation is thought to be evolutionarily rare. Set the Dirichlet prior on cladogenic event types to heavily disfavor these events. Using Tracer, describe how changing the cladogenesis prior affects the extinction rate when compared with the ``common rate'' model.
-\item How would you constraint the rate matrix to allow ranges of size two at largest.
-\item (1 of 2) Saving your commands to a file, create a script to produce the ``per-area'' rate model.
-\item (2 of 2) Determine if the data support the ``common rate'' model over the ``per-area'' rate model. Use the stepping stone method to compute marginal likelihoods, which will let you compute Bayes factors for model selection (see Section XXX).
-\item (Advanced) Using what you learned in this tutorial and the CTMC tutorial (Section XXX), perform a joint analysis of molecular and biogeographic evolution for primates. Introduce a common prior for the molecular and biogeographical clocks, e.g.
+\item 1) Widespread sympatric speciation is thought to be evolutionarily rare. Set the Dirichlet prior on cladogenic event types to heavily disfavor these events. Using Tracer, describe how changing the cladogenesis prior affects the extinction rate when compared with the ``common rate'' model.
+\item 2) Modifying the RevBayes script, reparameterize the rate matrix so ranges may not grow beyond two areas in size.
+\item 3a) Saving your commands to a file, create a script to produce the ``per-area rate'' model.
+\item 3b) Determine if the data support the ``common rate'' model over the ``per-area rate'' model. Use the stepping stone method to compute marginal likelihoods, which will let you compute Bayes factors for model selection.
+\item 4) (Advanced) Using what you learned in this tutorial and the CTMC tutorial, perform a joint analysis of molecular and biogeographic evolution for primates. Introduce a common prior for the molecular and biogeographical clocks, e.g.
 \begin{snugshade}
 \begin{lstlisting}
 clock_mol       ~ dnExp(10.)
@@ -427,6 +431,4 @@ clock_bg        := clock_mol * clock_scale_bg
 \end{snugshade}
 \end{itemize}
 
-
-
-\bibliography{bayes}
+\newpage

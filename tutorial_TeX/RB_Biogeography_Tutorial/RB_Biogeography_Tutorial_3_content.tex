@@ -1,8 +1,10 @@
 \section{Large numbers of areas}
+\label{sec:bayarea}
 
 \setlength{\parindent}{0pt}
 
 \subsection{Data augmentation}
+\label{sec:data_aug}
 
 For small rate matrices, transition probabilities of beginning in state $i$ and ending in state $j$ equal the matrix exponential of the underlying rate matrix, scaled by the elapsed time of the process.
 This integrates over all unobserved transition events during the time interval $t$.
@@ -10,19 +12,22 @@ Unfortunately, computing the matrix exponential scales poorly as the state space
 
 Alternatively, the probability of beginning in state $i$ and ending in state $j$ can be computed easily when the explicit series of event types and times are known.
 While we will never know the exact history of events, we can use stochastic mapping in conjunction with Markov chain Monte Carlo (MCMC) to repeatedly sample range evolution histories that are consistent with the ranges observed in the study taxa at the tips of the phylogeny.
-This technique is called data augmentation, and was first applied in phylogenetics to tertiary structure-dependent evolution of protein-coding nucleotide sequences \citep{robinson03}.
+This technique is called data augmentation. It was first applied in phylogenetics to tertiary structure-dependent evolution of protein-coding nucleotide sequences \citep{robinson03}, and later extended to range evolution in \citet{landis13}.
 
-This is the strategy we will use to infer the posterior distribution approximated by 
-\newline{Prob$\left( \textbf{X}_{aug}, \theta \mid \textbf{X}_{obs}, T, M \right)$}, where $\textbf{X}_{obs}$ is the range data observed at the tips, $\textbf{X}_{aug}$ is the distribution of ancestral range reconstructions over the phylogeny, $T$, where $\textbf{X}_{aug}$ is inferred jointly with the parameters, $\theta$, assuming the range evolution model, $M$, that describes $\textbf{Q}$ above.
-Ancestral range reconstructions are often of primary interest in phylogenetic biogeographic analyses, which are generated as stochastic mappings with support values as a by-product data augmentation.
+Using data augmentation, we will approximate {Prob$\left( \textbf{X}_{aug}, \theta \mid \textbf{X}_{obs}, T, M \right)$}, where $\textbf{X}_{obs}$ is the range data observed at the tips, $\textbf{X}_{aug}$ is the distribution of ancestral range reconstructions over the phylogeny, $T$, where $\textbf{X}_{aug}$ is inferred jointly with the parameters, $\theta$, assuming the range evolution model, $M$, that describes $\textbf{Q}$ above.
+From a Bayesian perspective, $\textbf{X}_{aug}$ is effectively treated as part of the parameter space in the posterior distribution.
+Just as MCMC evaluates the posterior distribution for sampled parameter values, the same is done for sampled character histories.
+Thus, ancestral range reconstructions are a by-product of data augmentation, which are often of primary interest to biogeographers.
 
 You may wonder why matrix exponentiation works fine for molecular substitution models and large multiple sequence alignments.
-Molecular substitution models typically assume each site in the multiple sequence alignment evolves independently, which may be justified because recombination degrades linkage disequilibrium over geological timescales.
+It is the non-independence of character evolution that induces large state spaces.
+Molecular substitution models typically assume each character in alignment evolves independently, which is sometimes justified by the ability of recombination to degrade linkage disequilibrium over geological time scales.
 Conveniently, this keeps \textbf{Q} small even for datasets with many sites.
 
-\subsection{Large rate matrices}
+\subsection{Large rate matrices and distance-dependent dispersal}
+\label{sec:rate_map}
 
-This matrix can be represented compactly as the rate function
+A rate matrix may be represented compactly as the rate function
 \[
 q^{(a)}_{\textbf{y},\textbf{z}} =
 \begin{cases}
@@ -32,14 +37,12 @@ q^{(a)}_{\textbf{y},\textbf{z}} =
 \end{cases}.
 \]
 
-where $\textbf{y}$ and $\textbf{z}$ are the ``from'' and ``to'' ranges and $a$ is the area that changes.
-For example, $q^{(1)}_{011,111}$ is the rate of range expansion for $011 \rightarrow 111$ to gain area $1$.
+where $\textbf{y}$ and $\textbf{z}$ are the ``from'' and ``to'' ranges and $a$ is the area that changes, $\lambda_0$ is the per-area rate of loss, and $\lambda_1$ is the per-area rate of gain.
+For example, $q^{(1)}_{011,111}$ is the rate of range expansion for $011 \rightarrow 111$ to gain area $1$, which equals $\lambda_1$.
 Note the rate of more than one event occurring simultaneously is zero, so a range must expand twice by one area in order to expand by two areas.
 This model is analogous to the Jukes-Cantor model for three independent characters with binary states, except the all-zero ``null range'' is forbidden.
 
-\subsection{Distance-dependent dispersal function}
-
-Lastly, we may reasonably expect that a range expansion event into an area depends on which nearby areas are currently inhabited, which imposes non-independence between characters.
+Extending this idea, we may reasonably expect that a range expansion event into an area depends on which nearby areas are currently inhabited, which imposes non-independence between characters.
 The transition rate might then appear as
 \[
 q^{(a)}_{\textbf{y},\textbf{z}} =
@@ -56,6 +59,8 @@ The $\beta$ parameter rescales the importance of geographic distance between two
 Importantly, $\eta(\cdot) = 1$ when $\beta=0$, meaning geographic distance between areas is irrelevant.
 Moreover, when $\beta > 0$, $\eta(\cdot) < 1$ when area $a$ is relatively distant and $\eta(\cdot) > 1$ when area $a$ is relatively close.
 See \citet{landis13} for a full description of the model.
+
+{\bf \framebox{?}} Write down a rate function where the per-area rates of gain and loss depend on the number of currently occupied areas.
 
 \subsection{Specifying a data augmented DEC model}
 
@@ -133,7 +138,7 @@ Proceeding with the model configuration, we'll first create our rate matrix that
 In RevBayes, data-augmented CTMC analyses require {\tt RateMap} functions to determine event rates, which differ from the familiar {\tt RateMatrix} functions that include {\tt fnJC} and {\tt fnGTR} as members.
 In their simplest form, {\tt RateMap} functions generate the rates of change over the full set of characters, where each character evolves according to a provided {\tt RateMatrix} function.
 Additionally, a {\tt RateMap} accepts a rate modifier function that induces some correlation structure to character change evolution.
-In this section, we'll be creating a biogeographic {\tt RateMap} function for the dispersal-extinction process given above.
+In this section, we'll be creating a biogeographic {\tt RateMap} function for the dispersal-extinction process given in Section \ref{sec:rate_map}.
 
 First, create a biogeographical clock to scale the rate of range evolution.
 
@@ -226,6 +231,7 @@ m ~ dnPhyloDACTMC(tree=tree, Q=q_range, cladoProbs=clado_prob, type="Biogeo", fo
 
 
 So we may evaluate the graphical model's likelihood, we tell the CTMC to observe the {\tt data} object, which then primes the model with data-augmented character histories.
+
 Now {\tt m} has a defined likelihood value.
 \begin{snugshade}
 \begin{lstlisting}
@@ -237,7 +243,7 @@ m.lnProbability()
 
 To integrate over the space of possible range histories, we still need to add moves to propose new data augmented histories.
 The major challenge to sampling character histories is ensuring the character histories are consistent with the observations at the tips of the tree.
-The proposals in this tutorial use \citet{nielsen02}'s rejection sampling algorithm, with some modifications to account for cladogenic events and epoch-based rate matrices.
+The proposals in this tutorial use \citet{nielsen02}'s rejection sampling algorithm, with some modifications to account for cladogenic events and epoch-based rate maps.
 
 The basic idea is simple.
 Each time a character history proposal is called, it selects a node at random from the tree.
@@ -291,7 +297,7 @@ We will extract these reconstructions using special monitors designed for the {\
 
 Next, we will create {\tt mnCharHistoryNewick} monitors to record the sampled character history states for each node in the tree.
 This monitor has two {\tt style} options: {\tt counts} reports the number of gains and losses per branch in a tab-delimited Tracer-readable format;  {\tt events} reports richer information of what happens along a branch, anagenically and cladogenically, using an extended Newick format.
-How to read these file formats will be discussed in more detail in Section \ref{sec:posterior}.
+How to read these file formats will be discussed in more detail in Section \ref{sec:bg_out}.
 
 \begin{snugshade}
 \begin{lstlisting}
@@ -307,7 +313,7 @@ We will also discuss this file's format in more detail later in the tutorial.
 
 \begin{snugshade}
 \begin{lstlisting}
-monitors[mni++] = mnCharHistoryNhx(filename=out_fn+".phw.txt", ctmc=m, tree=tree, atlas=atlas, samplegen=10, maxgen=ngen, burnin=0.5)
+monitors[mni++] = mnCharHistoryNhx(filename=out_fn+".phw.txt", ctmc=m, tree=tree, atlas=atlas, samplegen=100, maxgen=ngen, burnin=0.5)
 \end{lstlisting}
 \end{snugshade}
 
@@ -327,13 +333,10 @@ my_mcmc.run(generations=ngen)
 \end{lstlisting}
 \end{snugshade}
 
-\subsubsection{Exercises}
-
-\begin{itemize}
-\item How sensitive are the rates of area gain and loss to the prior distribution on {\tt dp} ($\beta$)?
-\end{itemize}
+This may take some time if you're following this tutorial in a lab setting, so pre-analysed output files are also provided in {\tt ./completed\_output}.
 
 \subsection{Analysis output}
+\label{sec:bg_out}
 
 You will need a node-indexed phylogeny to interpret ancestral state reconstructions. First, open FigTree and load the Newick tree stored in {\tt data/primates.tree.index.tre}. Expand ``Node Labels'' and change ``Display'' to the custom node label. All sampled characters have a node index, which corresponds to the branch ancestral to the indexed node.
 
@@ -408,6 +411,7 @@ Although we have stochastic mappings under the posterior distribution, the remai
 \end{snugshade}
 
 By default, {\tt get\_events()} extracts a dictionary-of-dictionaries from the posterior event samples.
+A dictionary is very much like a vector, so this can be thought of as similar to a two-dimensional matrix.
 The first key corresponds to the node (branch) whose MCMC samples you'd like to retrieve, while the second dictionary's keys are the columns correspond to MCMC states and values specific to that node. For example, say we are interested in the last five cladogenic states sampled for node 42, Old World MRCA,
 \begin{snugshade}
 \begin{lstlisting}
@@ -492,6 +496,13 @@ In addition, the area of marker sizes is only distributed among unmasked lineage
 
 Visit \texttt{https://github.com/mlandis/phylowood/wiki} to learn more about Phylowood.
 
+\subsection{Exercises}
+
+\begin{itemize}
+\item (Under construction.)
+%\item How sensitive are the rates of area gain and loss to the prior distribution on {\tt dp} ($\beta$)?
+%\item Run the analysis once with {\tt lambda=1.} for all {\tt mvCharacterHistory} proposals, and again with {\tt lambda=0.01}. The same number of proposals are run in each case. How d
+\end{itemize}
 
 
 %%%%%%%%%%%% GRAVEYARD %%%%%%%%%%%%%%%

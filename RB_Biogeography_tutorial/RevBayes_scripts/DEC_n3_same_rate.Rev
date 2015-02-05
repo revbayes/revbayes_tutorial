@@ -92,8 +92,8 @@ q := fnFreeK(er, bf)
 
 # create the cladogenesis transition probability matrix
 widespread_sympatry_wt <- 1
-subset_sympatry_wt     <- 5
-allopatry_wt           <- 5
+subset_sympatry_wt     <- 1
+allopatry_wt           <- 1
 clado_prior            <- [ widespread_sympatry_wt, subset_sympatry_wt, allopatry_wt ]
 
 # create prior on event types

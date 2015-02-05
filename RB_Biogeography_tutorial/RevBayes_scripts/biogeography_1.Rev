@@ -19,9 +19,6 @@ n_states = floor(2^n_areas_tmp)
 # read data as natural numbers
 data = readTSVCharacterData(data_fn, type="NaturalNumbers")
 
-# want to convert binary SS -> decimal NN
-# ...
-
 #names = d.names()
 tree <- readTrees(tree_fn)[1]
 
