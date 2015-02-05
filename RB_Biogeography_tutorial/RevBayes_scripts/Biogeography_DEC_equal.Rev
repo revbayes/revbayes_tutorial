@@ -1,0 +1,132 @@
+# Create some String variables for file handling,
+data_fn = "data/primates_bg_n3.tsv"
+tree_fn = "data/primates.tree"
+out_fn  = "output/bg_1"
+
+data = readTSVCharacterData(data_fn, type="NaturalNumbers")
+psi <- readTrees(tree_fn)[1]
+
+n_areas = 3
+n_states = 2^n_areas
+
+mi = 0
+
+# construct the rate matrix for anagenic events. 
+# First create a matrix, 8-by-8 in size, initialized with all zeroes
+for (i in 1:n_states) {
+    for (j in 1:n_states) {
+        r[i][j] <- 0.0
+    }
+}
+
+# create a extinction rate parameter and assign it a scale move
+r_e ~ dnExponential(10.0)
+mv[++mi] = mvScale(r_e, weight=5)
+
+# create a matrix to hold the per-area extinction rates
+for (i in 1:n_areas) {
+    e[i] := r_e
+}
+
+# create the dispersal rate and scale move
+ r_d ~ dnExponential(10.0)
+mv[++mi] = mvScale(r_d, weight=5)
+
+# assign the between-area dispersal rates as determined by r_d
+for (i in 1:n_areas) {
+    for (j in 1:n_areas) {
+        if (i != j) {
+            d[i][j] := r_d
+        }
+    }
+}
+
+# assign the extinction (range loss) rates
+r[4][2] := e[2]                 # 011 -> 001 : Extirpate in area 2
+r[4][3] := e[3]                 # 011 -> 010 : Extirpate in area 3
+r[6][2] := e[1]                 # 101 -> 001 : Extirpate in area 1
+r[6][5] := e[3]                 # 101 -> 100 : Extirpate in area 3
+r[7][3] := e[1]                 # 110 -> 010 : Extirpate in area 1
+r[7][5] := e[2]                 # 110 -> 100 : Extirpate in area 2
+r[8][4] := e[1]                 # 111 -> 011 : Extirpate in area 1
+r[8][6] := e[2]                 # 111 -> 101 : Extirpate in area 2
+r[8][7] := e[3]                 # 111 -> 110 : Extirpate in area 3
+
+
+# then the dispersal (range gain) rates
+r[2][4] := d[3][2]              # 001 -> 011 : Disperse from area 3 to 2
+r[2][6] := d[3][1]              # 001 -> 101 : Disperse from area 3 to 1
+r[3][4] := d[2][3]              # 010 -> 011 : Disperse from area 2 to 3
+r[3][7] := d[2][1]              # 010 -> 110 : Disperse from area 2 to 1
+r[5][6] := d[1][3]              # 100 -> 101 : Disperse from area 1 to 3
+r[5][7] := d[1][2]              # 100 -> 110 : Disperse from area 1 to 2
+r[4][8] := d[2][1] + d[3][1]  # 011 -> 111 : Disperse from area 2 to 1 and from 3 to 1
+r[6][8] := d[1][2] + d[3][2]  # 101 -> 111 : Disperse from area 1 to 2 and from 3 to 2
+r[7][8] := d[1][3] + d[2][3]  # 110 -> 111 : Disperse from area 1 to 3 and from 2 to 3
+
+
+#convert r into a one-dimensional vector, skipping the diagonal elements.
+k = 1
+for (i in 1:n_states) {
+    for (j in 1:n_states) {
+        if (i != j) {
+            er_nat[k] := r[i][j]
+            k += 1
+        }
+    }
+}
+
+
+# normalize er\_nat using a simplex, then pass the resulting exchangeability rates as arguments into the rate matrix function, q.
+er := simplex(er_nat)
+bf <- simplex(rep(1,n_states))
+q := fnFreeK(er, bf)
+
+
+# create a vector of prior weights on cladogenesis events. Here, we assign a flat prior to all cladogenic events
+widespread_sympatry_wt <- 1.0
+subset_sympatry_wt <- 1.0
+allopatry_wt <- 1.0
+clado_prior <- [ widespread_sympatry_wt, subset_sympatry_wt, allopatry_wt ]
+
+
+# create the distribution over cladogenic event types and add its MCMC move
+clado_type ~ dnDirichlet(clado_prior)
+mv[++mi] = mvSimplexElementScale(clado_type, alpha=10, weight=5)
+
+
+# give the simplex elements descriptive names when monitored, assign the values to deterministic nodes
+widespread_sympatry := clado_type[1]
+subset_sympatry := clado_type[2]
+allopatry := clado_type[3]
+
+
+# create the cladogenic transition probability matrix
+clado_prob := fnCladoProbs(clado_type, n_areas, 2)
+
+
+clock_bg ~ dnExponential(10)
+mv[++mi] = mvScale(clock_bg, weight=5)
+
+
+m ~ dnPhyloCTMCClado( tree=psi, Q=q, cladoProbs=clado_prob, branchRates=clock_bg, nSites=1, type="NaturalNumbers" )
+
+
+m.clamp(data)
+
+
+
+# Compose the model.
+mdl = model(m)
+
+
+mn[1] = mnScreen(clock_bg, d[1][2], d[1][3], d[2][1], d[2][3], d[3][1], d[3][2], e[1], e[2], e[3], widespread_sympatry, subset_sympatry, allopatry, printgen=1000)
+mn[2] = mnFile(clock_bg, d[1][2], d[1][3], d[2][1], d[2][3], d[3][1], d[3][2], e[1], e[2], e[3], widespread_sympatry, subset_sympatry, allopatry, file=out_fn+".params.txt")
+
+
+ch = mcmc(mv,mn,mdl)
+ch.burnin(1000, 10)
+ch.run(10000)
+
+
+

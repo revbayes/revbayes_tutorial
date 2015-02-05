@@ -137,7 +137,7 @@ and our tree
 
 \begin{snugshade}
 \begin{lstlisting}
-tree <- readTrees(tree_fn)[1]
+psi <- readTrees(tree_fn)[1]
 \end{lstlisting}
 \end{snugshade}
 
@@ -337,7 +337,7 @@ Finally, all our model components are encapsulated in the {\tt dnPhyloCTMCClado}
 
 \begin{snugshade}
 \begin{lstlisting}
-m ~ dnPhyloCTMCClado( tree=tree, Q=q, cladoProbs=clado_prob, branchRates=clock_bg, nSites=1, type="NaturalNumbers" )
+m ~ dnPhyloCTMCClado( tree=psi, Q=q, cladoProbs=clado_prob, branchRates=clock_bg, nSites=1, type="NaturalNumbers" )
 \end{lstlisting}
 \end{snugshade}
 
@@ -386,7 +386,7 @@ Rather than constraining all events of a type to share a common rate, instead yo
 \begin{lstlisting}
 for (i in 1:3) {
     e[i] ~ dnExponential(10.0)
-    mv[++mi] = mvScale(e, weight=5)
+    mv[++mi] = mvScale(e[i], weight=5)
 }
 \end{lstlisting}
 \end{snugshade}
@@ -405,6 +405,7 @@ for (i in 1:3) {
 }
 \end{lstlisting}
 \end{snugshade}
+Note that you don't need the global dispersal rate \cl{r\_d} and extinction rate \cl{r\_e} anymore and you can remove the variable from your analysis. \RevBayes~might give you an error message if you have left them in.
 
 This parameterization is identical to matrix introduced in Eq XXX.
 In Section XXX, we'll extend this idea further to parameterize features of range evolution, and incorporate paleogeological information.
@@ -415,17 +416,192 @@ Exercises are independent of each other, except for Exercises 3a and 3b.
 
 \begin{itemize}
 \item 1) Widespread sympatric speciation is thought to be evolutionarily rare. Set the Dirichlet prior on cladogenic event types to heavily disfavor these events. Using Tracer, describe how changing the cladogenesis prior affects the extinction rate when compared with the ``common rate'' model.
-\item 2) Modifying the RevBayes script, reparameterize the rate matrix so ranges may not grow beyond two areas in size.
+\item 2) Modifying the \RevBayes~script, re-parameterize the rate matrix so ranges may not grow beyond two areas in size.
 \item 3a) Saving your commands to a file, create a script to produce the ``per-area rate'' model.
 \item 3b) Determine if the data support the ``common rate'' model over the ``per-area rate'' model. Use the stepping stone method to compute marginal likelihoods, which will let you compute Bayes factors for model selection.
-\item 4) (Advanced) Using what you learned in this tutorial and the CTMC tutorial, perform a joint analysis of molecular and biogeographic evolution for primates. Introduce a common prior for the molecular and biogeographical clocks, e.g.
+%\item 4) (Advanced) Using what you learned in this tutorial and the CTMC tutorial, perform a joint analysis of molecular and biogeographic evolution for primates. Introduce a common prior for the molecular and biogeographical clocks, e.g.
+%\begin{snugshade}
+%\begin{lstlisting}
+%clock_mol       ~ dnExponential(10.0)
+%clock_scale_bg  ~ dnGamma(2.0,2.0)
+%clock_bg        := clock_mol * clock_scale_bg
+%\end{lstlisting}
+%\end{snugshade}
+\end{itemize}
+
+\subsection{(Advanced) Joint inference of phylogeny and historical biogeography}
+This is a slightly more advanced question that you may want to skip if you will always use known, fixed trees in your analyses.
+Using what you learned in this tutorial and the CTMC tutorial, perform a joint analysis of molecular and biogeographic evolution for primates. 
+
+Start by loading the sequence data matrix specified in \cl{data/primates\_cytb.nex}.
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+seqData <- readDiscreteCharacterData("data/primates_cytb.nex")
+\end{lstlisting}
+\end{snugshade*}}
+
+We need to get some useful variables from the data so that we will be able to specify the tree prior below. These variables are the number of tips, the number of nodes and the names of the species which we all can query from the continuous character data object.
+{\tt \small \begin{snugshade*}
+\begin{lstlisting}
+numTips = seqData.ntaxa()
+names = seqData.names()
+numNodes = numTips * 2 - 1
+\end{lstlisting}
+\end{snugshade*}}
+
+Instead of having a fixed tree as in the previous, we should now define a \emph{random} tree. We use a birth death prior with prior distributions on the \cl{diversification} rate and \cl{turnover} rate.
+The \cl{diversification} rate corresponds to the rate of growth of the tree and the \cl{turnover} rate corresponds to the rate how quickly a species is replaced by a new one.
+This parametrization has the advantage that we can use meaningful prior distributions from the fossil record.
+{\tt \small \begin{snugshade*}
+\begin{lstlisting}
+diversification ~ dnLognormal(0,1)
+turnover ~ dnGamma(4,4)
+\end{lstlisting}
+\end{snugshade*}}
+Then, we compute deterministically the \cl{speciation} and \cl{extinction} rate from the \cl{diversification} rate and \cl{turnover} rate.
+{\tt \small \begin{snugshade*}
+\begin{lstlisting}
+speciation := diversification + turnover
+extinction := turnover
+\end{lstlisting}
+\end{snugshade*}}
+Instead, you could also use directly the speciation and extinction rates, \EG endowed with some diffuse exponential prior.
+{\tt \small \begin{snugshade*}
+\begin{lstlisting}
+# rescaling moves on speciation and extinction rates
+moves[++mi] = mvScale(diversification, lambda=1, tune=true, weight=3.0)
+moves[++mi] = mvScale(turnover, lambda=1, tune=true, weight=3.0)
+\end{lstlisting}
+\end{snugshade*}}
+The phylogeny that we used are obviously not a complete sample of all the species and you should take the incomplete sampling into account. We will simply use an empirical estimate of the fraction of species which we included in this study. For more information about incomplete taxon sampling see \cite{Hohna2011} and \cite{Hohna2014a}. 
+{\tt \small \begin{snugshade*}
+\begin{lstlisting}
+sampling_fraction <- 23 / 270     # 23 out of the ~ 270 primate species
+\end{lstlisting}
+\end{snugshade*}}
+Now we are able to specify of tree variable \cl{psi} which is drawn from a constant rate birth-death process. We will condition the age of the tree to be 75 million years old which is approximately the crown age of primates, although this estimate is still debated. We only condition here on the crown age for simplicity because we do not use any other fossil calibration.
+{\tt \small \begin{snugshade*}
+\begin{lstlisting}
+psi ~ dnBDP(lambda=speciation, mu=extinction, rho=sampling_fraction, rootAge=75, nTaxa=numTips, names=names)
+\end{lstlisting}
+\end{snugshade*}}
+Note that, here, we do not have included any fossil information: we are merely doing \emph{relative} dating. 
+
+The first moves on the tree which we specify are moves that change the node ages. The first move randomly picks a subtree and rescales it, and the second move randomly pick a node and uniformly proposes a new node age between its parent age and oldest child's age.
+{\tt \small \begin{snugshade*}
+\begin{lstlisting}
+moves[++mi] = mvSubtreeScale(psi, weight=5.0)
+moves[++mi] = mvNodeTimeSlideUniform(psi, weight=10.0)
+\end{lstlisting}
+\end{snugshade*}}
+
+We also need moves on the tree topology to estimate the phylogeny. The two moves which you use are the nearest-neighbor interchange (NNI) and the fixed-nodeheight-prune-and-regraft (FNPR) \citep{Hohna2012}.
+{\tt \small \begin{snugshade*}
+\begin{lstlisting}
+moves[++mi] = mvNNI(psi, weight=5.0)
+moves[++mi] = mvFNPR(psi, weight=5.0)\end{lstlisting}
+\end{snugshade*}}
+
+
+In the next step we set up the substitution model.
+First, we create a substitution model, just like what you probably did in previous tutorial (\EG RB\_CTMC\_Tutorial). 
+In a first step, we will use a GTR+Gamma model.
+We can use a flat Dirichlet prior density on the exchangeability rates \cl{er\_mol} and the the base frequencies \cl{pi\_mol}.
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+er_mol_prior <- v(1,1,1,1,1,1) 
+er_mol ~ dnDirichlet(er_mol_prior)
+pi_mol_prior <- v(1,1,1,1) 
+pi_mol ~ dnDirichlet(pi_mol_prior)
+\end{lstlisting}
+\end{snugshade*}}
+Now add the simplex scale move one each the exchangeability rates \cl{er\_mol} and the stationary frequencies \cl{pi\_mol} to the moves vector:
+{\tt \small \begin{snugshade*}
+\begin{lstlisting}
+moves[++mi] = mvSimplexElementScale(er_mol) 
+moves[++mi] = mvSimplexElementScale(pi_mol)  
+\end{lstlisting}
+\end{snugshade*}}
+We can finish setting up this part of the model by creating a deterministic node for the GTR instantaneous-rate matrix \cl{Q\_mol}. 
+The \cl{fnGTR()} function takes a set of exchangeability rates and a set of base frequencies to compute the instantaneous-rate matrix used when calculating the likelihood of our model.
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+Q_mol := fnGTR(er_mol,pi_mol)
+\end{lstlisting}
+\end{snugshade*}}
+The next part of the substitution process is the rate variation among sites. We will model this using the commonly applied 4 discrete gamma categories which only have a single parameter \cl{alpha}.
+Let us specify the rate of \cl{alpha} to 0.05 (thus the mean will be 20.0).
+{\tt\begin{snugshade*}
+\begin{lstlisting}
+alpha_prior <- 0.05                                                                             
+\end{lstlisting}
+\end{snugshade*}}
+Then create a stochastic node called \cl{alpha} with an exponential prior:
+{\tt\begin{snugshade*}
+\begin{lstlisting}
+alpha ~ dnExponential(alpha_prior)
+\end{lstlisting}
+\end{snugshade*}}
+Initialize the \cl{gamma\_rates} deterministic node vector using the  \cl{fnDiscretizeGamma()} function with \cl{4} bins:
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+gamma_rates := fnDiscretizeGamma( alpha, alpha, 4 )
+\end{lstlisting}
+\end{snugshade*}}
+The random variable that controls the rate variation is the stochastic node \cl{alpha}. 
+We will apply a simple scale move to this parameter.
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+moves[++mi] = mvScale(alpha, weight=2.0)
+\end{lstlisting}
+\end{snugshade*}}
+This finishes the substitution process part of the model.
+
+Then next part of the model is the clock model. Here we need a clock model because we work on a time tree. We use our exponentiated uniform distribution to specify a flat prior distribution which is scale invariant.
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+logClockRate ~ dnUniform(-5,5)
+clockRate := 10^logClockRate
+\end{lstlisting}
+\end{snugshade*}}
+We will apply a sliding window move to the \cl{\cl{logClockRate}}.
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+moves[++mi] = mvSlide(logClockRate, delta=0.1, tune=true, weight=2.0)
+\end{lstlisting}
+\end{snugshade*}}
+
+Introduce a common prior for the molecular and biogeographical clocks.
 \begin{snugshade}
 \begin{lstlisting}
-clock_mol       ~ dnExponential(10.0)
 clock_scale_bg  ~ dnGamma(2.0,2.0)
-clock_bg        := clock_mol * clock_scale_bg
+clock_bg        := clockRate * clock_scale_bg
 \end{lstlisting}
 \end{snugshade}
-\end{itemize}
+
+Remember that you need to call the \cl{PhyloCTMC} constructor to include the new site-rate parameter:
+% This sentence was incomplete previously; I think the revised version is correct.
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+seq ~ dnPhyloCTMC(tree=psi, Q=Q_mol, siteRates=gamma_rates, branchRates=clockRate, type="DNA")
+\end{lstlisting}
+\end{snugshade*}}
+Finally we need to attach the molecular sequence data to our model.
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+seq.clamp(seqData)
+\end{lstlisting}
+\end{snugshade*}}
+
+We are essentially done now. We  only need to add a new monitor for the tree so that we can monitor and build the maximum a posteriori tree later.
+{\tt \small \begin{snugshade*}
+\begin{lstlisting}
+monitors[3] = mnFile(filename="output/biogeography_DEC_joint.trees", printgen=100, separator = TAB, psi)
+\end{lstlisting}
+\end{snugshade*}}
+
+
+
+
 
 \newpage
