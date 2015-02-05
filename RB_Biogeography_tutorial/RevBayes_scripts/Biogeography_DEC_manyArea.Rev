@@ -1,7 +1,7 @@
 area_fn = "data/earth25.still.atlas.txt"
 data_fn = "data/primates_bg_n25.nex"
 tree_fn = "data/primates.tree"
-out_fn = "bg_3"
+out_fn = "output/bg_3"
 
 psi <- readTrees( tree_fn )[1]
 
@@ -12,7 +12,7 @@ n_areas = atlas.nAreas()
 
 mi = 0
 
-ngen = 500000
+ngen = 5000
 
 write(psi,filename=tree_fn+".index.tre")
 
