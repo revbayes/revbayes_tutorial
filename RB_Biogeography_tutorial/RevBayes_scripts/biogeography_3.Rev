@@ -43,7 +43,7 @@ q_area := fnFreeBinary(glr)
 
 # distance power parameter
 #dp <- 0.00001
-dp ~ dnExp(10)
+dp ~ dnExp(1)
 moves[mvi++] = mvScale(x=dp, lambda=0.5, weight=5.0)
 
 # geographical distance rate modifier
