@@ -103,22 +103,20 @@ The rest of this section will describe how to run a simple DEC analysis using Re
 We'll use a dataset for 23 primates, which are the same taxa as used in Section XXX. To keep the model simple, we'll ranges are over three areas: the New World, Africa, and Eurasia.
 For simplicity, we'll assume their phylogeny is time-calibrated, errorless, and fixed.
 
-First, set your working directory,
+%First, set your working directory,
+%
+%\begin{snugshade}
+%\begin{lstlisting}
+%setwd("/Users/arwallace/projects/RB_Biogeography_tutorial/")
+%\end{lstlisting}
+%\end{snugshade}
 
+Create some {\tt String} variables for file handling,
 \begin{snugshade}
 \begin{lstlisting}
-setwd("/Users/arwallace/projects/RB_Biogeography_tutorial/")
-\end{lstlisting}
-\end{snugshade}
-
-create some {\tt String} variables for file handling,
-
-\begin{snugshade}
-\begin{lstlisting}
-fp = "./"
-data_fn = fp + "data/primates_bg_n3.tsv"
-tree_fn = fp + "data/primates.tree"
-out_fn  = fp + "output/bg_1"
+data_fn = "data/primates_bg_n3.tsv"
+tree_fn = "data/primates.tree"
+out_fn  = "output/bg_1"
 \end{lstlisting}
 \end{snugshade}
 
@@ -142,17 +140,16 @@ Next, compute the number of states from the number of areas
 
 \begin{snugshade}
 \begin{lstlisting}
-n_areas = data.nchar()
-n_states = 2^data.nchar()
+n_areas = 3
+n_states = 2^n_areas
 \end{lstlisting}
 \end{snugshade}
 
-Declare index variables for our move and monitor vectors for future use
+Declare index variables for our move vectors for future use
 
 \begin{snugshade}
 \begin{lstlisting}
-mvi = 1
-mni = 1
+mi = 0
 \end{lstlisting}
 \end{snugshade}
 
@@ -162,7 +159,7 @@ Now, we'll begin to construct the rate matrix for anagenic events. First create 
 \begin{lstlisting}
 for (i in 1:n_states) {
     for (j in 1:n_states) {
-        r[i][j] <- 0.
+        r[i][j] <- 0.0
     }
 }
 \end{lstlisting}
@@ -174,8 +171,8 @@ First, create a extinction rate parameter and assign it a scale move
 
 \begin{snugshade}
 \begin{lstlisting}
-r_e ~ dnExp(10.)
-mv[mvi++] = mvScale(r_e, weight=5)
+r_e ~ dnExponential(10.0)
+mv[++mi] = mvScale(r_e, weight=5)
 \end{lstlisting}
 \end{snugshade}
 
@@ -193,8 +190,8 @@ Now create the dispersal rate and scale move
 
 \begin{snugshade}
 \begin{lstlisting}
-r_d ~ dnExp(10.)
-mv[mvi++] = mvScale(r_d, weight=5)
+r_d ~ dnExponential(10.0)
+mv[++mi] = mvScale(r_d, weight=5)
 \end{lstlisting}
 \end{snugshade}
 
@@ -257,7 +254,7 @@ First, we'll convert {\tt r} into a one-dimensional vector, skipping the diagona
 
 \begin{snugshade}
 \begin{lstlisting}
-k <- 1
+k = 1
 for (i in 1:n_states) {
     for (j in 1:n_states) {
         if (i != j) {
@@ -297,7 +294,7 @@ then create the distribution over cladogenic event types and add its MCMC move
 \begin{snugshade}
 \begin{lstlisting}
 clado_type             ~ dnDirichlet(clado_prior)
-mv[mvi++]               = mvSimplexElementScale(clado_type, alpha=10, weight=5)
+mv[++mi]               = mvSimplexElementScale(clado_type, alpha=10, weight=5)
 \end{lstlisting}
 \end{snugshade}
 
@@ -316,7 +313,7 @@ Then create the cladogenic transition probability matrix
 \begin{snugshade}
 \begin{lstlisting}
 b <- simplex(1,1)
-clado_prob := fnCladoProbs(clado_type_prob, b, n_areas, 2)
+clado_prob := fnCladoProbs(clado_type, b, n_areas, 2)
 \end{lstlisting}
 \end{snugshade}
 
@@ -325,8 +322,8 @@ As a prior, an exponential distribution with rate 10 generates one dispersal or 
 
 \begin{snugshade}
 \begin{lstlisting}
-clock_bg ~ dnExp(10)
-mv[mvi++] = mvScale(clock_bg, weight=5)
+clock_bg ~ dnExponential(10)
+mv[++mi] = mvScale(clock_bg, weight=5)
 \end{lstlisting}
 \end{snugshade}
 
@@ -358,8 +355,8 @@ Add the monitors.
 
 \begin{snugshade}
 \begin{lstlisting}
-mn[mni++] = mnScreen(clock_bg, d[1][2], d[1][3], d[2][1], d[2][3], d[3][1], d[3][2], e[1], e[2], e[3], widespread_sympatry, subset_sympatry, allopatry)
-mn[mni++] = mnFile(clock_bg, d[1][2], d[1][3], d[2][1], d[2][3], d[3][1], d[3][2], e[1], e[2], e[3], widespread_sympatry, subset_sympatry, allopatry, file=out_fn+".params.txt")
+mn[1] = mnScreen(clock_bg, d[1][2], d[1][3], d[2][1], d[2][3], d[3][1], d[3][2], e[1], e[2], e[3], widespread_sympatry, subset_sympatry, allopatry, printgen=1000)
+mn[2] = mnFile(clock_bg, d[1][2], d[1][3], d[2][1], d[2][3], d[3][1], d[3][2], e[1], e[2], e[3], widespread_sympatry, subset_sympatry, allopatry, file=out_fn+".params.txt")
 \end{lstlisting}
 \end{snugshade}
 
@@ -382,8 +379,8 @@ Rather than constraining all events of a type to share a common rate, instead yo
 \begin{snugshade}
 \begin{lstlisting}
 for (i in 1:3) {
-    e[i] ~ dnExp(10.)
-    mv[mvi++] = mvScale(e, weight=5)
+    e[i] ~ dnExponential(10.0)
+    mv[++mi] = mvScale(e, weight=5)
 }
 \end{lstlisting}
 \end{snugshade}
@@ -395,8 +392,8 @@ or give each ordered pair of areas a it's own dispersal rate
 for (i in 1:3) {
     for (j in 1:3) {
         if (i != j) {
-            d[i][j] ~ dnExp(10.)
-            mv[mvi++] = mvScale(d[i][j], weight=5)
+            d[i][j] ~ dnExponential(10.0)
+            mv[++mi] = mvScale(d[i][j], weight=5)
         }
     }
 }
@@ -416,8 +413,8 @@ In Section XXX, we'll extend this idea further to parameterize features of range
 \item (Advanced) Using what you learned in this tutorial and the CTMC tutorial (Section XXX), perform a joint analysis of molecular and biogeographic evolution for primates. Introduce a common prior for the molecular and biogeographical clocks, e.g.
 \begin{snugshade}
 \begin{lstlisting}
-clock_mol       ~ dnExp(10.)
-clock_scale_bg  ~ dnGamma(2.,2.)
+clock_mol       ~ dnExponential(10.0)
+clock_scale_bg  ~ dnGamma(2.0,2.0)
 clock_bg        := clock_mol * clock_scale_bg
 \end{lstlisting}
 \end{snugshade}
