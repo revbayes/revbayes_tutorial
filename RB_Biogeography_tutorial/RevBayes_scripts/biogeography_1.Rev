@@ -3,7 +3,7 @@
 setwd("/Users/mlandis/projects/RB_Biogeography_tutorial/")
 
 fp = "./"
-data_fn = fp + "data/primates_bg_n3.tsv"
+data_fn = fp + "data/primates_bg_n3.tsv" 
 tree_fn = fp + "data/primates.tree"
 out_str = "bg_1"
 
@@ -17,23 +17,26 @@ n_areas_tmp = n_areas
 n_states = floor(2^n_areas_tmp)
 
 # read data as natural numbers
-data = readTSVCharacterData(data_fn, type="NaturalNumbers")
+data = readTSVBitsetData(data_fn, type="NaturalNumbers")
 
 #names = d.names()
-tree <- readTrees(tree_fn)[1]
+psi <- readTrees(tree_fn)[1]
 
 # clock
 clock_bg ~ dnExp(10)
 mv[mvi++] = mvScale(clock_bg, weight=5)
 
 # load the 3-area DEC model with same rates
-source(fp + "RevBayes_scripts/DEC_n3_same_rate.Rev")
+#source(fp + "RevBayes_scripts/DEC_n3_same_rate.Rev")
 
 # ... or use the 3-area DEC model with different rates
 #source(fp + "RevBayes_scripts/DEC_n3_diff_rate.Rev")
 
+# ... or use the N-area fnStructureDispersalExtinction function
+#source(fp + "RevBayes_scripts/DEC_general.Rev")
+
 # build ctmc
-m ~ dnPhyloCTMCClado( tree=tree, Q=q, cladoProbs=clado_prob, branchRates=clock_bg, nSites=1, type="NaturalNumbers" )
+m ~ dnPhyloCTMCClado( tree=psi, Q=q, cladoProbs=clado_prob, branchRates=clock_bg, nSites=1, type="NaturalNumbers" )
 m.clamp(data)
 
 # make model
@@ -42,10 +45,16 @@ mdl = model(m)
 
 # monitors
 mn[mni++] = mnScreen(clock_bg, d[1][2], d[1][3], d[2][1], d[2][3], d[3][1], d[3][2], e[1], e[2], e[3], widespread_sympatry, subset_sympatry, allopatry)
-mn[mni++] = mnFile(clock_bg, d[1][2], d[1][3], d[2][1], d[2][3], d[3][1], d[3][2], e[1], e[2], e[3], widespread_sympatry, subset_sympatry, allopatry, file="./output/"+out_str+".params.txt")
+mn[mni++] = mnFile(clock_bg, d[1][2], d[1][3], d[2][1], d[2][3], d[3][1], d[3][2], e[1], e[2], e[3], widespread_sympatry, subset_sympatry, allopatry, filename="./output/"+out_str+".params.txt")
+mn[mni++] = mnJointConditionalAncestralState(tree=psi, ctmc=m, type="NaturalNumbers", printgen=10, withTips=true, withStartStates=true, filename="./output/"+out_str+".states.txt")
 
 # mcmc
 ch = mcmc(mv,mn,mdl)
-ch.burnin(1000,10)
-ch.run(10000)
+ch.burnin(200,10)
+ch.run(1000)
 
+# 
+state_fn = fp + "output/"+out_str+".states.txt"
+atlas_fn = fp + "data/earth3.still.atlas.txt"
+phw_fn = fp + "output/bg_1.phw.txt"
+convertToPhylowood(treefile=tree_fn, geofile=atlas_fn, statefile=state_fn, outfile=phw_fn, burnin=0., type="range")

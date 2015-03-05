@@ -338,12 +338,6 @@ If you're following this tutorial in a lab setting, you should proceed using the
 \subsection{Analysis output}
 \label{sec:bg_out}
 
-You will need a node-indexed phylogeny to interpret ancestral state reconstructions. First, open FigTree and load the Newick tree stored in {\tt data/primates.tree.index.tre}. Expand ``Node Labels'' and change ``Display'' to the custom node label. All sampled characters have a node index, which corresponds to the branch ancestral to the indexed node.
-
-\begin{centering}
-\includegraphics[width=4in]{figures/figtree_node_label}
-\end{centering}
-
 We'll focus some attention on node 42, the most recent common ancestor of chimps and macaques, designated as the Old World most recent common ancestor (MRCA).
 
 \subsubsection{Biogeographic event counts from {\tt mnCharHistoryNewick}}
@@ -431,70 +425,6 @@ To get the {\tt n=1} highest-valued sample for a branch by its posterior value
 \end{snugshade}
 
 More data-exploration functions are found in {\tt bg\_parse.py}.
-
-\subsection{Phylowood animation file (\texttt{./output/bg\_3.nhx.txt})}
-
-Because this data is very high-dimensional, we'll use an external data exploration tool to look at range evolution.
-This file summarizes the MCMC output from a RevBayes biogeographical analysis as a Nexus-formatted file, which is used by Phylowood to generate interactive animations to explore biogeographic reconstructions.
-
-\noindent \\ \impmark Open \texttt{http://mlandis.github.io/phylowood}.
-
-\noindent \\ \impmark Drag and drop \texttt{./output/bg\_3.phw.txt} into the text field.
-
-\begin{figure}[H]
-\centering
-\includegraphics[width=4in]{figures/phw_mrca}
-\caption{Phylowood frame showing posterior ancestral range of root node.}
-\end{figure}
-
-\noindent \\ \impmark Click the Play button to view the animation. \\
-
-Notice the primate MRCA range is very widespread with six areas. This is
-
-There are three control panels to help you filter data: the media panel, the map panel, and the phylogeny panel.
-The media buttons correspond to Beginning, Slow/Rewind, Play, Stop, Fast Forward, Ending (from left to right).
-The animation will play the timeframe corresponding to the slider.
-
-\noindent \\ \impmark Drag the slider to the right (the present).
-
-\begin{figure}[H]
-\centering
-\includegraphics[width=4in]{figures/phw_all}
-\caption{Phylowood frame showing distribution of extant taxon ranges.}
-\end{figure}
-
-\noindent \\ \impmark Pan and zoom around the map.\\
-
-Marker colors correspond to the phylogenetic lineages in the phylogeny panel.
-Markers are split into slices and (loosely) sorted phylogenetically, so nearby slices are generally closely related.
-At divergence events, a marker's radius is proportional to the marginal posterior probability the node was present in the area at that time.
-Between divergence events, marker's radius is simply an interpolation of the values at the two endpoints.
-Some information about geological constraints and cladogenic events is lost.
-
-\noindent \\ \impmark Mouseover an area to learn which lineage it belongs to and its presence probability. \\
-
-Since it's difficult to see how specific clades evolve with so many taxa, Phylowood offers two ways to filter taxa from the animation.
-We call the set of a lineage, all its ancestral lineages towards the root, and all descendant lineages a phylogenetic heritage.
-The root's heritage is the entire clade.
-A leaf node's heritage is a path from the tip to the root.
-
-\noindent \\ \impmark Mouseover a lineage to temporarily highlight the lineage's heritage. Remove the mouseover to remove the highlight effect. \\
-
-The highlight effect is temporary and quickly allows you to single out lineages of interest during animation.
-Phylowood also offers a masking effect that persists until an unmask command is issued.
-
-\noindent \\ \impmark Double-click the white root branch to mask the root node's heritage (all lineages). Single click a lineage to unmask that lineage's heritage. \\
-
-\begin{figure}[H]
-\centering
-\includegraphics[width=4in]{figures/phw_br23}
-\caption{Phylowood frame highlighting the ancestral range for the MRCA extant lorises.}
-\end{figure}
-
-Now that the masking effects are in place, you're free to interact with other map components.
-In addition, the area of marker sizes is only distributed among unmasked lineages.
-
-Visit \texttt{https://github.com/mlandis/phylowood/wiki} to learn more about Phylowood.
 
 \subsection{Exercises}
 

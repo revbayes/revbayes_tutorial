@@ -1,3 +1,119 @@
-\section{Epoch models and ancestral state reconstruction}
+\section{Epoch models and ancestral range reconstruction}
 
-(Under construction.)
+\subsection{Ancestral range reconstruction}
+
+
+From the previous section, we created an ancestral state monitor by
+\begin{snugshade}
+\begin{lstlisting}
+mn[3] = mnJointConditionalAncestralState(tree=psi, ctmc=m, filename=out_fn+".states.txt", type="NaturalNumbers", printgen=10, withTips=true, withStartStates=true)
+\end{lstlisting}
+\end{snugshade}
+
+The joint-conditional ancestral state monitor samples the joint distribution of ancestral states every {\tt printgen} iterations over the entire tree, conditioning on the observed tip states.
+Due to cladogenesis, the state before speciation and the states inherited after speciation may differ, which we monitor setting {\tt withStartStates=true}.
+For convenience we record the tip states using {\tt withTips=true} though these are known through the input data.
+
+The resulting file, {\tt bg\_1.states.txt}, appears as
+
+\begin{framed}
+\begin{lstlisting}
+Iteration	start_0	end_0	start_1	end_1	start_2	end_2	start_3	end_3	...
+0		2	2	2	4	2	2	2	6	...
+10		2	2	4	4	2	2	2	6	...
+20		2	2	2	4	2	2	6	6	...
+...
+\end{lstlisting}
+\end{framed}
+
+where columns give the integer-valued range corresponding to either the start or end of a branch leading to a particular node, and each row corresponds to a single sample drawn from the joint distribution of ancestral states.
+For example, the lineage leading to the node indexed 1 starts in state 2 (Africa) and ends in state 4 (Eurasia) at iteration 20.
+In Section \ref{sec:bayarea}, we will look at how stochastic mappings---the completely realized biogeographic history---may be analysed for data-augmented models.
+If you wish to write your own scripts to analyse the ancestral range reconstructions, know that each node's index is recorded when writing a tree's Newick string to file so states may be mapped on to the tree.
+
+\subsection{Data exploration with Phylowood}
+
+To interpret the biogeographical history of primates, we will generate a Phylowood (\url{http://mlandis.github.io/phylowood}) animation.
+First, we'll create variables for the relevant files
+
+\begin{snugshade}
+\begin{lstlisting}
+state_fn = fp + "output/bg_1.states.txt"
+atlas_fn = fp + "data/earth3.still.atlas.txt"
+phw_fn = fp + "output/bg_1.phw.txt"
+\end{lstlisting}
+\end{snugshade}
+
+then create the animation file
+
+\begin{snugshade}
+\begin{lstlisting}
+convertToPhylowood(treefile=tree_fn, geofile=atlas_fn, statefile=state_fn, outfile=phw_fn, burnin=0., type="range")
+\end{lstlisting}
+\end{snugshade}
+
+This file summarizes the MCMC output from a RevBayes biogeographical analysis as a Nexus-formatted file, which is used by Phylowood to generate interactive animations to explore biogeographic reconstructions.
+
+\noindent \\ \impmark Open \texttt{http://mlandis.github.io/phylowood}.
+
+\noindent \\ \impmark Drag and drop \texttt{./output/bg\_1.phw.txt} into the text field.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=4in]{figures/bg_1_mrca}
+\caption{Phylowood frame showing posterior ancestral range of root node.}
+\end{figure}
+
+\noindent \\ \impmark Click the Play button to view the animation. \\
+
+Notice the primate MRCA range is very widespread with six areas. This is
+
+There are three control panels to help you filter data: the media panel, the map panel, and the phylogeny panel.
+The media buttons correspond to Beginning, Slow/Rewind, Play, Stop, Fast Forward, Ending (from left to right).
+The animation will play the timeframe corresponding to the slider.
+
+\noindent \\ \impmark Drag the slider to the right (the present).
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=4in]{figures/bg_1_tips}
+\caption{Phylowood frame showing distribution of extant taxon ranges.}
+\end{figure}
+
+\noindent \\ \impmark Pan and zoom around the map.\\
+
+Marker colors correspond to the phylogenetic lineages in the phylogeny panel.
+Markers are split into slices and (loosely) sorted phylogenetically, so nearby slices are generally closely related.
+At divergence events, a marker's radius is proportional to the marginal posterior probability the node was present in the area at that time.
+Between divergence events, marker's radius is simply an interpolation of the values at the two endpoints.
+Some information about geological constraints and cladogenic events is lost.
+
+\noindent \\ \impmark Mouseover an area to learn which lineage it belongs to and its presence probability. \\
+
+Since it's difficult to see how specific clades evolve with so many taxa, Phylowood offers two ways to filter taxa from the animation.
+We call the set of a lineage, all its ancestral lineages towards the root, and all descendant lineages a phylogenetic heritage.
+The root's heritage is the entire clade.
+A leaf node's heritage is a path from the tip to the root.
+
+\noindent \\ \impmark Mouseover a lineage to temporarily highlight the lineage's heritage. Remove the mouseover to remove the highlight effect. \\
+
+The highlight effect is temporary and quickly allows you to single out lineages of interest during animation.
+Phylowood also offers a masking effect that persists until an unmask command is issued.
+
+\noindent \\ \impmark Double-click the white root branch to mask the root node's heritage (all lineages). Single click a lineage to unmask that lineage's heritage. \\
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=4in]{figures/bg_1_loris}
+\caption{Phylowood frame highlighting the ancestral range for the MRCA extant lorises.}
+\end{figure}
+
+Now that the masking effects are in place, you're free to interact with other map components.
+In addition, the area of marker sizes is only distributed among unmasked lineages.
+
+Visit \texttt{https://github.com/mlandis/phylowood/wiki} to learn more about Phylowood.
+
+\subsection{Epoch models}
+
+(under construction)
+
