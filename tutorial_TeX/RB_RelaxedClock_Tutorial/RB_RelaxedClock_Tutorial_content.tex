@@ -412,17 +412,17 @@ Enter the \Rev~code provided in this section in the new model file. Keep in mind
 
 \textbf{\textit{The Clock-Rate}}
 
-We specify the absolute clock rate by first creating a node for the base rate.
-This value is set to be drawn from a lognormal prior.
-{\tt \begin{snugshade*}
-\begin{lstlisting}
-br_M <- 5.4E-3
-br_s <- 0.05
-br_mu <- ln(br_M) - ((br_s * br_s) * 0.5)
-base_rate ~ dnLnorm(br_mu, br_s)
-moves[mi++] = mvScale(base_rate,lambda=0.25,tune=true,weight=5.0)
-\end{lstlisting}
-\end{snugshade*}}
+%We specify the absolute clock rate by first creating a node for the base rate.
+%This value is set to be drawn from a lognormal prior.
+%{\tt \begin{snugshade*}
+%\begin{lstlisting}
+%br_M <- 5.4E-3
+%br_s <- 0.05
+%br_mu <- ln(br_M) - ((br_s * br_s) * 0.5)
+%base_rate ~ dnLnorm(br_mu, br_s)
+%moves[mi++] = mvScale(base_rate,lambda=0.25,tune=true,weight=5.0)
+%\end{lstlisting}
+%\end{snugshade*}}
 
 The clock-rate parameter is a stochastic node from a gamma distribution.
 {\tt \begin{snugshade*}
@@ -432,12 +432,12 @@ moves[mi++] = mvScale(clock_rate,lambda=0.5,tune=true,weight=5.0)
 \end{lstlisting}
 \end{snugshade*}}
 
-The absolute clock rate is the value on which the phylogenetic CTMC model depends. This is a deterministic node and equal to the product of the base rate and clock rate.
-{\tt \begin{snugshade*}
-\begin{lstlisting}
-abs_clock_rt := clock_rate * base_rate
-\end{lstlisting}
-\end{snugshade*}}
+%The absolute clock rate is the value on which the phylogenetic CTMC model depends. This is a deterministic node and equal to the product of the base rate and clock rate.
+%{\tt \begin{snugshade*}
+%\begin{lstlisting}
+%abs_clock_rt := clock_rate * base_rate
+%\end{lstlisting}
+%\end{snugshade*}}
 
 \textbf{\textit{The Sequence Model and Phylogenetic CTMC}}
 
@@ -522,12 +522,19 @@ mymodel = model(er)
 \textit{Run the Power-Posterior Sampler and Compute the Marginal Likelihoods} --- With a fully specified model, we can set up the \cl{powerPosterior()} analysis to create a file of `powers' and likelihoods from which we can estimate the marginal likelihood using stepping-stone or path sampling. 
 This method computes a vector of powers from a beta distribution, then executes an MCMC run for each power step while raising the likelihood to that power. In this implementation, the vector of powers starts with 1, sampling the likelihood close to the posterior and incrementally sampling closer and closer to the prior as the power decreases. 
 
-First, we create the variable containing the power posterior. This requires us to provide a model and vector of moves, as well as an output file name. The \cl{cats} argument sets the number of power steps.
+First, we initialize a monitor which will log the MCMC samples for each parameter at every step in the power posterior.
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+monitors[1] = mnModel(filename="output/GMC_posterior_pp.log",printgen=10, separator = TAB)
+\end{lstlisting}
+\end{snugshade*}}
+
+Next, we create the variable containing the power posterior. This requires us to provide a model and vector of moves, as well as an output file name. The \cl{cats} argument sets the number of power steps.
 Once we have specified the options for our sampler, we can then start the run after a burn-in/tuning period.
 
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-pow_p = powerPosterior(mymodel, moves, "output/GMC_bears_powp.out", cats=50) 
+pow_p = powerPosterior(mymodel, moves, monitors, "output/GMC_bears_powp.out", cats=50, sampleFreq=10) 
 pow_p.burnin(generations=5000,tuningInterval=200)
 pow_p.run(generations=1000)  
 \end{lstlisting}
@@ -572,11 +579,10 @@ Here, we will assume that the mean branch rate is exponentially distributed and 
 With these two parameters, we can get the location parameter of the lognormal by:
 $$\mu = \log(M) - \frac{\sigma^2}{2}.$$
 Thus, $\mu$ is a deterministic node, which is a function of $M$ and $\sigma$.
-
-In Figure \ref{m_UCLN:fig}, we can represent the vector of $N$ branch rates using the plate notation. Additionally, each branch rate is rescaled by the base rate. 
+In Figure \ref{m_UCLN:fig}, we can represent the vector of $N$ branch rates using the plate notation. %Additionally, each branch rate is rescaled by the base rate. 
 \begin{figure}[h!]
 \centering
-\fbox{\includegraphics[width=3in]{\ResourcePath figures/ucln_gm.eps}}
+\fbox{\includegraphics[width=2in]{\ResourcePath figures/ucln_gm.eps}}
 \caption{\small The graphical model representation of the UCLN model used in this exercise.}
 \label{m_UCLN:fig}
 \end{figure}
@@ -608,18 +614,18 @@ Enter the \Rev~code provided in this section in the new model file. Keep in mind
 \end{framed}}
 
 
-\textbf{\textit{The Base Clock Rate}}
+%\textbf{\textit{The Base Clock Rate}}
 
-As in the strict clock model above, we create a lognormally distributed stochastic node, representing the base rate.
-{\tt \begin{snugshade*}
-\begin{lstlisting}
-br_M <- 5.4E-3
-br_s <- 0.05
-br_mu <- ln(br_M) - ((br_s * br_s) * 0.5)
-base_rate ~ dnLnorm(br_mu, br_s)
-moves[mi++] = mvScale(base_rate,lambda=0.25,tune=true,weight=5.0)
-\end{lstlisting}
-\end{snugshade*}}
+%As in the strict clock model above, we create a lognormally distributed stochastic node, representing the base rate.
+%{\tt \begin{snugshade*}
+%\begin{lstlisting}
+%br_M <- 5.4E-3
+%br_s <- 0.05
+%br_mu <- ln(br_M) - ((br_s * br_s) * 0.5)
+%base_rate ~ dnLnorm(br_mu, br_s)
+%moves[mi++] = mvScale(base_rate,lambda=0.25,tune=true,weight=5.0)
+%\end{lstlisting}
+%\end{snugshade*}}
 
 \textbf{\textit{Independent Branch Rates}}
 
@@ -1119,13 +1125,12 @@ Then, execute the MCMC analysis using: \colorbox{shadecolor}{\cl{source("RevBaye
 
 
 
-Questions about this tutorial can be directed to: \\\vspace{-10mm}
-\begin{itemize}
-\item Tracy Heath (email: \href{mailto:tracyh@berkeley.edu}{tracyh@berkeley.edu}) \\\vspace{-8mm}
-\item Tanja Stadler (email: \href{mailto:tanja.stadler@bsse.ethz.ch}{tanja.stadler@bsse.ethz.ch}) \\\vspace{-8mm} 
-\item Sebastian H\"{o}hna (email: \href{mailto:sebastian.hoehna@gmail.com}{sebastian.hoehna@gmail.com})
-\end{itemize}
-
+%Questions about this tutorial can be directed to: \\\vspace{-10mm}
+%\begin{itemize}
+%\item Tracy Heath (email: \href{mailto:tracyh@berkeley.edu}{tracyh@berkeley.edu}) \\\vspace{-8mm}
+%\item Sebastian H\"{o}hna (email: \href{mailto:sebastian.hoehna@gmail.com}{sebastian.hoehna@gmail.com})
+%\end{itemize}
+%
 
 \bibliographystyle{sysbio}
 \bibliography{\ResourcePath master_refs}

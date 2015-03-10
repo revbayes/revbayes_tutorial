@@ -21,8 +21,8 @@ source("RevBayes_scripts/m_GMC_bears.Rev")
 ### workspace model wrapper ###
 mymodel = model(er)
 
+### create a monitor to log the samples to file
 monitors[1] = mnModel(filename="output/GMC_posterior_pp.log",printgen=10, separator = TAB)
-
 
 ### compute power posterior distributions
 pow_p = powerPosterior(mymodel, moves, monitors, "output/GMC_bears_powp.out", cats=50, sampleFreq=10) 
