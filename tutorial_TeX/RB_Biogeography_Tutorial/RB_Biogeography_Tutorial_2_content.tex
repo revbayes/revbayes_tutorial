@@ -38,9 +38,9 @@ First, we'll create variables for the relevant files
 
 \begin{snugshade}
 \begin{lstlisting}
-state_fn = fp + "output/bg_1.states.txt"
+state_fn = fp + "output/bg_diff.states.txt"
 atlas_fn = fp + "data/earth3.still.atlas.txt"
-phw_fn = fp + "output/bg_1.phw.txt"
+phw_fn = fp + "output/bg_diff.phw.txt"
 \end{lstlisting}
 \end{snugshade}
 
@@ -48,7 +48,7 @@ then create the animation file
 
 \begin{snugshade}
 \begin{lstlisting}
-convertToPhylowood(treefile=tree_fn, geofile=atlas_fn, statefile=state_fn, outfile=phw_fn, burnin=0., type="range")
+convertToPhylowood(treefile=tree_fn, geofile=atlas_fn, statefile=state_fn, outfile=phw_fn, burnin=0., chartype="Bitset", rangetype="Range")
 \end{lstlisting}
 \end{snugshade}
 
@@ -56,7 +56,7 @@ This file summarizes the MCMC output from a RevBayes biogeographical analysis as
 
 \noindent \\ \impmark Open \texttt{http://mlandis.github.io/phylowood}.
 
-\noindent \\ \impmark Drag and drop \texttt{./output/bg\_1.phw.txt} into the text field.
+\noindent \\ \impmark Drag and drop \texttt{./output/bg\_diff.phw.txt} into the text field.
 
 \begin{figure}[H]
 \centering
@@ -65,8 +65,6 @@ This file summarizes the MCMC output from a RevBayes biogeographical analysis as
 \end{figure}
 
 \noindent \\ \impmark Click the Play button to view the animation. \\
-
-Notice the primate MRCA range is very widespread with six areas. This is
 
 There are three control panels to help you filter data: the media panel, the map panel, and the phylogeny panel.
 The media buttons correspond to Beginning, Slow/Rewind, Play, Stop, Fast Forward, Ending (from left to right).
@@ -112,6 +110,14 @@ Now that the masking effects are in place, you're free to interact with other ma
 In addition, the area of marker sizes is only distributed among unmasked lineages.
 
 Visit \texttt{https://github.com/mlandis/phylowood/wiki} to learn more about Phylowood.
+
+Phylowood is useful to understand whether your model generates sensible reconstructions.
+Keep in mind the animation and inference both use modern geographies, and that dispersal rates are not modeled to depend on geographical features.
+Notice the primate MRCA is widespread in two areas, the New World and Africa.
+The root age of the primate tree is about 80Mya, which is about 40Mya after East and West Gondwanaland split to separate modern Africa and South America, so vicariance did not give rise to New World Monkeys.
+This is corroborated by examining the fossil record, where the first appearance of primates in South America is about 35Mya.
+The standing theory is primates disperse from Africa to South America in a rare ``sweepstakes.''
+The naive primate biogeographic model described so far should produce more realistic reconstructions by taking continental drift into account.
 
 \subsection{Epoch models}
 

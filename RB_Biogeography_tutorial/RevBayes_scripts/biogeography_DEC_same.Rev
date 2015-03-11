@@ -1,4 +1,27 @@
-# source("/Users/mlandis/projects/rb_lagrange/code/n3_dec.Rev")
+
+fp = "./"
+data_fn = fp + "data/primates_bg_n3.tsv" 
+tree_fn = fp + "data/primates.tree"
+out_str = "bg_same"
+
+# helper variables
+mvi = 1 # index to add MCMC moves
+mni = 1 # index to add monitors
+
+# hard coded for now
+n_areas = 3
+n_areas_tmp = n_areas
+n_states = floor(2^n_areas_tmp)
+
+# read data as natural numbers
+data = readCharacterDataDelimited(file=data_fn, type="Bitset")
+
+#names = d.names()
+psi <- readTrees(tree_fn)[1]
+
+# clock
+clock_bg ~ dnExp(10)
+mv[mvi++] = mvScale(clock_bg, weight=5)
 
 # presence-absence to state conversion
 # 1  000
@@ -76,7 +99,7 @@ r[7][8] := d[1][3] + d[2][3]  # 110 -> 111 : Disperse from area 1 to 3 and from 
 # r
 
 # Does this look as expected? What patterns do you see?
-# What series of events might occur to get from state 5 (100) to state 2 (001)?
+# What series of events might occur to get from state 100 to state 001?
 # Come up with three examples.
 # Given the rates, which scenario do you think is most likely?
 
@@ -113,3 +136,29 @@ subset_sympatry        := clado_type[2]
 allopatry              := clado_type[3]
 
 clado_prob := fnCladoProbs(clado_type, n_areas, 2)
+
+
+# build ctmc
+m ~ dnPhyloCTMCClado( tree=psi, Q=q, cladoProbs=clado_prob, branchRates=clock_bg, nSites=1, type="NaturalNumbers" )
+m.clamp(data)
+
+# make model
+mdl = model(m)
+#str(m)
+
+# monitors
+mn[mni++] = mnScreen(clock_bg, d[1][2], d[1][3], d[2][1], d[2][3], d[3][1], d[3][2], e[1], e[2], e[3], widespread_sympatry, subset_sympatry, allopatry)
+mn[mni++] = mnFile(clock_bg, d[1][2], d[1][3], d[2][1], d[2][3], d[3][1], d[3][2], e[1], e[2], e[3], widespread_sympatry, subset_sympatry, allopatry, filename="./output/"+out_str+".params.txt")
+mn[mni++] = mnJointConditionalAncestralState(tree=psi, ctmc=m, type="NaturalNumbers", printgen=10, withTips=true, withStartStates=true, filename="./output/"+out_str+".states.txt")
+
+# mcmc
+ch = mcmc(mv,mn,mdl)
+ch.burnin(200,10)
+ch.run(1000)
+
+# phylowood output
+"Building Phylowood animation file..."
+state_fn = fp + "output/"+out_str+".states.txt"
+atlas_fn = fp + "data/earth3.still.atlas.txt"
+phw_fn = fp + "output/"+out_str+".phw.txt"
+convertToPhylowood(treefile=tree_fn, geofile=atlas_fn, statefile=state_fn, outfile=phw_fn, burnin=0., chartype="NaturalNumbers", bgtype="Range")
