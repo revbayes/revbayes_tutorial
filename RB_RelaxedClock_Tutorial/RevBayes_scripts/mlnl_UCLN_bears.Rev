@@ -21,8 +21,11 @@ source("RevBayes_scripts/m_UCLN_bears.Rev")
 ### workspace model wrapper ###
 mymodel = model(er)
 
+### create a monitor to log the samples to file
+monitors[1] = mnModel(filename="output/UCLN_posterior_pp.log",printgen=10, separator = TAB)
+
 ### compute power posterior distributions
-pow_p = powerPosterior(mymodel, moves, "output/UCLN_bears_powp.out", cats=50) 
+pow_p = powerPosterior(mymodel, moves, monitors, "output/UCLN_bears_powp.out", cats=50, sampleFreq=10) 
 pow_p.burnin(generations=5000,tuningInterval=200)
 pow_p.run(generations=1000)  
 

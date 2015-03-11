@@ -40,7 +40,7 @@ mymodel = model(er)
 ### set up the monitors that will output parameter values to file and screen 
 monitors[1] = mnModel(filename="output/TimeTree_bears_mcmc.log", printgen=10)
 monitors[2] = mnFile(filename="output/TimeTree_bears_mcmc.trees", printgen=10, timetree)
-monitors[3] = mnScreen(printgen=10, root_time, base_rate)
+monitors[3] = mnScreen(printgen=100, root_time)
 
 ### workspace mcmc ###
 mymcmc = mcmc(mymodel, monitors, moves)
