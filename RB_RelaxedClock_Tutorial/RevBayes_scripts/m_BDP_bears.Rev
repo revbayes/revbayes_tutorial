@@ -52,6 +52,7 @@ stdv_ra <- 0.25
 mu_ra <- ln(mean_ra) - ((stdv_ra*stdv_ra) * 0.5)
 root_time ~ dnLnorm(mu_ra, stdv_ra, offset=tHesperocyon)
 
+
 ### two internal calibrations will be used
 ### first we have to create constraints on which we will condition the birth-death process tree topology
 ### create a constraint using the clade function for the bear family Ursidae

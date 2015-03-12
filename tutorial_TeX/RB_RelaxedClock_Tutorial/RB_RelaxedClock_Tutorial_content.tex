@@ -388,9 +388,7 @@ Each section will require you to create a separate \Rev~file for each relaxed cl
 \bigskip
 \subsubsection{The Global Molecular Clock Model}\label{globalClockSec}
 
-The global molecular clock assumes that the rate of substitution is constant over the tree and over time.
-When estimating trees on an absolute time-scale, it is often necessary to parameterize relaxed clock models with two rates, a base rate which effectively scales the tree and a clock rate. 
-Then, the absolute rate applied to the tree is a deterministic node (Fig.~\ref{m_GMC:fig}).
+The global molecular clock assumes that the rate of substitution is constant over the tree and over time (Fig.~\ref{m_GMC:fig}).
 
 \begin{figure}[h!]
 \centering
@@ -687,12 +685,12 @@ moves[mi++] = mvVectorSingleElementScale(branch_rates,lambda=30.0,tune=true,weig
 \end{lstlisting}
 \end{snugshade*}}
 
-We can combine the base rate and branch rates in a vector of deterministic nodes.
-{\tt \begin{snugshade*}
-\begin{lstlisting}
-branch_subrates := branch_rates * base_rate
-\end{lstlisting}
-\end{snugshade*}}
+%We can combine the base rate and branch rates in a vector of deterministic nodes.
+%{\tt \begin{snugshade*}
+%\begin{lstlisting}
+%branch_subrates := branch_rates * base_rate
+%\end{lstlisting}
+%\end{snugshade*}}
 
 The mean of the branch rates is a convenient deterministic node to monitor, particularly in the screen output when conducting MCMC.
 {\tt \begin{snugshade*}
@@ -1066,7 +1064,7 @@ Finally, we will create a monitor in charge of writing information to the screen
 We will report the root age and base rate to the screen. If there is anything else you'd like to see in your screen output (e.g., the mean rate of the UCLN or ACLN model), feel free to add them to the list of parameters give to this model.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-monitors[3] = mnScreen(printgen=10, root_time, base_rate)
+monitors[3] = mnScreen(printgen=10, root_time)
 \end{lstlisting}
 \end{snugshade*}}
 
