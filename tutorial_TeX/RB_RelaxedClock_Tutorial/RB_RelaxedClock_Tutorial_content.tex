@@ -1061,7 +1061,7 @@ monitors[2] = mnFile(filename="output/TimeTree_bears_mcmc.trees", printgen=10, t
 
 
 Finally, we will create a monitor in charge of writing information to the screen: \cl{mnScreen}.
-We will report the root age and base rate to the screen. If there is anything else you'd like to see in your screen output (e.g., the mean rate of the UCLN or ACLN model), feel free to add them to the list of parameters give to this model.
+We will report the root age to the screen. If there is anything else you'd like to see in your screen output (e.g., the mean rate of the UCLN or ACLN model), feel free to add them to the list of parameters give to this model.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 monitors[3] = mnScreen(printgen=10, root_time)
