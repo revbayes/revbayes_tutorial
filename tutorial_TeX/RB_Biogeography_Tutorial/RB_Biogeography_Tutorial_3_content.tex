@@ -72,7 +72,7 @@ Start to create helper variables for file handling,
 area_fn = "data/earth25.still.atlas.txt"
 data_fn = "data/primates_bg_n25.nex"
 tree_fn = "data/primates.tree"
-out_fn = "output/bg_3"
+out_fn = "output/bg_large"
 \end{lstlisting}
 \end{snugshade}
 
@@ -252,22 +252,34 @@ Let's create the character history moves as follows: conservative character hist
 \begin{snugshade}
 \begin{lstlisting}
 moves[++mi] = mvCharacterHistory(ctmc=m, qmap=q_range, tree=psi, lambda=0.05, 
-          type="Biogeo", graph="node", proposal="rejection", weight=100.0)
+          type="Biogeo", graph="node", proposal="rejection", weight=n_nodes*5)
 moves[++mi] = mvCharacterHistory(ctmc=m, qmap=q_range, tree=psi, lambda=0.05, 
-          type="Biogeo", graph="branch", proposal="rejection", weight=100.0)
+          type="Biogeo", graph="branch", proposal="rejection", weight=n_nodes)
 \end{lstlisting}
 \end{snugshade}
 
-and the same proposals for more radical character history updates, with {\tt lambda=1.0}
+and the same proposals for moderately-sized character history updates, with {\tt lambda=0.2}
+
+\begin{snugshade}
+\begin{lstlisting}
+moves[++mi] = mvCharacterHistory(ctmc=m, qmap=q_range, tree=psi, lambda=0.2, 
+          type="Biogeo", graph="node", proposal="rejection", weight=n_nodes*5)
+moves[++mi] = mvCharacterHistory(ctmc=m, qmap=q_range, tree=psi, lambda=0.2, 
+          type="Biogeo", graph="branch", proposal="rejection", weight=n_nodes)
+\end{lstlisting}
+\end{snugshade}
+
+and radical updates
 
 \begin{snugshade}
 \begin{lstlisting}
 moves[++mi] = mvCharacterHistory(ctmc=m, qmap=q_range, tree=psi, lambda=1.0, 
-          type="Biogeo", graph="node", proposal="rejection", weight=40.0)
+          type="Biogeo", graph="node", proposal="rejection", weight=n_nodes*5)
 moves[++mi] = mvCharacterHistory(ctmc=m, qmap=q_range, tree=psi, lambda=1.0, 
-          type="Biogeo", graph="branch", proposal="rejection", weight=40.0)
+          type="Biogeo", graph="branch", proposal="rejection", weight=n_nodes)
 \end{lstlisting}
 \end{snugshade}
+
 
 Next, create the model object,
 
@@ -405,7 +417,7 @@ Although we have stochastic mappings under the posterior distribution, the remai
 \end{snugshade}
 
 By default, {\tt get\_events()} extracts a dictionary-of-dictionaries from the posterior event samples.
-A dictionary is very much like a vector, so this can be thought of as similar to a two-dimensional matrix.
+A dictionary is very much like a vector, except values are selected by keys, so this can be thought of as similar to a two-dimensional matrix.
 The first key corresponds to the node (branch) whose MCMC samples you'd like to retrieve, while the second dictionary's keys are the columns correspond to MCMC states and values specific to that node. For example, say we are interested in the last five cladogenic states sampled for node 42, Old World MRCA,
 \begin{snugshade}
 \begin{lstlisting}
