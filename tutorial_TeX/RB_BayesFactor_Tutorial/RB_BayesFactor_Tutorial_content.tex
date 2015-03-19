@@ -171,7 +171,7 @@ This requires that we provide a model and vector of moves, as well as an output 
 The \cl{cats} argument sets the number of stepping stones.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-pow_p = powerPosterior(mymodel, moves, "model1.out", cats=50) 
+pow_p = powerPosterior(mymodel, moves, monitors, "model1.out", cats=50) 
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -424,7 +424,7 @@ Imagine, for example, that there are several (possibly many) alternative models 
 \begin{Form}
 \begin{table}[h]
 \centering
-\caption{\small Marginal likelihoods for various substitution models estimated using \texttt{MrBayes}.}
+\caption{\small Marginal likelihoods for various substitution models estimated using \MrBayes.}
 \begin{tabular}{l c c c c c c}
 \hline
 \multicolumn{1}{l}{\textbf{ }} &\multicolumn{1}{r}{\textbf{ }} & \multicolumn{5}{c}{\textbf{Marginal lnL estimates}} \\ 
@@ -444,6 +444,37 @@ GTR+$\Gamma$ ($M_5$) & \hspace{15mm} 		& -13241.33  		& \hspace{3mm} & -13241.78
 GTR+I ($M_6$)  & \hspace{15mm} 				&-13472.73  		& \hspace{3mm} & -13472.79   		& \hspace{3mm} &  -13472.76\\
 \hline
 GTR+$\Gamma$+I ($M_7$) & \hspace{15mm} 	& -13184.67 		& \hspace{3mm} & -13184.18  		& \hspace{3mm} & -13184.40 \\
+\hline
+\hline
+%{\footnotesize{$^*$you can edit this table}}\\
+\end{tabular}
+\label{tab:ml_cytb}
+\end{table}
+\end{Form}
+
+\begin{Form}
+\begin{table}[h]
+\centering
+\caption{\small Marginal likelihoods for various substitution models estimated using \RevBayes.}
+\begin{tabular}{l c c c c c c}
+\hline
+\multicolumn{1}{l}{\textbf{ }} &\multicolumn{1}{r}{\textbf{ }} & \multicolumn{5}{c}{\textbf{Marginal lnL estimates}} \\ 
+\cline{3-7}
+\multicolumn{1}{l}{\textbf{Substitution Model}} & \multicolumn{1}{r}{\hspace{3mm}} & \multicolumn{1}{c}{\textbf{run 1}} & \multicolumn{1}{r}{\hspace{3mm}} & \multicolumn{1}{c}{\textbf{run 2}} & \multicolumn{1}{r}{\hspace{3mm}} & \multicolumn{1}{c}{\textbf{mean}} \\ 
+\hline
+JC ($M_1$) & \hspace{15mm} 					& -15855.6  		& \hspace{3mm} & -15855.5  		& \hspace{3mm} & -15855.55\\
+\hline
+F81 ($M_2$) & \hspace{15mm} 				& -15475.6   		& \hspace{3mm} & -15475.7 			& \hspace{3mm} &  --15475.65\\
+\hline
+HKY ($M_3$) & \hspace{15mm} 				&  -14843.2 		& \hspace{3mm} &  -14842.7  		& \hspace{3mm} & -14842.95 \\
+\hline
+GTR ($M_4$) & \hspace{15mm} 				& -14585.1  		& \hspace{3mm} &  -14585.5   		& \hspace{3mm} &  -14585.3\\
+\hline
+GTR+$\Gamma$ ($M_5$) & \hspace{15mm} 		& -13292  		& \hspace{3mm} & -13292.5   		& \hspace{3mm} & -13292.25 \\
+\hline
+GTR+$\Gamma$+I ($M_6$) & \hspace{15mm} 		& -13296.3  		& \hspace{3mm} & -13296.8   		& \hspace{3mm} & -13296.55 \\
+\hline
+GTR+$\Gamma$+I ($M_7$) & \hspace{15mm} 	& -13294.9 		& \hspace{3mm} & -13295.1  		& \hspace{3mm} & -13295.0 \\
 \hline
 \hline
 %{\footnotesize{$^*$you can edit this table}}\\

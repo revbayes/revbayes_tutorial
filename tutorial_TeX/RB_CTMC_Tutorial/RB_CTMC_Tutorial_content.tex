@@ -39,7 +39,7 @@ We assume that you have read and hopefully completed the following tutorials:
 %%%%%%%%
 \section{Data and files}
 
-We provide several data files which we will use in this tutorial.
+We provide the data file(s) which we will use in this tutorial.
 You may want to use your own data instead.
 In the \cl{data} folder, you will find the following files
 \begin{itemize}
@@ -96,7 +96,7 @@ Here we only provide some of the equations for the models in case you might be i
 You will be able to complete the exercises without understanding the underlying math.
 
 
-The files for this example analysis are provided for you, which can easily be run using the \cl{source()} function in the \RevBayes~console:
+\noindent \\ \impmark The files for this example analysis are provided for you, which can easily be run using the \cl{source()} function in the \RevBayes~console:
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 source("RevBayes_scripts/JukesCantor.Rev")
@@ -105,7 +105,7 @@ source("RevBayes_scripts/JukesCantor.Rev")
 
 If everything loaded properly, then you should see the program initiate the Markov chain Monte Carlo analysis that estimates the posterior distribution. 
 If you continue to let this run, then you will see it output the states of the Markov chain once the MCMC analysis begins. 
-(It is worth noting, however, that the file \cl{JukesCantor.Rev} performs shorter runs with fewer generations for the purposes of illustration.)
+%(It is worth noting, however, that the file \cl{JukesCantor.Rev} performs shorter runs with fewer generations for the purposes of illustration.)
 
 Ultimately, this is how you will execute most analyses in \RevBayes, with the full specification of the model and analyses contained in the sourced files. 
 You could easily run this entire analysis on your own data by substituting your data file name for that in the model-specification file. 
@@ -298,7 +298,7 @@ mymodel
 \end{snugshade*}}
 
 \bigskip
-\subsection{Performing an MCMC Analysis Under the Uniform Model}
+\subsection{Performing an MCMC Analysis Under the Jukes-Cantor Model}
 
 In this section, will describe how to set up the MCMC sampler and summarize the resulting posterior distribution of trees. 
 
@@ -386,6 +386,8 @@ mapTree(treetrace,"output/primates_cytb_JC.tree")
 \end{snugshade*}}
 Fill in the following table as you go through the tutorial.
 
+\noindent \\ \impmark Look at the file called \cl{output/primates\_cytb\_JC.tree} in \texttt{FigTree}.
+
 \begin{Form}
 \begin{table}[h!]
 \centering
@@ -427,6 +429,41 @@ Your model 3 & \TextField[name=pp91,backgroundcolor={.85 .85 .85},color={1 0 0},
 \label{tab:pp}
 \end{table}
 \end{Form}
+
+\begin{table}[h!]
+\centering
+\caption{\small Primate species and famaly relationships.}
+\begin{tabular}{l l l l}
+\hline
+\textbf{Species} & \textbf{Family} & \textbf{Parvorder} & \textbf{Suborder} \\ 
+\hline
+Alouatta palliata & Atelidae & Platyrrhini (NWM) & Haplorrhini \\
+Aotus trivirgatus & Aotidae & Platyrrhini (NWM) & Haplorrhini \\
+Callicebus donacophilus & Pitheciidae & Platyrrhini (NWM) & Haplorrhini \\
+Cebus albifrons & Cebidae & Platyrrhini (NWM) & Haplorrhini \\
+Cheirogaleus major & Cheirogaleidae & Lemuroidea & Strepsirrhini \\
+Chlorocebus aethiops & Cercopithecoidea & Catarrhini & Haplorrhini \\
+Colobus guereza & Cercopithecoidea & Catarrhini & Haplorrhini \\
+Daubentonia madagascariensis & Daubentoniidae & Lemuroidea & Strepsirrhini \\
+Galago senegalensis & Galagidae & Lorisidae & Strepsirrhini \\
+Hylobates lar & Hylobatidea & Catarrhini & Haplorrhini \\
+Lemur catta & Lemuridae & Lemuroidea & Strepsirrhini \\
+Lepilemur hubbardorum & Lepilemuridae & Lemuroidea & Strepsirrhini \\
+Loris tardigradus & Lorisidae & Lorisidae & Strepsirrhini \\
+Macaca mulatta & Cercopithecoidea & Catarrhini & Haplorrhini \\
+Microcebus murinus & Cheirogaleidae & Lemuroidea & Strepsirrhini \\
+Nycticebus coucang & Lorisidae & Lorisidae & Strepsirrhini \\
+Otolemur crassicaudatus & Galagidae & Lorisidae & Strepsirrhini \\
+Pan paniscus & Hominoidea & Catarrhini & Haplorrhini \\
+Perodicticus potto & Lorisidae & Lorisidae & Strepsirrhini \\
+Propithecus coquereli & Indriidae & Lemuroidea & Strepsirrhini \\
+Saimiri sciureus & Cebidae & Platyrrhini (NWM) & Haplorrhini \\
+Tarsius syrichta & Tarsiidae &  & Haplorrhini \\
+Varecia variegata variegata & Lemuridae & Lemuroidea & Strepsirrhini \\
+\hline
+\end{tabular}
+\label{tab:primates}
+\end{table}
 
 
 
