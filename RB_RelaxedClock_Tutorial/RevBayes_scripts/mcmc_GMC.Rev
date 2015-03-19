@@ -25,9 +25,9 @@ monitors[1] = mnFile(filename="output/GMC_bears_mcmc.log", printgen=10,
 							diversification, turnover, birth_rate, death_rate, 
 							root_time, tmrca_Ursidae, tmrca_UrsidaePinn,
 							er, sf,
-							clock_rate, base_rate)
+							clock_rate)
 monitors[2] = mnFile(filename="output/GMC_bears_mcmc.trees", printgen=10, timetree)
-monitors[3] = mnScreen(printgen=1000, clock_rate, root_time, base_rate)
+monitors[3] = mnScreen(printgen=1000, clock_rate, root_time)
 
 ### workspace mcmc ###
 mymcmc = mcmc(mymodel, monitors, moves)

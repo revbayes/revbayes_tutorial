@@ -2,17 +2,20 @@
 
 \subsection{Range characters}
 
-These models will rely on presence-absence data, where a species is observed or not observed across multiple discrete areas.
+Discrete biogeographical models typically rely on presence-absence data, where a species is observed or not observed across multiple discrete areas.
 For example, say there are three areas: A, B, and C.
 Say a species is present in areas A and C, then its range equals AC, which can also be encoded into the length-3 bit vector, 101.
 Bit vectors may also be transformed into (decimal) integers, \EG the binary number 101 equals the decimal number 5.
-Typically, decimal representation is not used in discussion, but it is useful to keep in mind when considering the total number of possible ranges for a species.
+\[
+( \emptyset, A, B, AB, C, AC, BC, ABC ) \Leftrightarrow (000,100,010,110,101,011,111) \Leftrightarrow ( 0, 1, 2, 3, 4, 5, 6, 7 )
+\]
+Decimal representation is rarely used in discussion, but it is useful to keep in mind when considering the total number of possible ranges for a species.
 
 \subsection{Modeling anagenic range evolution}
 
 How might we model the dynamics of species range evolution?
 In this section, we'll cover the Dispersal-Extinction-Cladogenesis model proposed by \citet{ree05}.
-To begin, we'll focus on anagenesis, evolution that occurs between speciation events.
+To begin, we'll focus on anagenesis: evolution that occurs between speciation events within lineages.
 Since we have discrete characters we'll use the continuous-time Markov chain, which allows us to compute transition probability of a character changing from $i$ to $j$ in time $t$ through matrix exponentiation
 \[
 \mathbf{P}_{i,j}(t) = \left[ \exp \left\lbrace \mathbf{Q}t \right\rbrace \right]_{i,j},
@@ -23,31 +26,33 @@ Exponentiation of the rate matrix is powerful because it integrates over all pos
 
 We can then encode ${\bf Q}$ to reflect the allowable classes of range evolution events with biologically meaningful parameters.
 We'll take a simple model of range expansion (e.g. $BC \rightarrow ABC$) and range contraction (e.g. $BC \rightarrow C$).
-(Range expansion may also be referred to as dispersal or area gain and range contraction as extirpation or area loss.)
+(Range expansion may also be referred to as dispersal or area gain and range contraction as extirpation, (local) extinction, or area loss.)
 The rates in the transition matrix for three areas might appear as
 
 \[
 \textbf{Q} = 
 	\begin{array}{c|cccccccc}
-		& \emptyset & A & B & C & AB & AC & BC & ABC \\
+		& \emptyset & A & B & AB & C & AC & BC & ABC \\
 		\hline
-		\emptyset & - & 0 & 0 & 0 & 0 & 0 & 0 & 0 \\
-		A & e_A & - & 0 & 0 & d_{AB} & d_{AC} & 0 & 0 \\
-		B & e_B & 0 & - & 0 & d_{BA} & 0 & d_{BC} & 0 \\
-		C & e_C & 0 & 0 & - & 0 & d_{CA} & d_{CB} & 0 \\
-		AB & 0 & e_B & e_A & 0 & - & 0 & 0 & d_{AC} + d_{BC} \\
-		AC & 0 & e_C & 0 & e_A & 0 & - & 0 & d_{AB} + d_{CB} \\
-		BC & 0 & 0 & e_C & e_B & 0 & 0 & - & d_{BA} + d_{CA} \\
-		ABC & 0 & 0 & 0 & 0 & e_C & e_B & e_A & - \\								
+		\emptyset 	& - 	& 0 	& 0 	& 0 		& 0			& 0 		& 0 		& 0 \\
+		A 			& e_A 	& - 	& 0 	& d_{AB} 	& 0			& d_{AC} 	& 0 		& 0 \\
+		B 			& e_B 	& 0 	& - 	& d_{BA}	& 0			& 0 		& d_{BC} 	& 0 \\
+		AB 			& 0 	& e_A 	& e_B 	& - 		& 0			& 0 		& 0 		& d_{AC} + d_{BC} \\
+		C 			& e_C 	& 0 	& 0 	& 0 		& - 		& d_{CA} 	& d_{CB} 	& 0 \\
+		AC 			& 0 	& e_C 	& 0 	& 0 		& e_A		& - 		& 0 		& d_{AB} + d_{CB} \\
+		BC 			& 0 	& 0 	& e_C 	& 0 		& e_B		& 0 		& - 		& d_{BA} + d_{CA} \\
+		ABC 		& 0 	& 0 	& 0 	& e_C 		& 0 		& e_B 		& e_A 		& - \\								
 	\end{array},
 \]
 where $e = ( e_A, e_B, e_C )$ are the (local) extinction rates per area, and $d = ( d_{AB}, d_{AC}, d_{BC}, d_{CB}, d_{CA}, d_{BA})$ are the dispersal rates between areas.
+Notice that the sum of rates leaving state $\emptyset$ is zero, meaning any species that loses all areas in its range remains permanently extinct.
 
-{\bf \framebox{?} For the three-area DEC rate matrix above, what is the rate of leaving state 101 (which is the coded state for range AB)? That is, what is the absolute value of the diagonal term in the rate matrix for $Q_{AB,AB}$, because the diagonal term is equal to minus the sum of all other entries in the row? }
+
+{\bf \framebox{?} For the three-area DEC rate matrix above, what is the rate of leaving state AC in terms of dispersal and extinction parameters?}
 
 Note the rate of more than one event occurring simultaneously is zero, so a range must expand twice by one area in order to expand by two areas.
 
-{\bf \framebox{?} What series of events might explain a transition from range $ABC$ to range $A$? From range $AB$ to range $C$?}
+{\bf \framebox{?} What series of transition events might explain a lineage evolving from range $ABC$ to range $A$? From range $AB$ to range $C$?}
 
 Of course, this model can be specified for more than three areas.
 
@@ -56,24 +61,23 @@ Of course, this model can be specified for more than three areas.
 Let's consider what happens to the size of \textbf{Q} when the number of areas, $N$, becomes large.
 For three areas, \textbf{Q} is size $8 \times 8$.
 For ten areas, \textbf{Q} is size $2^{10} \times 2^{10} = 1024 \times 1024$, which approaches the largest size matrices that can be exponentiated in a practical amount of time.
-For twenty areas, \textbf{Q} is size $2^{20} \times 2^{20} \approx 10^6 \times 10^6$, exponentiation is not viable.
+For twenty areas, \textbf{Q} is size $2^{20} \times 2^{20} \approx 10^6 \times 10^6$ and exponentiation is not viable.
 
 
 \subsection{Modeling cladogenic range evolution}
 
-Cladogenesis describes evolutionary change coincident with speciation.
-In some well-studied cases, daughter species are not expected to inherit their ancestral range identically.
+Cladogenesis describes evolutionary change accompanying speciation.
+Daughter species are not expected to inherit their ancestral range identically in general.
 For each internal node in the reconstructed tree, one of two cladogenic events can occur: sympatry or allopatry.
 Say the range of a species is $A$ the moment before speciation occurs at an internal phylogenetic node.
 Since the species range is size one, both daughter lineages necessarily inherit the ancestral species range ($A$).
-In DEC parlance, this is called a narrow sympatry event.
+In DEC parlance, this is called a {\it narrow sympatry} event.
 
 Now suppose the ancestral range is $ABC$.
-Under subset sympatric cladogenesis, one lineage identically inherits the ancestral species range, $ABC$, while the other lineage inherits only a single area, i.e. only $A$ or $B$ or $C$.
-For widspread sympatric cladogenesis, both lineages inherit the ancestral range, $ABC$.
+Under {\it subset sympatric cladogenesis}, one lineage identically inherits the ancestral species range, $ABC$, while the other lineage inherits only a single area, i.e. only $A$ or $B$ or $C$.
+For {\it widspread sympatric cladogenesis}, both lineages inherit the ancestral range, $ABC$.
+Under {\it allopatric cladogenesis}, the ancestral range is split evenly among daughter lineages, e.g. one lineage may inherit $AB$ and the other inherits $C$.
 
-Under allopatric cladogenesis, the ancestral range is split evenly among daughter lineages, e.g. one lineage may inherit $AB$ and the other inherits $C$.
-Both daughter lineages inherit the entire ancestral species range following widespread sympatric cladogenic events.
 For an excellent overview of described state transitions for cladogenic events, see \citet{matzke13}.
 
 {\bf \framebox{?} Given the state is $AB$ before cladogenesis, and allowing subset sympatry, widespread sympatry, and allopatry, what are the 7 possible states in the daughter lineages after cladogenesis?}
@@ -83,18 +87,18 @@ For 3 areas, there are 8 states, and thus $8 \times 8 = 64$ probability terms fo
 For cladogenic change, we need transition probabilities for all combinations of states before cladogenesis, after cladogenesis for the left lineage, and after cladogenesis for the right lineage.
 Like above, for three areas, there are 8 states, and $8 \times 8 \times 8 = 512$ cladogenic probability terms.
 
-{\bf \framebox{?} For three areas, 3 + 4 + 18 + 12 possible cladogenesis events. What proportion of terms in the cladogenesis matrix are zero?}
+{\bf \framebox{?} For three areas, there are three narrow, four widespread, 18 subset sympatric events and 12 allopatric cladogenesis events. What proportion of terms in the cladogenesis matrix are zero?}
 
 The DEC model ignores speciation events hidden by extinction or incomplete taxon sampling.
 The probability of cladogenesis and local extinction events would ideally be linked to a birth-death process, as it is in the GeoSSE model \citep{goldberg11}.
 Unfortunately, since the numerical method for SSE models scale poorly, and DEC models remain the only option when the geography has more than two or three areas.
 For more than ten areas, data augmentation may be used to infer ancestral ranges, as described in Section \ref{sec:bayarea}.
 
-\begin{figure}[H]
-\centering
-\includegraphics[width=5in]{figures/bg_dec_dag}
-\caption{Graphical model of DEC. The tree plate's topology is fixed by $T$, where each internal node has both an anagenic and cladogenic random variable ($X_i^{\text{an}}$ and $X_i^{\text{cl}}$, resp.) that represents an ancestral species before and after it speciated. Anagenic change is modeled by a continuous time Markov process, where $Q_{DE}$ is the instantaneous rate matrix of area gain and loss, as parameterized by $\lambda$. The geographic distance rate modifier function, $\eta$, takes in the geographical distances and strata as $G$, and the distance power parameter, $\beta$. Cladogenic change is modeled by $P_C$, a Dirichlet-distributed simplex with a flat prior.}
-\end{figure}
+%\begin{figure}[H]
+%\centering
+%\includegraphics[width=5in]{figures/bg_dec_dag}
+%\caption{Graphical model of DEC. The tree plate's topology is fixed by $T$, where each internal node has both an anagenic and cladogenic random variable ($X_i^{\text{an}}$ and $X_i^{\text{cl}}$, resp.) that represents an ancestral species before and after it speciated. Anagenic change is modeled by a continuous time Markov process, where $Q_{DE}$ is the instantaneous rate matrix of area gain and loss, as parameterized by $\lambda$. The geographic distance rate modifier function, $\eta$, takes in the geographical distances and strata as $G$, and the distance power parameter, $\beta$. Cladogenic change is modeled by $P_C$, a Dirichlet-distributed simplex with a flat prior.}
+%\end{figure}
 
 The rest of this section will describe how to run a simple DEC analysis using RevBayes.
 
@@ -105,31 +109,23 @@ The rest of this section will describe how to run a simple DEC analysis using Re
 
 \subsubsection{Specifying a simple DEC model}
 
-We'll use the primate dataset with 23 taxa. To keep the model simple, we'll discretize their ranges into areas: the New World, Africa, and Eurasia.
+We'll use the primate dataset with 23 taxa. To keep the model simple, we'll discretize their ranges into just three areas: the New World (A), Africa (B), and Eurasia (C).
 For simplicity, we'll assume their phylogeny is time-calibrated, errorless, and fixed.
-
-%First, set your working directory,
-%
-%\begin{snugshade}
-%\begin{lstlisting}
-%setwd("/Users/arwallace/projects/RB_Biogeography_tutorial/")
-%\end{lstlisting}
-%\end{snugshade}
 
 Create some {\tt String} variables for file handling,
 \begin{snugshade}
 \begin{lstlisting}
 data_fn = "data/primates_bg_n3.tsv"
 tree_fn = "data/primates.tree"
-out_fn  = "output/bg_1"
+out_fn  = "output/bg_same"
 \end{lstlisting}
 \end{snugshade}
 
-then read in our character data,
+then read in our character data, using {\tt type="Bitset"} to indicate ranges are encoded with bits, e.g. 011
 
 \begin{snugshade}
 \begin{lstlisting}
-data = readTSVCharacterData(data_fn, type="NaturalNumbers")
+data = readCharacterDataDelimited(file=data_fn, type="Bitset")
 \end{lstlisting}
 \end{snugshade}
 
@@ -146,7 +142,7 @@ Next, compute the number of states from the number of areas
 \begin{snugshade}
 \begin{lstlisting}
 n_areas = 3
-n_states = 2^n_areas
+n_states = floor(2^n_areas)
 \end{lstlisting}
 \end{snugshade}
 
@@ -172,7 +168,7 @@ for (i in 1:n_states) {
 
 Now we need to populate the non-zero rate matrix elements, which are in terms of dispersal and extinction rates.
 We'll use one dispersal rate and one extinction rate for this tutorial, and explore more complex models in later sections.
-For later reference, this will be called the ``common rate'' model.
+For later reference, this will be called the ``same rate'' model.
 
 First, create a extinction rate parameter and assign it a scale move
 
@@ -208,6 +204,7 @@ then assign the between-area dispersal rates as determined by {\tt $r_d$}
 \begin{lstlisting}
 for (i in 1:n_areas) {
     for (j in 1:n_areas) {
+    	d[i][j] <- 0.
         if (i != j) {
             d[i][j] := r_d
         }
@@ -217,21 +214,24 @@ for (i in 1:n_areas) {
 \end{snugshade}
 
 Next, we'll populate the non-zero rate matrix elements.
-Rates are indexed by the natural number value of the range, e.g. the range spanning Eurasia and Africa is coded as 011, which is state 4.
+Rates are indexed by the natural number value of the range (plus one), e.g. the range spanning Eurasia and Africa is coded as 011, which is state 4.
 
 First assign the extinction (range loss) rates
 
 \begin{snugshade}
 \begin{lstlisting}
-r[4][2] := e[2]                 # 011 -> 001 : Extirpate in area 2
-r[4][3] := e[3]                 # 011 -> 010 : Extirpate in area 3
-r[6][2] := e[1]                 # 101 -> 001 : Extirpate in area 1
-r[6][5] := e[3]                 # 101 -> 100 : Extirpate in area 3
-r[7][3] := e[1]                 # 110 -> 010 : Extirpate in area 1
-r[7][5] := e[2]                 # 110 -> 100 : Extirpate in area 2
-r[8][4] := e[1]                 # 111 -> 011 : Extirpate in area 1
-r[8][6] := e[2]                 # 111 -> 101 : Extirpate in area 2
-r[8][7] := e[3]                 # 111 -> 110 : Extirpate in area 3
+r[2][1] := e[1]               # 100 -> 000 : Extirpate in area 1
+r[3][1] := e[2]               # 010 -> 000 : Extirpate in area 2
+r[4][2] := e[2]               # 011 -> 001 : Extirpate in area 2
+r[4][3] := e[3]               # 011 -> 010 : Extirpate in area 3
+r[5][1] := e[3]               # 001 -> 000 : Extirpate in area 3
+r[6][2] := e[1]               # 101 -> 001 : Extirpate in area 1
+r[6][5] := e[3]               # 101 -> 100 : Extirpate in area 3
+r[7][3] := e[1]               # 110 -> 010 : Extirpate in area 1
+r[7][5] := e[2]               # 110 -> 100 : Extirpate in area 2
+r[8][4] := e[1]               # 111 -> 011 : Extirpate in area 1
+r[8][6] := e[2]               # 111 -> 101 : Extirpate in area 2
+r[8][7] := e[3]               # 111 -> 110 : Extirpate in area 3
 \end{lstlisting}
 \end{snugshade}
 
@@ -283,8 +283,20 @@ q := fnFreeK(er, bf)
 \end{lstlisting}
 \end{snugshade}
 
-This yields the desired three-area DEC rate matrix modeling anagenic character change. In contrast, cladogenic event probabilites are given by a transition probability matrix and do not require a rate matrix.
+This yields the desired three-area DEC rate matrix modeling anagenic character change.
+Exposing the structure of the DEC rate matrix is useful when learning about the model, which accomplishes the same as {\tt fnDECRates} when provided {\tt d} and {\tt e}. (You do not need to type this.)
 
+\begin{snugshade}
+\begin{lstlisting}
+# for example
+er_nat := fnDECRates(dispersalRates=d, extinctionRates=e)
+er := simplex(er_nat)
+bf <- simplex(rep(1,n_states))
+q := fnFreeK(er,bf)
+\end{lstlisting}
+\end{snugshade}
+
+In contrast, cladogenic event probabilites are given by a transition probability matrix and do not require a rate matrix.
 First, we will create a vector of prior weights on cladogenesis events. Here, we assign a flat prior to all cladogenic events
 
 \begin{snugshade}
@@ -357,12 +369,13 @@ mdl = model(m)
 \end{lstlisting}
 \end{snugshade}
 
-Add the monitors.
+Add the monitors. (The {\tt mnJointConditionalAncestralState} monitor will be described in the next section.)
 
 \begin{snugshade}
 \begin{lstlisting}
 mn[1] = mnScreen(clock_bg, d[1][2], d[1][3], d[2][1], d[2][3], d[3][1], d[3][2], e[1], e[2], e[3], widespread_sympatry, subset_sympatry, allopatry, printgen=1000)
 mn[2] = mnFile(clock_bg, d[1][2], d[1][3], d[2][1], d[2][3], d[3][1], d[3][2], e[1], e[2], e[3], widespread_sympatry, subset_sympatry, allopatry, file=out_fn+".params.txt")
+mn[3] = mnJointConditionalAncestralState(tree=psi, ctmc=m, filename=out_fn+".states.txt", type="NaturalNumbers", printgen=10, withTips=true, withStartStates=true)
 \end{lstlisting}
 \end{snugshade}
 
@@ -391,12 +404,13 @@ for (i in 1:3) {
 \end{lstlisting}
 \end{snugshade}
 
-or give each ordered pair of areas a it's own dispersal rate
+or give each ordered pair of areas it's own dispersal rate
 
 \begin{snugshade}
 \begin{lstlisting}
 for (i in 1:3) {
     for (j in 1:3) {
+    	d[i][j] <- 0.0
         if (i != j) {
             d[i][j] ~ dnExponential(10.0)
             mv[++mi] = mvScale(d[i][j], weight=5)
@@ -407,16 +421,13 @@ for (i in 1:3) {
 \end{snugshade}
 Note that you don't need the global dispersal rate \cl{r\_d} and extinction rate \cl{r\_e} anymore and you can remove the variable from your analysis. \RevBayes~might give you an error message if you have left them in.
 
-This parameterization is identical to matrix introduced in Eq XXX.
-In Section XXX, we'll extend this idea further to parameterize features of range evolution, and incorporate paleogeological information.
-
 \subsection{Exercises}
 
 Exercises are independent of each other, except for Exercises 3a and 3b.
 
 \begin{itemize}
 \item 1) Widespread sympatric speciation is thought to be evolutionarily rare. Set the Dirichlet prior on cladogenic event types to heavily disfavor these events. Using Tracer, describe how changing the cladogenesis prior affects the extinction rate when compared with the ``common rate'' model.
-\item 2) Modifying the \RevBayes~script, re-parameterize the rate matrix so ranges may not grow beyond two areas in size.
+\item 2) Modifying the \RevBayes~script, parameterize the rate matrix so ranges may not grow beyond two areas in size. You may use {\tt r:= fnDECRates(e,d,2)} to confirm your results.
 \item 3a) Saving your commands to a file, create a script to produce the ``per-area rate'' model.
 \item 3b) Determine if the data support the ``common rate'' model over the ``per-area rate'' model. Use the stepping stone method to compute marginal likelihoods, which will let you compute Bayes factors for model selection.
 %\item 4) (Advanced) Using what you learned in this tutorial and the CTMC tutorial, perform a joint analysis of molecular and biogeographic evolution for primates. Introduce a common prior for the molecular and biogeographical clocks, e.g.
@@ -449,28 +460,13 @@ numNodes = numTips * 2 - 1
 \end{lstlisting}
 \end{snugshade*}}
 
-Instead of having a fixed tree as in the previous, we should now define a \emph{random} tree. We use a birth death prior with prior distributions on the \cl{diversification} rate and \cl{turnover} rate.
-The \cl{diversification} rate corresponds to the rate of growth of the tree and the \cl{turnover} rate corresponds to the rate how quickly a species is replaced by a new one.
-This parametrization has the advantage that we can use meaningful prior distributions from the fossil record.
+Instead of having a fixed tree as in the previous, we should now define a \emph{random} tree. We use a birth death prior with prior distributions on the \cl{speciation} rate and \cl{extinction} rate.
 {\tt \small \begin{snugshade*}
 \begin{lstlisting}
-diversification ~ dnLognormal(0,1)
-turnover ~ dnGamma(4,4)
-\end{lstlisting}
-\end{snugshade*}}
-Then, we compute deterministically the \cl{speciation} and \cl{extinction} rate from the \cl{diversification} rate and \cl{turnover} rate.
-{\tt \small \begin{snugshade*}
-\begin{lstlisting}
-speciation := diversification + turnover
-extinction := turnover
-\end{lstlisting}
-\end{snugshade*}}
-Instead, you could also use directly the speciation and extinction rates, \EG endowed with some diffuse exponential prior.
-{\tt \small \begin{snugshade*}
-\begin{lstlisting}
-# rescaling moves on speciation and extinction rates
-moves[++mi] = mvScale(diversification, lambda=1, tune=true, weight=3.0)
-moves[++mi] = mvScale(turnover, lambda=1, tune=true, weight=3.0)
+speciation ~ dnExponential(10.)
+extinction ~ dnExponential(10.)
+moves[++mi] = mvScale(speciation, lambda=1, tune=true, weight=3.0)
+moves[++mi] = mvScale(extinction, lambda=1, tune=true, weight=3.0)
 \end{lstlisting}
 \end{snugshade*}}
 The phylogeny that we used are obviously not a complete sample of all the species and you should take the incomplete sampling into account. We will simply use an empirical estimate of the fraction of species which we included in this study. For more information about incomplete taxon sampling see \cite{Hohna2011} and \cite{Hohna2014a}. 
@@ -518,8 +514,8 @@ pi_mol ~ dnDirichlet(pi_mol_prior)
 Now add the simplex scale move one each the exchangeability rates \cl{er\_mol} and the stationary frequencies \cl{pi\_mol} to the moves vector:
 {\tt \small \begin{snugshade*}
 \begin{lstlisting}
-moves[++mi] = mvSimplexElementScale(er_mol) 
-moves[++mi] = mvSimplexElementScale(pi_mol)  
+moves[++mi] = mvSimplexElementScale(er_mol,weight=15) 
+moves[++mi] = mvSimplexElementScale(pi_mol,weight=5)  
 \end{lstlisting}
 \end{snugshade*}}
 We can finish setting up this part of the model by creating a deterministic node for the GTR instantaneous-rate matrix \cl{Q\_mol}. 
@@ -557,17 +553,11 @@ moves[++mi] = mvScale(alpha, weight=2.0)
 \end{snugshade*}}
 This finishes the substitution process part of the model.
 
-Then next part of the model is the clock model. Here we need a clock model because we work on a time tree. We use our exponentiated uniform distribution to specify a flat prior distribution which is scale invariant.
+Then next part of the model is the clock model. Here we need a clock model because we work on a time tree. We use an exponential distribution with expectation 0.1.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-logClockRate ~ dnUniform(-5,5)
-clockRate := 10^logClockRate
-\end{lstlisting}
-\end{snugshade*}}
-We will apply a sliding window move to the \cl{\cl{logClockRate}}.
-{\tt \begin{snugshade*}
-\begin{lstlisting}
-moves[++mi] = mvSlide(logClockRate, delta=0.1, tune=true, weight=2.0)
+clock_mol ~ dnExponential(10)
+moves[++mi] = mvScale(clock_mol, lambda=1, tune=true, weight=2.0)
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -575,12 +565,12 @@ Introduce a common prior for the molecular and biogeographical clocks.
 \begin{snugshade}
 \begin{lstlisting}
 clock_scale_bg  ~ dnGamma(2.0,2.0)
-clock_bg        := clockRate * clock_scale_bg
+clock_bg        := clock_mol * clock_scale_bg
 \end{lstlisting}
 \end{snugshade}
 
 Remember that you need to call the \cl{PhyloCTMC} constructor to include the new site-rate parameter:
-% This sentence was incomplete previously; I think the revised version is correct.
+
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 seq ~ dnPhyloCTMC(tree=psi, Q=Q_mol, siteRates=gamma_rates, branchRates=clockRate, type="DNA")
@@ -600,8 +590,8 @@ monitors[3] = mnFile(filename="output/biogeography_DEC_joint.trees", printgen=10
 \end{lstlisting}
 \end{snugshade*}}
 
+Create the range evolution model as before, being sure to use the same {\tt psi} and {\tt clock\_bg} from above.
 
-
-
+The remaining challenge is to compose both submodels together using {\tt model} and creating an MCMC object with {\tt mcmc}. Good luck!
 
 \newpage
