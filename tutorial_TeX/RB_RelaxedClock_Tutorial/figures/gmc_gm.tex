@@ -1,24 +1,16 @@
+\definecolor{shc}{RGB}{238,224,229}
 \begin{tikzpicture}
-\node[detnode] (x) at (1,1) {\LARGE $\mathcal{R}$};
-\node[snode] (base) at ($(x)+(-2,2)$) {\Large $\beta$};
-\node[snode] (clock) at ($(x)+(2,2)$) {\Large $r$};
-\draw[dtaro] (base) -- (x);
-\draw[dtaro] (clock) -- (x);
-\node[constnode] (bmu) at ($(base)+(-1,1.5)$) {\Large $\mu$};
-\node[constnode] (bsig) at ($(base)+(1,1.5)$) {\Large $\sigma$};
-\draw [taro] (bmu) -- (base) ;
-\draw [taro] (bsig) -- (base) ;
-\node[constnode] (cral) at ($(clock)+(-1,1.5)$) {\Large $\alpha$};
-\node[constnode] (crbet) at ($(clock)+(1,1.5)$) {\Large $\lambda$};
-\draw [taro] (cral) -- (clock) ;
-\draw [taro] (crbet) -- (clock) ;
-\node (ddd) at ($(x)+(0,-1.65)$) {\scriptsize to the phyloCTMC};
+\node[snode] (x) at (1,1) {\LARGE $r$};
+\node[constnode] (a) at ($(x)+(-1,2)$) {\LARGE $\alpha$};
+\node[constnode] (b) at ($(x)+(1,2)$) {\LARGE $\lambda$};
+\node at ($(x)+(0.5,0)$) [right]{clock rate};
+\node at ($(a)+(-0.75,0)$) [left]{shape};
+\node at ($(b)+(0.75,0)$) [right]{rate};
+\node at ($(x)+(0,2.8)$) {gamma distribution};
+\draw [taro] (a) -- (x);
+\draw [taro] (b) -- (x);
+\node (ddd) at ($(x)+(0,-1.65)$) {\scriptsize to the rest};
+\node (ddd2) at ($(ddd)+(0,-0.25)$) {\scriptsize of the model};
 \draw[dtaro] (x) -- (ddd) ;
-\node at ($(base)+(0,2.3)$) {lognormal};
-\node at ($(clock)+(0,2.3)$) {gamma};
-\node at ($(base)+(-0.5,0)$) [left]{base rate};
-\node at ($(clock)+(0.5,0)$) [right]{clock rate};
-\node at ($(x)+(0.5,0)$) [right]{absolute clock rate};
 \end{tikzpicture}
-
 

@@ -22,9 +22,9 @@ The various exercises in this tutorial take you through the steps required to pe
 In addition, we have provided the output files for every exercise so you can verify your results. (Note that since the MCMC runs you perform will start from different random seeds, the output files resulting from your analyses \textit{will not} be identical to the ones we provide you.)
 
 \begin{framed}
-Download the starting tree file: \href{http://bit.ly/1tFOXXX}{http://bit.ly/1tFOXXX}
+Download the starting tree file: \href{http://bit.ly/1AbDPGK}{http://bit.ly/1AbDPGK}
 
-Download the alignment file: \href{http://bit.ly/1xs6pEd}{http://bit.ly/1xs6pEd}
+Download the alignment file: \href{http://bit.ly/1Gz4Drw}{http://bit.ly/1Gz4Drw}
 \end{framed}
 
 In this exercise, we will compare among different relaxed clock models and estimate a posterior distribution of calibrated time trees.
@@ -92,7 +92,7 @@ Create a directory called {\textcolor{red}{\cl{output}}} in your tutorial direct
 \end{framed}
 
 The only files you need for this exercise are now in the \cl{data} directory. Otherwise, you will create all of the \Rev~files specifying the models and analyses. 
-All of the \Rev~files you write for this tutorial are available on the \href{https://github.com/revbayes/revbayes}{\RevBayes~GitHub repository} at this URL: \href{http://bit.ly/1zj5u9n}{http://bit.ly/1zj5u9n}.
+All of the \Rev~files you write for this tutorial are available on the \href{https://github.com/revbayes/revbayes_tutorial}{\RevBayes~Tutorial GitHub repository} at this URL: \href{http://bit.ly/1CWTRdF}{http://bit.ly/1CWTRdF}.
 You can refer to these examples to verify your own work.
 
 \bigskip
@@ -388,9 +388,7 @@ Each section will require you to create a separate \Rev~file for each relaxed cl
 \bigskip
 \subsubsection{The Global Molecular Clock Model}\label{globalClockSec}
 
-The global molecular clock assumes that the rate of substitution is constant over the tree and over time.
-When estimating trees on an absolute time-scale, it is often necessary to parameterize relaxed clock models with two rates, a base rate which effectively scales the tree and a clock rate. 
-Then, the absolute rate applied to the tree is a deterministic node (Fig.~\ref{m_GMC:fig}).
+The global molecular clock assumes that the rate of substitution is constant over the tree and over time (Fig.~\ref{m_GMC:fig}).
 
 \begin{figure}[h!]
 \centering
@@ -412,17 +410,17 @@ Enter the \Rev~code provided in this section in the new model file. Keep in mind
 
 \textbf{\textit{The Clock-Rate}}
 
-We specify the absolute clock rate by first creating a node for the base rate.
-This value is set to be drawn from a lognormal prior.
-{\tt \begin{snugshade*}
-\begin{lstlisting}
-br_M <- 5.4E-3
-br_s <- 0.05
-br_mu <- ln(br_M) - ((br_s * br_s) * 0.5)
-base_rate ~ dnLnorm(br_mu, br_s)
-moves[mi++] = mvScale(base_rate,lambda=0.25,tune=true,weight=5.0)
-\end{lstlisting}
-\end{snugshade*}}
+%We specify the absolute clock rate by first creating a node for the base rate.
+%This value is set to be drawn from a lognormal prior.
+%{\tt \begin{snugshade*}
+%\begin{lstlisting}
+%br_M <- 5.4E-3
+%br_s <- 0.05
+%br_mu <- ln(br_M) - ((br_s * br_s) * 0.5)
+%base_rate ~ dnLnorm(br_mu, br_s)
+%moves[mi++] = mvScale(base_rate,lambda=0.25,tune=true,weight=5.0)
+%\end{lstlisting}
+%\end{snugshade*}}
 
 The clock-rate parameter is a stochastic node from a gamma distribution.
 {\tt \begin{snugshade*}
@@ -432,12 +430,12 @@ moves[mi++] = mvScale(clock_rate,lambda=0.5,tune=true,weight=5.0)
 \end{lstlisting}
 \end{snugshade*}}
 
-The absolute clock rate is the value on which the phylogenetic CTMC model depends. This is a deterministic node and equal to the product of the base rate and clock rate.
-{\tt \begin{snugshade*}
-\begin{lstlisting}
-abs_clock_rt := clock_rate * base_rate
-\end{lstlisting}
-\end{snugshade*}}
+%The absolute clock rate is the value on which the phylogenetic CTMC model depends. This is a deterministic node and equal to the product of the base rate and clock rate.
+%{\tt \begin{snugshade*}
+%\begin{lstlisting}
+%abs_clock_rt := clock_rate * base_rate
+%\end{lstlisting}
+%\end{snugshade*}}
 
 \textbf{\textit{The Sequence Model and Phylogenetic CTMC}}
 
@@ -522,12 +520,19 @@ mymodel = model(er)
 \textit{Run the Power-Posterior Sampler and Compute the Marginal Likelihoods} --- With a fully specified model, we can set up the \cl{powerPosterior()} analysis to create a file of `powers' and likelihoods from which we can estimate the marginal likelihood using stepping-stone or path sampling. 
 This method computes a vector of powers from a beta distribution, then executes an MCMC run for each power step while raising the likelihood to that power. In this implementation, the vector of powers starts with 1, sampling the likelihood close to the posterior and incrementally sampling closer and closer to the prior as the power decreases. 
 
-First, we create the variable containing the power posterior. This requires us to provide a model and vector of moves, as well as an output file name. The \cl{cats} argument sets the number of power steps.
+First, we initialize a monitor which will log the MCMC samples for each parameter at every step in the power posterior.
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+monitors[1] = mnModel(filename="output/GMC_posterior_pp.log",printgen=10, separator = TAB)
+\end{lstlisting}
+\end{snugshade*}}
+
+Next, we create the variable containing the power posterior. This requires us to provide a model and vector of moves, as well as an output file name. The \cl{cats} argument sets the number of power steps.
 Once we have specified the options for our sampler, we can then start the run after a burn-in/tuning period.
 
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-pow_p = powerPosterior(mymodel, moves, "output/GMC_bears_powp.out", cats=50) 
+pow_p = powerPosterior(mymodel, moves, monitors, "output/GMC_bears_powp.out", cats=50, sampleFreq=10) 
 pow_p.burnin(generations=5000,tuningInterval=200)
 pow_p.run(generations=1000)  
 \end{lstlisting}
@@ -572,11 +577,10 @@ Here, we will assume that the mean branch rate is exponentially distributed and 
 With these two parameters, we can get the location parameter of the lognormal by:
 $$\mu = \log(M) - \frac{\sigma^2}{2}.$$
 Thus, $\mu$ is a deterministic node, which is a function of $M$ and $\sigma$.
-
-In Figure \ref{m_UCLN:fig}, we can represent the vector of $N$ branch rates using the plate notation. Additionally, each branch rate is rescaled by the base rate. 
+In Figure \ref{m_UCLN:fig}, we can represent the vector of $N$ branch rates using the plate notation. %Additionally, each branch rate is rescaled by the base rate. 
 \begin{figure}[h!]
 \centering
-\fbox{\includegraphics[width=3in]{\ResourcePath figures/ucln_gm.eps}}
+\fbox{\includegraphics[width=2in]{\ResourcePath figures/ucln_gm.eps}}
 \caption{\small The graphical model representation of the UCLN model used in this exercise.}
 \label{m_UCLN:fig}
 \end{figure}
@@ -608,18 +612,18 @@ Enter the \Rev~code provided in this section in the new model file. Keep in mind
 \end{framed}}
 
 
-\textbf{\textit{The Base Clock Rate}}
+%\textbf{\textit{The Base Clock Rate}}
 
-As in the strict clock model above, we create a lognormally distributed stochastic node, representing the base rate.
-{\tt \begin{snugshade*}
-\begin{lstlisting}
-br_M <- 5.4E-3
-br_s <- 0.05
-br_mu <- ln(br_M) - ((br_s * br_s) * 0.5)
-base_rate ~ dnLnorm(br_mu, br_s)
-moves[mi++] = mvScale(base_rate,lambda=0.25,tune=true,weight=5.0)
-\end{lstlisting}
-\end{snugshade*}}
+%As in the strict clock model above, we create a lognormally distributed stochastic node, representing the base rate.
+%{\tt \begin{snugshade*}
+%\begin{lstlisting}
+%br_M <- 5.4E-3
+%br_s <- 0.05
+%br_mu <- ln(br_M) - ((br_s * br_s) * 0.5)
+%base_rate ~ dnLnorm(br_mu, br_s)
+%moves[mi++] = mvScale(base_rate,lambda=0.25,tune=true,weight=5.0)
+%\end{lstlisting}
+%\end{snugshade*}}
 
 \textbf{\textit{Independent Branch Rates}}
 
@@ -681,12 +685,12 @@ moves[mi++] = mvVectorSingleElementScale(branch_rates,lambda=30.0,tune=true,weig
 \end{lstlisting}
 \end{snugshade*}}
 
-We can combine the base rate and branch rates in a vector of deterministic nodes.
-{\tt \begin{snugshade*}
-\begin{lstlisting}
-branch_subrates := branch_rates * base_rate
-\end{lstlisting}
-\end{snugshade*}}
+%We can combine the base rate and branch rates in a vector of deterministic nodes.
+%{\tt \begin{snugshade*}
+%\begin{lstlisting}
+%branch_subrates := branch_rates * base_rate
+%\end{lstlisting}
+%\end{snugshade*}}
 
 The mean of the branch rates is a convenient deterministic node to monitor, particularly in the screen output when conducting MCMC.
 {\tt \begin{snugshade*}
@@ -739,168 +743,168 @@ Be sure to change the file names in all of the relevant places (e.g., your outpu
 Once you have completed this analysis, record the marginal likelihoods under the UCLN model in Table \ref{ssTable}.
 \end{framed}}
 
-\bigskip
-\subsubsection{The Autocorrelated Lognormal Rates Model}\label{ACLNModelSec}
-
-A model assuming that the rate at each node is lognormally distributed with a mean centered on its parent rate and a variance proportional to the time-duration since the parent node is an autocorrelated model \citep[ACLN;][]{thorne98,kishino01,thorne02}. 
-This corresponds to a geometric Brownian motion model.
-The ACLN model relies on the topology and branch-durations of the time-tree and is thus more complex to represent graphically.
-Thus, we use the convenience of the tree plate to show the conditional dependence structure among node rates and ages in Figure \ref{m_ACLN:fig}.
-
-\begin{figure}[h!]
-\centering
-\fbox{\includegraphics[width=6in]{\ResourcePath figures/acln_gm.eps}}
-\caption{\small The graphical model representation of the ACLN model used in this exercise.}
-\label{m_ACLN:fig}
-\end{figure}
-
-In this model, for any node (internal or tip) that is not the root, the rate at that node $r_i$ is drawn from a lognormal distribution with an expected value equal to the rate of the parent node $r_{\tilde{p}(i)}$ and a variance that is the product of the time difference $t_i$ and the variance parameter $\nu$. 
-Note that the graphical model represented in Figure \ref{m_ACLN:fig} is simplified to to make it easier to understand, thus some deterministic nodes are obfuscated.  
-Importantly, it is worth recognizing that the ACLN model describes the rate values at the \textit{nodes} of the tree and not the branches. 
-Because of this, additional deterministic nodes are used to compute the rate along branch $i$, $b_i$, which is the average of the two nodes subtending that branch: $b_i = (r_i + r_{\tilde{p}(i)}) / 2$.
-
-\textbf{\textit{Create the Rev File}}
-
-{\begin{framed}
-Open your text editor and create the autocorrelated-lognormal relaxed-clock model file called {\textcolor{red}{\cl{m\_ACLN\_bears.Rev}}} in the \cl{RevBayes\_scripts} directory.
-
-Enter the \Rev~code provided in this section in the new model file. Keep in mind that we are creating modular model files that can be sourced by different analysis files. Thus, the \Rev~code below will still depend on variable initialized in different files.
-\end{framed}}
-
-
-
-\textbf{\textit{The Base Clock Rate}}
-
-As in the strict clock and UCLN models above, we create a lognormally distributed stochastic node, representing the base rate.
-{\tt \begin{snugshade*}
-\begin{lstlisting}
-br_M <- 5.4E-3
-br_s <- 0.05
-br_mu <- ln(br_M) - ((br_s * br_s) * 0.5)
-base_rate ~ dnLnorm(br_mu, br_s)
-moves[mi++] = mvScale(base_rate,lambda=0.25,tune=true,weight=5.0)
-\end{lstlisting}
-\end{snugshade*}}
-
-
-\textbf{\textit{Autocorrelated Node Rates}}
-
-Begin by declaring the parameters of the ACLN model. The first is the parameter \cl{nu} which determines the degree of autocorrelation among node rates. If \cl{nu} is very large, then the variance of the lognormal distribution on node rates is also very large, resulting in low autocorrelation. 
-Conversely, if \cl{nu} is very small, then closely related nodes will have very similar rates.
-And if \cl{nu = 0} the model collapses to a strict clock, where all nodes have the same substitution rate.
-For this dataset we will assign an exponential prior to \cl{nu} with an expected value of 1.0 and use a scale-type move to propose changes.
-{\tt \begin{snugshade*}
-\begin{lstlisting}
-nu ~ dnExponential(1.0)
-moves[mi++] = mvScale(nu, lambda=0.5, tune=true, weight=4.0)
-\end{lstlisting}
-\end{snugshade*}}
-
-The next parameter of the ACLN model is the rate value at the root of the tree. 
-We will assume that this rate is drawn from a gamma distribution with an expected value of 0.5.
-{\tt \begin{snugshade*}
-\begin{lstlisting}
-root_rate ~ dnGamma(2.0, 4.0)
-moves[mi++] = mvScale(root_rate, lambda=0.5, tune=true, weight=4.0)
-\end{lstlisting}
-\end{snugshade*}}
-
-Now we can declare our stochastic node containing the node rates. 
-This is conditioned on the \cl{timetree} node we defined by our birth-death model, the variance parameter \cl{nu}, the \cl{root\_rate}, and the \cl{base\_rate}.
-{\tt \begin{snugshade*}
-\begin{lstlisting}
-node_rates ~ dnACLN(timetree, nu, root_rate, base_rate)
-\end{lstlisting}
-\end{snugshade*}}
-
-Because the ACLN model describes the distribution of rates at the nodes of the tree, we must compute the rate for each \textit{branch} as a vector of deterministic nodes. Where the rate for a given branch is the average of the rates a the nodes subtending that branch.
-For this, we can use an explicit function written at the \Rev~language level that takes the tree and all other parameters of the ACLN model and looks up the relevant parameters for a given index. 
-We can declare a vector of deterministic branch rates using a \cl{for} loop.
-{\tt \begin{snugshade*}
-\begin{lstlisting}
-n_branches <- 2 * n_taxa - 2
-for(i in 1:n_branches){
-   branch_rates[i] := aveRateOnBranch(node_rates, timetree, root_rate, base_rate, index=i)
-}
-\end{lstlisting}
-\end{snugshade*}}
-
-The mean of the branch rates is a convenient deterministic node to monitor, particularly in the screen output when conducting MCMC.
-{\tt \begin{snugshade*}
-\begin{lstlisting}
-mean_rt := mean(branch_rates) 
-\end{lstlisting}
-\end{snugshade*}}
-
-Defining moves for a model like the ACLN is a bit tricky. Because of strong parameter interactions among all of the node rates and ages, the model doesn't mix well with standard moves. 
-The autocorrelation may also make it difficult to efficiently sample the tree topology jointly under this model.
-Thus, it is worth putting some thought into the MCMC proposals. 
-In \RevBayes~there are two moves especially for the ACLN-distributed node rates.
-The first, \cl{mvScaleSingleACLNRates}, selects a single non-root node at random and proposes a new value for the rate using a scale-type move. 
-Because of the variance in rates across nodes, it is difficult to specify the move so that the tuning parameter is optimal for all nodes. 
-Therefore, it may be necessary to declare multiple instances of this move with different tuning values that are not changed during burn-in.
-Additionally, we can also add a move that is retuned so that the proposal size is optimal for the average node rate. 
-{\tt \begin{snugshade*}
-\begin{lstlisting}
-moves[mi++] = mvScaleSingleACLNRates(node_rates, 4.0, false, n_branches)
-moves[mi++] = mvScaleSingleACLNRates(node_rates, 2.0, false, n_branches)
-moves[mi++] = mvScaleSingleACLNRates(node_rates, 3.0, true, 3* n_branches)
-\end{lstlisting}
-\end{snugshade*}}
-
-The second move for ACLN node rates is a ``mixing step'' \citep{thorne98,kishino01,thorne02,rannala2003,yang06}.
-This move rescales the node ages and proportionally changes the node rates so that the absolute branch lengths remain unchanged and the likelihood is unaffected.
-This type of proposal can help your chain more efficiently sample parameter space without requiring costly recalculations of the model likelihood.
-{\tt \begin{snugshade*}
-\begin{lstlisting}
-moves[mi++] = mvACLNMixingStep(timetree, node_rates, root_rate, 0.5, false, n_branches)
-\end{lstlisting}
-\end{snugshade*}}
-
-\textbf{\textit{The Sequence Model and Phylogenetic CTMC}}
-
-Now, specify the stationary frequencies and exchangeability rates of the GTR matrix.
-{\tt \begin{snugshade*}
-\begin{lstlisting}
-sf ~ dnDirichlet(v(1,1,1,1))
-er ~ dnDirichlet(v(1,1,1,1,1,1))
-Q := fnGTR(er,sf)
-moves[mi++] = mvSimplexElementScale(er, alpha=10.0, tune=true, weight=3.0)
-moves[mi++] = mvSimplexElementScale(sf, alpha=10.0, tune=true, weight=3.0)
-\end{lstlisting}
-\end{snugshade*}}
-
-Now, we can put the whole model together in the phylogenetic CTMC and clamp that node with our sequence data.
-{\tt \begin{snugshade*}
-\begin{lstlisting}
-phySeq ~ dnPhyloCTMC(tree=timetree, Q=Q, branchRates=branch_subrates, nSites=n_sites, type="DNA")
-attach the observed sequence data
-phySeq.clamp(D)
-\end{lstlisting}
-\end{snugshade*}}
-
-{\begin{framed}
-Save and close the file called {\textcolor{red}{\cl{m\_ACLN\_bears.Rev}}} in the \cl{RevBayes\_scripts} directory.
-\end{framed}}
-
-
-
-\textbf{\textit{Estimate the Marginal Likelihood}}
-
-Just as we did for the strict clock and UCLN models, we can execute a power-posterior analysis to compute the marginal likelihood under the ACLN model. 
-
-{\begin{framed}
-Open your text editor and create the marginal-likelihood analysis file under the global molecular clock model. Call the file: {\textcolor{red}{\cl{mlnl\_ACLN\_bears.Rev}}} and save it in the \cl{RevBayes\_scripts} directory.
-\end{framed}}
-
-Refer to the section describing this process for the GMC and UCLN models above.
-Write your own \Rev~language script to estimate the marginal likelihood under the ACLN model. 
-Be sure to change the file names in all of the relevant places.
-Additionally, you may find that the power-posterior analysis runs too slow under this model, thus it may be advisable for you to decrease the number of cycles or tuning frequency in the burn-in period.
-
-{\begin{framed}
-Once you have completed this analysis, record the marginal likelihoods under the ACLN model in Table \ref{ssTable}.
-\end{framed}}
+%\bigskip
+%\subsubsection{The Autocorrelated Lognormal Rates Model}\label{ACLNModelSec}
+%
+%A model assuming that the rate at each node is lognormally distributed with a mean centered on its parent rate and a variance proportional to the time-duration since the parent node is an autocorrelated model \citep[ACLN;][]{thorne98,kishino01,thorne02}. 
+%This corresponds to a geometric Brownian motion model.
+%The ACLN model relies on the topology and branch-durations of the time-tree and is thus more complex to represent graphically.
+%Thus, we use the convenience of the tree plate to show the conditional dependence structure among node rates and ages in Figure \ref{m_ACLN:fig}.
+%
+%\begin{figure}[h!]
+%\centering
+%\fbox{\includegraphics[width=6in]{\ResourcePath figures/acln_gm.eps}}
+%\caption{\small The graphical model representation of the ACLN model used in this exercise.}
+%\label{m_ACLN:fig}
+%\end{figure}
+%
+%In this model, for any node (internal or tip) that is not the root, the rate at that node $r_i$ is drawn from a lognormal distribution with an expected value equal to the rate of the parent node $r_{\tilde{p}(i)}$ and a variance that is the product of the time difference $t_i$ and the variance parameter $\nu$. 
+%Note that the graphical model represented in Figure \ref{m_ACLN:fig} is simplified to to make it easier to understand, thus some deterministic nodes are obfuscated.  
+%Importantly, it is worth recognizing that the ACLN model describes the rate values at the \textit{nodes} of the tree and not the branches. 
+%Because of this, additional deterministic nodes are used to compute the rate along branch $i$, $b_i$, which is the average of the two nodes subtending that branch: $b_i = (r_i + r_{\tilde{p}(i)}) / 2$.
+%
+%\textbf{\textit{Create the Rev File}}
+%
+%{\begin{framed}
+%Open your text editor and create the autocorrelated-lognormal relaxed-clock model file called {\textcolor{red}{\cl{m\_ACLN\_bears.Rev}}} in the \cl{RevBayes\_scripts} directory.
+%
+%Enter the \Rev~code provided in this section in the new model file. Keep in mind that we are creating modular model files that can be sourced by different analysis files. Thus, the \Rev~code below will still depend on variable initialized in different files.
+%\end{framed}}
+%
+%
+%
+%\textbf{\textit{The Base Clock Rate}}
+%
+%As in the strict clock and UCLN models above, we create a lognormally distributed stochastic node, representing the base rate.
+%{\tt \begin{snugshade*}
+%\begin{lstlisting}
+%br_M <- 5.4E-3
+%br_s <- 0.05
+%br_mu <- ln(br_M) - ((br_s * br_s) * 0.5)
+%base_rate ~ dnLnorm(br_mu, br_s)
+%moves[mi++] = mvScale(base_rate,lambda=0.25,tune=true,weight=5.0)
+%\end{lstlisting}
+%\end{snugshade*}}
+%
+%
+%\textbf{\textit{Autocorrelated Node Rates}}
+%
+%Begin by declaring the parameters of the ACLN model. The first is the parameter \cl{nu} which determines the degree of autocorrelation among node rates. If \cl{nu} is very large, then the variance of the lognormal distribution on node rates is also very large, resulting in low autocorrelation. 
+%Conversely, if \cl{nu} is very small, then closely related nodes will have very similar rates.
+%And if \cl{nu = 0} the model collapses to a strict clock, where all nodes have the same substitution rate.
+%For this dataset we will assign an exponential prior to \cl{nu} with an expected value of 1.0 and use a scale-type move to propose changes.
+%{\tt \begin{snugshade*}
+%\begin{lstlisting}
+%nu ~ dnExponential(1.0)
+%moves[mi++] = mvScale(nu, lambda=0.5, tune=true, weight=4.0)
+%\end{lstlisting}
+%\end{snugshade*}}
+%
+%The next parameter of the ACLN model is the rate value at the root of the tree. 
+%We will assume that this rate is drawn from a gamma distribution with an expected value of 0.5.
+%{\tt \begin{snugshade*}
+%\begin{lstlisting}
+%root_rate ~ dnGamma(2.0, 4.0)
+%moves[mi++] = mvScale(root_rate, lambda=0.5, tune=true, weight=4.0)
+%\end{lstlisting}
+%\end{snugshade*}}
+%
+%Now we can declare our stochastic node containing the node rates. 
+%This is conditioned on the \cl{timetree} node we defined by our birth-death model, the variance parameter \cl{nu}, the \cl{root\_rate}, and the \cl{base\_rate}.
+%{\tt \begin{snugshade*}
+%\begin{lstlisting}
+%node_rates ~ dnACLN(timetree, nu, root_rate, base_rate)
+%\end{lstlisting}
+%\end{snugshade*}}
+%
+%Because the ACLN model describes the distribution of rates at the nodes of the tree, we must compute the rate for each \textit{branch} as a vector of deterministic nodes. Where the rate for a given branch is the average of the rates a the nodes subtending that branch.
+%For this, we can use an explicit function written at the \Rev~language level that takes the tree and all other parameters of the ACLN model and looks up the relevant parameters for a given index. 
+%We can declare a vector of deterministic branch rates using a \cl{for} loop.
+%{\tt \begin{snugshade*}
+%\begin{lstlisting}
+%n_branches <- 2 * n_taxa - 2
+%for(i in 1:n_branches){
+%   branch_rates[i] := aveRateOnBranch(node_rates, timetree, root_rate, base_rate, index=i)
+%}
+%\end{lstlisting}
+%\end{snugshade*}}
+%
+%The mean of the branch rates is a convenient deterministic node to monitor, particularly in the screen output when conducting MCMC.
+%{\tt \begin{snugshade*}
+%\begin{lstlisting}
+%mean_rt := mean(branch_rates) 
+%\end{lstlisting}
+%\end{snugshade*}}
+%
+%Defining moves for a model like the ACLN is a bit tricky. Because of strong parameter interactions among all of the node rates and ages, the model doesn't mix well with standard moves. 
+%The autocorrelation may also make it difficult to efficiently sample the tree topology jointly under this model.
+%Thus, it is worth putting some thought into the MCMC proposals. 
+%In \RevBayes~there are two moves especially for the ACLN-distributed node rates.
+%The first, \cl{mvScaleSingleACLNRates}, selects a single non-root node at random and proposes a new value for the rate using a scale-type move. 
+%Because of the variance in rates across nodes, it is difficult to specify the move so that the tuning parameter is optimal for all nodes. 
+%Therefore, it may be necessary to declare multiple instances of this move with different tuning values that are not changed during burn-in.
+%Additionally, we can also add a move that is retuned so that the proposal size is optimal for the average node rate. 
+%{\tt \begin{snugshade*}
+%\begin{lstlisting}
+%moves[mi++] = mvScaleSingleACLNRates(node_rates, 4.0, false, n_branches)
+%moves[mi++] = mvScaleSingleACLNRates(node_rates, 2.0, false, n_branches)
+%moves[mi++] = mvScaleSingleACLNRates(node_rates, 3.0, true, 3* n_branches)
+%\end{lstlisting}
+%\end{snugshade*}}
+%
+%The second move for ACLN node rates is a ``mixing step'' \citep{thorne98,kishino01,thorne02,rannala2003,yang06}.
+%This move rescales the node ages and proportionally changes the node rates so that the absolute branch lengths remain unchanged and the likelihood is unaffected.
+%This type of proposal can help your chain more efficiently sample parameter space without requiring costly recalculations of the model likelihood.
+%{\tt \begin{snugshade*}
+%\begin{lstlisting}
+%moves[mi++] = mvACLNMixingStep(timetree, node_rates, root_rate, 0.5, false, n_branches)
+%\end{lstlisting}
+%\end{snugshade*}}
+%
+%\textbf{\textit{The Sequence Model and Phylogenetic CTMC}}
+%
+%Now, specify the stationary frequencies and exchangeability rates of the GTR matrix.
+%{\tt \begin{snugshade*}
+%\begin{lstlisting}
+%sf ~ dnDirichlet(v(1,1,1,1))
+%er ~ dnDirichlet(v(1,1,1,1,1,1))
+%Q := fnGTR(er,sf)
+%moves[mi++] = mvSimplexElementScale(er, alpha=10.0, tune=true, weight=3.0)
+%moves[mi++] = mvSimplexElementScale(sf, alpha=10.0, tune=true, weight=3.0)
+%\end{lstlisting}
+%\end{snugshade*}}
+%
+%Now, we can put the whole model together in the phylogenetic CTMC and clamp that node with our sequence data.
+%{\tt \begin{snugshade*}
+%\begin{lstlisting}
+%phySeq ~ dnPhyloCTMC(tree=timetree, Q=Q, branchRates=branch_subrates, nSites=n_sites, type="DNA")
+%attach the observed sequence data
+%phySeq.clamp(D)
+%\end{lstlisting}
+%\end{snugshade*}}
+%
+%{\begin{framed}
+%Save and close the file called {\textcolor{red}{\cl{m\_ACLN\_bears.Rev}}} in the \cl{RevBayes\_scripts} directory.
+%\end{framed}}
+%
+%
+%
+%\textbf{\textit{Estimate the Marginal Likelihood}}
+%
+%Just as we did for the strict clock and UCLN models, we can execute a power-posterior analysis to compute the marginal likelihood under the ACLN model. 
+%
+%{\begin{framed}
+%Open your text editor and create the marginal-likelihood analysis file under the global molecular clock model. Call the file: {\textcolor{red}{\cl{mlnl\_ACLN\_bears.Rev}}} and save it in the \cl{RevBayes\_scripts} directory.
+%\end{framed}}
+%
+%Refer to the section describing this process for the GMC and UCLN models above.
+%Write your own \Rev~language script to estimate the marginal likelihood under the ACLN model. 
+%Be sure to change the file names in all of the relevant places.
+%Additionally, you may find that the power-posterior analysis runs too slow under this model, thus it may be advisable for you to decrease the number of cycles or tuning frequency in the burn-in period.
+%
+%{\begin{framed}
+%Once you have completed this analysis, record the marginal likelihoods under the ACLN model in Table \ref{ssTable}.
+%\end{framed}}
 % -2775.66
 
 \FloatBarrier
@@ -922,8 +926,8 @@ Use Table \ref{ssTable} to summarize the marginal log-likelihoods estimated usin
 \ref{globalClockSec} Global molecular clock ($M_0$) & \hspace{15mm} & \TextField[name=m1,backgroundcolor={.85 .85 .85},color={1 0 0},height=4ex]{}  & \hspace{15mm} & \TextField[name=ml2,backgroundcolor={.85 .85 .85},color={0 0 1},height=4ex]{} \\
 \hline
 \ref{UCLNModelSec} Uncorrelated lognormal ($M_1$) & \hspace{3mm} &\TextField[name=ml3,backgroundcolor={.85 .85 .85},color={1 0 0},height=4ex]{}   & \hspace{3mm} & \TextField[name=ml4,backgroundcolor={.85 .85 .85},color={0 0 1},height=4ex]{} \\
-\hline
-\ref{ACLNModelSec} Autocorrelated lognormal ($M_2$) & \hspace{3mm} &\TextField[name=ml3,backgroundcolor={.85 .85 .85},color={1 0 0},height=4ex]{}   & \hspace{3mm} & \TextField[name=ml4,backgroundcolor={.85 .85 .85},color={0 0 1},height=4ex]{} \\
+%\hline
+%\ref{ACLNModelSec} Autocorrelated lognormal ($M_2$) & \hspace{3mm} &\TextField[name=ml3,backgroundcolor={.85 .85 .85},color={1 0 0},height=4ex]{}   & \hspace{3mm} & \TextField[name=ml4,backgroundcolor={.85 .85 .85},color={0 0 1},height=4ex]{} \\
 \hline
 %\ref{mlnl_ACLN} Autocorrelated lognormal  ($M_2$) & \hspace{3mm} & \TextField[name=ml5,backgroundcolor={.85 .85 .85},color={1 0 0},height=4ex]{} & \hspace{3mm} & \TextField[name=ml6,backgroundcolor={.85 .85 .85},color={0 0 1},height=4ex]{} \\
 {\footnotesize{$^*$you can edit this table}}\\
@@ -967,8 +971,8 @@ Enter your answers in Table \ref{bfTable} using the stepping-stone and the path-
 \multicolumn{1}{l}{\textbf{Model comparison}} & \multicolumn{1}{r}{\hspace{3mm}} & \multicolumn{1}{c}{\textit{Stepping-stone}} & \multicolumn{1}{r}{\hspace{3mm}} & \multicolumn{1}{c}{\textit{Path sampling}} \\ 
 \hline
 $M_0,M_1$ & \hspace{15mm} & \TextField[name=ml7,backgroundcolor={.85 .85 .85},color={1 0 0},height=4ex]{}  & \hspace{15mm} & \TextField[name=ml8,backgroundcolor={.85 .85 .85},color={0 0 1},height=4ex]{} \\
-$M_0,M_2$ & \hspace{15mm} & \TextField[name=ml7,backgroundcolor={.85 .85 .85},color={1 0 0},height=4ex]{}  & \hspace{15mm} & \TextField[name=ml8,backgroundcolor={.85 .85 .85},color={0 0 1},height=4ex]{} \\
-$M_1,M_2$ & \hspace{15mm} & \TextField[name=ml7,backgroundcolor={.85 .85 .85},color={1 0 0},height=4ex]{}  & \hspace{15mm} & \TextField[name=ml8,backgroundcolor={.85 .85 .85},color={0 0 1},height=4ex]{} \\
+%$M_0,M_2$ & \hspace{15mm} & \TextField[name=ml7,backgroundcolor={.85 .85 .85},color={1 0 0},height=4ex]{}  & \hspace{15mm} & \TextField[name=ml8,backgroundcolor={.85 .85 .85},color={0 0 1},height=4ex]{} \\
+%$M_1,M_2$ & \hspace{15mm} & \TextField[name=ml7,backgroundcolor={.85 .85 .85},color={1 0 0},height=4ex]{}  & \hspace{15mm} & \TextField[name=ml8,backgroundcolor={.85 .85 .85},color={0 0 1},height=4ex]{} \\
 \hline
 Supported model? & \hspace{3mm} &  \TextField[name=ml13,backgroundcolor={1 .85 .85},color={1 0 0},height=4ex]{} & \hspace{3mm} & \TextField[name=ml14,backgroundcolor={.85 .85 1},color={0 0 1},height=4ex]{} \\
 \hline
@@ -1057,10 +1061,10 @@ monitors[2] = mnFile(filename="output/TimeTree_bears_mcmc.trees", printgen=10, t
 
 
 Finally, we will create a monitor in charge of writing information to the screen: \cl{mnScreen}.
-We will report the root age and base rate to the screen. If there is anything else you'd like to see in your screen output (e.g., the mean rate of the UCLN or ACLN model), feel free to add them to the list of parameters give to this model.
+We will report the root age to the screen. If there is anything else you'd like to see in your screen output (e.g., the mean rate of the UCLN or ACLN model), feel free to add them to the list of parameters give to this model.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-monitors[3] = mnScreen(printgen=10, root_time, base_rate)
+monitors[3] = mnScreen(printgen=10, root_time)
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -1119,13 +1123,12 @@ Then, execute the MCMC analysis using: \colorbox{shadecolor}{\cl{source("RevBaye
 
 
 
-Questions about this tutorial can be directed to: \\\vspace{-10mm}
-\begin{itemize}
-\item Tracy Heath (email: \href{mailto:tracyh@berkeley.edu}{tracyh@berkeley.edu}) \\\vspace{-8mm}
-\item Tanja Stadler (email: \href{mailto:tanja.stadler@bsse.ethz.ch}{tanja.stadler@bsse.ethz.ch}) \\\vspace{-8mm} 
-\item Sebastian H\"{o}hna (email: \href{mailto:sebastian.hoehna@gmail.com}{sebastian.hoehna@gmail.com})
-\end{itemize}
-
+%Questions about this tutorial can be directed to: \\\vspace{-10mm}
+%\begin{itemize}
+%\item Tracy Heath (email: \href{mailto:tracyh@berkeley.edu}{tracyh@berkeley.edu}) \\\vspace{-8mm}
+%\item Sebastian H\"{o}hna (email: \href{mailto:sebastian.hoehna@gmail.com}{sebastian.hoehna@gmail.com})
+%\end{itemize}
+%
 
 \bibliographystyle{sysbio}
-\bibliography{\ResourcePath refs}
+\bibliography{\ResourcePath master_refs}

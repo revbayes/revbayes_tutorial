@@ -6,14 +6,6 @@
 ############ UCLN model on branch rates ###########
 ###################################################
 
-### the variable for the base rate
-### with a lognormal prior
-### and a scale move
-br_M <- 5.4E-3
-br_s <- 0.05
-br_mu <- ln(br_M) - ((br_s * br_s) * 0.5)
-base_rate ~ dnLnorm(br_mu, br_s)
-moves[mi++] = mvScale(base_rate,lambda=0.25,tune=true,weight=5.0)
 
 ### get the number of branches in the tree
 n_branches <- 2 * n_taxa - 2
@@ -42,9 +34,6 @@ for(i in 1:n_branches){
 moves[mi++] = mvVectorScale(branch_rates,lambda=1.0,tune=true,weight=2.0) 
 moves[mi++] = mvVectorSingleElementScale(branch_rates,lambda=30.0,tune=true,weight=1.0) 
 
-### the branch-rates used in the phylogenetic CTMC are a function of the DPP branch rates and the base rate
-branch_subrates := branch_rates * base_rate
-
 ### a helpful parameter to monitor
 mean_rt := mean(branch_rates) 
 
@@ -52,7 +41,7 @@ mean_rt := mean(branch_rates)
 source("RevBayes_scripts/m_GTR.Rev")
 
 ### the full phylogenetic CTMC
-phySeq ~ dnPhyloCTMC(tree=timetree, Q=Q, branchRates=branch_subrates, nSites=n_sites, type="DNA")
+phySeq ~ dnPhyloCTMC(tree=timetree, Q=Q, branchRates=branch_rates, nSites=n_sites, type="DNA")
 
 ### attach the observed sequence data
 phySeq.clamp(D)
