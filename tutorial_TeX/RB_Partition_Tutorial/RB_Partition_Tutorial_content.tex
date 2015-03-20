@@ -84,11 +84,8 @@ The resulting marginal-likelihood estimates are then evaluated using Bayes facto
 \label{pipeline}
 \end{figure}
  
-
-
-
 \bigskip
-\section{An Unpartitioned Analysis}\label{secUnif} 
+\section{Two-gene analysis}\label{secUnif} 
 
 The first section of this exercise involves 
 (1) setting up a uniform GTR+$\Gamma$ model for an alignment comprising two genes, 
@@ -112,8 +109,8 @@ If everything loaded properly, then you should see the program begin running the
 First load in the sequences using the \cl{readDiscreteCharacterData()} function. 
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-readDiscreteCharacterData("data/conifer_atpB.nex")
-readDiscreteCharacterData("data/conifer_rbcL.nex")
+data_16s <- readDiscreteCharacterData("data/primates_16s_rrna.nex")
+data_cytb <- readDiscreteCharacterData("data/primates_cytb.nex")
 \end{lstlisting}
 \end{snugshade*}}
 Executing these lines initializes each data matrix as their respective \Rev~variables. 
@@ -122,7 +119,7 @@ Concatenate the two data matrices using the \cl{concatenate()} function. This re
 
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-data <- concatenate(data_atpB, data_rbcL)
+data <- concatenate(data_16s, data_cytb)
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -131,12 +128,16 @@ To report the current value of any variable, simply type the variable name and p
 
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-data
-|*   Origination:                   conifer_atpB.nex
-|*   Number of taxa:                9
-|*   Number of characters:          2659
-|*   Number of included characters: 2659
-|*   Datatype:                      DNA
+
+   DNA character matrix with 23 taxa and 2782 characters
+   =====================================================
+   Origination:                   primates_16s_rrna.nex
+   Number of taxa:                23
+   Number of included taxa:       23
+   Number of characters:          2782
+   Number of included characters: 2782
+   Datatype:                      DNA
+
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -146,8 +147,8 @@ These include the number of species (\cl{n\_species}), the tip labels (\cl{names
 Each of these variables will be necessary for setting up different parts of our model.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
+names <- data.names()
 n_species <- data.ntaxa()
-names <- data.names()	
 n_branches <- 2 * n_species - 3 
 \end{lstlisting}
 \end{snugshade*}}
@@ -246,7 +247,7 @@ Initialize the first element of our vector of moves by setting the proposal on t
 
 {\tt\small \begin{snugshade*}
 \begin{lstlisting}
-moves[1] = mvSimplexElementScale(er, alpha=10, tune=true, weight=3) 
+moves[++mi] = mvSimplexElementScale(er, alpha=10, tune=true, weight=3) 
 \end{lstlisting}
 \end{snugshade*}}
 
