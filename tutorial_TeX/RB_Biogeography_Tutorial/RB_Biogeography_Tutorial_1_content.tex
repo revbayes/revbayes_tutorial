@@ -213,7 +213,16 @@ for (i in 1:n_areas) {
 \end{lstlisting}
 \end{snugshade}
 
-Next, we'll populate the non-zero rate matrix elements.
+Although the DEC rate matrix can be easily constructed by typing
+
+\begin{snugshade}
+\begin{lstlisting}
+q := fnDECRateMatrix(d,e)
+\end{lstlisting}
+\end{snugshade}
+
+manually encoding the structure of the DEC rate matrix illuminates the relationship between dispersal rates, extinction rates, area gain rates, and area loss rates.
+To start, we'll populate the non-zero rate matrix elements.
 Rates are indexed by the natural number value of the range (plus one), e.g. the range spanning Eurasia and Africa is coded as 011, which is state 4.
 
 First assign the extinction (range loss) rates
@@ -265,8 +274,7 @@ k = 1
 for (i in 1:n_states) {
     for (j in 1:n_states) {
         if (i != j) {
-            er_nat[k] := r[i][j]
-            k += 1
+            er_nat[k++] := r[i][j]
         }
     }
 }
@@ -284,17 +292,7 @@ q := fnFreeK(er, bf)
 \end{snugshade}
 
 This yields the desired three-area DEC rate matrix modeling anagenic character change.
-Exposing the structure of the DEC rate matrix is useful when learning about the model, which accomplishes the same as {\tt fnDECRates} when provided {\tt d} and {\tt e}. (You do not need to type this.)
 
-\begin{snugshade}
-\begin{lstlisting}
-# for example
-er_nat := fnDECRates(dispersalRates=d, extinctionRates=e)
-er := simplex(er_nat)
-bf <- simplex(rep(1,n_states))
-q := fnFreeK(er,bf)
-\end{lstlisting}
-\end{snugshade}
 
 In contrast, cladogenic event probabilites are given by a transition probability matrix and do not require a rate matrix.
 First, we will create a vector of prior weights on cladogenesis events. Here, we assign a flat prior to all cladogenic events

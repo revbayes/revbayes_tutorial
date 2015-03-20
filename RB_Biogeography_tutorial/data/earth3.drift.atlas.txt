@@ -16,14 +16,14 @@
                 {
                     "latitude": 10.0, 
                     "longitude": 20.0,
-					"dispersalValues": [ 0.1, 0.0, 0.1 ],
+					"dispersalValues": [ 0.1, 0.0, 0.5 ],
 					"extinctionValues": [ 1.0 ],
                     "name": "Africa"
                 }, 
                 {
                     "latitude": 45.0, 
                     "longitude": 85.0, 
-					"dispersalValues": [ 0.1, 0.1, 0.0 ],
+					"dispersalValues": [ 0.1, 0.5, 0.0 ],
 					"extinctionValues": [ 1.0 ],
                     "name": "Eurasia"
                 }

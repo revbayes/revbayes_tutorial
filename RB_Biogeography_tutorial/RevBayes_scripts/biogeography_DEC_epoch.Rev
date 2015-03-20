@@ -30,10 +30,6 @@ n_epochs = atlas.nEpochs()
 clock_bg ~ dnExp(10)
 mv[mvi++] = mvScale(clock_bg, weight=5)
 
-# set probs of range of size (0,1,2,3)
-# i.e. ranges may not be size 0 or 3
-rangeSize <- simplex(0,1,1,0)
-
 # set up dispersal per epoch
 d_prior <- atlas.getValues("dispersal")
 for (t in 1:n_epochs) {
@@ -64,7 +60,7 @@ for (t in 1:n_epochs) {
 for (t in 1:n_epochs) {
 	rates[t] ~ dnGamma(2,2)
 	mv[mvi++] = mvScale(rates[t], weight=2)	
-	q[t] := fnDECRateMatrix(d[t], e[t], rangeSize)
+	q[t] := fnDECRateMatrix(d[t], e[t], rangeSize=simplex(0,1,1,0))
 }
 
 # make epoch rate generator over all epochs
@@ -84,7 +80,7 @@ allopatry              := clado_type[3]
 clado_prob := fnCladoProbs(clado_type, n_areas, 2)
 
 # root frequencies
-rf := fnDECRoot( rep(1,n_states), rangeSize )
+rf := fnDECRoot( rep(1,n_states), rangeSize=simplex(0,1,0,0) )
 
 # build ctmc
 m ~ dnPhyloCTMCClado( tree=psi, Q=q_epoch, rootFrequencies=rf, cladoProbs=clado_prob, branchRates=clock_bg, nSites=1, type="NaturalNumbers" )
@@ -106,6 +102,5 @@ ch.run(1000)
 
 # 
 state_fn = fp + "output/"+out_str+".states.txt"
-
 phw_fn = fp + "output/"+out_str+".phw.txt"
 convertToPhylowood(treefile=tree_fn, geofile=atlas_fn, statefile=state_fn, outfile=phw_fn, burnin=0., chartype="NaturalNumbers", bgtype="Range")
