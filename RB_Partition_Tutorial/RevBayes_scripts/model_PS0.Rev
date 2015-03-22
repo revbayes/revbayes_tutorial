@@ -58,7 +58,9 @@ moves[mvi++] = mvScale(pinvar, lambda=0.1, tune=false, weight=2.0)
 moves[mvi++] = mvSlide(pinvar, delta=10.0, tune=false, weight=2.0)
 
 
-#### Specify a birth-death process prior on the tree ####
+##############
+# Tree model #
+##############
 
 speciation ~ dnExponential(10.)
 extinction ~ dnExponential(10.)
@@ -76,6 +78,7 @@ moves[mvi++] = mvNNI(psi, weight=10.0)
 moves[mvi++] = mvFNPR(psi, weight=5.0)
 moves[mvi++] = mvNodeTimeSlideUniform(psi, weight=10.0)
 
+
 #### Specify a global molecular clock ####
 clock ~ dnExponential(10.)
 moves[mvi++] = mvScale(clock, lambda=1, tune=true, weight=3.0)
@@ -86,7 +89,12 @@ phyloSeq ~ dnPhyloCTMC(tree=psi, Q=Q, branchRates=clock, siteRates=norm_gamma_ra
 # attach the data
 phyloSeq.clamp(data)
 
-mymodel = model(pi)
+
+############
+# Analysis #
+############
+
+mymodel = model(psi)
 
 # add monitors
 monitors[mni++] = mnScreen(er, pi, alpha, norm_gamma_rates, pinvar, speciation, extinction, clock, printgen=100)

@@ -1,0 +1,152 @@
+\section{Partitioning by Codon Position and by Gene}\label{secExtremeP}
+
+Because of the genetic code, we often find that different positions within a codon (first, second, and third) evolve at different rates.
+Thus, using our knowledge of biological data, we can devise a third approach that further partitions our alignment. 
+For this exercise, we will partition sites within the rbcL gene by codon position.
+
+\textbf{\textit{Clear Workspace and Reload Data}}
+
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+clear()
+data[1] <- readDiscreteCharacterData("data/conifer_atpB.nex")[1]
+data_rbcL <- readDiscreteCharacterData("data/conifer_rbcL.nex")[1]
+\end{lstlisting}
+\end{snugshade*}}
+
+\textbf{\textit{Specify Data Matrices for Each Codon Position}}
+
+We must now add our codon-partitions to the \cl{data} vector that already contains the matrix for atpB in the first index. 
+Thus, the second index will be the rbcL codon position 1. 
+We can create this by calling the helper function \cl{setCodonPartition()}, which is a member function of the data matrix. 
+We are assuming that the gene is \textit{in frame}, meaning the first column in your alignment is a first codon position. 
+The \cl{setCodonPartition()} function takes a single argument, the position of the alignment you wish to extract. 
+It then returns every third column, starting at the index provided as an argument.
+
+Before we can use the use the \cl{setCodonPartition()} function, we must first populate the position in the \cl{data} matrix with some sequences. 
+Then we call the member function of \cl{data[2]} to exclude all but the 1$^{st}$ positions.
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+data[2] <- data_rbcL
+data[2].setCodonPartition(1)
+\end{lstlisting}
+\end{snugshade*}}
+
+Assign the 2$^{nd}$ codon positions to \cl{data[3]}:
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+data[3] <- data_rbcL
+data[3].setCodonPartition(2)
+\end{lstlisting}
+\end{snugshade*}}
+
+Assign the 3$^{rd}$ codon positions to \cl{data[4]}:
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+data[4] <- data_rbcL
+data[4].setCodonPartition(3)
+\end{lstlisting}
+\end{snugshade*}}
+
+
+
+Now we can query the vector of data matrices to get the size, which is 4:
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+n_parts <- data.size()
+\end{lstlisting}
+\end{snugshade*}}
+
+And set the special variables from the data:
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+n_species <- data[1].ntaxa()
+names <- data[1].names()
+n_branches <- 2 * n_species - 3
+\end{lstlisting}
+\end{snugshade*}}
+
+
+
+
+\textbf{\textit{Specify the Parameters by Looping Over Partitions}}
+
+Setting up the GTR+$\Gamma$ model is just like in the two-gene analysis, except this time \cl{n\_parts} is equal to 4, so now our vectors of stochastic nodes should all contain nodes for each of the partitions.
+{\tt \small \begin{snugshade*}
+\begin{lstlisting}
+mi <- 0 # an iterator for the move vector
+for (i in 1:n_parts){
+  ## index i=1 : atpB gene
+  ## index i=2 : rbcL gene position 1
+  ## index i=3 : rbcL gene position 2
+  ## index i=4 : rbcL gene position 3
+
+  # Exchangeability rates #
+  er_prior[i] <- v(1,1,1,1,1,1)
+  er[i] ~ dnDirichlet(er_prior[i])
+  moves[mi++] <- mvSimplexElementScale(er[i], alpha=10, tune=true, weight=3) 
+
+  # Stationary base frequencies #
+  sf_prior[i] <- v(1,1,1,1)
+  sf[i] ~ dnDirichlet(sf_prior[i])
+  moves[mi++] <- mvSimplexElementScale(sf[i], alpha=10, tune=true, weight=2) 
+
+  # Instantaneous rate matrix (deterministic) #
+  Q[i] := fnGTR(er[i],sf[i]) 
+
+  # Gamma-dist site rates #
+  shape_prior[i] <- 0.05 
+  shape[i] ~ dnExponential( shape_prior[i] )
+  gamma_rates[i] := fnDiscretizeGamma( shape[i], shape[i], 4 )
+  moves[mi++] <- mvScale(shape[i], lambda=0.8, tune=true, weight=3.0)
+}
+\end{lstlisting}
+\end{snugshade*}}
+
+
+\textbf{\textit{Uniform Topology and Branch Lengths}}
+
+We are still assuming that the genes share a single topology and branch lengths.
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+# Unrooted tree topology distribution #
+topology ~ dnUniformTopology(n_species, names)
+
+# Tree topology moves #
+moves[mi++] <- mvNNI(topology, weight=10.0)
+moves[mi++] <- mvSPR(topology, weight=5.0)
+
+#### Specify a prior and moves on the branch lengths #### 
+# Create a vector of branch-length variables using a for loop #
+for (i in 1:n_branches) {
+  br_lens[i] ~ dnExponential(10.0)
+  moves[mi++] <- mvScale(br_lens[i],lambda=1,tune=true,weight=1) 
+}
+
+# A deterministic node for the tree length #
+tree_length := sum(br_lens)
+
+# Build the tree by combining the topology with br_lens #
+phylogeny := treeAssembly(topology, br_lens)
+\end{lstlisting}
+\end{snugshade*}}
+
+\textbf{\textit{Putting it All Together}}
+
+We must specify a phylogenetic CTMC node for each of our partition models.
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+for (i in 1:n_parts){
+  phyloSeq[i] ~ dnPhyloCTMC(tree=phylogeny, Q=Q[i], siteRates=gamma_rates[i], nSites=data[i].nchar(1), type="DNA")
+  phyloSeq[i].clamp(data[i])
+}
+\end{lstlisting}
+\end{snugshade*}}
+
+
+And then wrap up the DAG using the \cl{model()} function:
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+RevBayes > mymodel <- model(topology)
+\end{lstlisting}
+\end{snugshade*}}

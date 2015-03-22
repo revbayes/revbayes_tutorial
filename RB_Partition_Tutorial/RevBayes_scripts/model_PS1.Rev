@@ -1,0 +1,117 @@
+################################################################################
+#
+# RevBayes Exercise: Bayesian inference using MCMC and output analysis
+# 
+# This file: Specifies the full model parameters and moves for a 3-gene
+#        partition model
+#
+# authors: Tracy A. Heath, Michael Landis, Sebastian Hoehna and Brian R. Moore
+#
+################################################################################
+
+
+#######################
+# Reading in the Data #
+#######################
+
+# read in the character data
+filenames <- v("data/primates_16s_rrna.nex", "data/primates_cox2.nex", "data/primates_cytb.nex")
+
+n_parts <- filenames.size()
+for (i in 1:n_parts) {
+  data[i] = readDiscreteCharacterData(filenames[i])
+  n_sites[i] <- data[i].nchar()
+}
+
+# Get some useful variables from the data. We need these later on.
+n_species <- data[1].ntaxa()
+names <- data[1].names()
+n_branches <- 2 * n_species - 3
+
+mvi <- 1
+mni <- 1
+
+#################################
+# Subsitution Model #
+#   Loop over each partition   #
+#################################
+  
+for (i in 1:n_parts){
+
+  er_prior[i] <- v(1,1,1,1,1,1)
+  er[i] ~ dnDirichlet(er_prior[i])
+  moves[mvi++] = mvSimplexElementScale(er[i], alpha=10, tune=true, weight=3) 
+
+  pi_prior[i] <- v(1,1,1,1)
+  pi[i] ~ dnDirichlet(pi_prior[i])
+  moves[mvi++] = mvSimplexElementScale(pi[i], alpha=10, tune=true, weight=2) 
+
+  Q[i] := fnGTR(er[i],pi[i]) 
+
+  alpha_prior_min[i] <- 0.1
+  alpha_prior_max[i] <- 50.0
+  alpha[i] ~ dnUnif( alpha_prior_min[i], alpha_prior_max[i] )
+  norm_gamma_rates[i] := fnDiscretizeGamma( alpha[i], alpha[i], 4, false )
+  moves[mvi++] = mvScale(alpha[i], lambda=0.8, tune=true, weight=3.0)
+
+  # the probability of a site being invariable
+  pinvar[i] ~ dnBeta(1,1)
+  # add moves for the probability if a site being invariable
+  moves[mvi++] = mvScale(pinvar[i], lambda=0.1, tune=true, weight=2.0)
+  moves[mvi++] = mvSlide(pinvar[i], delta=0.1, tune=true, weight=2.0)
+
+  # specify a rate multiplier for each partition
+  part_rate_mult[i] ~ dnExponential( 1.0 )
+
+  moves[mvi++] = mvScale(part_rate_mult[i], lambda=1.0, tune=true, weight=2.0)
+
+}
+
+##############
+# Tree model #
+##############
+
+speciation ~ dnExponential(10.)
+extinction ~ dnExponential(10.)
+
+# rescaling mv on speciation and extinction rates
+moves[mvi++] = mvScale(speciation, lambda=1, tune=true, weight=3.0)
+moves[mvi++] = mvScale(extinction, lambda=1, tune=true, weight=3.0)
+
+sampling_fraction <- 23. / 270 # 23 out of the ~ 270 primate species
+
+psi ~ dnBDP(lambda=speciation, mu=extinction, rho=sampling_fraction, rootAge=75, names=names)
+
+# moves on the tree
+moves[mvi++] = mvNNI(psi, weight=10.0)
+moves[mvi++] = mvFNPR(psi, weight=5.0)
+moves[mvi++] = mvNodeTimeSlideUniform(psi, weight=10.0)
+
+
+###################
+# PhyloCTMC Model #
+###################
+
+for (i in 1:n_parts) {
+  phyloSeq[i] ~ dnPhyloCTMC(tree=psi, Q=Q[i], branchRates=part_rate_mult[i], siteRates=norm_gamma_rates[i], pInv=pinvar[i], type="DNA")
+  phyloSeq[i].clamp(data[i])
+}
+
+
+############
+# Analysis #
+############
+
+mymodel = model(psi)
+
+# add monitors
+monitors[mni++] = mnScreen(er, pi, alpha, norm_gamma_rates, pinvar, speciation, extinction, part_rate_mult, printgen=100)
+monitors[mni++] = mnFile(psi, filename="output/PS1.tre", printgen=100)
+monitors[mni++] = mnModel(filename="output/PS1.params.txt",printgen=10)
+
+# run the analysis
+mymcmc = mcmc(mymodel, moves, monitors)
+mymcmc.burnin(10000,100)
+mymcmc.run(10000)
+
+

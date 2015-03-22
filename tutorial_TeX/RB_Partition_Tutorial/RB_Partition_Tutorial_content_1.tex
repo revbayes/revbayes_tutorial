@@ -1,105 +1,18 @@
-\bigskip
-\begin{center}
-\textbf{\Large \color{red}This tutorial is currently under construction/revision.}
-\end{center}
-\bigskip
-
-\section{Overview}
-
-
-This tutorial demonstrates how to accommodate variation in the substitution process across sites of an alignment.
-In the preceding tutorials, we assumed that all sites in an alignment evolved under an identical substitution process.
-This assumption is likely to be violated in real datasets.  
-Here, we will demonstrate how to specify---and select among---alternative \emph{mixed models} using \RevBayes.
-This is commonly referred to as partitioned-data analysis, where two or more subsets of sites in our alignment are assumed to evolve under distinct processes.
-% and different partition configurations of aligned DNA sequences. 
-
-\subsection{Requirements}
-We assume that you have previously completed the following tutorials:
-\begin{itemize}
-\item RB\_Getting\_Started
-\item RB\_Data\_Tutorial
-\item RB\_CTMC\_Tutorial
-\item RB\_BayesFactor\_Tutorial
-\end{itemize}
-Accordingly, we will assume that you know how to execute and load data into \RevBayes, are familiar with some basic commands, and know how to perform Bayes factor comparisons to select among competing substitution models.
-
-
-
-%%%%%%%%
-%%   Data   %%
-%%%%%%%%
-\section{Data and files}
-
-We provide several data files that we will use in this tutorial; these are the same datasets that we have used in previous tutorials.
-In the \cl{data} folder, you will find the following files
-\begin{itemize}
-\item
-\cl{primates\_cytb.nex}: Alignment of the \textit{cytochrome b} subunit from 23 primates representing 14 of the 16 families (\textit{Indriidae} and \textit{Callitrichidae} are missing).
-\item
-\cl{primates\_16s.nex}: Alignment of the \textit{16s ribosomal RNA} gene from the same 23 primates species.
-\item
-\cl{primates\_cox2.nex}: Alignment of the \textit{COX-2} gene from the same 23 primates species.
-\end{itemize}
-
-
-
-\section{Introduction}
-
-Variation in the evolutionary process across the sites of nucleotide sequence alignments is well established, and is an increasingly pervasive feature of datasets composed of gene regions sampled from multiple loci and/or different genomes.
-Inference of phylogeny from these data demands that we adequately model the underlying process heterogeneity; failure to do so can lead to biased estimates of phylogeny and other parameters \citep{Brown2007}.
-%To accommodate process heterogeneity within and/or between various gene(omic) regions, we will evaluate the support for various partition schemes using Bayes factors to compare the marginal likelihoods of the candidate partition schemes.
-
-Accounting for process heterogeneity involves adopting a `mixed-model' approach, \citep{Ronquist2003} in which the sequence alignment is first parsed into a number of partitions that are intended to capture plausible process heterogeneity within the data.
-The determination of the partitioning scheme is guided by biological considerations regarding the dataset at hand.
-For example, we might wish to evaluate possible variation in the evolutionary process within a single gene region (\EG between stem and loop regions of ribosomal sequences), or among gene regions in a concatenated alignment (\EG comprising multiple nuclear loci and/or gene regions sampled from different genomes).
-The choice of partitioning scheme is up to the investigator and many possible partitions might be considered for a typical dataset.
-
-%Next, a substitution model is specified for each predefined process partition (using a given model-selection criterion, such as Bayes factors).
-In this exercise, we assume that each partition evolved under an independent general-time reversible model with gamma-distributed rates across sites (GTR+$\Gamma$). 
-Under this model the observed data are conditionally dependent on the exchangeability rates ($\theta$), stationary base frequencies ($\pi$), and the degree of gamma-distributed among-site rate variation ($\alpha$), as well as the unrooted tree topology ($\Psi$) and branch lengths ($\nu$).
-We show the graphical model representation of the GTR+$\Gamma$ mode in Figure \ref{gtrgmfig}. 
-When we assume different GTR+$\Gamma$ models for each partitions, this results in a composite model, in which all sites are assumed to share a common, unrooted tree topology and proportional branch lengths, but subsets of sites (`data partitions') are assumed to have independent substitution model parameters.
-This composite model is referred to as a \emph{mixed model}. 
-%\taha{need to change the graphical model above to have the same symbols as in this paragraph since this refers to the figure \ref{pipeline} and it may be harder to change that figure.}
-
-
-
-Finally, we perform a separate MCMC simulation to approximate the joint posterior probability density of the phylogeny and other parameters.  Note that, in this approach, the mixed model is a fixed assumption of the inference (\IE the parameter estimates are conditioned on the specified mixed model), and the parameters for each process partition are independently estimated.
-
-For most sequence alignments, several (possibly many) partition schemes of varying complexity are plausible {\it a priori}, which therefore requires a way to objectively identify the partition scheme that balances estimation bias and error variance associated with under- and over-parameterized mixed models, respectively.
-Increasingly, mixed-model selection is based on \textit{Bayes factors} \citep[{\it e.g.},][]{suchard01}, which involves first calculating the marginal likelihood under each candidate partition scheme and then comparing the ratio of the marginal likelihoods for the set of candidate partition schemes \citep{brandley05,nylander04,mcguire07}.
-The analysis pipeline that we will use in this tutorial is depicted in Figure \ref{pipeline}.
-\begin{figure}[h!]
-\centering
-\fbox{\includegraphics[width=6.8in,angle=0]{\ResourcePath figures/pipeline.eps}}
-\caption{\small The analysis pipeline for Exercise 1. We will explore three partition schemes for the conifer dataset.
-The first model (the `uniform model', $M_0$) assumes that all sites evolved under a common GTR+$\Gamma$ substitution model.
-The second model (the `moderately partitioned' model, $M_1$) invokes two data partitions corresponding to the two gene regions (atpB and rbcL), and assumes each subset of sites evolved under an independent GTR+$\Gamma$ model.
-The final mixed model (the `highly partitioned' model, $M_2$) invokes four data partitions---the first partition corresponds to the atpB gene region, and the remaining partitions correspond to the three codon positons of the rbcL gene region---and each data partition is assumed evolved under an independent GTR+$\Gamma$ substitution model.
-Note that we assume that all sites share a common tree topology, $\Psi$, and branch-length proportions, $\nu$, for each of the candidate partition schemes.
-We perform two separate sets of analyses for each mixed model---a Metropolis-coupled MCMC simulation to approximate the joint posterior probability density of the mixed-model parameters, and a `stepping-stone' MCMC simulation to approximate the marginal likelihood for each mixed model.
-The resulting marginal-likelihood estimates are then evaluated using Bayes factors to assess the fit of the data to the three candidate mixed models.  
-}
-\label{pipeline}
-\end{figure}
- 
-\bigskip
-\section{Two-gene analysis}\label{secUnif} 
+ \section{Concatenated, Non-partitioned}\label{secUnif} 
 
 The first section of this exercise involves 
 (1) setting up a uniform GTR+$\Gamma$ model for an alignment comprising two genes, 
 (2) approximating the posterior probability of the tree topology and branch lengths (and all other parameters) using MCMC,  
-(3) summarizing the MCMC output by computing the maximum a posteriori tree. 
+(3) summarizing the MCMC output by computing the maximum a posteriori tree.
 
 All of the files for this analysis are provided for you and you can run these without significant effort using the \cl{source()} function in the \RevBayes~console:
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-source("RevBayes_scripts/uniform.Rev")
+source("RevBayes_scripts/model_PS0.Rev")
 \end{lstlisting}
 \end{snugshade*}}
 
-If everything loaded properly, then you should see the program begin running the Markov chain Monte Carlo analysis needed for estimating the posterior distribution. If you continue to let this run, then you will see it output the states of the Markov chain once the MCMC analysis begins. (It is worth noting, however, that the file \cl{quick\_uniform.Rev} performs shorter runs with fewer generations for a faster run time.)
+If everything loaded properly, then you should see the program begin running the Markov chain Monte Carlo analysis needed for estimating the posterior distribution. If you continue to let this run, then you will see it output the states of the Markov chain once the MCMC analysis begins.
 
 \bigskip
 \subsection{Full Model Specification}
@@ -109,21 +22,24 @@ If everything loaded properly, then you should see the program begin running the
 First load in the sequences using the \cl{readDiscreteCharacterData()} function. 
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-data_16s <- readDiscreteCharacterData("data/primates_16s_rrna.nex")
-data_cytb <- readDiscreteCharacterData("data/primates_cytb.nex")
+data_16s = readDiscreteCharacterData("data/primates_16s_rrna.nex")
+data_cox2 = readDiscreteCharacterData("data/primates_cox2.nex")
+data_cytb = readDiscreteCharacterData("data/primates_cytb.nex")
 \end{lstlisting}
 \end{snugshade*}}
+
 Executing these lines initializes each data matrix as their respective \Rev~variables. 
-Since the first step in this exercise is to assume a single model for both genes, we need to combine the two datasets.
-Concatenate the two data matrices using the \cl{concatenate()} function. This returns a single data matrix with both genes.
+Since the first step in this exercise is to assume a single model for both genes, we need to combine the three datasets.
+Concatenate the three data matrices using the \cl{concatenate()} function.
+This returns a single data matrix with all three genes.
 
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-data <- concatenate(data_16s, data_cytb)
+data = concatenate( data_16s, data_cox2, data_cytb )
 \end{lstlisting}
 \end{snugshade*}}
 
-To report the current value of any variable, simply type the variable name and press enter. For the \cl{data} matrix, this provides information about the alignment:
+Typing \cl{data} reports the dimensions of the concatenated matrix, this provides information about the alignment:
 
 
 {\tt \begin{snugshade*}
@@ -142,14 +58,22 @@ To report the current value of any variable, simply type the variable name and p
 \end{snugshade*}}
 
 
-Next we will specify some useful variables based on our dataset. The variable \cl{data} has \textit{member functions} that we can use to retrieve information about the dataset. 
-These include the number of species (\cl{n\_species}), the tip labels (\cl{names}), and the number of internal branches (\cl{n\_branches}).
-Each of these variables will be necessary for setting up different parts of our model.
+For later use, we will store the number of species (\cl{n\_species}), the tip labels (\cl{names}), and the number of internal branches (\cl{n\_branches}).
+
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 names <- data.names()
 n_species <- data.ntaxa()
 n_branches <- 2 * n_species - 3 
+\end{lstlisting}
+\end{snugshade*}}
+
+Additionally, we will create some move and monitor index variables to create our move and monitor vectors.
+
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+mvi = 1
+mni = 1
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -522,311 +446,3 @@ The \cl{mapTree()} function will summarize the tree samples and write the maximu
 mapTree(treetrace,"output/conifer_uniform_map.tre")
 \end{lstlisting}
 \end{snugshade*}}
-
-
-\bigskip
-\subsection{Partitioning by Gene Region}\label{secByGene}
-
-The uniform model used in the previous section assumes that all sites in the alignment evolved under the same process described by a shared tree, branch length proportions, and parameters of the GTR+$\Gamma$ substitution model.
-However, our alignment contains two distinct gene regions---atpB and rbcL---so we may wish to explore the possibility that the substitution process differs between these two gene regions.
-This requires that we first specify the data partitions corresponding to these two genes, then define an independent substitution model for each data partition. 
-
-\textbf{\textit{Clear Workspace and Reload Data}}
-
-{\tt \begin{snugshade*}
-\begin{lstlisting}
-clear()
-\end{lstlisting}
-\end{snugshade*}}
-
-Since we wish to avoid individually specifying each parameter of the GTR+$\Gamma$ model for each of our data partitions, we can \textit{loop} over our datasets and create vectors of nodes.
-To do this, we begin by creating a vector of data file names:
-{\tt \begin{snugshade*}
-\begin{lstlisting}
-filenames <- v("data/conifer_atpB.nex", "data/conifer_rbcL.nex")
-\end{lstlisting}
-\end{snugshade*}}
-
-Set a variable for the number of partitions:
-{\tt \begin{snugshade*}
-\begin{lstlisting}
-n_parts <- filenames.size()
-\end{lstlisting}
-\end{snugshade*}}
-
-And create a vector of data matrices called \cl{data}:
-{\tt \begin{snugshade*}
-\begin{lstlisting}
-for (i in 1:n_parts){
-   data[i] <- readDiscreteCharacterData(filenames[i])[1]
-}
-\end{lstlisting}
-\end{snugshade*}}
-
-Next, we can initialize some important variables. This does require, however, that both of our alignments have the same number of species and matching tip names.
-{\tt \begin{snugshade*}
-\begin{lstlisting}
-n_species <- data[1].ntaxa()
-names <- data[1].names()
-n_branches <- 2 * n_species - 3
-\end{lstlisting}
-\end{snugshade*}}
-
-
-\subsection{Specify the Parameters by Looping Over Partitions}
-
-We can avoid creating unique names for every node in our model if we use a \cl{for} loop to iterate over our partitions. Thus, we will only have to type in our entire GTR+$\Gamma$ model parameters once. 
-This will produce a vector for each of the unlinked parameters --- e.g., there will be a vector of \cl{shape} nodes where the stochastic node for the first partition (atpB) will be \cl{shape[1]} and the stochastic node for the second partition (rbcL) will be called \cl{shape[2]}.
-{\tt \small \begin{snugshade*}
-\begin{lstlisting}
-mi = 0 # an iterator for the move vector
-for (i in 1:n_parts){
-  ## index i=1 : atpB gene ##
-  ## index i=2 : rbcL gene ##
-  
-  # Exchangeability rates #
-  er_prior[i] <- v(1,1,1,1,1,1)
-  er[i] ~ dnDirichlet(er_prior[i])
-  moves[++mi] = mvSimplexElementScale(er[i], alpha=10, tune=true, weight=3) 
-
-  # Stationary base frequencies #
-  sf_prior[i] <- v(1,1,1,1)
-  sf[i] ~ dnDirichlet(sf_prior[i])
-  moves[++mi] = mvSimplexElementScale(sf[i], alpha=10, tune=true, weight=2) 
-
-  # Instantaneous rate matrix (deterministic) #
-  Q[i] := fnGTR(er[i],sf[i]) 
-
-  # Gamma-dist site rates #
-  shape_prior[i] <- 0.05 
-  shape[i] ~ dnExponential( shape_prior[i] )
-  gamma_rates[i] := fnDiscretizeGamma( shape[i], shape[i], 4 )
-  moves[++mi] = mvScale(shape[i], lambda=0.8, tune=true, weight=3.0)
-}
-\end{lstlisting}
-\end{snugshade*}}
-
-
-\subsection{Uniform Topology and Branch Lengths}
-
-Our two genes evolve under different GTR rate matrices with different mean-one gamma distributions on the site rates.
-However, we do assume that they share a single topology and set of branch lengths.
-{\tt \begin{snugshade*}
-\begin{lstlisting}
-# Unrooted tree topology distribution #
-topology ~ dnUniformTopology(n_species, names)
-
-# Tree topology moves #
-moves[++mi] = mvNNI(topology, weight=10.0)
-moves[++mi] = mvSPR(topology, weight=5.0)
-
-#### Specify a prior and moves on the branch lengths #### 
-# Create a vector of branch-length variables using a for loop #
-for (i in 1:n_branches) {
-  br_lens[i] ~ dnExponential(10.0)
-  moves[mi++] <- mvScale(br_lens[i],lambda=1,tune=true,weight=1) 
-}
-
-# A deterministic node for the tree length #
-tree_length := sum(br_lens)
-
-# Build the tree by combining the topology with br_lens #
-phylogeny := treeAssembly(topology, br_lens)
-\end{lstlisting}
-\end{snugshade*}}
-
-\textbf{\textit{Putting it All Together}}
-
-Since we have a rate matrix and a site-rate model for each partition, we must create a phylogenetic CTMC for each gene. 
-Additionally, we must fix the values of these nodes by attaching their respective data matrices.
-These two nodes are linked by the \cl{phylogeny} node and their log-likelihoods are added to get the likelihood of the whole DAG.
-{\tt \begin{snugshade*}
-\begin{lstlisting}
-for (i in 1:n_parts){
-  phyloSeq[i] ~ dnPhyloCTMC(tree=phylogeny, Q=Q[i], siteRates=gamma_rates[i], nSites=data[i].nchar(1), type="DNA")
-  phyloSeq[i].clamp(data[i])
-}
-\end{lstlisting}
-\end{snugshade*}}
-
-
-And we can pass in a single, shared node to wrap up our model DAG:
-{\tt \begin{snugshade*}
-\begin{lstlisting}
-mymodel = model(topology)
-\end{lstlisting}
-\end{snugshade*}}
-
-
-
-
-\bigskip
-\section{Partitioning by Codon Position and by Gene}\label{secExtremeP}
-
-Because of the genetic code, we often find that different positions within a codon (first, second, and third) evolve at different rates.
-Thus, using our knowledge of biological data, we can devise a third approach that further partitions our alignment. 
-For this exercise, we will partition sites within the rbcL gene by codon position.
-
-\textbf{\textit{Clear Workspace and Reload Data}}
-
-{\tt \begin{snugshade*}
-\begin{lstlisting}
-clear()
-data[1] <- readDiscreteCharacterData("data/conifer_atpB.nex")[1]
-data_rbcL <- readDiscreteCharacterData("data/conifer_rbcL.nex")[1]
-\end{lstlisting}
-\end{snugshade*}}
-
-\textbf{\textit{Specify Data Matrices for Each Codon Position}}
-
-We must now add our codon-partitions to the \cl{data} vector that already contains the matrix for atpB in the first index. 
-Thus, the second index will be the rbcL codon position 1. 
-We can create this by calling the helper function \cl{setCodonPartition()}, which is a member function of the data matrix. 
-We are assuming that the gene is \textit{in frame}, meaning the first column in your alignment is a first codon position. 
-The \cl{setCodonPartition()} function takes a single argument, the position of the alignment you wish to extract. 
-It then returns every third column, starting at the index provided as an argument.
-
-Before we can use the use the \cl{setCodonPartition()} function, we must first populate the position in the \cl{data} matrix with some sequences. 
-Then we call the member function of \cl{data[2]} to exclude all but the 1$^{st}$ positions.
-{\tt \begin{snugshade*}
-\begin{lstlisting}
-data[2] <- data_rbcL
-data[2].setCodonPartition(1)
-\end{lstlisting}
-\end{snugshade*}}
-
-Assign the 2$^{nd}$ codon positions to \cl{data[3]}:
-{\tt \begin{snugshade*}
-\begin{lstlisting}
-data[3] <- data_rbcL
-data[3].setCodonPartition(2)
-\end{lstlisting}
-\end{snugshade*}}
-
-Assign the 3$^{rd}$ codon positions to \cl{data[4]}:
-{\tt \begin{snugshade*}
-\begin{lstlisting}
-data[4] <- data_rbcL
-data[4].setCodonPartition(3)
-\end{lstlisting}
-\end{snugshade*}}
-
-
-
-Now we can query the vector of data matrices to get the size, which is 4:
-{\tt \begin{snugshade*}
-\begin{lstlisting}
-n_parts <- data.size()
-\end{lstlisting}
-\end{snugshade*}}
-
-And set the special variables from the data:
-{\tt \begin{snugshade*}
-\begin{lstlisting}
-n_species <- data[1].ntaxa()
-names <- data[1].names()
-n_branches <- 2 * n_species - 3
-\end{lstlisting}
-\end{snugshade*}}
-
-
-
-
-\textbf{\textit{Specify the Parameters by Looping Over Partitions}}
-
-Setting up the GTR+$\Gamma$ model is just like in the two-gene analysis, except this time \cl{n\_parts} is equal to 4, so now our vectors of stochastic nodes should all contain nodes for each of the partitions.
-{\tt \small \begin{snugshade*}
-\begin{lstlisting}
-mi <- 0 # an iterator for the move vector
-for (i in 1:n_parts){
-  ## index i=1 : atpB gene
-  ## index i=2 : rbcL gene position 1
-  ## index i=3 : rbcL gene position 2
-  ## index i=4 : rbcL gene position 3
-
-  # Exchangeability rates #
-  er_prior[i] <- v(1,1,1,1,1,1)
-  er[i] ~ dnDirichlet(er_prior[i])
-  moves[mi++] <- mvSimplexElementScale(er[i], alpha=10, tune=true, weight=3) 
-
-  # Stationary base frequencies #
-  sf_prior[i] <- v(1,1,1,1)
-  sf[i] ~ dnDirichlet(sf_prior[i])
-  moves[mi++] <- mvSimplexElementScale(sf[i], alpha=10, tune=true, weight=2) 
-
-  # Instantaneous rate matrix (deterministic) #
-  Q[i] := fnGTR(er[i],sf[i]) 
-
-  # Gamma-dist site rates #
-  shape_prior[i] <- 0.05 
-  shape[i] ~ dnExponential( shape_prior[i] )
-  gamma_rates[i] := fnDiscretizeGamma( shape[i], shape[i], 4 )
-  moves[mi++] <- mvScale(shape[i], lambda=0.8, tune=true, weight=3.0)
-}
-\end{lstlisting}
-\end{snugshade*}}
-
-
-\textbf{\textit{Uniform Topology and Branch Lengths}}
-
-We are still assuming that the genes share a single topology and branch lengths.
-{\tt \begin{snugshade*}
-\begin{lstlisting}
-# Unrooted tree topology distribution #
-topology ~ dnUniformTopology(n_species, names)
-
-# Tree topology moves #
-moves[mi++] <- mvNNI(topology, weight=10.0)
-moves[mi++] <- mvSPR(topology, weight=5.0)
-
-#### Specify a prior and moves on the branch lengths #### 
-# Create a vector of branch-length variables using a for loop #
-for (i in 1:n_branches) {
-  br_lens[i] ~ dnExponential(10.0)
-  moves[mi++] <- mvScale(br_lens[i],lambda=1,tune=true,weight=1) 
-}
-
-# A deterministic node for the tree length #
-tree_length := sum(br_lens)
-
-# Build the tree by combining the topology with br_lens #
-phylogeny := treeAssembly(topology, br_lens)
-\end{lstlisting}
-\end{snugshade*}}
-
-\textbf{\textit{Putting it All Together}}
-
-We must specify a phylogenetic CTMC node for each of our partition models.
-{\tt \begin{snugshade*}
-\begin{lstlisting}
-for (i in 1:n_parts){
-  phyloSeq[i] ~ dnPhyloCTMC(tree=phylogeny, Q=Q[i], siteRates=gamma_rates[i], nSites=data[i].nchar(1), type="DNA")
-  phyloSeq[i].clamp(data[i])
-}
-\end{lstlisting}
-\end{snugshade*}}
-
-
-And then wrap up the DAG using the \cl{model()} function:
-{\tt \begin{snugshade*}
-\begin{lstlisting}
-RevBayes > mymodel <- model(topology)
-\end{lstlisting}
-\end{snugshade*}}
-
-
-
-\vspace{5cm}
-Questions about this tutorial can be directed to: \\\vspace{-10mm}
-\begin{itemize}
-\item Tracy Heath (email: \href{mailto:tracyh@berkeley.edu}{tracyh@berkeley.edu}) \\\vspace{-8mm}
-\item Sebastian H\"{o}hna (email: \href{mailto:sebastian.hoehna@gmail.com}{sebastian.hoehna@gmail.com}) \\\vspace{-8mm}
-\item Michael Landis (email: \href{mailto:mlandis@berkeley.edu}{mlandis@berkeley.edu}) \\\vspace{-8mm} 
-\item Brian R. Moore (email: \href{mailto:brianmoore@ucdavis.edu}{brianmoore@ucdavis.edu}) \\\vspace{-8mm}
-\end{itemize}
-
-
-\bibliographystyle{sysbio}
-\bibliography{\ResourcePath refs}
-
-
