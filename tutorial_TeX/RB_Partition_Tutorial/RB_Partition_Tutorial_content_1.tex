@@ -70,8 +70,7 @@ and assign its move
 
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-moves[mvi++] = mvSimplex(er, alpha=10, offset=2, tune=true, weight=15)
-moves[mvi++] = mvSimplexElementScale(er, alpha=10, tune=true, weight=3) 
+moves[mvi++] = mvSimplexElementScale(er, alpha=10, tune=true, weight=15) 
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -89,8 +88,7 @@ Now add the simplex scale move on the stationary frequencies to the moves vector
 
 {\tt \small \begin{snugshade*}
 \begin{lstlisting}
-moves[mvi++] = mvSimplex(sf, alpha=10, offset=2, tune=true, weight=15)
-moves[mvi++] = mvSimplexElementScale(esf, alpha=10, tune=true, weight=3) 
+moves[mvi++] = mvSimplexElementScale(sf, alpha=10, tune=true, weight=15) 
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -130,15 +128,15 @@ Thus, if we set $\lambda=0.05$, then $\mathbb{E}[\alpha] = 20$.
 Create a constant node called \cl{shape\_prior} for the rate parameter of the exponential prior on the gamma-shape parameter
 {\tt\begin{snugshade*}
 \begin{lstlisting}
-shape_prior <- 0.05                                                                             
+alpha_prior_min <- 0.1
+alpha_prior_max <- 50.0
 \end{lstlisting}
 \end{snugshade*}}
 
 Then create a stochastic node called \cl{shape} to represent the $\alpha$ node in Figure \ref{gtrgmfig}, with an exponential density as a prior:
 {\tt\begin{snugshade*}
 \begin{lstlisting}
-shape ~ dnExponential(shape_prior)
-
+alpha ~ dnUnif( alpha_prior_min, alpha_prior_max )
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -147,7 +145,7 @@ The way the ASRV model is implemented involves discretizing the mean-one gamma d
 Initialize the \cl{gamma\_rates} deterministic node vector using the  \cl{fnDiscretizeGamma()} function with \cl{4} bins:
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-gamma_rates := fnDiscretizeGamma( shape, shape, 4 )
+norm_gamma_rates := fnDiscretizeGamma( alpha, alpha, 4, false )
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -156,10 +154,26 @@ We will apply a simple scale move to this parameter.
 The scale move's tuning parameter is called \cl{lambda} and this value dictates the size of the proposal.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-moves[mvi++] = mvScale(shape, lambda=1.0, tune=true, weight=2.0)
+moves[mvi++] = mvScale(alpha, lambda=0.1, tune=false, weight=4.0)
 \end{lstlisting}
 \end{snugshade*}}
 
+Invariant sites (sites that remain fixed throughout their evolutionary history) may be seen as an extreme case of among-site rate variation.
+In contrast to $+ \Gamma$ models, the $+I$ model allows site some probability of having substitution rate equal to zero.
+Only if a site has an invariant pattern (they are all are equal) there is some non-zero probability of the site being classified as invariant.
+(Seeing an invariant site pattern does not necessarily indicate the site evolved according to an invariant process: there is some probability of some substitution later being erased through a character reversion, which must be accounted for in the $+I$ model.)
+
+Here, we give the probability of a site being invariant with {\tt pinvar}
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+pinvar ~ dnBeta(1,1)
+moves[mvi++] = mvScale(pinvar, lambda=0.1, tune=false, weight=2.0)
+moves[mvi++] = mvSlide(pinvar, delta=10.0, tune=false, weight=2.0)
+\end{lstlisting}
+\end{snugshade*}}
+
+Note, if the $+\Gamma$ model allows for one rate category to take a very small value, it approximates the zero-rate value for the $+I$ model.
+This means when invariant site patterns are present, the $+\Gamma$ and $+I$ models vie to explain the same underlying evolutionary process of some sites evolving at a zero or near-zero rate.
 
 The tree topology and branch lengths are also stochastic nodes in our model. 
 In Figure \ref{gtrgmfig}, the tree topology is denoted $\Psi$ and the length of the branch leading to node $i$ is $\nu_i$.
@@ -256,7 +270,7 @@ monitors[mni++] = mnFile(psi, filename="output/PS0.tre", printgen=100)
 Finally, create a screen monitor that will report the states of specified variables to the screen with \cl{mnScreen}:
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-monitors[mni++] = mnScreen(er, pi, alpha, norm_gamma_rates, pinvar, speciation, extinction, clock, printgen=100)
+monitors[mni++] = mnScreen(er, sf, alpha, norm_gamma_rates, pinvar, speciation, extinction, clock, printgen=100)
 \end{lstlisting}
 \end{snugshade*}}
 

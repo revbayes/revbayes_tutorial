@@ -30,11 +30,11 @@ mni <- 1
 #### specify the GTR+G+I substitution model applied uniformly to all sites ###
 er_prior <- v(1,1,1,1,1,1)
 er ~ dnDirichlet(er_prior)
-moves[mvi++] = mvSimplexElementScale(er, alpha=10.0, tune=false, weight=5.0)
+moves[mvi++] = mvSimplexElementScale(er, alpha=10.0, tune=false, weight=15.0)
 
 pi_prior <- v(1,1,1,1) 
 pi ~ dnDirichlet(pi_prior)
-moves[mvi++] = mvSimplexElementScale(pi, alpha=10.0, tune=false, weight=5.0)
+moves[mvi++] = mvSimplexElementScale(pi, alpha=10.0, tune=false, weight=15.0)
 
 
 #### create a deterministic variable for the rate matrix ####
