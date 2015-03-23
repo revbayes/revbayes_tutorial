@@ -121,5 +121,151 @@ The naive primate biogeographic model described so far should produce more reali
 
 \subsection{Epoch models}
 
-(under construction)
+To model the effects of geography, we will use {\it epoch} models.
+Rather than assuming the evolutionary process is constant with respect to time, it assumes the process is piecewise-constant.
+For example, Africa (along with all of Gondwanaland) split from Eurasia (and all of Laurasia) around 180 Mya.
+Africa merged with Eurasia only about 50 Mya.
+It is reasonable to expect that dispersal rates between Africa and Eurasia were lower before 50 Mya, and higher after 50 Mya until present.
 
+To model this, we will specify one rate matrix that describes anagenic dispersal and extinction processes before for ages $t \geq 50$ and a second rate matrix for the process operating after $0 \leq t < 50$.
+
+To proceed, first we will read in an {\tt Atlas} file, which fully describes the geography per time interval.
+For more on the {\tt Atlas} format, see Section XXX.
+
+\begin{snugshade}
+\begin{lstlisting}
+# read the atlas
+atlas <- readAtlas("data/earth3.drift.atlas.txt")
+n_epochs = atlas.nEpochs()
+times <- atlas.epochTimes()
+\end{lstlisting}
+\end{snugshade}
+
+This atlas contains two epochs, each with three areas, and a single breakpoint at age 50 (50Mya).
+For example, the area for Africa in the second epoch from 50Mya -- present reads
+\begin{snugshade}
+\begin{lstlisting}
+ {
+    "latitude": 10.0, 
+    "longitude": 20.0,
+	"dispersalValues": [ 0.1, 0.0, 1.0 ],
+	"extinctionValues": [ 1.0 ],
+    "name": "Africa"
+}
+\end{lstlisting}
+\end{snugshade}
+
+The {\tt dispersalValues} values share the ordering of the areas, and each area reports a value regarding it's relationship to other areas.
+Here, 0.1 in position 1 indicates the Atlantic Ocean obstructs dispersal from Africa to the Americas, while the 1.0 in position 3 indicates African primates may easily disperse into Eurasia by way of the Arabian Penninsula.
+(Note 0.0 in position 2 is the dispersal value from Africa to itself, so the value is arbitrary.)
+
+To extract these values in matrix form
+
+\begin{snugshade}
+\begin{lstlisting}
+d_prior <- atlas.getValues("dispersal")
+\end{lstlisting}
+\end{snugshade}
+
+where, for example, the dispersal rate more than 50 Myr in the past (epoch 1) from Africa (area 2) to Eurasia (area 3) is accessed by
+
+\begin{snugshade}
+\begin{lstlisting}
+d_prior[1][2][3]
+\end{lstlisting}
+\end{snugshade}
+
+To use these empirical priors to rescale our naive priors
+
+\begin{snugshade}
+\begin{lstlisting}
+for (t in 1:n_epochs) {
+	for (i in 1:n_areas) {
+		for (j in 1:n_areas) {
+			if (i != j) {
+				d_raw[t][i][j] ~ dnExp( 10. )
+				mv[mvi++] = mvScale(d_raw[t][i][j], weight=2)
+				d[t][i][j] := d_raw[t][i][j] * abs(d_prior[t][i][j])
+			} else {
+				d[t][i][j] <- abs(0.)
+			}
+		}
+	}
+}
+\end{lstlisting}
+\end{snugshade}
+
+We'll make no strong prior assumptions about epochs or areas differentially affecting extinction rates.
+
+\begin{snugshade}
+\begin{lstlisting}
+# set up extinction per epoch
+e_prior <- atlas.getValues("extinction")
+for (t in 1:n_epochs) {
+	for (i in 1:n_areas) {
+		e_raw[t][i] ~ dnExp( 10. )
+		mv[mvi++] = mvScale(e_raw[t][i], weight=2)
+		e[t][i] := e_raw[t][i] * abs(d_prior[t][i][1])
+	}
+}
+\end{lstlisting}
+\end{snugshade}
+
+Now we have dispersal rates and extinction rates per epoch in the matrices {\tt d} and {\tt e}.
+
+Extant primate ranges do not appear capable of spanning all three areas simultaneously, so we might constrain the model to only allow ranges of size two
+
+\begin{snugshade}
+\begin{lstlisting}
+rangeSize <- simplex(0,1,1,0)
+rf := fnDECRoot( rep(1,n_states), rangeSize=simplex(0,1,0,0) )
+\end{lstlisting}
+\end{snugshade}
+
+where the first and last elements are set to zero, so ranges cannot be size 0 or size 3.
+By calling {\tt fnDECRoot} with the {\tt rangeSize} parameter, we can also force the MRCA range size to be a single area.
+
+Next, we'll create a rate matrix for each epoch
+
+\begin{snugshade}
+\begin{lstlisting}
+for (t in 1:n_epochs) {
+	rates[t] ~ dnGamma(2,2)
+	mv[mvi++] = mvScale(rates[t], weight=2)	
+	q[t] := fnDECRateMatrix(d[t], e[t], rangeSize)
+}
+\end{lstlisting}
+\end{snugshade}
+
+with {\tt rates} being an epochal rate multiplier, each with mean 1.
+Notice, we construct {\tt q[t]} for each epoch {\tt t} in {\tt num\_epochs}, using the epoch's dispersal values {\tt d[t]} and extinction values {\tt e[t]}.
+Finally, we wrap our vector of rate matrices, {\tt q}, along with the epoch boundary times, {\tt times}, and  our epochal rates, {\tt rates} 
+
+\begin{snugshade}
+\begin{lstlisting}
+q_epoch := fnEpoch( Q=q, times=times, rates=rates )
+\end{lstlisting}
+\end{snugshade}
+
+Parameters like {\tt clado\_prob} and {\tt clock\_bg} still need to be created, as they were in the previous section.
+
+Otherwise, the model is created as before, except passing {\tt q\_epoch} into {\tt dnPhyloCTMCClado}.
+
+\begin{snugshade}
+\begin{lstlisting}
+m ~ dnPhyloCTMCClado( tree=psi, Q=q_epoch, rootFrequencies=rf, cladoProbs=clado_prob, branchRates=clock_bg, nSites=1, type="NaturalNumbers" )
+m.clamp(data)
+mdl = model(m)
+\end{lstlisting}
+\end{snugshade}
+
+This biologically and geographically informed model produces a more realistic range reconstruction
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=4in]{figures/bg_2_epoch}
+\caption{Phylowood frame showing Asian origin of primates, with subsequent dispersal into Africa and Americas.}
+\end{figure}
+
+
+This example model can be found in {\tt RevBayes\_scripts/biogeography\_epoch.Rev}.
