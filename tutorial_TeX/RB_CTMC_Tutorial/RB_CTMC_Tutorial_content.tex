@@ -299,11 +299,21 @@ We have fully specified all of the parameters of our phylogenetic model---the tr
 Collectively, these parameters comprise a distribution called the \textit{phylogenetic continuous-time Markov chain}, and we use the \cl{PhyloCTMC} constructor function to create this node.
 This distribution requires several input arguments: 
 (1) the \cl{tree} with branch lengths; 
-(2) the instantaneous-rate matrix \cl{Q}, and; 
-(3) the \cl{type} of character data.
+(2) the instantaneous-rate matrix \cl{Q};
+(3) the clock rate, and; 
+(4) the \cl{type} of character data.
+
+For now we use an empirical estimate of the clock rate which is 0.01 (=1\%) per million years per site.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-seq ~ dnPhyloCTMC(tree=psi, Q=Q, type="DNA")
+clockRate <- 0.01
+\end{lstlisting}
+\end{snugshade*}}
+Build the random variable for the character data (sequence alignment).
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+# the sequence evolution model
+seq ~ dnPhyloCTMC(tree=psi, Q=Q, branchRates=clockRate, type="DNA")
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -813,7 +823,7 @@ Remember that you need to call the \cl{PhyloCTMC} constructor to include the new
 % This sentence was incomplete previously; I think the revised version is correct.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-seq ~ dnPhyloCTMC(tree=phylogeny, Q=Q, siteRates=gamma_rates , type="DNA")
+seq ~ dnPhyloCTMC(tree=psi, Q=Q, branchRates=clockRate, siteRates=gamma_rates, type="DNA")
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -873,7 +883,7 @@ moves[mi++] = mvSlide(pinvar)
 Finally, that you need to call the \cl{PhyloCTMC} constructor to include the new\cl{pinvar} parameter:
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-seq ~ dnPhyloCTMC(tree=phylogeny, Q=Q, siteRates=gamma_rates , pInv=pinvar, type="DNA")
+seq ~ dnPhyloCTMC(tree=psi, Q=Q, branchRates=clockRate, siteRates=gamma_rates, pInv=pinvar, type="DNA")
 \end{lstlisting}
 \end{snugshade*}}
 
