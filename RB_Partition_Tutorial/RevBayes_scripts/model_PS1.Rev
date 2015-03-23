@@ -2,7 +2,7 @@
 #
 # RevBayes Exercise: Bayesian inference using MCMC and output analysis
 # 
-# This file: Specifies the full model parameters and moves for a 3-gene
+# This file: Specifies the full model parameters and moves for a 2-gene
 #        partition model
 #
 # authors: Tracy A. Heath, Michael Landis, Sebastian Hoehna and Brian R. Moore

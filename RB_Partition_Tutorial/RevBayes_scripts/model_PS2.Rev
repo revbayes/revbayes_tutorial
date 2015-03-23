@@ -2,7 +2,7 @@
 #
 # RevBayes Exercise: Data partitioning strategies
 # 
-# This file: Specifies the full model parameters and moves for a 3-gene
+# This file: Specifies the full model parameters and moves for a 2-gene
 #        partition model with codon specific substitution models
 #
 # authors: Tracy A. Heath, Michael Landis, Sebastian Hoehna and Brian R Moore
@@ -137,7 +137,7 @@ monitors[mni++] = mnFile(er[1], pi[1], alpha[1], norm_gamma_rates[1], pinvar[1],
 # run the analysis
 mymcmc = mcmc(mymodel, moves, monitors)
 mymcmc.burnin(10000,100)
-mymcmc.run(30000)
+mymcmc.run(100000)
 
 # summarize output
 treetrace = readTreeTrace("output/PS2.tre")
