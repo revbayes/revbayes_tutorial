@@ -1,0 +1,24 @@
+\begin{tikzpicture}
+\node [obnode] (seq) at ($(0,2.5)$) {\Large $\mathcal{S}$};
+\node [constnode] (qn) at ($(seq)+(0,2)$) {$Q$};
+\node[constnode,inner sep=2mm] (a) at ($(seq)+(-9,1.5)$) {$a$};
+\node[constnode,inner sep=2mm] (b) at ($(seq)+(-9,0.5)$) {$b$};
+\node[constnode,inner sep=2mm] (c) at ($(seq)+(-9,-0.5)$) {$c$};
+\node[constnode,inner sep=2mm] (d) at ($(seq)+(-9,-1.5)$) {$d$};
+\node[snode,inner sep=2mm] (turnover) at ($(seq)+(-7,-1)$) {$turn$};
+\node[snode,inner sep=2mm] (diversification) at ($(seq)+(-7,1)$) {$div$};
+\node[detnode,inner sep=2mm] (lambda) at ($(seq)+(-5,1)$) {$\lambda$};
+\node[detnode,inner sep=2mm] (mu) at ($(seq)+(-5,-1)$) {$\mu$};
+\node[snode,inner sep=2mm] (topo) at ($(seq)+(-3,0)$) {\Large $\Psi$};
+\draw [taro] (a) -- (diversification) ;
+\draw [taro] (b) -- (diversification) ;
+\draw [taro] (c) -- (turnover) ;
+\draw [taro] (d) -- (turnover) ;
+\draw [dtaro] (diversification) -- (lambda) ;
+\draw [dtaro] (turnover) -- (lambda) ;
+\draw [dtaro] (turnover) -- (mu) ;
+\draw [taro] (lambda) -- (topo) ;
+\draw [taro] (mu) -- (topo) ;
+\draw [taro] (topo) -- (seq) ;
+\draw [taro] (qn) -- (seq) ;
+\end{tikzpicture}

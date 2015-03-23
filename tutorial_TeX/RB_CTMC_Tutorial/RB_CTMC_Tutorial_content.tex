@@ -74,11 +74,23 @@ The first section of this exercise involves:
 \caption{\small Graphical model representation of a simple phylogenetic model. 
 The graphical model shows the dependencies between the parameters.
 Here, the rate matrix $Q$ is a constant variable because it is fixed and does not depend on any parameters.
-The only free parameters of this model, the unconstrained Jukes-Cantor model, are the tree topology $\Psi$ and the branch lengths $\nu_i$.}
+The only free parameters of this model, the Jukes-Cantor model, are the tree $\Psi$ including the node ages.}
 \label{fig:jc}
 \end{figure}
 
 The general structure of the model is represented in Figure~\ref{fig:jc}.
+This figure shows the full model graph.
+For simplicity and computational efficiency we will use a collapsed for of the same graphical model as shown in Figure~\ref{fig:jc_module}
+
+\begin{figure}[h!]
+\centering
+\fbox{\includegraphics[width=0.6\textwidth,angle=0]{\ResourcePath figures/jc_graphical_module.pdf}}
+\caption{\small Graphical model representation of a simple phylogenetic model. 
+The colapsed graphical model combining all the CTMC variable of the phylogeny.
+We still have the rate matrix $Q$ as a constant variable and the stochastic variable for the tree $\Psi$.}
+\label{fig:jc_module}
+\end{figure}
+
 We first consider the simplest substitution model described by \citet{Jukes1969}.
 The instantaneous-rate matrix for the JC substitution model is defined as
 \begin{equation*}
@@ -151,13 +163,12 @@ data
 
 
 Next we will specify some useful variables based on our dataset. The variable \cl{data} has \textit{member functions} that we can use to retrieve information about the dataset. 
-These include the number of species (\cl{n\_species}), the tip labels (\cl{names}), and the number of internal branches (\cl{n\_branches}).
+These include the number of species (\cl{n\_species}) and the tip labels (\cl{names}).
 Each of these variables will be necessary for setting up different parts of our model.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 n_species <- data.ntaxa()
 names <- data.names()	
-n_branches <- 2 * n_species - 3 
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -199,61 +210,83 @@ Q
 As you can see, all substitution rates are equal.
 
 
-\subsection{Tree Topology and Branch Lengths}
+\subsection{Tree Prior: Tree Topology and Node Ages}
 
-The tree topology and branch lengths are stochastic nodes in our phylogenetic model. 
-In Figure \ref{fig:jc}, the tree topology is denoted $\Psi$ and the length of the branch leading to node $i$ is $\nu_i$.
+The tree ( the topology and node ages) is a stochastic node in our phylogenetic model. 
+In Figure \ref{fig:jc}, the tree is denoted $\Psi$.
 
-We will assume that all possible labeled, unrooted tree topologies have equal probability. This is the \cl{dnUniformTopology()} distribution in \RevBayes. Specify the \cl{topology} stochastic node by passing in the tip labels \cl{names} to the \cl{dnUniformTopology()} distribution:
+We will assume a constant-rate birth-death process as the prior distribution on the tree.
+This means that all possible labeled, rooted tree topologies have equal probability. 
+The distribution in \RevBayes~is \cl{dnBDP()}. 
+For the birth-death process we need a speciation rate and extinction rate parameter.
+Let us start with those two variables.
+We use a \textit{gamma} distribution with rate $a=5$ and shape $b=1$ for both the \cl{diversification} and \cl{turnover} variables.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-topology ~ dnUniformTopology(names)
+a <- 5
+b <- 1
+diversification ~ dnGamma(shape=a, rate=b)
+c <- 5
+d <- 1
+turnover ~ dnGamma(shape=c,rate=d)
+\end{lstlisting}
+\end{snugshade*}}
+Now we can transform the \cl{diversification} and \cl{turnover} into the \cl{speciation} rate and \cl{extinction} rate.
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+speciation := diversification + turnover
+extinction := turnover
+\end{lstlisting}
+\end{snugshade*}}
+We also need to specify a prior on the root age (our informed guess is about 75-80 mya).
+So we use a uniform distribution between 50 and 100.
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+root ~ dnUniform(50.0,100.0)
+\end{lstlisting}
+\end{snugshade*}}
+Additionally, we know that we do not have all primate species included in this data set.
+We only have 23 out of the approximately 270 primate species.
+Thus, we use a sampling fraction to represent this incomplete taxon sampling.
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+sampling_fraction <- 23 / 270
+\end{lstlisting}
+\end{snugshade*}}
+Here we have created our first three stochastic variables.
+For each one of them we need to create at least one moves that change the stochastic variables.
+In this case we use sliding window proposals but you could use scaling proposals for the rates too.
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+moves[++mi] = mvSlide(diversification,delta=1,tune=true,weight=1)
+moves[++mi] = mvSlide(turnover,delta=1,tune=true,weight=1)
+moves[++mi] = mvSlide(root,delta=1,tune=true,weight=1)
+\end{lstlisting}
+\end{snugshade*}}
+
+Next, specify the \cl{tree} stochastic node by passing in the tip labels \cl{names} to the \cl{dnUniformTopology()} distribution:
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+psi ~ dnBDP(lambda=speciation, mu=extinction, rootAge=abs(root), rho=sampling_fraction, nTaxa=n_species, names=names )
 \end{lstlisting}
 \end{snugshade*}}
 
 Some types of stochastic nodes can be updated by a number of alternative moves. 
 Different moves may explore parameter space in different ways, and it is possible to use multiple different moves for a given parameter to improve mixing (the efficiency of the MCMC simulation). 
-In the case of our unrooted tree topology, for example, we can use both a nearest-neighbor interchange move (\cl{mvNNI}) and a subtree-prune and regrafting move (\cl{mvSPR}). 
-These moves do not have tuning parameters associated with them, thus you only need to pass in the \cl{topology} node and proposal \cl{weight} 
+In the case of our rooted tree, for example, we can use both a nearest-neighbor interchange move without and with changing the node ages (\cl{mvNarrow} and \cl{mvNNI}) and a fixed-nodeheight subtree-prune and regrafting move (\cl{mvFNPR}). 
+We also need moves that change the ages of the internal nodes; which are for example the \cl{mvSubtreeScale} and \cl{mvNodeTimeSlideUniform}.
+These moves do not have tuning parameters associated with them, thus you only need to pass in the \cl{psi} node and proposal \cl{weight}. 
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-moves[++mi] = mvNNI(topology, weight=1.0)
-moves[++mi] = mvSPR(topology, weight=1.0)
+moves[++mi] = mvNarrow(psi, weight=5.0)
+moves[++mi] = mvNNI(psi, weight=1.0)
+moves[++mi] = mvFNPR(psi, weight=3.0)
+moves[++mi] = mvSubtreeScale(psi, weight=3.0)
+moves[++mi] = mvNodeTimeSlideUniform(psi, weight=15.0)
 \end{lstlisting}
 \end{snugshade*}}
 The weight specifies how often the move will be applied either on average per iteration or relative to all other moves.
 Have a look at the MCMC tutorial for more details about moves and MCMC strategies: \href{http://revbayes.github.io/tutorials.html}{http://revbayes.github.io/tutorials.html}
-
-
-Next we have to create a stochastic node for each of the $2N-3$ branches in our tree (where $N=$ \cl{n\_species}). 
-We can do this using a \cl{for} loop --- this is a plate in our graphical model. In this loop, we can create each of the branch-length nodes and assign each move. 
-Copy this entire block of \Rev~code into the console:
-{\tt \small \begin{snugshade*}
-\begin{lstlisting}
-for (i in 1:n_branches) {
-   br_lens[i] ~ dnExponential(10.0)
-   moves[++mi] = mvScale(br_lens[i]) 
-}
-\end{lstlisting}
-\end{snugshade*}}
-
-It is convenient for monitoring purposes to add the tree length as deterministic variable. The tree length is simply the sum of all branch lengths.
-Accordingly, the tree length can be computed using the \cl{sum()} function, which calculates the sum of any vector of values.
-{\tt \begin{snugshade*}
-\begin{lstlisting}
-TL := sum(br_lens)
-\end{lstlisting}
-\end{snugshade*}}
-
-Finally, we can create a \emph{phylogram} (a phylogeny in which the branch lengths are proportional to the expected number of substitutions/site) by combining the tree topology and branch lengths.
-We do this using the \cl{treeAssembly()} function, which applies the value of the $i^{th}$ member of the \cl{br\_lens} vector to the branch leading to the $i^{th}$ node in \cl{topology}. 
-Thus, the \cl{phylogeny} variable is a deterministic node: 
-
-{\tt \begin{snugshade*}
-\begin{lstlisting}
-phylogeny := treeAssembly(topology, br_lens)
-\end{lstlisting}
-\end{snugshade*}}
 
 
 
@@ -270,7 +303,7 @@ This distribution requires several input arguments:
 (3) the \cl{type} of character data.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-seq ~ dnPhyloCTMC(tree=phylogeny, Q=Q, type="DNA")
+seq ~ dnPhyloCTMC(tree=psi, Q=Q, type="DNA")
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -322,7 +355,7 @@ The \cl{mnFile} monitor will record the states for only the parameters passed in
 
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-monitors[2] = mnFile(filename="output/primates_cytb_JC_posterior.trees",printgen=10, separator = TAB, phylogeny)
+monitors[2] = mnFile(filename="output/primates_cytb_JC_posterior.trees",printgen=10, separator = TAB, psi)
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -379,7 +412,7 @@ We are interested in the phylogenetic relationship of the Tarsiers. Therefore, w
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 treetrace = readTreeTrace("output/primates_cytb_JC_posterior.trees",
-                             treetype="non-clock")
+                             treetype="clock")
 treetrace.summarize()
 \end{lstlisting}
 \end{snugshade*}}
