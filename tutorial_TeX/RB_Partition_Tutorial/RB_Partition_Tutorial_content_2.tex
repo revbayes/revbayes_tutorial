@@ -1,11 +1,10 @@
-\subsection{Partitioning by Gene Region}\label{secByGene}
+\section{Partitioning by Gene Region}\label{secByGene}
 
 The uniform model used in the previous section assumes that all sites in the alignment evolved under the same process described by a shared tree, branch length proportions, and parameters of the GTR+$\Gamma$ substitution model.
-However, our alignment contains two distinct gene regions---atpB and rbcL---so we may wish to explore the possibility that the substitution process differs between these two gene regions.
+However, our alignment contains two distinct gene regions---cytB and cox2---so we may wish to explore the possibility that the substitution process differs between these two gene regions.
 This requires that we first specify the data partitions corresponding to these two genes, then define an independent substitution model for each data partition. 
 
-\textbf{\textit{Clear Workspace and Reload Data}}
-
+First, we'll clear the workspace of all declared variables
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 clear()
@@ -16,7 +15,7 @@ Since we wish to avoid individually specifying each parameter of the GTR+$\Gamma
 To do this, we begin by creating a vector of data file names:
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-filenames <- v("data/conifer_atpB.nex", "data/conifer_rbcL.nex")
+filenames <- v("data/primates_cox2.nex", "data/primates_cytb.nex")
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -31,7 +30,7 @@ And create a vector of data matrices called \cl{data}:
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 for (i in 1:n_parts){
-   data[i] <- readDiscreteCharacterData(filenames[i])[1]
+   data[i] = readDiscreteCharacterData(filenames[i])
 }
 \end{lstlisting}
 \end{snugshade*}}
@@ -45,87 +44,126 @@ n_branches <- 2 * n_species - 3
 \end{lstlisting}
 \end{snugshade*}}
 
-
-\subsection{Specify the Parameters by Looping Over Partitions}
-
-We can avoid creating unique names for every node in our model if we use a \cl{for} loop to iterate over our partitions. Thus, we will only have to type in our entire GTR+$\Gamma$ model parameters once. 
-This will produce a vector for each of the unlinked parameters --- e.g., there will be a vector of \cl{shape} nodes where the stochastic node for the first partition (atpB) will be \cl{shape[1]} and the stochastic node for the second partition (rbcL) will be called \cl{shape[2]}.
-{\tt \small \begin{snugshade*}
+{\tt \begin{snugshade*}
 \begin{lstlisting}
-mi = 0 # an iterator for the move vector
-for (i in 1:n_parts){
-  ## index i=1 : atpB gene ##
-  ## index i=2 : rbcL gene ##
-  
-  # Exchangeability rates #
-  er_prior[i] <- v(1,1,1,1,1,1)
-  er[i] ~ dnDirichlet(er_prior[i])
-  moves[++mi] = mvSimplexElementScale(er[i], alpha=10, tune=true, weight=3) 
-
-  # Stationary base frequencies #
-  sf_prior[i] <- v(1,1,1,1)
-  sf[i] ~ dnDirichlet(sf_prior[i])
-  moves[++mi] = mvSimplexElementScale(sf[i], alpha=10, tune=true, weight=2) 
-
-  # Instantaneous rate matrix (deterministic) #
-  Q[i] := fnGTR(er[i],sf[i]) 
-
-  # Gamma-dist site rates #
-  shape_prior[i] <- 0.05 
-  shape[i] ~ dnExponential( shape_prior[i] )
-  gamma_rates[i] := fnDiscretizeGamma( shape[i], shape[i], 4 )
-  moves[++mi] = mvScale(shape[i], lambda=0.8, tune=true, weight=3.0)
-}
+mvi <- 1
+mni <- 1
 \end{lstlisting}
 \end{snugshade*}}
 
 
-\subsection{Uniform Topology and Branch Lengths}
+\subsection{Specify the Parameters by Looping Over Partitions}
+
+We can avoid creating unique names for every node in our model if we use a \cl{for} loop to iterate over our partitions. Thus, we will only have to type in our entire GTR+$\Gamma$ model parameters once. 
+This will produce a vector for each of the unlinked parameters --- e.g., there will be a vector of \cl{shape} nodes where the stochastic node for the first partition (cytB) will be \cl{shape[1]} and the stochastic node for the second partition (cox2) will be called \cl{shape[2]}.
+{\tt \small \begin{snugshade*}
+\begin{lstlisting}
+for (i in 1:n_parts) {
+  # exchangeability rates for partition i
+  er_prior[i] <- v(1,1,1,1,1,1)
+  er[i] ~ dnDirichlet(er_prior[i])
+  moves[mvi++] = mvSimplexElementScale(er[i], alpha=10, tune=true, weight=3) 
+
+  # stationary frequencies for partition i
+  pi_prior[i] <- v(1,1,1,1)
+  pi[i] ~ dnDirichlet(pi_prior[i])
+  moves[mvi++] = mvSimplexElementScale(pi[i], alpha=10, tune=true, weight=2) 
+
+  # rate matrix for partition i
+  Q[i] := fnGTR(er[i],pi[i]) 
+
+  # +Gamma for partition i
+  alpha_prior_min[i] <- 0.1
+  alpha_prior_max[i] <- 50.0
+  alpha[i] ~ dnUnif( alpha_prior_min[i], alpha_prior_max[i] )
+  norm_gamma_rates[i] := fnDiscretizeGamma( alpha[i], alpha[i], 4, false )
+  moves[mvi++] = mvScale(alpha[i], lambda=0.8, tune=true, weight=3.0)
+
+  # the probability of a site being invariable in partition i
+  pinvar[i] ~ dnBeta(1,1)
+  moves[mvi++] = mvScale(pinvar[i], lambda=0.1, tune=true, weight=2.0)
+  moves[mvi++] = mvSlide(pinvar[i], delta=0.1, tune=true, weight=2.0)
+
+  # specify a rate multiplier for each partition
+  part_rate_mult[i] ~ dnExponential( 1.0 )
+  moves[mvi++] = mvScale(part_rate_mult[i], lambda=1.0, tune=true, weight=2.0)
+}
+
+\end{lstlisting}
+\end{snugshade*}}
 
 Our two genes evolve under different GTR rate matrices with different mean-one gamma distributions on the site rates.
 However, we do assume that they share a single topology and set of branch lengths.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-# Unrooted tree topology distribution #
-topology ~ dnUniformTopology(n_species, names)
+speciation ~ dnExponential(10.)
+extinction ~ dnExponential(10.)
 
-# Tree topology moves #
-moves[++mi] = mvNNI(topology, weight=10.0)
-moves[++mi] = mvSPR(topology, weight=5.0)
+# rescaling mv on speciation and extinction rates
+moves[mvi++] = mvScale(speciation, lambda=1, tune=true, weight=3.0)
+moves[mvi++] = mvScale(extinction, lambda=1, tune=true, weight=3.0)
 
-#### Specify a prior and moves on the branch lengths #### 
-# Create a vector of branch-length variables using a for loop #
-for (i in 1:n_branches) {
-  br_lens[i] ~ dnExponential(10.0)
-  moves[mi++] <- mvScale(br_lens[i],lambda=1,tune=true,weight=1) 
-}
+sampling_fraction <- 23. / 270 # 23 out of the ~ 270 primate species
 
-# A deterministic node for the tree length #
-tree_length := sum(br_lens)
+psi ~ dnBDP(lambda=speciation, mu=extinction, rho=sampling_fraction, rootAge=75, names=names)
 
-# Build the tree by combining the topology with br_lens #
-phylogeny := treeAssembly(topology, br_lens)
+# moves on the tree
+moves[mvi++] = mvNNI(psi, weight=10.0)
+moves[mvi++] = mvFNPR(psi, weight=5.0)
+moves[mvi++] = mvNodeTimeSlideUniform(psi, weight=10.0)
 \end{lstlisting}
 \end{snugshade*}}
 
-\textbf{\textit{Putting it All Together}}
+which is the same as was specified for {\tt model\_PS0.Rev}.
 
 Since we have a rate matrix and a site-rate model for each partition, we must create a phylogenetic CTMC for each gene. 
 Additionally, we must fix the values of these nodes by attaching their respective data matrices.
-These two nodes are linked by the \cl{phylogeny} node and their log-likelihoods are added to get the likelihood of the whole DAG.
+These two nodes are linked by the \cl{psi} node and their log-likelihoods are added to get the likelihood of the whole DAG.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-for (i in 1:n_parts){
-  phyloSeq[i] ~ dnPhyloCTMC(tree=phylogeny, Q=Q[i], siteRates=gamma_rates[i], nSites=data[i].nchar(1), type="DNA")
+for (i in 1:n_parts) {
+  phyloSeq[i] ~ dnPhyloCTMC(tree=psi, Q=Q[i], branchRates=part_rate_mult[i], siteRates=norm_gamma_rates[i], pInv=pinvar[i], type="DNA")
   phyloSeq[i].clamp(data[i])
 }
+
 \end{lstlisting}
 \end{snugshade*}}
 
+The remaining steps should be familiar:
+wrap the model components in a model object
 
-And we can pass in a single, shared node to wrap up our model DAG:
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-mymodel = model(topology)
+mymodel = model(psi)
+\end{lstlisting}
+\end{snugshade*}}
+
+create the monitors
+
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+monitors[mni++] = mnScreen(er, pi, alpha, norm_gamma_rates, pinvar, speciation, extinction, part_rate_mult, printgen=100)
+monitors[mni++] = mnFile(psi, filename="output/PS1.tre", printgen=100)
+monitors[mni++] = mnModel(filename="output/PS1.params.txt",printgen=10)
+\end{lstlisting}
+\end{snugshade*}}
+
+configure and run the MCMC analysis
+
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+mymcmc = mcmc(mymodel, moves, monitors)
+mymcmc.burnin(10000,100)
+mymcmc.run(30000)
+\end{lstlisting}
+\end{snugshade*}}
+
+and summarize the posterior density of trees with a MAP tree
+
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+treetrace = readTreeTrace("output/PS1.tre")
+treetrace.summarize()
+mapTree(treetrace,"output/PS1_map.tre")
 \end{lstlisting}
 \end{snugshade*}}

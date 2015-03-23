@@ -1,17 +1,28 @@
-\bigskip
-\begin{center}
-\textbf{\Large \color{red}This tutorial is currently under construction/revision.}
-\end{center}
-\bigskip
 
 \section*{Overview}
 
 
 This tutorial demonstrates how to accommodate variation in the substitution process across sites of an alignment.
 In the preceding tutorials, we assumed that all sites in an alignment evolved under an identical substitution process.
-This assumption is likely to be violated in real datasets.  
+This assumption is likely to be violated biologically, since different nucleotide sites are subject to different selection pressures, such as depending on which gene or codon position the site belongs to.
 Here, we will demonstrate how to specify---and select among---alternative \emph{mixed models} using \RevBayes.
 This is commonly referred to as partitioned-data analysis, where two or more subsets of sites in our alignment are assumed to evolve under distinct processes.
+
+This tutorial will construct two multi-gene models.
+The first model, PS0, assumes all genes evolve under the same process parameters.
+The second model, PS1, assumes all genes evolve according to the same process, but each gene has it's own set of process parameters.
+The third model, PS2, partitions the data not only by gene, but also by codon position.
+Each analysis will generate a {\it maximum a posteriori} tree to summarize the inferred phylogeny.
+An advanced exercise introduces how to compute Bayes factors to select across various partitioning schemes.
+
+All of the files for this analysis are provided for you and you can run these without significant effort using the \cl{source()} function in the \RevBayes~console, e.g.
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+source("RevBayes_scripts/model_PS0.Rev")
+\end{lstlisting}
+\end{snugshade*}}
+
+If everything loaded properly, then you should see the program begin running the Markov chain Monte Carlo analysis needed for estimating the posterior distribution. If you continue to let this run, then you will see it output the states of the Markov chain once the MCMC analysis begins.
 
 \subsection*{Requirements}
 We assume that you have previously completed the following tutorials:
@@ -35,8 +46,6 @@ In the \cl{data} folder, you will find the following files
 \begin{itemize}
 \item
 \cl{primates\_cytb.nex}: Alignment of the \textit{cytochrome b} subunit from 23 primates representing 14 of the 16 families (\textit{Indriidae} and \textit{Callitrichidae} are missing).
-\item
-\cl{primates\_16s\_rrna.nex}: Alignment of the \textit{16s ribosomal RNA} gene from the same 23 primates species.
 \item
 \cl{primates\_cox2.nex}: Alignment of the \textit{COX-II} gene from the same 23 primates species.
 \end{itemize}
@@ -73,10 +82,10 @@ The analysis pipeline that we will use in this tutorial is depicted in Figure \r
 \begin{figure}[ht!]
 \centering
 \fbox{\includegraphics[width=6.8in,angle=0]{\ResourcePath figures/pipeline.eps}}
-\caption{\small The analysis pipeline for Exercise 1. We will explore three partition schemes for the conifer dataset.
+\caption{\small The analysis pipeline for Exercise 1. We will explore three partition schemes for the primates dataset.
 The first model (the `uniform model', $M_0$) assumes that all sites evolved under a common GTR+$\Gamma$ substitution model.
-The second model (the `moderately partitioned' model, $M_1$) invokes two data partitions corresponding to the two gene regions (atpB and rbcL), and assumes each subset of sites evolved under an independent GTR+$\Gamma$ model.
-The final mixed model (the `highly partitioned' model, $M_2$) invokes four data partitions---the first partition corresponds to the atpB gene region, and the remaining partitions correspond to the three codon positons of the rbcL gene region---and each data partition is assumed evolved under an independent GTR+$\Gamma$ substitution model.
+The second model (the `moderately partitioned' model, $M_1$) invokes two data partitions corresponding to the two gene regions (cytB and cox2), and assumes each subset of sites evolved under an independent GTR+$\Gamma$ model.
+The final mixed model (the `highly partitioned' model, $M_2$) invokes four data partitions---the first two partitions corresponds to the cytB gene region, where the first and second codon position sites share a partition distinct from the third codon position sites, and the cox2 has two partitions of its own, partitioned by codon positions in the same way---and each data partition is assumed evolved under an independent GTR+$\Gamma$ substitution model.
 Note that we assume that all sites share a common tree topology, $\Psi$, and branch-length proportions, $\nu$, for each of the candidate partition schemes.
 We perform two separate sets of analyses for each mixed model---a Metropolis-coupled MCMC simulation to approximate the joint posterior probability density of the mixed-model parameters, and a `stepping-stone' MCMC simulation to approximate the marginal likelihood for each mixed model.
 The resulting marginal-likelihood estimates are then evaluated using Bayes factors to assess the fit of the data to the three candidate mixed models.  

@@ -16,26 +16,26 @@
 #######################
 
 # read in the character data
-data[1] <- readDiscreteCharacterData("data/primates_16s_rrna.nex")
-data_16s <- readDiscreteCharacterData("data/primates_cox2.nex")
-
-# partition for 1st codon position
-data[2] <- data_16s
-data[2].setCodonPartition( v(1,2) )
-
-# partition for 2nd codon position
-data[3] <- data_16s
-data[3].setCodonPartition( 3 )
-
+data_cox2 <- readDiscreteCharacterData("data/primates_cox2.nex")
 data_cytb <- readDiscreteCharacterData("data/primates_cytb.nex")
 
+
 # partition for 1st codon position
-data[4] <- data_cytb
-data[4].setCodonPartition( v(1,2) )
+data[1] <- data_cox2
+data[1].setCodonPartition( v(1,2) )
 
 # partition for 2nd codon position
-data[5] <- data_cytb
-data[5].setCodonPartition( 3 )
+data[2] <- data_cox2
+data[2].setCodonPartition( 3 )
+
+
+# partition for 1st codon position
+data[3] <- data_cytb
+data[3].setCodonPartition( v(1,2) )
+
+# partition for 2nd codon position
+data[4] <- data_cytb
+data[4].setCodonPartition( 3 )
 
 n_parts <- data.size()
 
@@ -58,16 +58,20 @@ mni <- 1
   
 for (i in 1:n_parts){
 
+  # exchangeability rates for partition i
   er_prior[i] <- v(1,1,1,1,1,1)
   er[i] ~ dnDirichlet(er_prior[i])
-  moves[mvi++] = mvSimplexElementScale(er[i], alpha=10.0, tune=true, weight=3.0)
+  moves[mvi++] = mvSimplexElementScale(er[i], alpha=10, tune=true, weight=3) 
 
+  # stationary frequencies for partition i
   pi_prior[i] <- v(1,1,1,1)
   pi[i] ~ dnDirichlet(pi_prior[i])
-  moves[mvi++] = mvSimplexElementScale(pi[i], alpha=10.0, tune=true, weight=2.0) 
+  moves[mvi++] = mvSimplexElementScale(pi[i], alpha=10, tune=true, weight=2) 
 
-  Q[i] := fnGTR(er[i],pi[i])
-
+  # rate matrix for partition i
+  Q[i] := fnGTR(er[i],pi[i]) 
+  
+  # +Gamma for partition i
   alpha_prior_min[i] <- 0.1
   alpha_prior_max[i] <- 50.0
   alpha[i] ~ dnUnif( alpha_prior_min[i], alpha_prior_max[i] )
@@ -76,7 +80,6 @@ for (i in 1:n_parts){
 
   # the probability of a site being invariable
   pinvar[i] ~ dnBeta(1,1)
-  # add moves for the probability if a site being invariable
   moves[mvi++] = mvScale(pinvar[i], lambda=0.1, tune=true, weight=2.0)
   moves[mvi++] = mvSlide(pinvar[i], delta=0.1, tune=true, weight=2.0)
 
@@ -109,9 +112,6 @@ moves[mvi++] = mvFNPR(psi, weight=5.0)
 moves[mvi++] = mvNodeTimeSlideUniform(psi, weight=10.0)
 
 
-
-
-
 ###################
 # PhyloCTMC Model #
 ###################
@@ -130,12 +130,17 @@ for (i in 1:n_parts){
 mymodel = model(psi)
 
 # add monitors
-monitors[mni++] = mnScreen(er, pi, alpha, norm_gamma_rates, pinvar, speciation, extinction, part_rate_mult, printgen=100)
+monitors[mni++] = mnScreen(er, pi, alpha, norm_gamma_rates, pinvar, speciation, extinction, printgen=100)
 monitors[mni++] = mnFile(psi, filename="output/PS2.tre", printgen=100)
-monitors[mni++] = mnModel(filename="output/PS2.params.txt",printgen=10)
+monitors[mni++] = mnFile(er[1], pi[1], alpha[1], norm_gamma_rates[1], pinvar[1], part_rate_mult[1], er[2], pi[2], alpha[2], norm_gamma_rates[2], pinvar[2], part_rate_mult[2], er[3], pi[3], alpha[3], norm_gamma_rates[3], pinvar[3], part_rate_mult[3], er[4], pi[4], alpha[4], norm_gamma_rates[4], pinvar[4], part_rate_mult[4], speciation, extinction, filename="output/PS2.params.txt",printgen=10)
 
 # run the analysis
 mymcmc = mcmc(mymodel, moves, monitors)
 mymcmc.burnin(10000,100)
-mymcmc.run(10000)
+mymcmc.run(30000)
 
+# summarize output
+treetrace = readTreeTrace("output/PS2.tre")
+treetrace.summarize()
+
+mapTree(treetrace,"output/PS2_map.tre")
