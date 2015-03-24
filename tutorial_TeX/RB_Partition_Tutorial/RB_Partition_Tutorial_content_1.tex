@@ -70,7 +70,7 @@ and assign its move
 
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-moves[mvi++] = mvSimplexElementScale(er, alpha=10, tune=true, weight=15) 
+moves[mvi++] = mvSimplexElementScale(er, alpha=10, tune=true, weight=3) 
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -78,17 +78,17 @@ We can use the same type of distribution as a prior on the 4 stationary frequenc
 Specify a flat Dirichlet prior density on the base frequencies:
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-sf_prior <- v(1,1,1,1) 
-sf ~ dnDirichlet( sf_prior )
+pi_prior <- v(1,1,1,1) 
+pi ~ dnDirichlet( pi_prior )
 \end{lstlisting}
 \end{snugshade*}}
 
-The node \cl{sf} represents the $\pi$ node in Figure \ref{gtrgmfig}.
+The node \cl{pi} represents the $\pi$ node in Figure \ref{pipeline}.
 Now add the simplex scale move on the stationary frequencies to the moves vector
 
 {\tt \small \begin{snugshade*}
 \begin{lstlisting}
-moves[mvi++] = mvSimplexElementScale(sf, alpha=10, tune=true, weight=15) 
+moves[mvi++] = mvSimplexElementScale(pi, alpha=10, tune=true, weight=2) 
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -105,7 +105,7 @@ We will also assume that the substitution rates vary among sites according to a 
 In order that we can interpret the branch lengths as the expected number of substitutions per site, this model assumes that the mean site rate is equal to 1.
 %Consequently, we wish to specify a gamma distribution with a mean of 1.
 The mean of the gamma is equal to $\alpha/\beta$, so a mean-one gamma is specified by setting the two parameters to be equal, $\alpha=\beta$.
-Therefore, we need only consider the single shape parameter, $\alpha$ \citep{yang94a}. 
+Therefore, we need only consider the single shape parameter, $\alpha$ \citep{Yang1994a}. 
 The degree of among-site substitution rate variation (ASRV) is inversely proportional to the value of the shape parameter---as the value of $\alpha$-shape parameter increases, the gamma distribution increasingly resembles a normal distribution with decreasing variance, which corresponds to decreasing levels of ASRV (Figure \ref{asrhGammaFig}).
 If $\alpha = 1$, then the gamma distribution collapses to an exponential distribution with a rate parameter equal to $\beta$.
 By contrast, when the value of the $\alpha$-shape parameter is $< 1$, the gamma distribution assumes a concave distribution that places most of the prior density on low rates but allows some prior mass on sites with very high rates, which corresponds to high levels of ASRV (Figure \ref{asrhGammaFig}).
@@ -118,14 +118,10 @@ By contrast, when the value of the $\alpha$-shape parameter is $< 1$, the gamma 
 \end{figure}
 
 
-Alternatively, we might not have good prior knowledge about the variance in site rates, thus we can place an uninformative, or diffuse prior on the shape parameter.
-For this analysis, we will use an exponential distribution with a rate parameter, \cl{shape\_prior}, equal to \cl{0.05}.
-Under an exponential prior, we are placing non-zero probability on values of $\alpha$ ranging from 0 to $\infty$. 
-The rate parameter, often denoted $\lambda$, of an exponential distribution controls both the mean and variance of this prior such that the expected (or mean) value of $\alpha$ is:
-$\mathbb{E}[\alpha] = \frac{1}{\lambda}.$
-Thus, if we set $\lambda=0.05$, then $\mathbb{E}[\alpha] = 20$.
+Alternatively, we might not have good prior knowledge about the variance in site rates, thus we can place an uninformative prior on the shape parameter.
+For this analysis, we will use an uniform distribution for values 0.1 to 50.0 to reflect our ignorance of what shape we expect.
 
-Create a constant node called \cl{shape\_prior} for the rate parameter of the exponential prior on the gamma-shape parameter
+Create a constant nodes called \cl{alpha\_prior\_min} and \cl{alpha\_prior\_max} to specify the interval for the uniform prior on the gamma-shape parameter
 {\tt\begin{snugshade*}
 \begin{lstlisting}
 alpha_prior_min <- 0.1
@@ -133,14 +129,14 @@ alpha_prior_max <- 50.0
 \end{lstlisting}
 \end{snugshade*}}
 
-Then create a stochastic node called \cl{shape} to represent the $\alpha$ node in Figure \ref{gtrgmfig}, with an exponential density as a prior:
+Then create a stochastic node called \cl{alpha} to represent the $\alpha$ node in Figure \ref{pipeline}, with an exponential density as a prior:
 {\tt\begin{snugshade*}
 \begin{lstlisting}
 alpha ~ dnUnif( alpha_prior_min, alpha_prior_max )
 \end{lstlisting}
 \end{snugshade*}}
 
-The way the ASRV model is implemented involves discretizing the mean-one gamma distribution into a set number of rate categories. Thus, we can analytically marginalize over the uncertainty in the rate at each site. To do this, we need a deterministic node that is a vector of rates calculated from the gamma distribution and the number of rate categories. The \cl{fnDiscretizeGamma()} function returns this deterministic node and takes three arguments: the shape and rate of the gamma distribution and the number of categories. Since we want to discretize a mean-one gamma distribution, we can pass in \cl{shape} for both the shape and rate.
+The way the ASRV model is implemented involves discretizing the mean-one gamma distribution into a set number of rate categories. Thus, we can analytically marginalize over the uncertainty in the rate at each site. To do this, we need a deterministic node that is a vector of rates calculated from the gamma distribution and the number of rate categories. The \cl{fnDiscretizeGamma()} function returns this deterministic node and takes three arguments: the shape and rate of the gamma distribution and the number of categories. Since we want to discretize a mean-one gamma distribution, we can pass in \cl{alpha} for both the shape and rate.
 
 Initialize the \cl{gamma\_rates} deterministic node vector using the  \cl{fnDiscretizeGamma()} function with \cl{4} bins:
 {\tt \begin{snugshade*}
@@ -149,7 +145,7 @@ norm_gamma_rates := fnDiscretizeGamma( alpha, alpha, 4, false )
 \end{lstlisting}
 \end{snugshade*}}
 
-The random variable that controls the rate variation is the stochastic node \cl{shape}. This variable is a single, real positive value (\cl{RevType = RealPos}). 
+The random variable that controls the rate variation is the stochastic node \cl{alpha}. This variable is a single, real positive value (\cl{RevType = RealPos}). 
 We will apply a simple scale move to this parameter.
 The scale move's tuning parameter is called \cl{lambda} and this value dictates the size of the proposal.
 {\tt \begin{snugshade*}
@@ -176,7 +172,7 @@ Note, if the $+\Gamma$ model allows for one rate category to take a very small v
 This means when invariant site patterns are present, the $+\Gamma$ and $+I$ models vie to explain the same underlying evolutionary process of some sites evolving at a zero or near-zero rate.
 
 The tree topology and branch lengths are also stochastic nodes in our model. 
-In Figure \ref{gtrgmfig}, the tree topology is denoted $\Psi$ and the length of the branch leading to node $i$ is $\nu_i$.
+In Figure \ref{pipeline}, the tree topology is denoted $\Psi$ and the length of the branch leading to node $i$ is $\nu_i$.
 
 We will assume the topology and divergence times are distributed by a birth-death process called \cl{dnBDP()} in RevBayes.
 First, we will define the distribution's speciation rate, {\tt lambda}, and an extinction rate {\tt mu}
@@ -270,7 +266,7 @@ monitors[mni++] = mnFile(psi, filename="output/PS0.tre", printgen=100)
 Finally, create a screen monitor that will report the states of specified variables to the screen with \cl{mnScreen}:
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-monitors[mni++] = mnScreen(er, sf, alpha, norm_gamma_rates, pinvar, speciation, extinction, clock, printgen=100)
+monitors[mni++] = mnScreen(er, pi, alpha, norm_gamma_rates, pinvar, speciation, extinction, clock, printgen=100)
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -298,7 +294,7 @@ mymcmc.run(generations=30000)
 
 When the analysis is complete, you will have the monitor files in your output directory.
 
-Methods for visualizing the marginal densities of parameter values are not currently available in \RevBayes. Thus, it is important to use programs like Tracer \citep{rambaut09} to evaluate mixing and non-convergence. (RevBayes does, however, have a tool for convergence assessment called \cl{beca}.)
+Methods for visualizing the marginal densities of parameter values are not currently available in \RevBayes. Thus, it is important to use programs like Tracer \citep{Rambaut2009} to evaluate mixing and non-convergence. (RevBayes does, however, have a tool for convergence assessment called \cl{beca}.)
 
 \RevBayes~can also summarize the tree samples by reading in the tree-trace file:
 {\tt \begin{snugshade*}

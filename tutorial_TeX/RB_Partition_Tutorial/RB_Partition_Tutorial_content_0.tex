@@ -66,7 +66,7 @@ The choice of partitioning scheme is up to the investigator and many possible pa
 %Next, a substitution model is specified for each predefined process partition (using a given model-selection criterion, such as Bayes factors).
 In this exercise, we assume that each partition evolved under an independent general-time reversible model with gamma-distributed rates across sites (GTR+$\Gamma$). 
 Under this model the observed data are conditionally dependent on the exchangeability rates ($\theta$), stationary base frequencies ($\pi$), and the degree of gamma-distributed among-site rate variation ($\alpha$), as well as the unrooted tree topology ($\Psi$) and branch lengths ($\nu$).
-We show the graphical model representation of the GTR+$\Gamma$ mode in Figure \ref{gtrgmfig}. 
+We show the graphical model representation of the GTR+$\Gamma$ mode in Figure \ref{pipeline}. 
 When we assume different GTR+$\Gamma$ models for each partitions, this results in a composite model, in which all sites are assumed to share a common, unrooted tree topology and proportional branch lengths, but subsets of sites (`data partitions') are assumed to have independent substitution model parameters.
 This composite model is referred to as a \emph{mixed model}. 
 %\taha{need to change the graphical model above to have the same symbols as in this paragraph since this refers to the figure \ref{pipeline} and it may be harder to change that figure.}
@@ -76,7 +76,7 @@ This composite model is referred to as a \emph{mixed model}.
 Finally, we perform a separate MCMC simulation to approximate the joint posterior probability density of the phylogeny and other parameters.  Note that, in this approach, the mixed model is a fixed assumption of the inference (\IE the parameter estimates are conditioned on the specified mixed model), and the parameters for each process partition are independently estimated.
 
 For most sequence alignments, several (possibly many) partition schemes of varying complexity are plausible {\it a priori}, which therefore requires a way to objectively identify the partition scheme that balances estimation bias and error variance associated with under- and over-parameterized mixed models, respectively.
-Increasingly, mixed-model selection is based on \textit{Bayes factors} \citep[{\it e.g.},][]{suchard01}, which involves first calculating the marginal likelihood under each candidate partition scheme and then comparing the ratio of the marginal likelihoods for the set of candidate partition schemes \citep{brandley05,nylander04,mcguire07}.
+Increasingly, mixed-model selection is based on \textit{Bayes factors} \citep[{\it e.g.},][]{Suchard2001}, which involves first calculating the marginal likelihood under each candidate partition scheme and then comparing the ratio of the marginal likelihoods for the set of candidate partition schemes \citep{Brandley2005,Nylander2004,Mcguire2007}.
 The analysis pipeline that we will use in this tutorial is depicted in Figure \ref{pipeline}.
 
 \begin{figure}[ht!]
@@ -92,7 +92,6 @@ The resulting marginal-likelihood estimates are then evaluated using Bayes facto
 }
 \label{pipeline}
 \end{figure}
- 
 \newpage
 
 
