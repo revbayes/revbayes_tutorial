@@ -81,42 +81,81 @@ mni <- 1
 \end{snugshade*}}
 
 Setting up the GTR+$\Gamma$ model is just like in the two-gene analysis, except this time \cl{n\_parts} is equal to 4, so now our vectors of stochastic nodes should all contain nodes for the four pairs of codon-gene partitions.
+
+The script for the model, {\tt RevBayes\_scripts/model\_PS2.Rev}, creates the model parameters for each partition in one large loop.
+Like before, we will split the loop into smaller parts to achieve the same end.
+
+First, we will create the GTR rate matrix for partition $i$ by first creating exchangeability rates
 {\tt \small \begin{snugshade*}
 \begin{lstlisting}
-for (i in 1:n_parts){
-
-  # exchangeability rates for partition i
+for (i in 1:n_parts) {
   er_prior[i] <- v(1,1,1,1,1,1)
   er[i] ~ dnDirichlet(er_prior[i])
-  moves[mvi++] = mvSimplexElementScale(er[i], alpha=10.0, tune=true, weight=3.0)
+  moves[mvi++] = mvSimplexElementScale(er[i], alpha=10, tune=true, weight=3) 
+}
+\end{lstlisting}
+\end{snugshade*}}
 
-  # stationary frequencies for partition i
+and stationary frequencies
+
+{\tt \small \begin{snugshade*}
+\begin{lstlisting}
+for (i in 1:n_parts) {
   pi_prior[i] <- v(1,1,1,1)
   pi[i] ~ dnDirichlet(pi_prior[i])
-  moves[mvi++] = mvSimplexElementScale(pi[i], alpha=10.0, tune=true, weight=2.0) 
+  moves[mvi++] = mvSimplexElementScale(pi[i], alpha=10, tune=true, weight=2)
+}
+\end{lstlisting}
+\end{snugshade*}}
 
-  # rate matrix for partition i
-  Q[i] := fnGTR(er[i],pi[i])
+then passing those parameters into a rate matrix function
 
-  # +Gamma for partition i
+{\tt \small \begin{snugshade*}
+\begin{lstlisting}
+for (i in 1:n_parts) {
+  Q[i] := fnGTR(er[i],pi[i]) 
+}
+\end{lstlisting}
+\end{snugshade*}}
+
+which states the rate matrix ({\tt Q[i]}) for partition $i$ is determined by the exchangeability rates ({\tt er[i]}) and stationary frequencies ({\tt pi[i]}) also defined for partition $i$.
+Following this format, we construct the remainin partition parameters: the $+\Gamma$ mixture model
+
+{\tt \small \begin{snugshade*}
+\begin{lstlisting}
+for (i in 1:n_parts) {
   alpha_prior_min[i] <- 0.1
   alpha_prior_max[i] <- 50.0
   alpha[i] ~ dnUnif( alpha_prior_min[i], alpha_prior_max[i] )
   norm_gamma_rates[i] := fnDiscretizeGamma( alpha[i], alpha[i], 4, false )
   moves[mvi++] = mvScale(alpha[i], lambda=0.8, tune=true, weight=3.0)
-
-  # the probability of a site being invariable
-  pinvar[i] ~ dnBeta(1,1)
-  moves[mvi++] = mvScale(pinvar[i], lambda=0.1, tune=true, weight=2.0)
-  moves[mvi++] = mvSlide(pinvar[i], delta=0.1, tune=true, weight=2.0)
-
-  # specify a rate multiplier for each partition
-  part_rate_mult[i] ~ dnExponential( 1.0 )
-  moves[mvi++] = mvScale(part_rate_mult[i], lambda=1.0, tune=true, weight=2.0)
-
 }
 \end{lstlisting}
 \end{snugshade*}}
+
+the $+I$ invariant sites model
+
+{\tt \small \begin{snugshade*}
+\begin{lstlisting}
+for (i in 1:n_parts) {
+  pinvar[i] ~ dnBeta(1,1)
+  moves[mvi++] = mvScale(pinvar[i], lambda=0.1, tune=true, weight=2.0)
+  moves[mvi++] = mvSlide(pinvar[i], delta=0.1, tune=true, weight=2.0)
+}
+\end{lstlisting}
+\end{snugshade*}}
+
+and the per-partition molecular clock
+
+{\tt \small \begin{snugshade*}
+\begin{lstlisting}
+for (i in 1:n_parts) {
+  part_rate_mult[i] ~ dnExponential( 1.0 )
+  moves[mvi++] = mvScale(part_rate_mult[i], lambda=1.0, tune=true, weight=2.0)
+}
+\end{lstlisting}
+\end{snugshade*}}
+
 
 Note that applying the per-partition model parameters only depends on the number of partitions, which means the script describing the partitioned model will work so long as you correctly populate the {\tt data} vector.
 
@@ -155,7 +194,7 @@ for (i in 1:n_parts){
 And then wrap up the DAG using the \cl{model()} function:
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-mymodel <- model(psi)
+mymodel = model(psi)
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -165,7 +204,7 @@ Monitor the model parameters, monitoring the tree seperately:
 \begin{lstlisting}
 monitors[mni++] = mnScreen(er, pi, alpha, norm_gamma_rates, pinvar, speciation, extinction, part_rate_mult, printgen=100)
 monitors[mni++] = mnFile(psi, filename="output/PS2.tre", printgen=100)
-monitors[mni++] = mnModel(filename="output/PS2.params.txt",printgen=10)
+monitors[mni++] = mnFile(er[1], pi[1], alpha[1], norm_gamma_rates[1], pinvar[1], part_rate_mult[1], er[2], pi[2], alpha[2], norm_gamma_rates[2], pinvar[2], part_rate_mult[2], er[3], pi[3], alpha[3], norm_gamma_rates[3], pinvar[3], part_rate_mult[3], er[4], pi[4], alpha[4], norm_gamma_rates[4], pinvar[4], part_rate_mult[4], speciation, extinction, filename="output/PS2.params.txt",printgen=10)
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -175,7 +214,7 @@ Set up and run the MCMC analysis:
 \begin{lstlisting}
 mymcmc = mcmc(mymodel, moves, monitors)
 mymcmc.burnin(10000,100)
-mymcmc.run(30000)
+mymcmc.run(100000) # run for fewer iterations for classroom exercises
 \end{lstlisting}
 \end{snugshade*}}
 

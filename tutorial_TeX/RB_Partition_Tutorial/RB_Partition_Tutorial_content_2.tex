@@ -11,7 +11,7 @@ clear()
 \end{lstlisting}
 \end{snugshade*}}
 
-Since we wish to avoid individually specifying each parameter of the GTR+$\Gamma$ model for each of our data partitions, we can \textit{loop} over our datasets and create vectors of nodes.
+Since we wish to avoid individually specifying each parameterster of the GTR+$\Gamma$ model for each of our data partitions, we can \textit{loop} over our datasets and create vectors of nodes.
 To do this, we begin by creating a vector of data file names:
 {\tt \begin{snugshade*}
 \begin{lstlisting}
@@ -55,40 +55,79 @@ mni <- 1
 \subsection{Specify the Parameters by Looping Over Partitions}
 
 We can avoid creating unique names for every node in our model if we use a \cl{for} loop to iterate over our partitions. Thus, we will only have to type in our entire GTR+$\Gamma$ model parameters once. 
-This will produce a vector for each of the unlinked parameters --- e.g., there will be a vector of \cl{shape} nodes where the stochastic node for the first partition (cytB) will be \cl{shape[1]} and the stochastic node for the second partition (cox2) will be called \cl{shape[2]}.
+This will produce a vector for each of the unlinked parameters --- e.g., there will be a vector of \cl{alpha} nodes where the stochastic node for the first partition (cytB) will be \cl{alpha[1]} and the stochastic node for the second partition (cox2) will be called \cl{alpha[2]}.
+
+The script for the model, {\tt RevBayes\_scripts/model\_PS1.Rev}, creates the model parameters for each partition in one large loop.
+Here, we will split the loop into smaller parts to achieve the same end.
+
+First, we will create the GTR rate matrix for partition $i$ by first creating exchangeability rates
 {\tt \small \begin{snugshade*}
 \begin{lstlisting}
 for (i in 1:n_parts) {
-  # exchangeability rates for partition i
   er_prior[i] <- v(1,1,1,1,1,1)
   er[i] ~ dnDirichlet(er_prior[i])
   moves[mvi++] = mvSimplexElementScale(er[i], alpha=10, tune=true, weight=3) 
+}
+\end{lstlisting}
+\end{snugshade*}}
 
-  # stationary frequencies for partition i
+and stationary frequencies
+
+{\tt \small \begin{snugshade*}
+\begin{lstlisting}
+for (i in 1:n_parts) {
   pi_prior[i] <- v(1,1,1,1)
   pi[i] ~ dnDirichlet(pi_prior[i])
-  moves[mvi++] = mvSimplexElementScale(pi[i], alpha=10, tune=true, weight=2) 
+  moves[mvi++] = mvSimplexElementScale(pi[i], alpha=10, tune=true, weight=2)
+}
+\end{lstlisting}
+\end{snugshade*}}
 
-  # rate matrix for partition i
+then passing those parameters into a rate matrix function
+
+{\tt \small \begin{snugshade*}
+\begin{lstlisting}
+for (i in 1:n_parts) {
   Q[i] := fnGTR(er[i],pi[i]) 
+}
+\end{lstlisting}
+\end{snugshade*}}
 
-  # +Gamma for partition i
+which states the rate matrix ({\tt Q[i]}) for partition $i$ is determined by the exchangeability rates ({\tt er[i]}) and stationary frequencies ({\tt pi[i]}) also defined for partition $i$.
+Following this format, we construct the remainin partition parameters: the $+\Gamma$ mixture model
+
+{\tt \small \begin{snugshade*}
+\begin{lstlisting}
+for (i in 1:n_parts) {
   alpha_prior_min[i] <- 0.1
   alpha_prior_max[i] <- 50.0
   alpha[i] ~ dnUnif( alpha_prior_min[i], alpha_prior_max[i] )
   norm_gamma_rates[i] := fnDiscretizeGamma( alpha[i], alpha[i], 4, false )
   moves[mvi++] = mvScale(alpha[i], lambda=0.8, tune=true, weight=3.0)
+}
+\end{lstlisting}
+\end{snugshade*}}
 
-  # the probability of a site being invariable in partition i
+the $+I$ invariant sites model
+
+{\tt \small \begin{snugshade*}
+\begin{lstlisting}
+for (i in 1:n_parts) {
   pinvar[i] ~ dnBeta(1,1)
   moves[mvi++] = mvScale(pinvar[i], lambda=0.1, tune=true, weight=2.0)
   moves[mvi++] = mvSlide(pinvar[i], delta=0.1, tune=true, weight=2.0)
+}
+\end{lstlisting}
+\end{snugshade*}}
 
-  # specify a rate multiplier for each partition
+and the per-partition molecular clock
+
+{\tt \small \begin{snugshade*}
+\begin{lstlisting}
+for (i in 1:n_parts) {
   part_rate_mult[i] ~ dnExponential( 1.0 )
   moves[mvi++] = mvScale(part_rate_mult[i], lambda=1.0, tune=true, weight=2.0)
 }
-
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -125,7 +164,6 @@ for (i in 1:n_parts) {
   phyloSeq[i] ~ dnPhyloCTMC(tree=psi, Q=Q[i], branchRates=part_rate_mult[i], siteRates=norm_gamma_rates[i], pInv=pinvar[i], type="DNA")
   phyloSeq[i].clamp(data[i])
 }
-
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -144,7 +182,7 @@ create the monitors
 \begin{lstlisting}
 monitors[mni++] = mnScreen(er, pi, alpha, norm_gamma_rates, pinvar, speciation, extinction, part_rate_mult, printgen=100)
 monitors[mni++] = mnFile(psi, filename="output/PS1.tre", printgen=100)
-monitors[mni++] = mnModel(filename="output/PS1.params.txt",printgen=10)
+monitors[mni++] = mnFile(er[1], pi[1], alpha[1], norm_gamma_rates[1], pinvar[1], part_rate_mult[1], er[2], pi[2], alpha[2], norm_gamma_rates[2], pinvar[2], part_rate_mult[2], speciation, extinction, filename="output/PS1.params.txt",printgen=10)
 \end{lstlisting}
 \end{snugshade*}}
 
