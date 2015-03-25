@@ -109,6 +109,8 @@ clock_s <- 0.1
 clock_mu <- ln(clock_M) - ((clock_s * clock_s) * 0.5)
 clockRate ~ dnLognormal(clock_mu, clock_s)
 
+moves[++mi] = mvScale(clockRate,lambda=1,tune=true,weight=1)
+
 # the sequence evolution model
 seq ~ dnPhyloCTMC(tree=psi, Q=Q, branchRates=clockRate, siteRates=gamma_rates, type="DNA")
 
