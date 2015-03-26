@@ -248,17 +248,20 @@ Do different models yield different tree topologies?
 Generally, do complex models provide higher or lower clade support?
 
 \item {\bf 3) Partitioned model selection.}
-Bayes factors are computed as the ratio of marginal likelihoods (see Section XXX for more details).
+Bayes factors are computed as the ratio of marginal likelihoods (see the marginal likelihood tutorial (Section XXX) for more details).
 Rather than constructing the analysis with an {\tt mcmc} object, marginal likelihood computations rely on output from a {\tt powerPosterior} object.
 
 Copy {\tt model\_PS0.Rev} to {\tt marginal\_PS0.Rev}.
 In {\tt marginal\_PS0.Rev}, delete all lines after the {\tt model} function is called, so the MCMC is never run and the MAP tree is never computed.
+Additionally, remove the line creating {\tt mnScreen}, which will conflict with output produced by the power posterior analysis.
+
+
 
 Instead, configure and run a power posterior analysis
 
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-pow_p = powerPosterior(mymodel, moves, "model1.out", cats=50)
+pow_p = powerPosterior(mymodel, moves, monitors, "output/model1.out", cats=50)
 pow_p.burnin(generations=10000,tuningInterval=1000)
 pow_p.run(generations=1000)
 \end{lstlisting}
@@ -268,7 +271,7 @@ then compute the marginal likelihood using the stepping stone sampler
 
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-ss = steppingStoneSampler(file="PS0.out", powerColumnName="power", likelihoodColumnName="likelihood")
+ss = steppingStoneSampler(file="output/PS0.out", powerColumnName="power", likelihoodColumnName="likelihood")
 ss.marginal()
 \end{lstlisting}
 \end{snugshade*}}
