@@ -35,7 +35,7 @@ mi = 0
 ######################
 
 #### specify the Jukes-Cantor substitution model applied uniformly to all sites ###
-Q := fnJC(4) 
+Q <- fnJC(4) 
 
 
 
@@ -45,27 +45,33 @@ Q := fnJC(4)
 # Tree model #
 ##############
 
-#### Specify a uniform prior on the tree topology #### 
-topology ~ dnUniformTopology(names)
+# Specify a prior on the diversification and turnover rate
+diversification ~ dnGamma(5,1)
+turnover ~ dnGamma(5,1)
 
-# moves on the tree
-moves[++mi] = mvNNI(topology)
-moves[++mi] = mvSPR(topology)
+# now transform the diversification and turnover rates into speciation and extinction rates
+speciation := diversification + turnover
+extinction := turnover
 
+# specify a prior on the root age (our informed guess is about 75-80 mya)
+root ~ dnUniform(50.0,100.0)
 
-#### Specify a prior and moves on the branch lengths #### 
-# create a random variable for each branch length using a for loop
-for (i in 1:n_branches) {
-  # We use here the exponential distribution with rate 1.0 as the branch length prior
-  br_lens[i] ~ dnExponential(10.0)
-  # Add a move for the branch length. We just take a simple scaling move since the value is a positive real number.
-  moves[++mi] = mvScale(br_lens[i]) 
-}
+sampling_fraction <- 23 / 270 # 23 out of the ~ 270 primate species
 
-TL := sum(br_lens)
+# create some moves that change the stochastic variables
+# all moves are sliding proposals but you could use scaling proposals for the rates too
+moves[++mi] = mvSlide(diversification,delta=1,tune=true,weight=1)
+moves[++mi] = mvSlide(turnover,delta=1,tune=true,weight=1)
+moves[++mi] = mvSlide(root,delta=1,tune=true,weight=1)
 
-# Build the tree by combining the topology with the branch length.
-phylogeny := treeAssembly(topology, br_lens)
+# construct a variable for the tree drawn from a birth death process
+psi ~ dnBDP(lambda=speciation, mu=extinction, rootAge=abs(root), rho=sampling_fraction, nTaxa=n_species, names=names )
+
+moves[++mi] = mvNarrow(psi, weight=5.0)
+moves[++mi] = mvNNI(psi, weight=1.0)
+moves[++mi] = mvFNPR(psi, weight=3.0)
+moves[++mi] = mvSubtreeScale(psi, weight=3.0)
+moves[++mi] = mvNodeTimeSlideUniform(psi, weight=15.0)
 
 
 
@@ -75,9 +81,11 @@ phylogeny := treeAssembly(topology, br_lens)
 # PhyloCTMC Model #
 ###################
 
+# We use an empirical estimate of the clock rate which is 0.01 (=1%) per million years per site
+clockRate <- 0.01
 
 # the sequence evolution model
-seq ~ dnPhyloCTMC(tree=phylogeny, Q=Q, type="DNA")
+seq ~ dnPhyloCTMC(tree=psi, Q=Q, branchRates=clockRate, type="DNA")
 
 # attach the data
 seq.clamp(data)
@@ -96,20 +104,20 @@ mymodel = model(Q)
 
 
 
-monitors[1] = mnModel(filename="output/primates_cytb_JC_posterior.log",printgen=10, separator = TAB)
-monitors[2] = mnFile(filename="output/primates_cytb_JC_posterior.trees",printgen=10, separator = TAB, phylogeny)
+monitors[1] = mnModel(filename="output/primates_cytb_JC.log",printgen=10, separator = TAB)
+monitors[2] = mnFile(filename="output/primates_cytb_JC.trees",printgen=10, separator = TAB, psi)
 
 ### Compute power posterior distributions
-pow_p = powerPosterior(mymodel, moves, monitors, "output/pow_p_noclock_JC.out", cats=50, sampleFreq=10) 
+pow_p = powerPosterior(mymodel, moves, monitors, "output/pow_p_JC.out", cats=50, sampleFreq=10) 
 pow_p.burnin(generations=10000,tuningInterval=250)
 pow_p.run(generations=1000)  
 
 ### Use stepping-stone sampling to calculate marginal likelihoods
-ss = steppingStoneSampler(file="output/pow_p_noclock_JC.out", powerColumnName="power", likelihoodColumnName="likelihood")
+ss = steppingStoneSampler(file="output/pow_p_JC.out", powerColumnName="power", likelihoodColumnName="likelihood")
 ss.marginal() 
 
 ### Use path-sampling to calculate marginal likelihoods
-ps = pathSampler(file="output/pow_p_noclock_JC.out", powerColumnName="power", likelihoodColumnName="likelihood")
+ps = pathSampler(file="output/pow_p_JC.out", powerColumnName="power", likelihoodColumnName="likelihood")
 ps.marginal() 
 
 # you may want to quit RevBayes now

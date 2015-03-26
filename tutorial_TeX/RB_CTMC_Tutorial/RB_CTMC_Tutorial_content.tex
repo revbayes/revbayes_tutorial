@@ -264,7 +264,7 @@ moves[++mi] = mvSlide(root,delta=1,tune=true,weight=1)
 \end{lstlisting}
 \end{snugshade*}}
 
-Next, specify the \cl{tree} stochastic node by passing in the tip labels \cl{names} to the \cl{dnUniformTopology()} distribution:
+Next, specify the \cl{tree} stochastic node by passing in the tip labels \cl{names} to the \cl{dnBDP()} distribution:
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 psi ~ dnBDP(lambda=speciation, mu=extinction, rootAge=abs(root), rho=sampling_fraction, nTaxa=n_species, names=names )
@@ -373,7 +373,7 @@ monitors[2] = mnFile(filename="output/primates_cytb_JC_posterior.trees",printgen
 Finally, create a screen monitor that will report the states of specified variables to the screen with \cl{mnScreen}:
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-monitors[3] = mnScreen(printgen=1000, TL)
+monitors[3] = mnScreen(printgen=1000, diversification, turnover)
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -626,7 +626,7 @@ where the six exchangeability parameters, $r_{ij}$, specify the relative rates o
 \end{figure}
 
 
-\subsection{Exchangeability Rate Parameters}
+%\subsection{Exchangeability Rate Parameters}
 
 The GTR model requires that we define and specify a prior on the six exchangeability rates, which we will describe using a flat Dirichlet distribution.
 As we did previously for the Dirichlet prior on base frequencies, we first define a constant node specifying the vector of concentration-parameter values using the \cl{v()} function:
@@ -876,7 +876,7 @@ The \cl{Beta(1,1)} distribution is a flat prior distribution that specifies equa
 Then, as usual, we add a move to change this stochastic variable; we'll used a simple sliding window move.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-moves[mi++] = mvSlide(pinvar)
+moves[++mi] = mvSlide(pinvar)
 \end{lstlisting}
 \end{snugshade*}}
 
