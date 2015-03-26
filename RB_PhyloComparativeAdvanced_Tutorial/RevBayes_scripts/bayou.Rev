@@ -121,7 +121,7 @@ for (i in numTips:1 ) {
 
 mymodel = model(rho)
 
-monitors[1] = mnScreen(printgen=10000, rho, logRootOptim, numOptimChanges)
+monitors[1] = mnScreen(printgen=1000, rho, logRootOptim, numOptimChanges, alpha, sigma)
 monitors[2] = mnModel(filename="output/bayou.log",printgen=1000, separator = TAB)
 monitors[3] = mnExtNewick(filename="output/primates_mass_bayou_ext.trees", isNodeParameter=TRUE, printgen=10, separator = TAB, tree=psi, logmass)
 monitors[4] = mnExtNewick(filename="output/primates_mass_bayou_rate_jumps.trees", isNodeParameter=FALSE, printgen=10, separator = TAB, tree=psi, nodeOptim, optimChange)
@@ -129,7 +129,7 @@ monitors[4] = mnExtNewick(filename="output/primates_mass_bayou_rate_jumps.trees"
  
 mymcmc = mcmc(mymodel, monitors, moves)
 mymcmc.burnin(generations=10000,tuningInterval=250)
-mymcmc.run(generations=100000)
+mymcmc.run(generations=10000)
 
 treetrace = readTreeTrace("output/primates_mass_bayou_ext.trees", treetype="clock")
 map_tree = mapTree(treetrace,"output/primates_mass_bayou_ext_MAP.tree")
