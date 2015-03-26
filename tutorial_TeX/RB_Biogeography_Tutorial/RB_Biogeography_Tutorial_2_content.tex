@@ -10,11 +10,20 @@ mn[3] = mnJointConditionalAncestralState(tree=psi, ctmc=m, filename=out_fn+".sta
 \end{lstlisting}
 \end{snugshade}
 
+In this section, we'll use the output from running the DEC analysis assuming all each ordered pair of areas has its own dispersal parameter, and each area has its own extinction parameter.
+To generate these results, run
+\begin{snugshade}
+\begin{lstlisting}
+source("RevBayes_scripts/biogeography_DEC_diff.Rev")
+\end{lstlisting}
+\end{snugshade}
+
+
 The joint-conditional ancestral state monitor samples the joint distribution of ancestral states every {\tt printgen} iterations over the entire tree, conditioning on the observed tip states.
 Due to cladogenesis, the state before speciation and the states inherited after speciation may differ, which we monitor setting {\tt withStartStates=true}.
 For convenience we record the tip states using {\tt withTips=true} though these are known through the input data.
 
-The resulting file, {\tt bg\_1.states.txt}, appears as
+The resulting file, {\tt bg\_diff.states.txt}, appears as
 
 \begin{framed}
 \begin{lstlisting}
@@ -38,9 +47,9 @@ First, we'll create variables for the relevant files
 
 \begin{snugshade}
 \begin{lstlisting}
-state_fn = fp + "output/bg_diff.states.txt"
-atlas_fn = fp + "data/earth3.still.atlas.txt"
-phw_fn = fp + "output/bg_diff.phw.txt"
+state_fn = "output/bg_diff.states.txt"
+atlas_fn = "data/earth3.still.atlas.txt"
+phw_fn = "output/bg_diff.phw.txt"
 \end{lstlisting}
 \end{snugshade}
 
@@ -48,7 +57,7 @@ then create the animation file
 
 \begin{snugshade}
 \begin{lstlisting}
-convertToPhylowood(treefile=tree_fn, geofile=atlas_fn, statefile=state_fn, outfile=phw_fn, burnin=0., chartype="Bitset", rangetype="Range")
+convertToPhylowood(treefile=tree_fn, geofile=atlas_fn, statefile=state_fn, outfile=phw_fn, burnin=0., chartype="NaturalNumbers", bgtype="Range")
 \end{lstlisting}
 \end{snugshade}
 
@@ -213,17 +222,22 @@ for (t in 1:n_epochs) {
 
 Now we have dispersal rates and extinction rates per epoch in the matrices {\tt d} and {\tt e}.
 
-Extant primate ranges do not appear capable of spanning all three areas simultaneously, so we might constrain the model to only allow ranges of size two
+Extant primate ranges do not appear capable of spanning all three areas simultaneously, so we might constrain the range evolution process to only allow ranges of size two
 
 \begin{snugshade}
 \begin{lstlisting}
 rangeSize <- simplex(0,1,1,0)
-rf := fnDECRoot( rep(1,n_states), rangeSize=simplex(0,1,0,0) )
 \end{lstlisting}
 \end{snugshade}
 
 where the first and last elements are set to zero, so ranges cannot be size 0 or size 3.
 By calling {\tt fnDECRoot} with the {\tt rangeSize} parameter, we can also force the MRCA range size to be a single area.
+
+\begin{snugshade}
+\begin{lstlisting}
+rf := fnDECRoot( rep(1,n_states), rangeSize=simplex(0,1,0,0) )
+\end{lstlisting}
+\end{snugshade}
 
 Next, we'll create a rate matrix for each epoch
 
@@ -268,4 +282,12 @@ This biologically and geographically informed model produces a more realistic ra
 \end{figure}
 
 
-This example model can be found in {\tt RevBayes\_scripts/biogeography\_epoch.Rev}.
+This example model may be run by typing
+
+\begin{snugshade}
+\begin{lstlisting}
+RevBayes_scripts/biogeography_epoch.Rev}
+\end{lstlisting}
+\end{snugshade}
+
+which also produces the above Phylowood animation file.

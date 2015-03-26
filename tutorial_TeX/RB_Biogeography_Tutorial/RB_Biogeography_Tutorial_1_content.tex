@@ -113,13 +113,13 @@ We'll use the primate dataset with 23 taxa. To keep the model simple, we'll disc
 For simplicity, we'll assume their phylogeny is time-calibrated, errorless, and fixed.
 
 Create some {\tt String} variables for file handling,
-\begin{snugshade}
+{\tt \small \begin{snugshade}
 \begin{lstlisting}
 data_fn = "data/primates_bg_n3.tsv"
 tree_fn = "data/primates.tree"
 out_fn  = "output/bg_same"
 \end{lstlisting}
-\end{snugshade}
+\end{snugshade} }
 
 then read in our character data, using {\tt type="Bitset"} to indicate ranges are encoded with bits, e.g. 011
 
@@ -425,7 +425,7 @@ Exercises are independent of each other, except for Exercises 3a and 3b.
 
 \begin{itemize}
 \item 1) Widespread sympatric speciation is thought to be evolutionarily rare. Set the Dirichlet prior on cladogenic event types to heavily disfavor these events. Using Tracer, describe how changing the cladogenesis prior affects the extinction rate when compared with the ``common rate'' model.
-\item 2) Modifying the \RevBayes~script, parameterize the rate matrix so ranges may not grow beyond two areas in size. You may use {\tt r:= fnDECRates(e,d,2)} to confirm your results.
+\item 2) Modifying the \RevBayes~script, parameterize the rate matrix so ranges may not grow beyond two areas in size. You may use {\tt q\_test := fnDECRateMatrix(e,d,2)} to confirm your results, which will give the same rate structure (and rates, up to a rescaling constant).
 \item 3a) Saving your commands to a file, create a script to produce the ``per-area rate'' model.
 \item 3b) Determine if the data support the ``common rate'' model over the ``per-area rate'' model. Use the stepping stone method to compute marginal likelihoods, which will let you compute Bayes factors for model selection.
 %\item 4) (Advanced) Using what you learned in this tutorial and the CTMC tutorial, perform a joint analysis of molecular and biogeographic evolution for primates. Introduce a common prior for the molecular and biogeographical clocks, e.g.
