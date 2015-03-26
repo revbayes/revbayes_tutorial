@@ -1,0 +1,309 @@
+\bigskip
+\begin{center}
+\textbf{\Large \color{red}This tutorial is currently under construction/revision.}
+\end{center}
+\bigskip
+
+\section{Introduction}
+
+Throughout this tutorial, we have exclusively considered undirected Brownian models.
+However, many other models could be used, and this, both for quantitative traits and for substitution rates or substitution parameters.
+Right now, there are at least two other models available in \RevBayes:
+the Brownian model with systematic trend and the Ornstein-Uhlenbeck process.
+
+
+%The subject of the comparative method is the analysis of trait evolution at the macroevolutionary scale.
+%In a comparative context, many different questions can be addressed: tempo and mode of evolution, correlated evolution of multiple quantitative traits, trends and bursts, changes in evolutionary mode correlated with major key innovations in some groups, etc \citep[for a good introduction see][]{Harvey1991}.
+%
+%In order to correctly formalize comparative questions, the underlying phylogeny should always be explicitly accounted for. This point is clearly illustrated, in particular, by the independent contrasts method \citep{Felsenstein1985,Huelsenbeck2003}. Practically speaking, the phylogeny and the divergence times are usually first estimated using a separate phylogenetic reconstruction software. In a second step, this time-calibrated phylogeny is used as an input to the comparative method.
+%Doing this, however, raises a certain number of methodological problems:
+%\begin{itemize}
+%\item
+%the uncertainty about the phylogeny (and about divergence times) is ignored
+%\item
+%the traits themselves may have something to say about the phylogeny
+%\item
+%the rate of substitution, and more generally the parameters of the substitution process, can also be seen as quantitative traits, amenable to a comparative analysis.
+%\end{itemize}
+%All these points are not easily formalized in the context of the step-wise approach mentioned above.
+%Instead, what all this suggests is that phylogenetic reconstruction, molecular dating and the comparative method should all be considered jointly, in the context of one single overarching probabilistic model.
+%
+%Thanks to its modular structure, \RevBayes~represents a natural framework for attempting this integration.
+%The aim of the present tutorial is to guide you through a series of examples where this integration is achieved, step by step.
+%It can also be considered as an example of the more general perspective of \emph{integrative modeling}, which can be recruited in many other contexts.
+
+
+
+%%%%%%%%
+%%   Data   %%
+%%%%%%%%
+\section{Data and files}
+
+We provide several data files which we will use in this tutorial.
+You may want to use your own data instead.
+In the \cl{data} folder, you will find the following files
+\begin{itemize}
+\item
+\cl{primates\_cytb.nex}: Alignment of the \textit{cytochrome b} subunit from 23 primates representing 14 of the 16 families (\textit{Indriidae} and \textit{Callitrichidae} are missing).
+
+\item
+\cl{primates\_lhtlog.nex}: 2 life-history traits (endocranial volume (ECV), body mass; each for males and females separately)  for 23 primate species \citep[taken from the Anage database,][]{DeMagalhaes2009}. The traits have been log-transformed.
+
+\item
+\cl{primates.tree}: A time calibrated phylogeny of the same 23 primates.
+\end{itemize}
+
+
+
+
+
+\section{Ornstein-Uhlenbeck process}
+
+First, load the trait data:
+{\tt \small \begin{snugshade*}
+\begin{lstlisting}
+contData <- readContinuousCharacterData("data/primates_lhtlog.nex")
+\end{lstlisting}
+\end{snugshade*}}
+If you type you will see that the continuous character data matrix contains several characters (columns). 
+{\tt \small \begin{snugshade*}
+\begin{lstlisting}
+contData
+|*
+|*   Continuous character matrix with 23 taxa and 11 characters
+|*   ==========================================================
+|*   Origination:                   primates_lhtlog.nex
+|*   Number of taxa:                23
+|*   Number of included taxa:       23
+|*   Number of characters:          11
+|*   Number of included characters: 11
+|*   Datatype:                      Continuous
+\end{lstlisting}
+\end{snugshade*}}
+Since we only want the body mass (of females) we exclude all but the third character
+{\tt \small \begin{snugshade*}
+\begin{lstlisting}
+contData.excludeAll()
+contData.includeCharacter(3) 
+\end{lstlisting}
+\end{snugshade*}}
+
+Next, load the time-tree from file. Remember that we use in this first simple example a fixed tree that we assume is known without uncertainty.
+{\tt \small \begin{snugshade*}
+\begin{lstlisting}
+treeArray <- readTrees("data/primates.tree")
+psi <- treeArray[1]
+\end{lstlisting}
+\end{snugshade*}}
+\noindent \\ \impmark You may want to look at this tree before by loading the \cl{primates.tree} in FigTree or any other tree visualization software.
+
+As usual, we start be initializing some useful helper variables.
+For example, we set up a counter variable for the number of moves that we already added to our analysis.
+This will make it much easier if we extend the model or analysis to include additional moves or to remove some moves.
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+mi = 0 
+\end{lstlisting}
+\end{snugshade*}}
+
+Then, we define the overall rate parameter $\sigma$ which we assign a (truncated) log-uniform prior. Note that it is more efficient in Bayesian inference to specify a uniform prior and then to transform the parameter which we will use here:
+{\tt \small \begin{snugshade*}
+\begin{lstlisting}
+logAlpha ~ dnUniform(-10,10)
+alpha := 10^logAlpha
+
+logSigma ~ dnUniform(-5,5)
+sigma := 10^logSigma
+\end{lstlisting}
+\end{snugshade*}}
+Using this approach we have specified a prior probability distribution on \cl{sigma} between $10^{-5}$ to $10^5$ which should be broad enough to include all reasonable values.
+%To accelerate convergence, it can be useful to force initialization of $\sigma$ to a small value:
+%{\tt \small \begin{snugshade*}
+%\begin{lstlisting}
+%sigma.setValue(0.1)
+%\end{lstlisting}
+%\end{snugshade*}}
+
+Since the rate of trait evolution \cl{logSigma} is a stochastic variable and we want to estimate it, we need to add a sliding move on it. Remember that the sliding move proposes new values drawn from a window with width \cl{delta} and is centered around the current values; thus it slides through the parameter space together with the current parameter value.
+{\tt \small \begin{snugshade*}
+\begin{lstlisting}
+moves[++mi] = mvSlide(logAlpha,delta=10,tune=true,weight=2)
+moves[++mi] = mvSlide(logSigma, delta=1.0, tune=true, weight=2.0)
+\end{lstlisting}
+\end{snugshade*}}
+
+In order to create the random variables for the internal states we need to know the number of nodes and the number of tips.
+We will store these as some helper variables.
+{\tt \small \begin{snugshade*}
+\begin{lstlisting}
+numNodes = psi.nnodes()
+numTips = psi.ntips()
+\end{lstlisting}
+\end{snugshade*}}
+
+We will use a uniform prior distribution on the logarithm of the root mass optimal value.
+{\tt \small \begin{snugshade*}
+\begin{lstlisting}
+logOptim ~ dnUniform(-10,10)
+\end{lstlisting}
+\end{snugshade*}}
+Again, we'll specify a sliding move that proposes new values for the \cl{rootlogmass} randomly drawn from a window centered around the current value.
+{\tt \small \begin{snugshade*}
+\begin{lstlisting}
+moves[++mi] = mvSlide(logOptim,delta=10,tune=true,weight=2)
+\end{lstlisting}
+\end{snugshade*}}
+
+Now we are ready to specify the Brownian motion model for each branch.
+That is, we simply specify a new normal distributed random variable for each node with mean being equal to the value of the parent variable and the standard deviation being equal to the product of the square root of the branch length and our rate parameter \cl{sigma}. We store all the variables in the vector \cl{logmass}. Then we are able to access the value at the parent node using the index of the parent node, which we can obtain from the tree using the function \cl{psi.parent(i)}. Similarly, since the variance depends on the branch length we retrieve the branch length of node with index \cl{i} using the function \cl{psi.branchLength(i)}.
+
+First we need to copy (create a reference to) the \cl{rootlogmass}
+{\tt \small \begin{snugshade*}
+\begin{lstlisting}
+logmass[numNodes] := logOptim
+\end{lstlisting}
+\end{snugshade*}}
+Let us start by creating the random variables for the internal nodes. Remember that the variance is equal to \cl{sigma}-squared times the branch length, and we need to compute the square root of it to obtain the standard deviation.
+{\tt \small \begin{snugshade*}
+\begin{lstlisting}
+# univariate Ornstein-Uhlenbeck process along the tree
+for (i in (numNodes-1):(numTips+1) ) {
+  logmass[i] ~ dnOU( x0=logmass, theta=logOptim, alpha=alpha, sigma=sigma, time=psi.branchLength(i) )
+  # moves on the Ornstein-Uhlenbeck process
+  moves[++mi] = mvSlide( logmass[i], delta=10, tune=true ,weight=2) 
+}
+\end{lstlisting}
+\end{snugshade*}}
+You may have noticed that we specified in the loop a move for each internal \cl{logmass}. This is because we want to use the MCMC algorithm to integrate over the uncertainty in the states.
+
+Next, we repeat the same loop but now for the tip nodes. Instead of applying a move to each tip node we will clamp the nodes. The nodes will be clamped with the data that we read in before.
+{\tt \small \begin{snugshade*}
+\begin{lstlisting}
+for (i in numTips:1 ) {
+  logmass[i] ~ dnOU( x0=logmass, theta=logOptim, alpha=alpha, sigma=sigma, time=psi.branchLength(i) )
+
+  # condition OU model on quantitative trait data (second column of the dataset)
+  logmass[i].clamp(contData.getTaxon(psi.nodeName(i))[1])
+}
+\end{lstlisting}
+\end{snugshade*}}
+
+The model is now entirely specified and we can create a model object containing the entire model graph by providing it with only one of our model variables, \EG \cl{sigma}. 
+{\tt \small \begin{snugshade*}
+\begin{lstlisting}
+mymodel = model(sigma)
+\end{lstlisting}
+\end{snugshade*}}
+
+To see what it happing during the MCMC let us make a screen monitor that tracks the rate \cl{sigma}.
+{\tt \small \begin{snugshade*}
+\begin{lstlisting}
+monitors[1] = mnScreen(printgen=10, sigma, alpha, logOptim)
+\end{lstlisting}
+\end{snugshade*}}
+
+Since we have several additional parameters ---the states at the internal nodes--- we will use a model monitor to write to file instead.
+{\tt \small \begin{snugshade*}
+\begin{lstlisting}
+monitors[2] = mnModel(filename="output/primates_mass_OU.log", printgen=10, separator = TAB)
+monitors[3] = mnExtNewick(filename="output/primates_mass_OU_ext.trees", isNodeParameter=TRUE, printgen=10, separator = TAB, tree=psi, logmass)
+\end{lstlisting}
+\end{snugshade*}}
+
+We can finally create a mcmc, and run it for a good 100 000 cycles after we did a burnin phase of 10 000 iterations:
+{\tt \small \begin{snugshade*}
+\begin{lstlisting}
+mymcmc = mcmc(mymodel, monitors, moves)
+mymcmc.burnin(generations=10000,tuningInterval=500)
+mymcmc.run(100000)
+\end{lstlisting}
+\end{snugshade*}}
+
+To get the annotate tree we use the map tree function.
+
+{\tt \small \begin{snugshade*}
+\begin{lstlisting}
+treetrace = readTreeTrace("output/primates_mass_OU_ext.trees", treetype="clock")
+map_tree = mapTree(treetrace,"output/primates_mass_OU_ext_MAP.tree")
+\end{lstlisting}
+\end{snugshade*}}
+
+
+
+
+
+
+
+
+
+
+\subsection*{Exercises}
+
+\begin{itemize}
+\item
+Run the analysis.
+\item
+Using \cl{Tracer}, visualize the posterior distribution on the rate parameter \cl{sigma} and the \cl{rootlogmass} and the internal states.
+\item 
+How does the posterior distribution of \cl{logOptim} looks compared with the first and second analysis?
+\item
+Calculate the 95\% credible interval for the rate of evolution of the log of body mass ($\sigma$) and the \cl{rootlogmass}. Have they changed?
+\end{itemize}
+
+\vspace{5cm}
+
+
+
+\section{Branch-rate jump process}
+
+
+We start with specifying a probability for a jump to occur at a given branch.
+{\tt \small \begin{snugshade*}
+\begin{lstlisting}
+rho <- 0.01
+\end{lstlisting}
+\end{snugshade*}}
+
+Next, we specify the prior distribution on the root value.
+{\tt \small \begin{snugshade*}
+\begin{lstlisting}
+logRootOptim ~ dnUniform(-10,10)
+moves[++mi] = mvSlide(logRootOptim,delta=10,tune=true,weight=2)
+\end{lstlisting}
+\end{snugshade*}}
+
+Now, we use a loop over all branches to specify the per branch optimal value.
+{\tt \small \begin{snugshade*}
+\begin{lstlisting}
+for (i in numBranches:1) {
+   optimChangeProbability[i] := Probability(1-rho)      # + (1-exp(-lambda*psi.branchLength(i)))
+   optimMultiplier[i] ~ dnReversibleJumpMixture(1, dnGamma(2,2), optimChangeProbability[i] )
+   if ( psi.isRoot( psi.parent(i) ) ) {
+      nodeOptim[i] := logRootOptim * optimMultiplier[i]
+   } else {
+      nodeOptim[i] := nodeOptim[psi.parent(i)] * optimMultiplier[i]
+   }
+   optimChange[i] := ifelse( optimMultiplier[i] == 1, 0, 1 )
+   moves[++mi] = mvRJSwitch(optimMultiplier[i], weight=1)
+   moves[++mi] = mvScale(optimMultiplier[i], lambda=0.1, tune=true, weight=1)
+}
+\end{lstlisting}
+\end{snugshade*}}
+Only for monitoring purposes we add a variable that counts the current number of jumps.
+{\tt \small \begin{snugshade*}
+\begin{lstlisting}
+numOptimChanges := sum( optimChange )
+\end{lstlisting}
+\end{snugshade*}}
+You may want to monitor and then visualize the branch-specific jumps
+{\tt \small \begin{snugshade*}
+\begin{lstlisting}
+monitors[4] = mnExtNewick(filename="output/primates_mass_OU_rate_jumps.trees", isNodeParameter=FALSE, printgen=10, separator = TAB, tree=psi, nodeOptim, optimChange)
+\end{lstlisting}
+\end{snugshade*}}
+
+
+
+
+\bibliographystyle{sysbio}
+\bibliography{\ResourcePath refs}

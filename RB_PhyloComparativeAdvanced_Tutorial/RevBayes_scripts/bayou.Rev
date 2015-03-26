@@ -1,0 +1,138 @@
+################################################################################
+#
+# MCMC analysis of endocranial volume in primates
+# 
+# Model:
+# Ornstein-Uhlenbeck model
+# optima-shift (random local clock) model.
+#
+#
+# author: Sebastian Hoehna
+#
+################################################################################
+
+########
+# Data #
+########
+
+# read the data
+contData <- readContinuousCharacterData("data/primates_lhtlog.nex")
+
+contData.excludeAll()
+contData.includeCharacter(1) 
+#contData.excludeCharacter(2:11)
+
+
+# get some useful variables from the data
+numTips <- contData.ntaxa()
+names <- contData.names()
+numNodes <- 2*numTips - 1
+numBranches <- 2*numTips - 2
+
+mi = 0
+
+
+
+########
+# Tree #
+########
+
+# work under fixed topology
+treeArray <- readTrees("data/primates.tree")
+psi <- treeArray[1]
+
+
+
+#######
+# RLC #
+#######
+
+# get a random variable for the probability of a rate change
+#rho ~ dnBeta(1,1)
+# We need to initialize the probability of a rate change with a very low value because we want to start our MCMC at or close to the strict clock model.
+# Starting from a strict clock model makes it easier for the MCMC to add new local clocks.
+#rho.setValue(0.001)
+#moves[++mi] = mvSlide(rho, delta=0.01, tune=true, weight=2.0)
+
+rho <- 0.01
+
+logRootOptim ~ dnUniform(-10,10)
+moves[++mi] = mvSlide(logRootOptim,delta=10,tune=true,weight=2)
+
+
+for (i in numBranches:1) {
+   optimChangeProbability[i] := Probability(1-rho)      # + (1-exp(-lambda*psi.branchLength(i)))
+   optimMultiplier[i] ~ dnReversibleJumpMixture(1, dnGamma(2,2), optimChangeProbability[i] )
+   if ( psi.isRoot( psi.parent(i) ) ) {
+      nodeOptim[i] := logRootOptim * optimMultiplier[i]
+   } else {
+      nodeOptim[i] := nodeOptim[psi.parent(i)] * optimMultiplier[i]
+   }
+   optimChange[i] := ifelse( optimMultiplier[i] == 1, 0, 1 )
+   moves[++mi] = mvRJSwitch(optimMultiplier[i], weight=1)
+   moves[++mi] = mvScale(optimMultiplier[i], lambda=0.1, tune=true, weight=1)
+}
+
+numOptimChanges := sum( optimChange )
+
+
+
+
+######
+# OU #
+######
+
+#rootlogmass ~ dnUniform(-100,100)
+#moves[++mi] = mvSlide(rootlogmass,delta=10,tune=true,weight=2)
+#logmass[numNodes] := rootlogmass
+logmass[numNodes] := logRootOptim
+
+logAlpha ~ dnUniform(-10,10)
+moves[++mi] = mvSlide(logAlpha,delta=10,tune=true,weight=2)
+alpha := 10^logAlpha
+
+
+# sigma: variance per unit of time of the Brownian motion
+logSigma ~ dnUniform(-5,5)
+sigma := 10^logSigma
+
+moves[++mi] = mvSlide(logSigma, delta=1.0, tune=true, weight=2.0)
+
+
+# univariate Ornstein-Uhlenbeck process along the tree # parameterized by sigma
+for (i in (numNodes-1):(numTips+1) ) {
+  logmass[i] ~ dnOU( x0=logmass[psi.parent(i)], theta=nodeOptim[i], alpha=alpha, sigma=sigma, time=psi.branchLength(i) )
+  # moves on the Brownian process
+  moves[++mi] = mvSlide( logmass[i], delta=10, tune=true ,weight=2)
+}
+
+for (i in numTips:1 ) {
+  logmass[i] ~ dnOU( x0=logmass[psi.parent(i)], theta=nodeOptim[i], alpha=alpha, sigma=sigma, time=psi.branchLength(i) )
+  # condition Brownian model on quantitative trait data (first column of the dataset)
+  logmass[i].clamp(contData.getTaxon(psi.nodeName(i))[1])
+}
+
+
+
+
+########
+# MCMC #
+########
+
+mymodel = model(rho)
+
+monitors[1] = mnScreen(printgen=10000, rho, logRootOptim, numOptimChanges)
+monitors[2] = mnModel(filename="output/bayou.log",printgen=1000, separator = TAB)
+monitors[3] = mnExtNewick(filename="output/primates_mass_bayou_ext.trees", isNodeParameter=TRUE, printgen=10, separator = TAB, tree=psi, logmass)
+monitors[4] = mnExtNewick(filename="output/primates_mass_bayou_rate_jumps.trees", isNodeParameter=FALSE, printgen=10, separator = TAB, tree=psi, nodeOptim, optimChange)
+
+ 
+mymcmc = mcmc(mymodel, monitors, moves)
+mymcmc.burnin(generations=10000,tuningInterval=250)
+mymcmc.run(generations=100000)
+
+treetrace = readTreeTrace("output/primates_mass_bayou_ext.trees", treetype="clock")
+map_tree = mapTree(treetrace,"output/primates_mass_bayou_ext_MAP.tree")
+
+q()
+
