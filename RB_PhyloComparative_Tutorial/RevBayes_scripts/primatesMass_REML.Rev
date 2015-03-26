@@ -35,7 +35,7 @@ mymodel = model(sigma)
 monitors[1] = mnScreen(printgen=10000, sigma)
 
 # a model monitor
-monitors[2] = mnModel(filename="output/primates_mass_REML.log", printgen=10, separator = TAB)
+monitors[2] = mnFile(filename="output/primates_mass_REML.log", printgen=10, separator = TAB, sigma)
  
 mymcmc = mcmc(mymodel, monitors, moves)
 

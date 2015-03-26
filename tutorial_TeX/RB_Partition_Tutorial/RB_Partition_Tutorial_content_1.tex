@@ -96,7 +96,7 @@ We can finish setting up this part of the model by creating a deterministic node
 The \cl{fnGTR()} function takes a set of exchangeability rates and a set of base frequencies to compute the rate matrix used when calculating the likelihood of our model.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-Q := fnGTR(er,sf)
+Q := fnGTR(er,pi)
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -299,7 +299,7 @@ Methods for visualizing the marginal densities of parameter values are not curre
 \RevBayes~can also summarize the tree samples by reading in the tree-trace file:
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-treetrace = readTreeTrace("output/model_PS0.tre")
+treetrace = readTreeTrace("output/PS0.tre")
 treetrace.summarize()
 \end{lstlisting}
 \end{snugshade*}}
@@ -308,7 +308,7 @@ treetrace.summarize()
 The \cl{mapTree()} function will summarize the tree samples and write the maximum a posteriori tree to file:
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-mapTree(treetrace,"output/model_PS0_map.tre")
+mapTree(treetrace,"output/PS0_map.tre")
 \end{lstlisting}
 \end{snugshade*}}
 
