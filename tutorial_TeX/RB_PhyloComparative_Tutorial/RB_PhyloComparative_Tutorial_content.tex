@@ -105,7 +105,7 @@ In the directory \cl{RevBayes\_scripts/} you will find a script called \cl{prima
 This script implements the univariate Brownian model described above. Instead of re-typing the content of script entirely in the context of an interactive \RevBayes~session, you can instead run the script directly:
 {\tt \small \begin{snugshade*}
 \begin{lstlisting}
-source("RevBayes\_scripts/primatesMass_BM_REML.Rev")
+source("RevBayes_scripts/primatesMass_BM_REML.Rev")
 \end{lstlisting}
 \end{snugshade*}}
 This script essentially reformulates what has been explained in the last subsection and serves as an example solution for you. For the later section you need to adjust the script.
@@ -393,6 +393,16 @@ Since we have several additional parameters ---the states at the internal nodes-
 {\tt \small \begin{snugshade*}
 \begin{lstlisting}
 monitors[2] = mnModel(filename="output/primates_mass_DA.log", printgen=10, separator = TAB)
+monitors[3] = mnExtNewick(filename="output/primates_mass_DA_ext.trees", isNodeParameter=TRUE, printgen=10, separator = TAB, tree=psi, logmass)
+\end{lstlisting}
+\end{snugshade*}}
+
+To get the annotate tree we use the map tree function.
+
+{\tt \small \begin{snugshade*}
+\begin{lstlisting}
+treetrace = readTreeTrace("output/primates_mass_DA_ext.trees", treetype="clock")
+map_tree = mapTree(treetrace,"output/primates_mass_DA_ext_MAP.tree")
 \end{lstlisting}
 \end{snugshade*}}
 
