@@ -17,6 +17,9 @@ The first section of this tutorial involves
 \item Learning about functions. 
 \end{enumerate}
 
+Then we will see how to perform statistical inference using \RevBayes~and \Rev~ by implementing a Monte Carlo algorithm. 
+Finally, we will see how \RevBayes~'s built-in functions vastly simplify this inference task.
+
 All of the files for this analysis are provided for you and you can run these without significant effort using the \cl{source()} function in the \RevBayes~console:
 {\tt \begin{snugshade*}
 \begin{lstlisting}
@@ -506,6 +509,9 @@ dpoisson(y[i],exp(alpha+beta*x[i]))
 The source file for this sub-exercise \cl{airline\_fatalities\_part1.Rev}.
 
 Let us construct a Metropolis algorithm that simulates from the posterior distribution $P(\alpha,\beta|y)$. 
+We will construct this algorithm explicitly, without using the high-level functions existing in \RevBayes~ to perform MCMC. 
+In the next section, we will repeat the same analysis, this time using the high-level functions.
+ 
 For simplicity of the calculations you can ``normalize'' the years, e.g. 
 {\tt \begin{snugshade*}
 \begin{lstlisting}    
@@ -557,7 +563,7 @@ Finally, we set up a \cl{for} loop over each iteration of the MCMC.
 for (i in 2:10000) {
 \end{lstlisting}
 \end{snugshade*}}
-Within the \cl{for} loop we propose new parameters value.
+Within the \cl{for} loop we propose new parameter values.
 {\tt \begin{snugshade*}
 \begin{lstlisting}    
     alpha_prime <- rnorm(1,alpha[i-1],delta_alpha)[1]
@@ -658,7 +664,7 @@ moves[mi++] = mvSlide(alpha)
 moves[mi++] = mvSlide(beta)
 \end{lstlisting}
 \end{snugshade*}}
-Then we set op the model.
+Then we set up the model.
 This means we create a stochastic variable for each observation and clamp its value with the observed data.
 {\tt \begin{snugshade*}
 \begin{lstlisting} 
