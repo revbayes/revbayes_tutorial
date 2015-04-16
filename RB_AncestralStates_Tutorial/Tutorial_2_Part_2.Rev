@@ -69,7 +69,7 @@ tr_prior <- v(1,1,1,1,1,1,1,1,1,1,1,1)
 tr ~ dnDirichlet(tr_prior)
 
 # do not assume stationarity
-root_frequencies := simplex(1,1,1,1)
+root_frequencies <- simplex(1,1,1,1)
 
 # create rate matrix with 12 transition rates
 Q := fnFreeK(tr, root_frequencies)

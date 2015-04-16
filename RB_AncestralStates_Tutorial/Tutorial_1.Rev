@@ -22,7 +22,7 @@
 ######################
 
 # Get the chromosome counts from a tab-delimited file.
-chromo_data = readTSVCharacterData("data/chromosome_counts.tsv", type="NaturalNumbers")
+chromo_data = readCharacterDataDelimitted("data/chromosome_counts.tsv", type="NaturalNumbers")
 
 # Get the DNA sequence alignment for the matK chloroplast gene.
 dna_seq = readDiscreteCharacterData("data/matK_treebase_aligned.fas")

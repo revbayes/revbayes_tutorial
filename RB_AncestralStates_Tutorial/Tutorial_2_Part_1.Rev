@@ -35,7 +35,7 @@
 #
 
 # Read in the character data, note there is some missing character data notated by '?'. 
-gynostemium_data = readTSVCharacterData("data/gynostemium_data.tsv", type="NaturalNumbers")
+gynostemium_data = readCharacterDataDelimited("data/gynostemium_data.tsv", type="NaturalNumbers")
 
 # To accommodate for phylogenetic uncertainty, we will run our analyses over a
 # posterior distribution of trees estimated in a previous analysis. We do this
@@ -48,12 +48,9 @@ treetrace = readTreeTrace("data/precooked_tree_samples.trees", treetype="non-clo
 # Sample 200 trees from the empirical tree distribution. We also include
 # as the first sample the MAP tree, which will be useful when we want to 
 # summarize our results.
-psi[1] = readBranchLengthTrees("data/precooked_MAP.tree")[1]
-for (i in 2:200) {
+map_tree = readBranchLengthTrees("data/precooked_MAP.tree")[1]
 
-	psi[i] ~ dnEmpiricalTree(burnin=200, treetrace)
-	
-}
+psi ~ dnEmpiricalTree(burnin=200, treetrace)
 
 
 
@@ -72,7 +69,7 @@ k = 4
 Q := fnJC(k)
 
 # do not assume stationarity
-root_frequencies := simplex(1,1,1,1)
+root_frequencies <- simplex(1,1,1,1)
 
 
 ##############
@@ -80,27 +77,28 @@ root_frequencies := simplex(1,1,1,1)
 #############
 
 mi = 0
-moves[mi++] = mvScale(lambda) 
+
+moves[++mi] = mvEmpiricalTree(psi)
+moves[++mi] = mvScale(lambda) 
 
 
 ###############
 # create the model
 ###############
 
-for (i in 1:200) {
 
-	morpho_ctmc[i] ~ dnPhyloCTMC(Q=Q, tree=psi[i], rootFreq=root_frequencies, branchRates=lambda, type="NaturalNumbers")
+morpho_ctmc ~ dnPhyloCTMC(Q=Q, tree=psi, rootFreq=root_frequencies, branchRates=lambda, type="NaturalNumbers")
 
-	# clamp data
-	morpho_ctmc[i].clamp(gynostemium_data)
-}
+# clamp data
+morpho_ctmc.clamp(gynostemium_data)
+
 
 mymodel = model(Q)
 
 # create the monitors
 monitors[1] = mnScreen(printgen=10, lambda)
-monitors[2] = mnFile(filename="output/mk1.trees", printgen=10, psi[1])
-monitors[3] = mnAncestralState(filename="output/mk1.log",printgen=10, tree=psi[1], ctmc=morpho_ctmc[1], type="NaturalNumbers")
+monitors[2] = mnFile(filename="output/mk1.trees", printgen=10, psi)
+monitors[3] = mnAncestralState(filename="output/mk1.log",printgen=10, tree=psi, ctmc=morpho_ctmc, type="NaturalNumbers")
 monitors[4] = mnModel(filename="output/mk1_model.log",printgen=10)
 
 
@@ -112,10 +110,12 @@ monitors[4] = mnModel(filename="output/mk1_model.log",printgen=10)
 mymcmc = mcmc(mymodel, monitors, moves)
 mymcmc.run(5000)
 
+mymcmc.operatorSummary()
+
 # now summarize ancestral states over the MAP tree
-ancestral_state_trace = readAncestralStateTrace("output/mk1.log") 
-ancestral_state_tree_trace = readAncestralStateTreeTrace("output/mk1.trees", treetype="non-clock")
-ancestralStateTree(psi[1], ancestral_state_trace, ancestral_state_tree_trace, "output/mk1_final.tree")
+#ancestral_state_trace = readAncestralStateTrace("output/mk1.log") 
+#ancestral_state_tree_trace = readAncestralStateTreeTrace("output/mk1.trees", treetype="non-clock")
+#ancestralStateTree(map_tree, ancestral_state_trace, ancestral_state_tree_trace, "output/mk1_final.tree")
 
 # The ancestral state tree trace step is necessary because the ancestralStateTree function does not
 # assume the topology is fixed.
@@ -126,12 +126,13 @@ ancestralStateTree(psi[1], ancestral_state_trace, ancestral_state_tree_trace, "o
 ###############
 
 # Compute power posterior distributions
-pow_p = powerPosterior(mymodel, moves, "output/mk1.out", cats=10)
-pow_p.run(generations=1000)
+#ss_monitors[1] = monitors[4]
+#pow_p = powerPosterior(mymodel, moves, ss_monitors, "output/mk1.out", cats=10)
+#pow_p.run(generations=1000)
 
 # Use stepping-stone sampling to calculate marginal likelihoods
-ss = steppingStoneSampler(file="output/mk1.out", powerColumnName="power", likelihoodColumnName="likelihood")
-ss.marginal()
+#ss = steppingStoneSampler(file="output/mk1.out", powerColumnName="power", likelihoodColumnName="likelihood")
+#ss.marginal()
 
 # This last line gives us the marginal log-likelihood (lnL) of the model. To compare the two models
 # we will calculate the log-Bayes factor as such:
