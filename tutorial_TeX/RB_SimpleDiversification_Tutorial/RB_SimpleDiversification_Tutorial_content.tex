@@ -16,8 +16,9 @@ Finally, you will estimate speciation and extinction rates using Markov chain Mo
 
 \subsection{The ``Observed'' Data}
 
-\exs{Download data and \Rev~files from: 
-\href{http://bit.ly/1tEDwTg}{http://bit.ly/1tEDwTg}}
+\exs{Download the \cl{\#NEXUS} tree file from: 
+\href{http://bit.ly/1e5PwdW}{http://bit.ly/1e5PwdW}}
+\exs{Create a directory called \cl{data} and move the tree file \cl{bears\_dosReis.nex} into that directory }
 
 The tree in this exercise contains a subset of the taxa resulting from the divergence-time analysis of 274 placental mammal species by \citet{dosReis2012}. 
 The tree comprises all living bear species (8 taxa) plus two outgroups---the gray wolf and spotted seal.
@@ -78,7 +79,7 @@ The time tree we are conditioning the process on is taken from the analysis by \
 Furthermore, there are approximately 147 described caniform species, so we will fix the parameter $\rho$ to $10/147$.
 
 
-\exs{The full Yule-model specification is in the file called \href{https://github.com/revbayes/revbayes/raw/development/tutorials/RB_TimeTree_Tutorials/RB_Diversification_Exercise/RB_diversification_files/RevBayes_scripts/m_Yule_bears.Rev}{\cl{m\_Yule\_bears.Rev}}.}
+\exs{The full Yule-model specification is in the file called \href{https://github.com/revbayes/revbayes_tutorial/raw/master/RB_SimpleDiversification_Tutorial/RevBayes_scripts/m_Yule_bears.Rev}{\cl{m\_Yule\_bears.Rev}} on the \RevBayes~tutorial repository.}
 
 \subsubsection{Read the tree}
 
@@ -199,7 +200,7 @@ mymodel.graph("output/m_Yule_bears_GM.dot", verbose=false, bg="honeydew2")
 \end{snugshade*}}
 
 Open the \cl{output/m\_Yule\_bears\_GM.dot} file in the \href{http://www.graphviz.org/}{Graphviz} program or paste the contents in an online viewer:
-\begin{itemize}[noitemsep,nolistsep]  \item \href{http://graphviz-dev.appspot.com/}{http://graphviz-dev.appspot.com/}  \item \href{http://stamm-wilbrandt.de/GraphvizFiddle/}{http://stamm-wilbrandt.de/GraphvizFiddle/}\end{itemize}
+\begin{itemize}[noitemsep,nolistsep]  \item \href{http://graphviz-dev.appspot.com/}{http://graphviz-dev.appspot.com}  \item \href{http://stamm-wilbrandt.de/GraphvizFiddle/}{http://stamm-wilbrandt.de/GraphvizFiddle}\end{itemize}
 
 Your graph should look like the one depicted in Figure \ref{yuleGMGVfig}.
 Compare this figure to the model in Figure \ref{yuleGMfig2}.
@@ -221,7 +222,7 @@ Viewing the model graph is helpful for identifying any problems prior to running
 With a fully specified model, we can set up the \cl{powerPosterior()} analysis to create a file of `powers' and likelihoods from which we can estimate the marginal likelihood using stepping-stone or path sampling. 
 This method computes a vector of powers from a beta distribution, then executes an MCMC run for each power step while raising the likelihood to that power. In this implementation, the vector of powers starts with 1, sampling the likelihood close to the posterior and incrementally sampling closer and closer to the prior as the power decreases. 
 
-\exs{The \Rev~file for performing this analysis: \href{https://github.com/revbayes/revbayes/raw/development/tutorials/RB_TimeTree_Tutorials/RB_Diversification_Exercise/RB_diversification_files/RevBayes_scripts/mlnl_Yule_bears.Rev}{\cl{mlnl\_Yule\_bears.Rev}}.}
+\exs{The \Rev~file for performing this analysis: \href{https://github.com/revbayes/revbayes_tutorial/raw/master/RB_SimpleDiversification_Tutorial/RevBayes_scripts/mlnl_Yule_bears.Rev}{\cl{mlnl\_Yule\_bears.Rev}}.}
 
 First, we create the variable containing the power posterior. This requires us to provide a model and vector of moves, as well as an output file name. The \cl{cats} argument sets the number of power steps.
 {\tt \begin{snugshade*}
@@ -321,7 +322,7 @@ Note that if $\mu=0$, then $d = \lambda$ in this parameterization.
 In this model, we will specify an exponential prior density on $d$ and a beta prior on $r$.
 There are approximately 147 described caniform species, so we will fix the parameter $\rho$ to $10/147$.
 
-\exs{The full birth-death, fixed sampling model specification is in the file called \href{https://github.com/revbayes/revbayes/raw/development/tutorials/RB_TimeTree_Tutorials/RB_Diversification_Exercise/RB_diversification_files/RevBayes_scripts/m_BD_bears.Rev}{\cl{m\_BD\_bears.Rev}}.}
+\exs{The full birth-death, fixed sampling model specification is in the file called \href{https://github.com/revbayes/revbayes_tutorial/raw/master/RB_SimpleDiversification_Tutorial/RevBayes_scripts/m_BD_bears.Rev}{\cl{m\_BD\_bears.Rev}}.}
 
 
 \subsection{Clear the workspace and read the tree}
@@ -445,7 +446,9 @@ mymodel.graph("output/m_BD_bears_GM.dot", bg="LightSteelBlue2")
 
 \subsection{Estimating the marginal likelihood of the model}
 
-\exs{The \Rev~file for performing this analysis: \href{https://github.com/revbayes/revbayes/raw/development/tutorials/RB_TimeTree_Tutorials/RB_Diversification_Exercise/RB_diversification_files/RevBayes_scripts/mlnl_BD_bears.Rev}{\cl{mlnl\_BD\_bears.Rev}}.}
+Next, we will set up the file for running the power posteriors and computing the marginal likelihoods.
+
+\exs{The \Rev~file for performing this analysis: \href{https://github.com/revbayes/revbayes_tutorial/raw/master/RB_SimpleDiversification_Tutorial/RevBayes_scripts/mlnl_BD_bears.Rev}{\cl{mlnl\_BD\_bears.Rev}}.}
 
 {\tt \begin{snugshade*}
 \begin{lstlisting}
@@ -538,7 +541,7 @@ With this model, we can now estimate posterior probability of the the global rat
 \end{align}
 
 
-\exs{The \Rev~file for performing this analysis: \href{https://github.com/revbayes/revbayes/raw/development/tutorials/RB_TimeTree_Tutorials/RB_Diversification_Exercise/RB_diversification_files/RevBayes_scripts/mcmc_BD_bears.Rev}{\cl{mcmc\_BD\_bears.Rev}} or  \href{https://github.com/revbayes/revbayes/raw/development/tutorials/RB_TimeTree_Tutorials/RB_Diversification_Exercise/RB_diversification_files/RevBayes_scripts/mcmc_Yule_bears.Rev}{\cl{mcmc\_Yule\_bears.Rev}}.}
+\exs{The \Rev~file for performing this analysis: \href{https://github.com/revbayes/revbayes_tutorial/raw/master/RB_SimpleDiversification_Tutorial/RevBayes_scripts/mcmc_BD_bears.Rev}{\cl{mcmc\_BD\_bears.Rev}} or  \href{https://github.com/revbayes/revbayes_tutorial/raw/master/RB_SimpleDiversification_Tutorial/RevBayes_scripts/mcmc_Yule_bears.Rev}{\cl{mcmc\_Yule\_bears.Rev}}.}
 
 
 \subsection{Clear the workspace and load the preferred model}
