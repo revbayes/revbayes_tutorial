@@ -8,7 +8,7 @@ Moreover, stochastic branching models allow for inference of speciation and exti
 These inferences allow us to investigate key questions in evolutionary biology.
 
 This tutorial describes how to specify simple branching-process models in \RevBayes;
-two variants of the constant-rate birth-death process \citep{Yule1924,Kendall1948,Thompson1975,Nee1994,Rannala1996,Yang1997}.
+two variants of the constant-rate birth-death process \citep{yule24,Kendall1948,thompson75,nee94,rannala96,yang97b}.
 The probabilistic graphical model is given for each component of this exercise.
 After each model is specified, you will estimate the marginal likelihood of the model and evaluate the relative support using Bayes factors.
 Finally, you will estimate speciation and extinction rates using Markov chain Monte Carlo (MCMC) under the model supported by the data.
@@ -618,7 +618,7 @@ mymcmc.operatorSummary()
 
 \begin{figure}[h!]
 \centering
-\fbox{\includegraphics[width=4in]{\ResourcePath figures/div_tracer.pdf}}
+\fbox{\includegraphics[width=4in]{\ResourcePath figures/div_tracer.eps}}
 \caption{\small The marginal densities of \cl{birth\_rate} and \cl{death\_rate} estimated under the birth-death model in \RevBayes.}
 \label{tracerMarg}
 \end{figure}
@@ -644,4 +644,4 @@ Questions about this tutorial can be directed to: \\\vspace{-10mm}
 
 
 \bibliographystyle{sysbio}
-\bibliography{\ResourcePath refs}
+\bibliography{\ResourcePath master_refs}
