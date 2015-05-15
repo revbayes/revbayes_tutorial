@@ -22,8 +22,11 @@ mymodel = model(birth_rate)
 ### create a visual representation of the model using graphviz
 mymodel.graph("output/m_Yule_bears_GM.dot", verbose=false, bg="honeydew2")
 
+### create a monitor to log the samples to file
+monitors[1] = mnModel(filename="output/Yule_bears_powp.log",printgen=10, separator = TAB)
+
 ### compute power posterior distributions
-pow_p = powerPosterior(mymodel, moves, "output/Yule_bears_powp.out", cats=100) 
+pow_p = powerPosterior(mymodel, moves, monitors, "output/Yule_bears_powers.out", cats=100, sampleFreq=10) 
 pow_p.burnin(generations=10000,tuningInterval=1000)
 pow_p.run(generations=10000)  
 
