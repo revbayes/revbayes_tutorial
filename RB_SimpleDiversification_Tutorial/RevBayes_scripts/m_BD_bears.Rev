@@ -30,7 +30,7 @@ death_rate := (turnover * diversification) / (denom)
 rho <- 0.068
 
 ### the BDP is conditioned on the root time, we can get this value from our tree and set a constant node
-root_time <- treeHeight(T)
+root_time <- T.rootAge()
 
 ### the time tree is a stochastic node modeled by the constant rate birth-death process (dnBDP)
 timetree ~ dnBDP(lambda=birth_rate, mu=death_rate, rootAge=root_time, rho=rho, samplingStrategy="uniform", condition="nTaxa", nTaxa=n_taxa, names=names)
