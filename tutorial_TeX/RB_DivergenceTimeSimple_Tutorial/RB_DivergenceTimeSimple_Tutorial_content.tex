@@ -7,7 +7,8 @@ The key concepts of this tutorial are the global molecular clock and node- and f
 
 In this tutorial you will perform a Bayesian inference to estimate a time-calibrated phylogeny.
 In the first part we will demonstrate you how to set up a basic model for time-calibrated phylogeny inference.
-This analysis will use an informative prior distribution on the global molecular clock.
+There we will use the global molecular clock rate to calibrate the phylogeny.
+The first analysis will use a fixed global molecular clock and the second analysis will use an informative prior distribution on the global molecular clock. 
 In the second part you will use an informative prior distribution on the root age (crown age) to calibrate the phylogeny.
 In the third and final part you will use node- and fossil-calibrations instead of the informative prior on the root age.
 All the assumptions will be covered more in detail later in this tutorial.
@@ -68,14 +69,19 @@ The first section of this exercise involves:
 (2) use an informative prior on the clock rate to date the phylogeny;
 (3) approximating the posterior probability of the tree topology and node ages (and all other parameters) using MCMC, and; 
 (4) summarizing the MCMC output by computing the maximum \textit{a posteriori} tree. 
+This analysis is mostly equivalent to the analysis performed in the RB\_CTMC\_Tutorial.
 
-%\begin{figure}[h!]
-%\centering
-%\fbox{\includegraphics[width=\textwidth,angle=0]{\ResourcePath figures/clock_prior_graphical_model.pdf}}
-%\caption{\small Graphical model representation of the phylogenetic model. 
-%The graphical model shows the dependencies between the parameters.}
-%\label{fig:clock_prior}
-%\end{figure}
+\begin{figure}[h!]
+\centering
+\fbox{\includegraphics[width=\textwidth,angle=0]{\ResourcePath figures/global_clock_graphical_model.pdf}}
+\caption{\small A simple phylogenetic model depicted in graphical-model notation (left) and the corresponding specification in the \Rev~language (right).
+In graphical-model notation, constant variables are enclosed in boxes, stochastic variables are enclosed in solid circles, deterministic variables in stippled circles, and observations in shaded circles, with arrows indicating variable dependencies. 
+For example, the root age ($root$) is a random variable described by a uniform prior probability distribution with constant upper and lower bounds, the instantaneous-rate matrix, $Q$, is a deterministic function of the base frequencies and exchangeability rates ($pi$ and $er$, respectively), and the observed sequences, $S$, are realizations of the phylogenetic model that are clamped for inference. 
+This model is mirrored in \Rev~code, where the first two lines create the birth-death process (with fixed speciation and extinction rates; \emph{lambda}=2.0 and \emph{mu}=1.0), and a uniform prior distribution on the root age. 
+The following three lines instantiate the instantaneous-rate matrix for the GTR model, where both the base frequencies and exchangeability rates are drawn from flat Dirichlet distributions.
+Finally, we create the stochastic variable representing the character data drawn from the Phylo-CTMC \add{(continuous time Markov chain)} process and attach (clamp) observations to the variable \emph{seq}.}
+\label{fig:clock_prior}
+\end{figure}
 
 The general structure of the model is represented in Figure~\ref{fig:clock_prior}.
 This figure shows the full model graph.
@@ -95,11 +101,11 @@ First load in the sequences using the \cl{readDiscreteCharacterData()} function.
 data <- readDiscreteCharacterData("data/primates_cytb.nex")
 \end{lstlisting}
 \end{snugshade*}}
-Executing these lines initializes the data matrix as the respective \Rev~variables. 
+Executing these lines initializes the data matrix as the respective \Rev~variable. 
 
 Next we will specify some useful variables based on our dataset. The variable \cl{data} has \textit{member functions} that we can use to retrieve information about the dataset. 
 These include the number of species (\cl{n\_species}) and the tip labels (\cl{names}).
-Each of these variables will be necessary for setting up different parts of our model.
+Each of these variables will be necessary for setting up different parts of our model (\EG the birth-death process prior).
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 n_species <- data.ntaxa()
@@ -134,17 +140,16 @@ er_prior <- v(1,1,1,1,1,1)
 \end{snugshade*}}
 This node defines the concentration-parameter values of the Dirichlet prior distribution on the exchangeability rates. 
 Now, we can create a stochastic node for the exchangeability rates using the \cl{dnDirichlet()} function, which takes the vector of concentration-parameter values as an argument and the \cl{\rbdn} operator. 
-Together, these create a stochastic node named \cl{er} ($\theta$ in Figure \ref{fig:gtr}): 
+Together, these create a stochastic node named \cl{er}, see Figure~\ref{fig:clock_prior}: 
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 er ~ dnDirichlet(er_prior)
 \end{lstlisting}
 \end{snugshade*}}
+The Dirichlet prior on our parameter \cl{er} creates a \href{http://en.wikipedia.org/wiki/Simplex}{\textit{simplex}} of values that sum to 1. 
 
 
 For each stochastic node in our model, we must also specify a proposal mechanism if we wish to estimate that parameter. 
-The Dirichlet prior on our parameter \cl{er} creates a \href{http://en.wikipedia.org/wiki/Simplex}{\textit{simplex}} of values that sum to 1. 
-
 {\tt\small \begin{snugshade*}
 \begin{lstlisting}
 moves[++mi] = mvSimplexElementScale(er) 
@@ -160,7 +165,7 @@ pi ~ dnDirichlet(pi_prior)
 \end{lstlisting}
 \end{snugshade*}}
 
-The node \cl{pi} represents the $\pi$ node in Figure \ref{fig:gtr}.
+The node \cl{pi} represents the $\pi$ node in Figure~\ref{fig:clock_prior}.
 Now add the simplex scale move on the stationary frequencies to the moves vector:
 {\tt \small \begin{snugshade*}
 \begin{lstlisting}
@@ -179,24 +184,19 @@ Q := fnGTR(er,pi)
 
 \subsection{Setting up the Gamma Model}
 
-Create a constant node called \cl{shape\_prior} for the rate parameter of the exponential prior on the gamma-shape parameter (this is represented as the constant $\lambda$-rate parameter in Figure \ref{fig:gtrg}):
+Create a constant node called \cl{shape\_prior} for the rate parameter of the exponential prior on the gamma-shape parameter (this is represented as the constant rate parameter in Figure \ref{fig:clock_prior}):
 {\tt\begin{snugshade*}
 \begin{lstlisting}
 shape_prior <- 0.05                                                                             
 \end{lstlisting}
 \end{snugshade*}}
-% I changed this from ``alpha_prior'' to match the description in the text
 
-Then create a stochastic node called \cl{alpha} with an exponential prior (this represents the stochastic node for the $\alpha$-shape parameter in Figure \ref{fig:gtrg}):
-% The GTR+G graphical model figure was not previously included...I added a modified version below that 
-% horizontally compressed the GTR part of the model; the modified version is called `gtrg_graphical_model_2.'
-% I changed this from \cl{shape} in tis sentence to \cl{alpha} so that it matched the description in the code and the GTR + G graphical model description
+Then create a stochastic node called \cl{alpha} with an exponential prior (this represents the stochastic node for the $\alpha$-shape parameter in Figure \ref{fig:clock_prior}):
 {\tt\begin{snugshade*}
 \begin{lstlisting}
 alpha ~ dnExponential(shape_prior)
 \end{lstlisting}
 \end{snugshade*}}
-% I changed this from ``alpha_prior'' to match the description in the txt
 
 The way the ASRV model is implemented involves discretizing the mean-one gamma distribution into a set number of rate categories, $k$. 
 Thus, we can analytically marginalize over the uncertainty in the rate at each site. 
@@ -204,7 +204,6 @@ The likelihood of each site is averaged over the $k$ rate categories, where the 
 To specify this, we need a deterministic node that is a vector that will hold the set of $k$ rates drawn from the gamma distribution with $k$ rate categories. 
 The \cl{fnDiscretizeGamma()} function returns this deterministic node and takes three arguments: the shape and rate of the gamma distribution and the number of categories. 
 Since we want to discretize a mean-one gamma distribution, we can pass in \cl{alpha} for both the shape and rate.
-% I changed this from \cl{shape} in tis sentence to \cl{alpha} so that it matched the description in the code and the GTR + G graphical model description
 
 Initialize the \cl{gamma\_rates} deterministic node vector using the  \cl{fnDiscretizeGamma()} function with \cl{4} bins:
 {\tt \begin{snugshade*}
@@ -215,7 +214,7 @@ gamma_rates := fnDiscretizeGamma( alpha, alpha, 4 )
 
 Note that here, by convention, we set $k = 4$.
 The random variable that controls the rate variation is the stochastic node \cl{alpha}. 
-% I changed this from \cl{shape} in tis sentence to \cl{alpha} so that it matched the description in the code and the GTR + G graphical model description
+It may be useful to look at the values of the gamma rates directly to get an intuition of the different values for the rate categories.
 We will apply a simple scale move to this parameter.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
@@ -256,15 +255,15 @@ We also need to specify a prior on the root age (our informed guess is about 75-
 So we use a uniform distribution between 50 and 100.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-root ~ dnUniform(50.0,100.0)
+root ~ dnUniform(0.0,1000.0)
 \end{lstlisting}
 \end{snugshade*}}
 Additionally, we know that we do not have all primate species included in this data set.
-We only have 23 out of the approximately 270 primate species.
+We only have 23 out of the approximately 450 primate species.
 Thus, we use a sampling fraction to represent this incomplete taxon sampling.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-sampling_fraction <- 23 / 270
+sampling_fraction <- 23 / 450
 \end{lstlisting}
 \end{snugshade*}}
 Here we have created our first three stochastic variables.

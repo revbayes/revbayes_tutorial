@@ -239,18 +239,18 @@ extinction := turnover
 \end{lstlisting}
 \end{snugshade*}}
 We also need to specify a prior on the root age (our informed guess is about 75-80 mya).
-So we use a uniform distribution between 50 and 100.
+Nevertheless we use a very wide uniform distribution between 0 and 1000.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-root ~ dnUniform(50.0,100.0)
+root ~ dnUniform(0.0,1000.0)
 \end{lstlisting}
 \end{snugshade*}}
 Additionally, we know that we do not have all primate species included in this data set.
-We only have 23 out of the approximately 270 primate species.
+We only have 23 out of the approximately 450 primate species.
 Thus, we use a sampling fraction to represent this incomplete taxon sampling.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-sampling_fraction <- 23 / 270
+sampling_fraction <- 23 / 450
 \end{lstlisting}
 \end{snugshade*}}
 Here we have created our first three stochastic variables.
