@@ -676,6 +676,16 @@ for(i in 1:n_branches){
 \end{lstlisting}
 \end{snugshade*}}
 
+\begin{framed}
+\textbf{\textit{Sidebar: Other Uncorrelated-Rates Models}}
+
+The choice in the branch-rate prior does not necessarily have to be a lognormal distribution. 
+Depending on your prior beliefs about how branch rates vary across the tree, the rates can just as easily be assigned an exponential distribution (e.g., \colorbox{shadecolor}{\cl{branch\_rates[i] $\sim$ dnExponential(1.0)}} defines each branch rate as an independent draw from an exponential distribution centered on 1) or a gamma distribution (e.g., \colorbox{shadecolor}{\cl{branch\_rates[i] $\sim$ dnGamma(2.0, 4.0)}} defines each branch rate as an independent draw from a gamma distribution centered on 0.5) or any other distribution on positive-real numbers. 
+The exercises outlined in this tutorial demonstrate how to compare different models of branch-rate variation using Bayes factors, and it may also be important to consider alternative priors on branch rates using these approaches.
+Importantly, \RevBayes~is flexible enough to make the process of comparing these models very straightforward.
+\textbf{For the purposes of this exercise, specify a lognormal prior on the branch rates.}
+\end{framed}
+
 Because we are dealing with semi-identifiable parameters, it often helps to apply a range of moves to the variables representing the branch rates and branch times. This will help to improve the mixing of our MCMC.
 Here we will add 2 additional types of moves that act on vectors.
 {\tt \begin{snugshade*}
