@@ -148,3 +148,7 @@ state_fn = fp + "output/"+out_str+".states.txt"
 atlas_fn = fp + "data/earth3.still.atlas.txt"
 phw_fn = fp + "output/"+out_str+".phw.txt"
 convertToPhylowood(treefile=tree_fn, geofile=atlas_fn, statefile=state_fn, outfile=phw_fn, burnin=0., chartype="NaturalNumbers", bgtype="Range")
+
+
+# you may want to quit RevBayes now
+q()

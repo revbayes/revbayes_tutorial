@@ -135,7 +135,7 @@ monitors[3] = mnScreen(printgen=1000, clockRate, root, age_simiiformes)
 mymcmc = mcmc(mymodel, monitors, moves)
 
 mymcmc.burnin(generations=10000,tuningInterval=250)
-mymcmc.run(generations=100000)
+mymcmc.run(generations=30000)
 
 
 # Now, we will analyze the tree output.
@@ -145,5 +145,5 @@ treetrace = readTreeTrace("output/primates_cytb_global_fixed_clock.trees", treet
 mapTree(treetrace,"output/primates_cytb_global_fixed_clock.tree")
 
 # you may want to quit RevBayes now
-#q()
+q()
 
