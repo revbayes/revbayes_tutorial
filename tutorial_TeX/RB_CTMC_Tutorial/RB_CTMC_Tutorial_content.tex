@@ -33,7 +33,7 @@ We assume that you have read and hopefully completed the following tutorials:
 \item RB\_Getting\_Started
 \item RB\_Basics\_Tutorial
 \end{itemize}
-Note that the RB\_Basics\_Tutorial introduces the basic syntax of \Rev~but does not cover any phylogenetic models.
+Note that the RB\_Basics\_Tutorial introduces the basic syntax of \Rev but does not cover any phylogenetic models.
 You may skip the RB\_Basics\_Tutorial if you have some familiarity with \R.
 We tried to keep this tutorial very basic and introduce all the language concepts on the way.
 You may only need the RB\_Basics\_Tutorial for a more in-depth discussion of concepts in \Rev.
@@ -53,11 +53,7 @@ In the \cl{data} folder, you will find the following files
 \end{itemize}
 
 
-%
-%\subsection*{Analysis Functions}
-%
-\newpage
-\FloatBarrier
+
 \section{Example: Character Evolution under the Jukes-Cantor Substitution Model}
 
 \bigskip
@@ -108,12 +104,12 @@ P_{JC69} = \begin{pmatrix} {{1\over4} + {3\over4}e^{-t\mu}} & {{1\over4} - {1\ov
 \end{equation*}
 In the later exercises you will be asked to specify more complex substitution models.
 \textbf{Don't be scared by the math!}
-\RevBayes~will take care of all the computations for you.
+\RevBayes will take care of all the computations for you.
 Here we only provide some of the equations for the models in case you might be interested in the details.
 You will be able to complete the exercises without understanding the underlying math.
 
 
-\noindent \\ \impmark The files for this example analysis are provided for you, which can easily be run using the \cl{source()} function in the \RevBayes~console:
+\noindent \\ \impmark The files for this example analysis are provided for you, which can easily be run using the \cl{source()} function in the \RevBayes console:
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 source("RevBayes_scripts/JukesCantor.Rev")
@@ -127,7 +123,7 @@ If you continue to let this run, then you will see it output the states of the M
 Ultimately, this is how you will execute most analyses in \RevBayes, with the full specification of the model and analyses contained in the sourced files. 
 You could easily run this entire analysis on your own data by substituting your data file name for that in the model-specification file. 
 However, it is important to understand the components of the model to be able to take full advantage of the flexibility and richness of \RevBayes.
-Furthermore, without inspecting the \Rev~scripts sourced in \cl{JukesCantor.Rev}, you may end up inadvertently performing inappropriate analyses on your dataset, which would be a waste of your time and CPU cycles. 
+Furthermore, without inspecting the \Rev scripts sourced in \cl{JukesCantor.Rev}, you may end up inadvertently performing inappropriate analyses on your dataset, which would be a waste of your time and CPU cycles. 
 The next steps will walk you through the full specification of the model and MCMC analyses. 
 
 \bigskip
@@ -145,7 +141,7 @@ First load in the sequences using the \cl{readDiscreteCharacterData()} function.
 data <- readDiscreteCharacterData("data/primates_cytb.nex")
 \end{lstlisting}
 \end{snugshade*}}
-Executing these lines initializes the data matrix as the respective \Rev~variables. 
+Executing these lines initializes the data matrix as the respective \Rev variables. 
 To report the current value of any variable, simply type the variable name and press enter. For the \cl{data} matrix, this provides information about the alignment:
 {\tt \begin{snugshade*}
 \begin{lstlisting}
@@ -217,7 +213,7 @@ In Figure \ref{fig:jc}, the tree is denoted $\Psi$.
 
 We will assume a constant-rate birth-death process as the prior distribution on the tree.
 This means that all possible labeled, rooted tree topologies have equal probability. 
-The distribution in \RevBayes~is \cl{dnBDP()}. 
+The distribution in \RevBayes is \cl{dnBDP()}. 
 For the birth-death process we need a speciation rate and extinction rate parameter.
 Let us start with those two variables.
 We use a \textit{gamma} distribution with rate $a=5$ and shape $b=1$ for both the \cl{diversification} and \cl{turnover} variables.
@@ -325,7 +321,7 @@ seq.clamp(data)
 \end{lstlisting}
 \end{snugshade*}}
 [Note that although we assume that our sequence data are random variables---they are realizations of our phylogenetic model---for the purposes of inference, we assume that the sequence data are ``clamped''.]
-When this function is called, \RevBayes~sets each of the stochastic nodes representing the tips of the tree to the corresponding nucleotide sequence in the alignment. 
+When this function is called, \RevBayes sets each of the stochastic nodes representing the tips of the tree to the corresponding nucleotide sequence in the alignment. 
 This essentially tells the program that we have observed data for the sequences at the tips. 
 
 Finally, we wrap the entire model to provide convenient access to the DAG. 
@@ -409,8 +405,8 @@ mymcmc.run(generations=30000)
 When the analysis is complete, you will have the monitored files in your output directory.
 
 
-Methods for visualizing the marginal densities of parameter values are not currently available in \RevBayes~itself. 
-Thus, it is important to use programs like \texttt{Tracer} \citep{Rambaut2011} to evaluate mixing and non-convergence. (\RevBayes~does, however, have a tool for convergence assessment called \cl{beca}.)
+Methods for visualizing the marginal densities of parameter values are not currently available in \RevBayes itself. 
+Thus, it is important to use programs like \texttt{Tracer} \citep{Rambaut2011} to evaluate mixing and non-convergence. (\RevBayes does, however, have a tool for convergence assessment called \cl{beca}.)
 
 \noindent \\ \impmark Look at the file called \cl{output/primates\_cytb\_JC\_posterior.log} in \texttt{Tracer}.
 
@@ -418,7 +414,7 @@ Thus, it is important to use programs like \texttt{Tracer} \citep{Rambaut2011} t
 \subsection{Exercise 1}
 
 We are interested in the phylogenetic relationship of the Tarsiers. Therefore, we need to summarize the trees sampled from the posterior distribution.
-\RevBayes~can summarize the sampled trees by reading in the tree-trace file:
+\RevBayes can summarize the sampled trees by reading in the tree-trace file:
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 treetrace = readTreeTrace("output/primates_cytb_JC_posterior.trees",
@@ -585,7 +581,7 @@ This should be all for the HKY model.
 \item Are the resulting estimates of the base frequencies equal? 
 	If not, how much do they differ? 
 	Are the estimated base frequencies similar to the empirical base frequencies? 
-	The empirical base frequencies are the frequencies of the characters in the alignment, which can be computed with \RevBayes~by \cl{data.getEmpiricalBaseFrequencies()}.
+	The empirical base frequencies are the frequencies of the characters in the alignment, which can be computed with \RevBayes by \cl{data.getEmpiricalBaseFrequencies()}.
 \item Is the inferred rate of transition substitutions higher than the rate of transversion substitutions? If so, by how much?
 \item Like the HKY model, the Felsenstein 1981 (F81) substitution model has unequal stationary frequencies, but it assumes equal transition-transversion rates \citep{Felsenstein1981}.
 	Can you set up the F81 model and run an analysis?
@@ -897,14 +893,6 @@ seq ~ dnPhyloCTMC(tree=psi, Q=Q, branchRates=clockRate, siteRates=gamma_rates, p
 \item Complete the table of the phylogenetic relationship of Tarsiers.
 \end{itemize} 
 
-\vspace{5cm}
-Questions about this tutorial can be directed to: \\\vspace{-10mm}
-\begin{itemize}
-\item Tracy Heath (email: \href{mailto:tracyh@berkeley.edu}{tracyh@berkeley.edu}) \\\vspace{-8mm}
-\item Sebastian H\"{o}hna (email: \href{mailto:sebastian.hoehna@gmail.com}{sebastian.hoehna@gmail.com}) \\\vspace{-8mm}
-\item Michael Landis (email: \href{mailto:mlandis@berkeley.edu}{mlandis@berkeley.edu}) \\\vspace{-8mm} 
-\item Brian R. Moore (email: \href{mailto:brianmoore@ucdavis.edu}{brianmoore@ucdavis.edu}) \\\vspace{-8mm}
-\end{itemize}
 
 \bibliographystyle{sysbio}
 \bibliography{\ResourcePath refs}
