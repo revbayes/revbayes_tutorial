@@ -1,9 +1,10 @@
 ################################################################################
 #
-# RevBayes Example: Bayesian inference of phylogeny using a Jukes-Cantor model
+# RevBayes Example: Bayesian inference of phylogeny using a general time reversible model
+#                   with gamma distributed rate variation among sites
 # 
-# This file: Runs the full MCMC on a single gene under the Jukes-Cantor 
-#            substitution model using an unconstrained (unrooted) tree model.
+# This file: Runs the full MCMC on a single gene under the general time reversible 
+#            substitution model using a rooted (birth-death) tree model.
 #
 # authors: Sebastian Hoehna, Tracy A. Heath, Michael Landis and Brian R. Moore
 #
@@ -21,9 +22,7 @@ data <- readDiscreteCharacterData("data/primates_cytb.nex")
 
 # Get some useful variables from the data. We need these later on.
 n_species <- data.ntaxa()
-n_sites <- data.nchar()
 names <- data.names()
-n_branches <- 2 * n_species - 3
 
 # set my move index
 mi = 0
@@ -34,9 +33,9 @@ mi = 0
 # Substitution Model #
 ######################
 
-#### specify the Jukes-Cantor substitution model applied uniformly to all sites ###
-Q <- fnJC(4) 
 
+#### create the rate matrix ####
+Q <- fnJC(4) 
 
 
 
@@ -56,7 +55,7 @@ extinction := turnover
 # specify a prior on the root age (our informed guess is about 75-80 mya)
 root ~ dnUniform(50.0,100.0)
 
-sampling_fraction <- 23 / 270 # 23 out of the ~ 270 primate species
+sampling_fraction <- 23 / 450 # 23 out of the ~ 450 primate species
 
 # create some moves that change the stochastic variables
 # all moves are sliding proposals but you could use scaling proposals for the rates too
@@ -72,6 +71,7 @@ moves[++mi] = mvNNI(psi, weight=1.0)
 moves[++mi] = mvFNPR(psi, weight=3.0)
 moves[++mi] = mvSubtreeScale(psi, weight=3.0)
 moves[++mi] = mvNodeTimeSlideUniform(psi, weight=15.0)
+
 
 
 
@@ -104,13 +104,14 @@ mymodel = model(Q)
 
 
 
-monitors[1] = mnModel(filename="output/primates_cytb_JC.log",printgen=10, separator = TAB)
-monitors[2] = mnFile(filename="output/primates_cytb_JC.trees",printgen=10, separator = TAB, psi)
+
+monitors[1] = mnModel(filename="output/primates_cytb_JC_posterior.log",printgen=10, separator = TAB)
+monitors[2] = mnFile(filename="output/primates_cytb_JC_posterior.trees",printgen=10, separator = TAB, psi)
 
 ### Compute power posterior distributions
 pow_p = powerPosterior(mymodel, moves, monitors, "output/pow_p_JC.out", cats=50, sampleFreq=10) 
 pow_p.burnin(generations=10000,tuningInterval=250)
-pow_p.run(generations=10000)  
+pow_p.run(generations=1000)  
 
 ### Use stepping-stone sampling to calculate marginal likelihoods
 ss = steppingStoneSampler(file="output/pow_p_JC.out", powerColumnName="power", likelihoodColumnName="likelihood")
@@ -121,5 +122,5 @@ ps = pathSampler(file="output/pow_p_JC.out", powerColumnName="power", likelihood
 ps.marginal() 
 
 # you may want to quit RevBayes now
-#q()
+q()
 

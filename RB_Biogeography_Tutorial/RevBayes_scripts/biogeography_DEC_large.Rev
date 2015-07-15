@@ -85,3 +85,6 @@ my_mcmc = mcmc(my_model, monitors, moves)
 # run mcmc (without burn-in)
 my_mcmc.run(generations=ngen)
 
+
+# you may want to quit RevBayes now
+q()

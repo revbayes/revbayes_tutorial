@@ -150,5 +150,5 @@ treetrace = readTreeTrace("output/primates_cytb_root_calibration.trees", treetyp
 mapTree(treetrace,"output/primates_cytb_root_calibration.tree")
 
 # you may want to quit RevBayes now
-#q()
+q()
 

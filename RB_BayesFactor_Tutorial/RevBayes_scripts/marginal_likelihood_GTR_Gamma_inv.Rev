@@ -1,13 +1,12 @@
 ################################################################################
 #
 # RevBayes Example: Bayesian inference of phylogeny using a general time reversible model
-#                   with gamma distributed rate variation among sites. We use
-#                   a constant-rate birth-death process as the prior distribution
-#                   on trees. All branches are assumed to share a global clock.
-#                   We estimate divergence times by fixing the clock rate.
+#                   with gamma distributed rate variation among sites
 # 
+# This file: Runs the full MCMC on a single gene under the general time reversible 
+#            substitution model using a rooted (birth-death) tree model.
 #
-# authors: Sebastian Hoehna, Michael Landis, and Tracy A. Heath
+# authors: Sebastian Hoehna, Tracy A. Heath, Michael Landis and Brian R. Moore
 #
 ################################################################################
 
@@ -49,6 +48,7 @@ moves[++mi] = mvSimplexElementScale(pi,weight=2)
 Q := fnGTR(er,pi) 
 
 
+
 #############################
 # Among Site Rate Variation #
 #############################
@@ -60,6 +60,14 @@ gamma_rates := fnDiscretizeGamma( alpha, alpha, 4, false )
 # add moves for the stationary frequencies, exchangeability rates and the shape parameter
 moves[++mi] = mvScale(alpha,weight=2)
 
+
+
+
+# the probability of a site being invariable
+pinvar ~ dnBeta(1,1)
+# add moves for the probability if a site being invariable
+moves[++mi] = mvScale(pinvar)
+moves[++mi] = mvSlide(pinvar)
 
 
 
@@ -78,7 +86,7 @@ extinction := turnover
 # specify a prior on the root age (our informed guess is about 75-80 mya)
 root ~ dnUniform(50.0,100.0)
 
-sampling_fraction <- 23 / 270 # 23 out of the ~ 270 primate species
+sampling_fraction <- 23 / 450 # 23 out of the ~ 450 primate species
 
 # create some moves that change the stochastic variables
 # all moves are sliding proposals but you could use scaling proposals for the rates too
@@ -96,8 +104,7 @@ moves[++mi] = mvSubtreeScale(psi, weight=3.0)
 moves[++mi] = mvNodeTimeSlideUniform(psi, weight=15.0)
 
 
-clade_simiiformes = clade("Cebus_albifrons", "Macaca_mulatta")
-age_simiiformes := tmrca(psi, clade_simiiformes)
+
 
 
 
@@ -105,10 +112,11 @@ age_simiiformes := tmrca(psi, clade_simiiformes)
 # PhyloCTMC Model #
 ###################
 
+# We use an empirical estimate of the clock rate which is 0.01 (=1%) per million years per site
 clockRate <- 0.01
 
 # the sequence evolution model
-seq ~ dnPhyloCTMC(tree=psi, Q=Q, branchRates=clockRate, siteRates=gamma_rates, type="DNA")
+seq ~ dnPhyloCTMC(tree=psi, Q=Q, branchRates=clockRate, siteRates=gamma_rates, pInv=pinvar, type="DNA")
 
 # attach the data
 seq.clamp(data)
@@ -128,22 +136,21 @@ mymodel = model(Q)
 
 
 
+monitors[1] = mnModel(filename="output/primates_cytb_GTR_Gamma_inv_posterior.log",printgen=10, separator = TAB)
+monitors[2] = mnFile(filename="output/primates_cytb_GTR_Gamma_inv_posterior.trees",printgen=10, separator = TAB, psi)
 
-monitors[1] = mnModel(filename="output/primates_cytb_global_fixed_clock.log",printgen=10, separator = TAB)
-monitors[2] = mnFile(filename="output/primates_cytb_global_fixed_clock.trees",printgen=10, separator = TAB, psi)
-monitors[3] = mnScreen(printgen=1000, clockRate, root, age_simiiformes)
+### Compute power posterior distributions
+pow_p = powerPosterior(mymodel, moves, monitors, "output/pow_p_GTR_Gamma_inv.out", cats=50, sampleFreq=10) 
+pow_p.burnin(generations=10000,tuningInterval=250)
+pow_p.run(generations=1000)  
 
-mymcmc = mcmc(mymodel, monitors, moves)
+### Use stepping-stone sampling to calculate marginal likelihoods
+ss = steppingStoneSampler(file="output/pow_p_GTR_Gamma_inv.out", powerColumnName="power", likelihoodColumnName="likelihood")
+ss.marginal() 
 
-mymcmc.burnin(generations=10000,tuningInterval=250)
-mymcmc.run(generations=30000)
-
-
-# Now, we will analyze the tree output.
-# Let us start by reading in the tree trace
-treetrace = readTreeTrace("output/primates_cytb_global_fixed_clock.trees", treetype="clock")
-
-mapTree(treetrace,"output/primates_cytb_global_fixed_clock.tree")
+### Use path-sampling to calculate marginal likelihoods
+ps = pathSampler(file="output/pow_p_GTR_Gamma_inv.out", powerColumnName="power", likelihoodColumnName="likelihood")
+ps.marginal() 
 
 # you may want to quit RevBayes now
 q()

@@ -94,6 +94,7 @@ mdl = model(m)
 mn[mni++] = mnScreen(clock_bg, d[1][1], d[1][2], d[1][3], d[2][1], d[2][2], d[2][3], e[1], e[2], rates, widespread_sympatry, subset_sympatry, allopatry)
 mn[mni++] = mnFile(clock_bg, d[1][1], d[1][2], d[1][3], d[2][1], d[2][2], d[2][3], e[1], e[2], rates, widespread_sympatry, subset_sympatry, allopatry, filename="./output/"+out_str+".params.txt")
 mn[mni++] = mnJointConditionalAncestralState(tree=psi, ctmc=m, type="NaturalNumbers", printgen=10, withTips=true, withStartStates=true, filename="./output/"+out_str+".states.txt")
+mn[mni++] = mnJointConditionalAncestralState(tree=psi, ctmc=m, filename="./output/"+out_str+".states.txt", type="NaturalNumbers")
 
 # mcmc
 ch = mcmc(mv,mn,mdl)
@@ -104,3 +105,7 @@ ch.run(1000)
 state_fn = fp + "output/"+out_str+".states.txt"
 phw_fn = fp + "output/"+out_str+".phw.txt"
 convertToPhylowood(treefile=tree_fn, geofile=atlas_fn, statefile=state_fn, outfile=phw_fn, burnin=0., chartype="NaturalNumbers", bgtype="Range")
+
+
+# you may want to quit RevBayes now
+q()

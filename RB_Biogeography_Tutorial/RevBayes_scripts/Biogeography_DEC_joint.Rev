@@ -124,3 +124,7 @@ mn[mni++] = mnJointConditionalAncestralState(tree=psi, ctmc=m, type="NaturalNumb
 ch = mcmc(mv,mn,mdl)
 ch.burnin(1000,100)
 ch.run(5000)
+
+
+# you may want to quit RevBayes now
+q()

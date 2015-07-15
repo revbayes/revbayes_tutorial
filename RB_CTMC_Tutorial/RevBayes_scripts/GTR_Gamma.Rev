@@ -147,5 +147,5 @@ treetrace.summarize()
 mapTree(treetrace,"output/primates_cytb_GTR_Gamma.tree")
 
 # you may want to quit RevBayes now
-#q()
+q()
 
