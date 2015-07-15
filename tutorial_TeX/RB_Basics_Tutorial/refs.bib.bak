@@ -81,6 +81,20 @@
   Timestamp                = {2010.10.27}
 }
 
+@Article{Lunn2009,
+  Title                    = {The BUGS project: Evolution, critique and future directions},
+  Author                   = {Lunn, David and Spiegelhalter, David and Thomas, Andrew and Best, Nicky},
+  Journal                  = {Statistics in medicine},
+  Year                     = {2009},
+  Number                   = {25},
+  Pages                    = {3049--3067},
+  Volume                   = {28},
+
+  Owner                    = {hoehna},
+  Publisher                = {Wiley Online Library},
+  Timestamp                = {2013.05.31}
+}
+
 @Article{Lunn2000,
   Title                    = {WinBUGS-a Bayesian modelling framework: concepts, structure, and extensibility},
   Author                   = {Lunn, David J and Thomas, Andrew and Best, Nicky and Spiegelhalter, David},
