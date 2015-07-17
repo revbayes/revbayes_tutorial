@@ -115,15 +115,15 @@ m.clamp(data)
 mdl = model(clock_mol)
 
 # monitors
-mn[mni++] = mnScreen(clock_bg, clock_scale_bg, d[1][2], d[1][3], d[2][1], d[2][3], d[3][1], d[3][2], e[1], e[2], e[3], widespread_sympatry, subset_sympatry, allopatry, er_mol, pi_mol, clock_mol, gamma_rates, printgen=10)
+mn[mni++] = mnScreen(printgen=1000, clock_bg, clock_scale_bg, widespread_sympatry, subset_sympatry, allopatry, clock_mol)
 mn[mni++] = mnFile(clock_bg, clock_scale_bg, d[1][2], d[1][3], d[2][1], d[2][3], d[3][1], d[3][2], e[1], e[2], e[3], widespread_sympatry, subset_sympatry, allopatry, er_mol, pi_mol, gamma_rates, filename="./output/"+out_str+".params.txt",printgen=10)
 mn[mni++] = mnFile(psi, filename="./output/"+out_str+".tre",printgen=10)
 mn[mni++] = mnJointConditionalAncestralState(tree=psi, ctmc=m, type="NaturalNumbers", printgen=10, withTips=true, withStartStates=true, filename="./output/"+out_str+".states.txt")
 
 # mcmc
 ch = mcmc(mv,mn,mdl)
-ch.burnin(1000,100)
-ch.run(5000)
+ch.burnin(10000,200)
+ch.run(30000)
 
 
 # you may want to quit RevBayes now

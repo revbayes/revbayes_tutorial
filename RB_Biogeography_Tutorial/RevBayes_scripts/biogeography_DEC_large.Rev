@@ -13,7 +13,7 @@ n_nodes = tree.nnodes()
 
 mvi = 1
 mni = 1
-ngen = 500000
+ngen = 30000
 
 # save a copy of the tree with node indexes (for later use)
 write(tree,filename=tree_fn+".index.tre")
@@ -69,7 +69,7 @@ moves[mvi++] = mvCharacterHistory(ctmc=m, qmap=q_range, tree=tree, lambda=1.00, 
 my_model = model(m)
 
 # add standard monitors
-monitors[mni++] = mnScreen(clock_bg, r_gain, r_loss, dp, subset_sympatry, allopatry, widespread_sympatry, printgen=100)
+monitors[mni++] = mnScreen(printgen=1000, clock_bg, r_gain, r_loss, dp, subset_sympatry, allopatry, widespread_sympatry)
 monitors[mni++] = mnFile(clock_bg, r_gain, r_loss, dp, subset_sympatry, allopatry, widespread_sympatry, filename=out_fn+".params.txt", printgen=10)
 
 # add special data augmentation monitors
