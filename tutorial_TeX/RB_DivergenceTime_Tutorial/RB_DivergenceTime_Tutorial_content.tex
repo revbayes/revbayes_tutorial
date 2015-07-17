@@ -79,7 +79,7 @@ In graphical-model notation, constant variables are enclosed in boxes, stochasti
 For example, the root age ($root$) is a random variable described by a uniform prior probability distribution with constant upper and lower bounds, the instantaneous-rate matrix, $Q$, is a deterministic function of the base frequencies and exchangeability rates ($pi$ and $er$, respectively), and the observed sequences, $S$, are realizations of the phylogenetic model that are clamped for inference. 
 This model is mirrored in \Rev~code, where the first two lines create the birth-death process (with fixed speciation and extinction rates; \emph{lambda}=2.0 and \emph{mu}=1.0), and a uniform prior distribution on the root age. 
 The following three lines instantiate the instantaneous-rate matrix for the GTR model, where both the base frequencies and exchangeability rates are drawn from flat Dirichlet distributions.
-Finally, we create the stochastic variable representing the character data drawn from the Phylo-CTMC \add{(continuous time Markov chain)} process and attach (clamp) observations to the variable \emph{seq}.}
+Finally, we create the stochastic variable representing the character data drawn from the Phylo-CTMC (continuous time Markov chain) process and attach (clamp) observations to the variable \emph{seq}.}
 \label{fig:clock_prior}
 \end{figure}
 
@@ -620,7 +620,7 @@ The root age can thus be given any parametric distribution over positive real nu
 
 \begin{figure}[h!]
 \centering
-\fbox{\includegraphics[width=6in]{\GlobalResourcePath RB_RelaxedClock_Tutorial/figures/calib_BDR_gm.eps}}
+\fbox{\includegraphics[width=6in]{\ResourcePath figures/calib_BDR_gm.eps}}
 \caption{\small The graphical model representation of the node-calibrated birth-death process in \RevBayes.}
 \label{m_BDCal:fig}
 \end{figure}

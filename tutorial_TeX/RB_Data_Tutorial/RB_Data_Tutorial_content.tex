@@ -12,25 +12,20 @@ We assume that you have read and hopefully completed the following tutorials:
 
 
 
-%
-%
-%
-\newpage
-\FloatBarrier
 \section{Molecular Sequence Data}
 
 \bigskip
 \subsection{Getting Started}
 
 
-\exs{Download data and output files from: \href{http://revbayes.github.io/tutorials.html}{http://revbayes.github.io/tutorials.html}}
+\exs{Download data files from: \href{http://revbayes.github.io/tutorials.html}{http://revbayes.github.io/tutorials.html}}
 \exs{Open the file \cl{primates\_cytb.nex} in your text editor. 
 This file contains the nucleotide sequences of the cytochrome B gene sampled from 13 species (Box 1). 
 The elements of the \cl{DATA} block indicate the data type, number of taxa, and sequence length.}
 
 
 \begin{center}
-Box 1: A fragment of the NEXUS file containing the ITS sequences for this exercise. \\
+Box 1: A fragment of the NEXUS file containing the cytochrome B sequences for this exercise. \\
 \end{center}
 {\tt \scriptsize \begin{framed}
 \begin{lstlisting}
@@ -73,7 +68,7 @@ End;
 
 
 \subsection{Loading Molecular Sequence Data}
-We can read the data into \RevBayes~ using the \cl{readDiscreteCharacterData()} function. 
+We can read the data into \RevBayes  using the \cl{readDiscreteCharacterData()} function. 
 %This function returns a \textit{vector} of data matrices and, even though there is only one element in the vector, we must index that element using the \cl{[1]} notation. 
 %(You will also note that list indexing in Rev starts with \cl{1} like in the R language.)
 {\tt \begin{snugshade*}
@@ -83,7 +78,7 @@ data <- readDiscreteCharacterData("data/primates_cytb.nex")
 \end{snugshade*}}
 
 \subsection{Querrying Dataset Attributes}
-When a dataset has been loaded into \RevBayes, we can query relevant \Rev~variables. 
+When a dataset has been loaded into \RevBayes, we can query relevant \Rev variables. 
 To report the current value of any variable, simply type the variable name and press enter. 
 For example, the \cl{data} variable returns general information about the sequence alignment:
 {\tt \begin{snugshade*}
@@ -394,15 +389,6 @@ The elements in the array correspond to the other areas defined in the analysis.
 For example, in {\tt epoch1}, Kauai's {\tt dispersalValues} is equal to {\tt [ 1,0,0,0 ]}, which indicates Kauai exists at that point in time but it is not in contact with any other areas, i.e. the range in that area cannot expand into other areas.
 The {\tt dispersalValues} for Oahu, Maui, and Hawaii are all equal to {\tt [ 0,0,0,0 ]}, meaning no species may be present in that area during the time interval of {\t epoch1} during ages from 10.0 to 3.7. In contrast, {\tt epoch4}, from ages 0.5 to the present, range expansions may occur between any pair of areas and any area may be included in a species' range.
 
-
-\vspace{5cm}
-Questions about this tutorial can be directed to: \\\vspace{-10mm}
-\begin{itemize}
-\item Tracy Heath (email: \href{mailto:tracyh@berkeley.edu}{tracyh@berkeley.edu}) \\\vspace{-8mm}
-\item Michael Landis (email: \href{mailto:mlandis@berkeley.edu}{mlandis@berkeley.edu}) \\\vspace{-8mm} 
-\item Sebastian H\"{o}hna (email: \href{mailto:sebastian.hoehna@gmail.com}{sebastian.hoehna@gmail.com}) \\\vspace{-8mm}
-\item Brian R. Moore (email: \href{mailto:brianmoore@ucdavis.edu}{brianmoore@ucdavis.edu}) \\\vspace{-8mm}
-\end{itemize}
 
 
 %\bibliographystyle{mbe}

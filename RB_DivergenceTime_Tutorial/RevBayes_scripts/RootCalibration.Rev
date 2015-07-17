@@ -1,12 +1,14 @@
 ################################################################################
 #
 # RevBayes Example: Bayesian inference of phylogeny using a general time reversible model
-#                   with gamma distributed rate variation among sites
+#                   with gamma distributed rate variation among sites. We use
+#                   a constant-rate birth-death process as the prior distribution
+#                   on trees. All branches are assumed to share a global clock.
+#                   We estimate divergence times by using a root calibration and
+#                   a uniform prior on the clock.
 # 
-# This file: Runs the full MCMC on a single gene under the general time reversible 
-#            substitution model using a rooted (birth-death) tree model.
 #
-# authors: Sebastian Hoehna, Tracy A. Heath, Michael Landis and Brian R. Moore
+# authors: Sebastian Hoehna, Michael Landis, and Tracy A. Heath
 #
 ################################################################################
 

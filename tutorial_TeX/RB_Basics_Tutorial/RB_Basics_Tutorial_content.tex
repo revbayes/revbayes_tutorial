@@ -1,12 +1,8 @@
-
-%
-%\subsection*{Analysis Functions}
-%
-\section{Tutorial: Basic Rev Commands}
+\section{Basic \Rev Commands}
 
 \subsection{Introduction}
 
-This tutorial demonstrates the basic syntactical features of \RevBayes~and \Rev~and shows how to set up and perform an analysis on ``toy'' statistical models for linear regression. 
+This tutorial demonstrates the basic syntactical features of \RevBayes and \Rev and shows how to set up and perform an analysis on ``toy'' statistical models for linear regression. 
 This tutorial focuses on explaining probabilistic graphical models and the language \Rev.
 A good reference for probabilistic graphical models for Bayesian phylogenetic inference is given in \cite{Hohna2014b}.
 The statistical examples are borrowed from a fourth year statistics course taught in the fall term 2011 at Stockholm University.
@@ -17,10 +13,10 @@ The first section of this tutorial involves
 \item Learning about functions. 
 \end{enumerate}
 
-Then we will see how to perform statistical inference using \RevBayes~and \Rev~ by implementing a Monte Carlo algorithm. 
-Finally, we will see how \RevBayes~'s built-in functions vastly simplify this inference task.
+Then we will see how to perform statistical inference using \RevBayes and \Rev  by implementing a Monte Carlo algorithm. 
+Finally, we will see how \RevBayes 's built-in functions vastly simplify this inference task.
 
-All of the files for this analysis are provided for you and you can run these without significant effort using the \cl{source()} function in the \RevBayes~console:
+All of the files for this analysis are provided for you and you can run these without significant effort using the \cl{source()} function in the \RevBayes console:
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 source("RevBayes_scripts/basics.Rev")
@@ -28,13 +24,13 @@ source("RevBayes_scripts/basics.Rev")
 \end{snugshade*}}
 Nevertheless, you will learn more if you type in the commands directly.
 
-Let's start with the basic concepts for the interactive use of \RevBayes~with \Rev~(the language of \RevBayes). 
+Let's start with the basic concepts for the interactive use of \RevBayes with \Rev (the language of \RevBayes). 
 You should try to execute the statements step by step, look at the output and try to understand what and why things are happening. 
 We start with some simple concepts to get familiar and used to \RevBayes. 
-By now you should have executed \RevBayes~and you should see the command prompt waiting for input. 
+By now you should have executed \RevBayes and you should see the command prompt waiting for input. 
 The best exercise is to write these statements exactly in \RevBayes. 
 
-\Rev~is an interpreted language for statistical computing and analyses in evolutionary biology. Therefore, the basics are simple mathematical operations, such as 
+\Rev is an interpreted language for statistical computing and analyses in evolutionary biology. Therefore, the basics are simple mathematical operations, such as 
 {\tt \begin{snugshade*}
 \begin{lstlisting}    
 # Simple mathematical operators:
@@ -67,7 +63,7 @@ sqrt(16)                         # square root function
 power(2,2)                       # power function: power(a,b) = a^b
 \end{lstlisting}
 \end{snugshade*}}
-Notice that \Rev~is case-sensitive. That means, \Rev~distinguishes upper and lower case letter for both variable names and function names. For example, only the first of these two calls will work
+Notice that \Rev is case-sensitive. That means, \Rev distinguishes upper and lower case letter for both variable names and function names. For example, only the first of these two calls will work
 {\tt \begin{snugshade*}
 \begin{lstlisting}    
 exp(1)                           # correct lower case name
@@ -86,13 +82,13 @@ rnorm(n=10,0,1)          # random draws from a normal distribution
 \end{lstlisting}
 \end{snugshade*}}
 You may have noticed that we sometimes provided labels of the arguments and sometimes not. 
-You can always provide the argument labels and then \RevBayes~will match the arguments based on the labels.
+You can always provide the argument labels and then \RevBayes will match the arguments based on the labels.
 {\tt \begin{snugshade*}
 \begin{lstlisting}    
 dnorm(x=0.5,mean=0.0,sd=1)       # normal distribution density function
 \end{lstlisting}
 \end{snugshade*}}
-If you do not provide the argument labels, then \RevBayes~ will match the arguments by the best fitting types and the order in which you provided the arguments.
+If you do not provide the argument labels, then \RevBayes  will match the arguments by the best fitting types and the order in which you provided the arguments.
 {\tt \begin{snugshade*}
 \begin{lstlisting}    
 dnorm(0.5,0.5,1)         # correct order
@@ -105,7 +101,7 @@ You may provide also just some arguments with labels and leave the other argumen
 dnorm(0.0,x=0.5,sd=1)    # partially labeled
 \end{lstlisting}
 \end{snugshade*}}
-If you do not remember what the parameter name or parameter names of a function are, then you can simply type in the function name and \RevBayes~will tell you the possible parameters with their names.
+If you do not remember what the parameter name or parameter names of a function are, then you can simply type in the function name and \RevBayes will tell you the possible parameters with their names.
 {\tt \begin{snugshade*}
 \begin{lstlisting}    
 dnorm
@@ -145,7 +141,7 @@ str(a)                           # printing the structure information of 'a'
 |*   .methods = void function ()
 \end{lstlisting}
 \end{snugshade*}}
-An additional quite useful built-in function in \RevBayes~ is the \cl{type} function which gives you only the type information of the variable and thus is a subset of the \cl{str} function.
+An additional quite useful built-in function in \RevBayes  is the \cl{type} function which gives you only the type information of the variable and thus is a subset of the \cl{str} function.
 {\tt \begin{snugshade*}
 \begin{lstlisting}    
 type(a)                          # printing the type information of 'a'
@@ -236,7 +232,7 @@ Now you know everything there is about creating the different types of variables
 
 
 \subsubsection{Simple variable manipulation and other types of assignments}
-\Rev~provides some convenience variable manipulation operations that are equivalent to variable manipulations in other programming languages such as C/C++, Java and Python.
+\Rev provides some convenience variable manipulation operations that are equivalent to variable manipulations in other programming languages such as C/C++, Java and Python.
 You can increment (\cl{++}) and decrement (\cl{--}) a variable.
 The increment operation increases the current value of a variable by 1 and the decrement operation decreases the value by 1.
 A post increment (\cl{a++}) increases the value after returning the value, that is, the old value is returned.
@@ -260,7 +256,7 @@ index *= 2                       # double the current value
 These variable manipulations will come in very handy for indices of vectors/arrays.
 
 \subsubsection{Vectors}
-Common values in \RevBayes~are of scalar types.
+Common values in \RevBayes are of scalar types.
 That means, that not everything is a vector by default.
 Instead, you can create a vector using three different ways.
 First, you can call the vector function.
@@ -296,7 +292,7 @@ seq(1,20,2)                      # built a sequence from a to b by c
 \end{lstlisting}
 \end{snugshade*}} 
 
-Vectors in \Rev~belong to the class of objects that have methods.
+Vectors in \Rev belong to the class of objects that have methods.
 You  can call a member method by
 {\tt \begin{snugshade*}
 \begin{lstlisting}    
@@ -378,7 +374,7 @@ fib
 \end{snugshade*}}
 
 \subsubsection{User Defined Functions}
-In \Rev~you can write your own functions as well.
+In \Rev you can write your own functions as well.
 The syntax for writing function is:
 {\tt \begin{snugshade*}
 \begin{lstlisting}    
@@ -463,7 +459,7 @@ The focus here lies in the Metropolis algorithm, Bayesian inference, and model s
 After completing this computer exercise, you should be familiar with the basic Metropolis algorithm, analyzing output generated from a MCMC algorithm, and performing standard Bayesian inference.
 
 \subsection{Model and Data}
-We will use the data example from \cite{gelman95} (Table \ref{tab:airlineFatalities}). 
+We will use the data example from \cite{Gelman2003} (Table \ref{tab:airlineFatalities}). 
 A summary is given in table \ref{tab:airlineFatalities}.
 \begin{table}[!hbtp]
 \caption{Airline fatalities from 1976 to 1985. Reproduced from \cite[][Table 2.2 on p. 69]{gelman95}.}
@@ -478,7 +474,7 @@ A summary is given in table \ref{tab:airlineFatalities}.
 \end{tabular}
 \end{table}
 
-These data can be loaded into \RevBayes~by typing:
+These data can be loaded into \RevBayes by typing:
 {\tt \begin{snugshade*}
 \begin{lstlisting}    
 observed_fatalities <- v(24,25,31,31,22,21,26,20,16,22)
@@ -495,7 +491,7 @@ For simplicity, we choose uniform priors for $\alpha$ and $\beta$.
 \alpha & \sim & \text{Uniform}(-10,10)\\
 \beta &  \sim & \text{Uniform}(-10,10)
 \end{eqnarray*}
-The probability density can be computed in \RevBayes~for a single year by
+The probability density can be computed in \RevBayes for a single year by
 {\tt \begin{snugshade*}
 \begin{lstlisting}    
 dpoisson(y[i],exp(alpha+beta*x[i]))
@@ -509,7 +505,7 @@ dpoisson(y[i],exp(alpha+beta*x[i]))
 The source file for this sub-exercise \cl{airline\_fatalities\_part1.Rev}.
 
 Let us construct a Metropolis algorithm that simulates from the posterior distribution $P(\alpha,\beta|y)$. 
-We will construct this algorithm explicitly, without using the high-level functions existing in \RevBayes~ to perform MCMC. 
+We will construct this algorithm explicitly, without using the high-level functions existing in \RevBayes  to perform MCMC. 
 In the next section, we will repeat the same analysis, this time using the high-level functions.
  
 For simplicity of the calculations you can ``normalize'' the years, e.g. 
@@ -628,7 +624,7 @@ In the next section we will use the built-in MCMC algorithm of \RevBayes.
 
 
 \subsubsection{MCMC analysis using the built-in algorithm in \RevBayes}
-Before starting with this new approach it would be good if you either start a new \RevBayes~session or clear all previous variables using the \cl{clear} function.
+Before starting with this new approach it would be good if you either start a new \RevBayes session or clear all previous variables using the \cl{clear} function.
 Currently we may have some minor memory problems and if you get stuck it may help to restart \RevBayes.
 
 We start by loading in the data to \RevBayes.
@@ -646,7 +642,7 @@ beta ~ dnUnif(-10,10)
 \end{lstlisting}
 \end{snugshade*}}
 It may be good to set some reasonable starting values especially if you choose is very uninformative prior distribution.
-If by chance you had starting values that gave a likelihood of -Inf, then \RevBayes~will try several times to propose new starting values drawn from the prior distribution.
+If by chance you had starting values that gave a likelihood of -Inf, then \RevBayes will try several times to propose new starting values drawn from the prior distribution.
 {\tt \begin{snugshade*}
 \begin{lstlisting} 
 # let us use reasonable starting value
@@ -723,7 +719,7 @@ You can use the \R function
 %}
 
 Plot the curve of $m(x) = \text{E}[\exp(\alpha+\beta*x)|y]$ for $x = [1976,1985]$. 
-You can generate draws from the posterior distribution of the expected value for a specific $x$ by recording the current expected value at a iteration $i$ of the Metropolis algorithm $m\_sample(x)[i] = \text{E}[\exp(\alpha[i]+\beta[i]*x)|y]$ and taking the mean of those samples (\cl{m(x) = \text{mean}(m\_sample(x))}) afterwards. Since \RevBayes~provides you with the samples of $m(x) = \text{E}[\exp(\alpha+\beta*x)|y] = \lambda_x$ you can simply plot these posterior curves.
+You can generate draws from the posterior distribution of the expected value for a specific $x$ by recording the current expected value at a iteration $i$ of the Metropolis algorithm $m\_sample(x)[i] = \text{E}[\exp(\alpha[i]+\beta[i]*x)|y]$ and taking the mean of those samples (\cl{m(x) = \text{mean}(m\_sample(x))}) afterwards. Since \RevBayes provides you with the samples of $m(x) = \text{E}[\exp(\alpha+\beta*x)|y] = \lambda_x$ you can simply plot these posterior curves.
  
 %A plot of the posterior mean curve $m(x)=E(\exp(\alpha+\beta*x)|y)$ over a suitable range. 
 %A few draws from the posterior curve, i.e. \cl{exp(alpha[i]+beta[i]*x)} for a few i:s would also be nice.
@@ -789,7 +785,7 @@ observed_fatalities <-  v(4, 5, 4, 1, 0, 4, 3, 4, 0, 6, 3, 3, 4, 0, 2, 6, 3, 3, 
 year <- 1851:1962
 \end{lstlisting}
 \end{snugshade*}}
-In \Rev~we specify this prior choice by
+In \Rev we specify this prior choice by
 {\tt \begin{snugshade*}
 \begin{lstlisting} 
 eta ~ dnGamma(10.0,20.0)
@@ -881,17 +877,6 @@ You can carry out these batch commands by providing the file name when you execu
 \exs{\cl{\$ rb RevBayes\_scripts airline\_fatalities\_part1.Rev}}
 \exs{\cl{\$ rb RevBayes\_scripts airline\_fatalities\_part2.Rev}}
 \exs{\cl{\$ rb RevBayes\_scripts coalmine\_accidents.Rev}}
-
-
-Questions about this tutorial can be directed to: \\\vspace{-10mm}
-\begin{itemize}
-\item Sebastian H\"{o}hna (email: \href{mailto:sebastian.hoehna@gmail.com}{sebastian.hoehna@gmail.com}) \\\vspace{-8mm} 
-\item Tracy Heath (email: \href{mailto:tracyh@berkeley.edu}{tracyh@berkeley.edu}) \\\vspace{-8mm}
-\item Michael Landis (email: \href{mailto:mlandis@berkeley.edu}{mlandis@berkeley.edu})
-\end{itemize}
-
-
-\href{http://creativecommons.org/licenses/by/4.0/}{\includegraphics[scale=0.8]{\GlobalResourcePath shared_figures/ccby.eps}} This tutorial was written by Sebastian H\"{o}hna, \href{http://phylo.bio.ku.edu/content/tracy-heath}{Tracy Heath}, and \href{http://michaeljameslandis.com/}{Michael Landis}; licensed under a \href{http://creativecommons.org/licenses/by/4.0/}{Creative Commons Attribution 4.0 International License}. 
 
 
 \bibliographystyle{sysbio}

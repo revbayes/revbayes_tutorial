@@ -19,13 +19,15 @@
 
 %\thispagestyle{plain}
 
+\frontmatter
+
 \title{\Huge \textbf{Statistical Phylogenetic Inference using RevBayes} }
 \author{
 Sebastian H{\"o}hna,
 %\and
-Tracy A. Heath,
-%\and
 Michael J. Landis,
+%\and
+Tracy A. Heath,
 %\and
 Bastien Boussau,
 %\and
@@ -43,6 +45,11 @@ John P. Huelsenbeck
 
 \tableofcontents
 
+
+\include{preface}
+
+\mainmatter
+
 \def \GlobalResourcePath {./}
 
 \part{Getting Started with RevBayes}
@@ -51,7 +58,7 @@ John P. Huelsenbeck
 \def \ResourcePath {RB_Getting_Started/}
 \include{RB_Getting_Started/RB_Getting_Started_content}
 
-\chapter{Basic Commands}
+\chapter{Introduction to \RevBayes and \Rev}
 \def \ResourcePath {RB_Basics_Tutorial/}
 \include{RB_Basics_Tutorial/RB_Basics_Tutorial_content}
 
@@ -67,15 +74,18 @@ John P. Huelsenbeck
 \def \ResourcePath {RB_CTMC_Tutorial/}
 \include{RB_CTMC_Tutorial/RB_CTMC_Tutorial_content}
 
-\chapter{Data Partitioning}
+\chapter{Partitioned Data Analysis}
 \def \ResourcePath {RB_Partition_Tutorial/}
 \include{RB_Partition_Tutorial/RB_Partition_Tutorial_content}
+
+
 
 
 
 \part{Inference}
 
 \chapter{Markov chain Monte Carlo Algorithms}
+\def \ResourcePath {RB_MCMC_Tutorial/}
 \include{RB_MCMC_Tutorial/RB_MCMC_Tutorial_content}
 
 \chapter{Model Selection and Bayes Factors}
@@ -83,10 +93,25 @@ John P. Huelsenbeck
 \include{RB_BayesFactor_Tutorial/RB_BayesFactor_Tutorial_content}
 
 
+
+
+
 \part{Dating}
-\chapter{Dating and Relaxed Clocks}
-\def \ResourcePath {RB_RelaxedClock_Tutorial/}
-\include{RB_RelaxedClock_Tutorial/RB_RelaxedClock_Tutorial_content}
+
+\chapter{A Brief Introduction, Overview and Example of Dating, Calibration and Relaxed Clocks}
+\def \ResourcePath {RB_Dating_Tutorial/}
+\include{RB_Dating_Tutorial/RB_Dating_Tutorial_content}
+
+\chapter{Divergence Time Estimation}
+\def \ResourcePath {RB_DivergenceTime_Tutorial/}
+\include{RB_DivergenceTime_Tutorial/RB_DivergenceTime_Tutorial_content}
+
+%\chapter{Node Calibration}
+%\def \ResourcePath {RB_NodeCalibration_Tutorial/}
+%\include{RB_NodeCalibration_Tutorial/RB_NodeCalibration_Tutorial_content}
+
+
+
 
 
 \part{Diversification Rate Estimation}
@@ -95,17 +120,33 @@ John P. Huelsenbeck
 \include{RB_SimpleDiversification_Tutorial/RB_SimpleDiversification_Tutorial_content}
 
 
+
+
+
 \part{Gene tree - Species tree estimation}
-\chapter{Gene tree - Species tree estimation}
-\def \ResourcePath {RB_GTST_Tutorial/}
-\include{RB_GTST_Tutorial/RB_GTST_Tutorial_content}
+\chapter{Multispecies Coalescent}
+\def \ResourcePath {RB_MultispeciesCoalescent_Tutorial/}
+\include{RB_MultispeciesCoalescent_Tutorial/RB_MultispeciesCoalescent_Tutorial_content}
+
+
+
 
 
 
 \part{Biogeography}
+
+\chapter{Dispersal, Extirpation and Cladogenesis (DEC)}
+\def \ResourcePath {RB_Biogeography_DEC_Tutorial/}
+\include{RB_Biogeography_DEC_Tutorial/RB_Biogeography_DEC_Tutorial_content}
+
 \chapter{Many Area DEC}
-\def \ResourcePath {RB_Biogeography_Tutorial/}
-\include{RB_Biogeography_Tutorial/RB_Biogeography_Tutorial_content}
+\def \ResourcePath {RB_Biogeography_many_area_Tutorial/}
+\include{RB_Biogeography_many_area_Tutorial/RB_Biogeography_many_area_Tutorial_content}
+
+
+
+
+
 
 
 \part{Phylogenetic Comparative Method}

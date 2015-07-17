@@ -94,8 +94,11 @@ moves[++mi] = mvNodeTimeSlideUniform(psi, weight=15.0)
 
 
 # We assume independent effective population size parameters for each branch of the species tree.
-for (i in 1:n_branches) {
-  Ne[i] ~ dnExponential(0.1)
+for (i in 1:n_species) {
+  Ne[i] <- 10.0
+}
+for (i in (n_species+1):n_branches) {
+  Ne[i] ~ dnExponential(10.0)
   moves[++mi] = mvScale(Ne[i],1,true,1.0)
 }
 
@@ -211,5 +214,5 @@ treetrace.summarize()
 mapTree(treetrace,"output/primates_fixed_clock.tree")
 
 # you may want to quit RevBayes now
-#q()
+q()
 
