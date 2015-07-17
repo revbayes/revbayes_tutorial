@@ -24,89 +24,114 @@
 @String { TEE       = {Trends in Ecology \& Evolution} }
 @String { TPB       = {Theoretical Population Biology} }
 
-@Article{Gilks1994,
-  Title                    = {{A language and program for complex Bayesian modelling}},
-  Author                   = {Gilks, WR and Thomas, A. and Spiegelhalter, DJ},
-  Journal                  = {The Statistician},
-  Year                     = {1994},
-  Number                   = {1},
-  Pages                    = {169--177},
-  Volume                   = {43},
-
-  Owner                    = {Hoehna},
-  Publisher                = {Blackwell Publishers},
-  Timestamp                = {2010.03.27}
-}
-
-@Article{Hohna2014b,
-  Title                    = {{Probabilistic Graphical Model Representation in Phylogenetics}},
-  Author                   = {H{\"o}hna, Sebastian and Heath, Tracy A. and Boussau, Bastien and Landis, Michael J. and Ronquist, Fredrik and Huelsenbeck, John P.},
+@Article{Brandley2005,
+  Title                    = {Partitioned Bayesian analyses, partition choice, and the phylogenetic relationships of scincid lizards},
+  Author                   = {Brandley, Matthew C and Schmitz, Andreas and Reeder, Tod W},
   Journal                  = SYSBIO,
-  Year                     = {2014},
-  Number                   = {5},
-  Pages                    = {753-771},
-  Volume                   = {63},
+  Year                     = {2005},
+  Number                   = {3},
+  Pages                    = {373--390},
+  Volume                   = {54},
 
-  Abstract                 = {Recent years have seen a rapid expansion of the model space explored in statistical phylogenetics, emphasizing the need for new approaches to statistical model representation and software development. Clear communication and representation of the chosen model is crucial for: (i) reproducibility of an analysis, (ii) model development, and (iii) software design. Moreover, a unified, clear and understandable framework for model representation lowers the barrier for beginners and nonspecialists to grasp complex phylogenetic models, including their assumptions and parameter/variable dependencies. Graphical modeling is a unifying framework that has gained in popularity in the statistical literature in recent years. The core idea is to break complex models into conditionally independent distributions. The strength lies in the comprehensibility, flexibility, and adaptability of this formalism, and the large body of computational work based on it. Graphical models are well-suited to teach statistical models, to facilitate communication among phylogeneticists and in the development of generic software for simulation and statistical inference. Here, we provide an introduction to graphical models for phylogeneticists and extend the standard graphical model representation to the realm of phylogenetics. We introduce a new graphical model component, tree plates, to capture the changing structure of the subgraph corresponding to a phylogenetic tree. We describe a range of phylogenetic models using the graphical model framework and introduce modules to simplify the representation of standard components in large and complex models. Phylogenetic model graphs can be readily used in simulation, maximum likelihood inference, and Bayesian inference using, for example, Metropolis–Hastings or Gibbs sampling of the posterior distribution. [Computation; graphical models; inference; modularization; statistical phylogenetics; tree plate.]},
-  Doi                      = {10.1093/sysbio/syu039},
-  Eprint                   = {http://sysbio.oxfordjournals.org/content/63/5/753.full.pdf+html},
   Owner                    = {hoehna},
-  Timestamp                = {2014.03.11},
-  Url                      = {http://sysbio.oxfordjournals.org/content/63/5/753.abstract}
+  Publisher                = {Oxford University Press},
+  Timestamp                = {2015.01.20}
 }
 
-@Article{Jordan2004,
-  Title                    = {{Graphical models}},
-  Author                   = {Jordan, M.I.},
-  Journal                  = {Statistical Science},
+@Article{Brown2007,
+  Title                    = {{The importance of data partitioning and the utility of Bayes factors in Bayesian phylogenetics}},
+  Author                   = {Brown, Jeremy M and Lemmon, Alan R},
+  Journal                  = SYSBIO,
+  Year                     = {2007},
+  Number                   = {4},
+  Pages                    = {643--655},
+  Volume                   = {56},
+
+  Owner                    = {hoehna},
+  Publisher                = {Oxford University Press},
+  Timestamp                = {2015.01.20}
+}
+
+@Article{McGuire2007,
+  Title                    = {Phylogenetic systematics and biogeography of hummingbirds: Bayesian and maximum likelihood analyses of partitioned data and selection of an appropriate partitioning strategy},
+  Author                   = {McGuire, Jimmy A and Witt, Christopher C and Altshuler, Douglas L and Remsen, JV},
+  Journal                  = SYSBIO,
+  Year                     = {2007},
+  Number                   = {5},
+  Pages                    = {837--856},
+  Volume                   = {56},
+
+  Owner                    = {hoehna},
+  Publisher                = {Oxford University Press},
+  Timestamp                = {2015.01.20}
+}
+
+@Article{Nylander2004,
+  Title                    = {Bayesian phylogenetic analysis of combined data},
+  Author                   = {Nylander, Johan AA and Ronquist, Fredrik and Huelsenbeck, John P and Nieves-Aldrey, Jos{\'e}luis},
+  Journal                  = SYSBIO,
   Year                     = {2004},
   Number                   = {1},
-  Pages                    = {140--155},
+  Pages                    = {47--67},
+  Volume                   = {53},
+
+  Owner                    = {hoehna},
+  Publisher                = {Oxford University Press},
+  Timestamp                = {2015.01.20}
+}
+
+@Misc{Rambaut2011,
+  Title                    = {Tracer v1.5},
+
+  Author                   = {Andrew Rambaut and Alexei J. Drummond},
+  HowPublished             = {http://tree.bio.ed.ac.uk/software/tracer/},
+  Month                    = {July},
+  Year                     = {2011},
+
+  Owner                    = {hoehna},
+  Timestamp                = {2011.07.12}
+}
+
+@Article{Ronquist2003,
+  Title                    = {{MrBayes 3: Bayesian phylogenetic inference under mixed models}},
+  Author                   = {Ronquist, F. and Huelsenbeck, J.P.},
+  Journal                  = BI,
+  Year                     = {2003},
+  Number                   = {12},
+  Pages                    = {1572--1574},
   Volume                   = {19},
 
-  Owner                    = {hoehna},
-  Publisher                = {JSTOR},
-  Timestamp                = {2010.10.20}
+  Owner                    = {shhn001},
+  Publisher                = {Oxford Univ Press},
+  Timestamp                = {2008.04.02}
 }
 
-@Book{Koller2009,
-  Title                    = {{Probabilistic Graphical Models: Principles and Techniques}},
-  Author                   = {Koller, D. and Friedman, N.},
-  Publisher                = {The MIT Press},
-  Year                     = {2009},
-
-  Address                  = {Cambridge},
-
-  Owner                    = {hoehna},
-  Timestamp                = {2010.10.27}
-}
-
-@Article{Lunn2009,
-  Title                    = {The BUGS project: Evolution, critique and future directions},
-  Author                   = {Lunn, David and Spiegelhalter, David and Thomas, Andrew and Best, Nicky},
-  Journal                  = {Statistics in medicine},
-  Year                     = {2009},
-  Number                   = {25},
-  Pages                    = {3049--3067},
-  Volume                   = {28},
+@Article{Suchard2001,
+  Title                    = {{Bayesian selection of continuous-time Markov chain evolutionary models}},
+  Author                   = {Suchard, Marc A and Weiss, Robert E and Sinsheimer, Janet S},
+  Journal                  = MBE,
+  Year                     = {2001},
+  Number                   = {6},
+  Pages                    = {1001--1013},
+  Volume                   = {18},
 
   Owner                    = {hoehna},
-  Publisher                = {Wiley Online Library},
-  Timestamp                = {2013.05.31}
+  Publisher                = {SMBE},
+  Timestamp                = {2013.03.26}
 }
 
-@Article{Lunn2000,
-  Title                    = {WinBUGS-a Bayesian modelling framework: concepts, structure, and extensibility},
-  Author                   = {Lunn, David J and Thomas, Andrew and Best, Nicky and Spiegelhalter, David},
-  Journal                  = {Statistics and computing},
-  Year                     = {2000},
-  Number                   = {4},
-  Pages                    = {325--337},
-  Volume                   = {10},
+@Article{Yang1994,
+  Title                    = {Estimating the pattern of nucleotide substitution},
+  Author                   = {Yang, Ziheng},
+  Journal                  = JME,
+  Year                     = {1994},
+  Number                   = {1},
+  Pages                    = {105--111},
+  Volume                   = {39},
 
   Owner                    = {hoehna},
   Publisher                = {Springer},
-  Timestamp                = {2013.05.31}
+  Timestamp                = {2013.05.20}
 }
 
 @comment{jabref-meta: selector_publisher:}

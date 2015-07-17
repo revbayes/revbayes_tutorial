@@ -14,7 +14,7 @@ The third model, PS2, partitions the data not only by gene, but also by codon po
 Each analysis will generate a {\it maximum a posteriori} tree to summarize the inferred phylogeny.
 An advanced exercise introduces how to compute Bayes factors to select across various partitioning schemes.
 
-All of the files for this analysis are provided for you and you can run these without significant effort using the \cl{source()} function in the \RevBayes~console, \EG
+All of the files for this analysis are provided for you and you can run these without significant effort using the \cl{source()} function in the \RevBayes console, \EG
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 source("RevBayes_scripts/model_PS0.Rev")
@@ -391,7 +391,7 @@ mymcmc.run(generations=30000)
 
 When the analysis is complete, you will have the monitor files in your output directory.
 
-Methods for visualizing the marginal densities of parameter values are not currently available in \RevBayes. Thus, it is important to use programs like Tracer \citep{Rambaut2009} to evaluate mixing and non-convergence. (RevBayes does, however, have a tool for convergence assessment called \cl{beca}.)
+Methods for visualizing the marginal densities of parameter values are not currently available in \RevBayes. Thus, it is important to use programs like Tracer \citep{Rambaut2011} to evaluate mixing and non-convergence. (RevBayes does, however, have a tool for convergence assessment called \cl{beca}.)
 
 \RevBayes~can also summarize the tree samples by reading in the tree-trace file:
 {\tt \begin{snugshade*}
@@ -921,7 +921,6 @@ Take some care when applying monitors and moves to the new model.
 
 
 \end{itemize}
-
 
 \bibliographystyle{sysbio}
 \bibliography{\ResourcePath refs}
