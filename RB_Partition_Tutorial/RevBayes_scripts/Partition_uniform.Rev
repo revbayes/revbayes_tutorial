@@ -109,3 +109,8 @@ treetrace = readTreeTrace("output/PS0.tre")
 treetrace.summarize()
 
 mapTree(treetrace,"output/PS0_map.tre")
+
+
+# you may want to quit RevBayes now
+q()
+

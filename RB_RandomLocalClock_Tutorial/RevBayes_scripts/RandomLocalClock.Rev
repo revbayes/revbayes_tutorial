@@ -198,5 +198,5 @@ treetrace = readTreeTrace("output/primates_cytb_random_local_clock_ext.trees", t
 map_tree = mapTree(treetrace,"output/primates_cytb_random_local_clock.tree")
 
 # you may want to quit RevBayes now
-#q()
+q()
 

@@ -130,8 +130,8 @@ for (i in 1:n_parts){
 mymodel = model(psi)
 
 # add monitors
-monitors[mni++] = mnScreen(er, pi, alpha, norm_gamma_rates, pinvar, speciation, extinction, printgen=100)
-monitors[mni++] = mnFile(psi, filename="output/PS2.tre", printgen=100)
+monitors[mni++] = mnScreen(part_rate_mult, speciation, extinction, printgen=1000)
+monitors[mni++] = mnFile(psi, filename="output/PS2.tre", printgen=10)
 monitors[mni++] = mnFile(er[1], pi[1], alpha[1], norm_gamma_rates[1], pinvar[1], part_rate_mult[1], er[2], pi[2], alpha[2], norm_gamma_rates[2], pinvar[2], part_rate_mult[2], er[3], pi[3], alpha[3], norm_gamma_rates[3], pinvar[3], part_rate_mult[3], er[4], pi[4], alpha[4], norm_gamma_rates[4], pinvar[4], part_rate_mult[4], speciation, extinction, filename="output/PS2.params.txt",printgen=10)
 
 # run the analysis
@@ -144,3 +144,8 @@ treetrace = readTreeTrace("output/PS2.tre")
 treetrace.summarize()
 
 mapTree(treetrace,"output/PS2_map.tre")
+
+
+# you may want to quit RevBayes now
+q()
+
