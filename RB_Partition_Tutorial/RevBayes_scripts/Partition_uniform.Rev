@@ -94,7 +94,7 @@ phyloSeq.clamp(data)
 mymodel = model(psi)
 
 # add monitors
-monitors[mni++] = mnScreen(er, pi, alpha, norm_gamma_rates, pinvar, speciation, extinction, clock, printgen=100)
+monitors[mni++] = mnScreen(alpha, pinvar, speciation, extinction, clock, printgen=1000)
 monitors[mni++] = mnFile(psi, filename="output/PS0.tre", printgen=10)
 monitors[mni++] = mnModel(filename="output/PS0.params.txt",printgen=10)
 

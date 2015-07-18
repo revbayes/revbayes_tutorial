@@ -108,13 +108,13 @@ for (i in 1:n_parts) {
 mymodel = model(psi)
 
 # add monitors
-monitors[mni++] = mnScreen(er, pi, alpha, norm_gamma_rates, pinvar, speciation, extinction, printgen=100)
+monitors[mni++] = mnScreen(speciation, extinction, printgen=1000)
 monitors[mni++] = mnFile(psi, filename="output/PS1.tre", printgen=100)
 monitors[mni++] = mnFile(er[1], pi[1], alpha[1], norm_gamma_rates[1], pinvar[1], part_rate_mult[1], er[2], pi[2], alpha[2], norm_gamma_rates[2], pinvar[2], part_rate_mult[2], speciation, extinction, filename="output/PS1.params.txt",printgen=10)
 
 # run the analysis
 mymcmc = mcmc(mymodel, moves, monitors)
-mymcmc.burnin(10000,100)
+mymcmc.burnin(10000,200)
 mymcmc.run(30000)
 
 # summarize output
