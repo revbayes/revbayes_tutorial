@@ -10,21 +10,21 @@ Q = \begin{pmatrix} -\mu_A & \mu_{GA} & \mu_{CA} & \mu_{TA} \\
 \mu_{AT} & \mu_{GT} & \mu_{CT} & -\mu_T 
 \end{pmatrix} \mbox{  ,}
 \end{equation*}
-where $\mu_{ij}$ represents the instantaneous rate of substitution from state $i$ to state $j$. Given the instantaneous-rate matrix, $Q$, we can compute the corresponding transition probabilities for a branch of length $t$, $P(t)$, by exponentiating the rate matrix:
+where $\mu_{ij}$ represents the instantaneous rate of substitution from state $i$ to state $j$. Given the instantaneous-rate matrix, $Q$, we can compute the corresponding transition probabilities for a branch of length $\nu$, $P(\nu)$, by exponentiating the rate matrix:
 \begin{equation*}
-P(t) = \begin{pmatrix}          
-p_{AA}(t) & p_{GA}(t) & p_{CA}(t) & p_{TA}(t) \\
-p_{AG}(t) & p_{GG}(t) & p_{CG}(t) & p_{TG}(t) \\
-p_{AC}(t) & p_{GC}(t) & p_{CC}(t) & p_{TC}(t) \\
-p_{AT}(t) & p_{GT}(t) & p_{CT}(t) & p_{TT}(t)
-\end{pmatrix} = e^{Qt} = \sum_{j=0}^\infty\frac{tQ^j}{j!} \mbox{  .}
+P(\nu) = \begin{pmatrix}          
+p_{AA}(\nu) & p_{GA}(\nu) & p_{CA}(\nu) & p_{TA}(\nu) \\
+p_{AG}(\nu) & p_{GG}(\nu) & p_{CG}(\nu) & p_{TG}(\nu) \\
+p_{AC}(\nu) & p_{GC}(\nu) & p_{CC}(\nu) & p_{TC}(\nu) \\
+p_{AT}(\nu) & p_{GT}(\nu) & p_{CT}(\nu) & p_{TT}(\nu)
+\end{pmatrix} = e^{Q\nu} = \sum_{j=0}^\infty\frac{\nu Q^j}{j!} \mbox{  .}
 \end{equation*}
 Each specific substitution model has a uniquely defined instantaneous-rate matrix, $Q$.
 
 
 In this tutorial you will perform phylogeny inference under common models of DNA sequence evolution: JC, F81, HKY85, GTR, GTR+Gamma and GTR+Gamma+I.
 For all of these substitution models, you will perform an MCMC analysis to estimate phylogeny and other model parameters.
-For the sake of simplicity we will assume a simple birth-death tree prior and a known, fixed clock rate.
+The estimated trees will be unrooted trees with independent branch-length parameters. 
 All the assumptions will be covered more in detail later in this tutorial.
 
 \subsection*{Requirements}
@@ -44,13 +44,14 @@ You can refer to the Basic Introduction for a more in-depth discussion of concep
 %%%%%%%%
 \section{Data and files}
 
-We provide the data file which we will use in this tutorial.
+We provide the data file of DNA sequences required for this tutorial.
 You may want to use your own data instead.
-Create a folder called \cl{data} and download the following files
+
+\noindent \\ \impmark Create a folder called \cl{data} and download the following files:
 \begin{itemize}
-\item
-\href{http://rawgit.com/revbayes/revbayes_tutorial/master/RB_CTMC_Tutorial/data/primates_cytb.nex}{\cl{primates\_cytb.nex}}: Alignment of the \textit{cytochrome b} subunit from 23 primates representing 14 of the 16 families (\textit{Indriidae} and \textit{Callitrichidae} are missing).
+\item \href{http://rawgit.com/revbayes/revbayes_tutorial/master/RB_CTMC_Tutorial/data/primates_cytb.nex}{\cl{primates\_cytb.nex}}: Alignment of the \textit{cytochrome b} subunit from 23 primates representing 14 of the 16 families (\textit{Indriidae} and \textit{Callitrichidae} are missing).
 \end{itemize}
+
 
 
 %
@@ -58,6 +59,7 @@ Create a folder called \cl{data} and download the following files
 %
 %\newpage
 \FloatBarrier
+\bigskip
 \section{Example: Character Evolution under the Jukes-Cantor Substitution Model}
 
 \bigskip
@@ -74,7 +76,7 @@ The first section of this exercise involves:
 \caption{\small Graphical model representation of a simple phylogenetic model. 
 The graphical model shows the dependencies between the parameters.
 Here, the rate matrix $Q$ is a constant variable because it is fixed and does not depend on any parameters.
-The only free parameters of this model, the unconstrained Jukes-Cantor model, are the tree topology $\Psi$ and the branch lengths $\nu_i$.}
+The only free parameters of this model, the unconstrained Jukes-Cantor model, are the tree topology $\Psi$ and the branch lengths $\nu_i$. The deterministic variable $\mathbb{L}$ is the total tree length, which is computed by summing all of the branch lengths.}
 \label{fig:jc}
 \end{figure}
 
@@ -95,16 +97,16 @@ P_{JC69} = \begin{pmatrix} {{1\over4} + {3\over4}e^{-t\mu}} & {{1\over4} - {1\ov
 \end{pmatrix} \mbox{  .}
 \end{equation*}
 In the later exercises you will be asked to specify more complex substitution models.
-\textbf{Don't be scared by the math!}
-\RevBayes~will take care of all the computations for you.
+It may seem like a lot of calculations, but the specification and computation of the rate matrix are done by
+\RevBayes.
 Here we only provide some of the equations for the models in case you might be interested in the details.
-You will be able to complete the exercises without understanding the underlying math.
+You will be able to complete the exercises without delving too deeply into the underlying math.
 
 
-\noindent \\ \impmark The files for this example analysis are provided for you, which can easily be run using the \cl{source()} function in the \RevBayes~console:
+\noindent \\ \impmark It is important to note that you can run all of the \Rev~commands from a \RevBayes~script file \cl{source()} function in the \RevBayes~console. If you create a file called \cl{JukesCantor.Rev} and save all of the commands in this file, run the analysis by calling this function:
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-source("RevBayes_scripts/JukesCantor.Rev")
+source("JukesCantor.Rev")
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -554,7 +556,7 @@ This should be all for the HKY model.
 
 
 
-\newpage
+%\newpage
 \section{The General Time-Reversible (GTR) Substitution Model}
 
 The HKY substitution model can accommodate unequal base frequencies and different rates of transition and transversion substitutions.
@@ -577,7 +579,7 @@ where the six exchangeability parameters, $r_{ij}$, specify the relative rates o
 
 \begin{figure}[h!]
 \centering
-\fbox{\includegraphics[width=\textwidth,angle=0]{\ResourcePath figures/gtr_graphical_model.pdf}}
+\fbox{\includegraphics[width=\textwidth,angle=0]{\ResourcePath figures/gtr_graphical_model_unconstrained.pdf}}
 \caption{\small Graphical model representation of the General Time Reversible (GTR) phylogenetic model.}
 \label{fig:gtr}
 \end{figure}
@@ -725,7 +727,7 @@ Finally, the shape of the exponential prior is governed by the rate parameter, $
 
 \begin{figure}[h!]
 \centering
-\fbox{\includegraphics[width=\textwidth,angle=0]{\ResourcePath figures/gtrg_graphical_model_2.pdf}}
+\fbox{\includegraphics[width=\textwidth,angle=0]{\ResourcePath figures/gtrg_graphical_model_unconstrained.pdf}}
 \caption{\small Graphical model representation of the General Time Reversible (GTR) + Gamma phylogenetic model.}
 \label{fig:gtrg}
 \end{figure}

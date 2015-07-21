@@ -83,6 +83,15 @@
 \draw [taro] (lamb) edge[bend right](lin) ;
 \node[snode,inner sep=2mm] (topo) at ($(tp)+(-11,0)$) {\Large $\Psi$};
 \draw[-,line width=2pt] (topo) -- (tp) ;
+\node [detnode] (TL) at ($(lamb)+(0,1.5)$) {$\mathbb{L}$};
+\draw [dtaro] (ltn) edge[bend right](TL) ;
+\draw [dtaro] (lin) edge[bend left](TL) ;
+\node [detnode] (lin) at ($(in)+(1.75,4.3)$) {$a_i$};
+\node [detnode] (ltn) at ($(tn)+(1.75,4.3)$) {$a_i$};
+\path ($(ltn)+(0.25,1)$) edge[->, line width=2pt, dashed,color=black] (ltn) ;
+\path ($(lin)+(0.25,1)$) edge[->, line width=2pt, dashed,color=black] (lin) ;
+\draw [taro] (lin) edge[bend left](in) ;
+\draw [taro] (ltn) edge[bend left](tn) ;
 \end{tikzpicture}
 
 
