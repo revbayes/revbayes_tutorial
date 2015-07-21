@@ -75,5 +75,8 @@
 \draw [taro] (lamb) edge[bend right](lin) ;
 \node[snode,inner sep=2mm] (topo) at ($(tp)+(-11,0)$) {\Large $\Psi$};
 \draw[-,line width=2pt] (topo) -- (tp) ;
+\node [detnode] (TL) at ($(lamb)+(0,1.5)$) {$\mathbb{L}$};
+\draw [dtaro] (ltn) edge[bend right](TL) ;
+\draw [dtaro] (lin) edge[bend left](TL) ;
 \end{tikzpicture}\]
 \end{document}
