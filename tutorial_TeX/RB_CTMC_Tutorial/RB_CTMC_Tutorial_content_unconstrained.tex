@@ -85,18 +85,18 @@ We first consider the simplest substitution model described by \citet{Jukes1969}
 The instantaneous-rate matrix for the JC substitution model is defined as
 \begin{equation*}
 Q_{JC69} = \begin{pmatrix} 
-{*} & {1} & {1} & {1} \\ 
-{1} & {*} & {1} & {1} \\ 
-{1} & {1} & {*} & {1} \\ 
-{1} & {1} & {1} & {*}  
+{*} & \frac{1}{3} & \frac{1}{3} & \frac{1}{3} \\ 
+\frac{1}{3} & {*} & \frac{1}{3} & \frac{1}{3} \\ 
+\frac{1}{3} & \frac{1}{3} & {*} & \frac{1}{3} \\ 
+\frac{1}{3} & \frac{1}{3} & \frac{1}{3} & {*}  
 \end{pmatrix} \mbox{  ,}
 \end{equation*}
 which has the advantage that the transition probability matrix can be computed analytically:
 \begin{equation*}
-P_{JC69} = \begin{pmatrix} {{1\over4} + {3\over4}e^{-t\mu}} & {{1\over4} - {1\over4}e^{-t\mu}} & {{1\over4} - {1\over4}e^{-t\mu}} & {{1\over4} - {1\over4}e^{-t\mu}} \\\\ {{1\over4} - {1\over4}e^{-t\mu}} & {{1\over4} + {3\over4}e^{-t\mu}} & {{1\over4} - {1\over4}e^{-t\mu}} & {{1\over4} - {1\over4}e^{-t\mu}} \\\\ {{1\over4} - {1\over4}e^{-t\mu}} & {{1\over4} - {1\over4}e^{-t\mu}} & {{1\over4} + {3\over4}e^{-t\mu}} & {{1\over4} - {1\over4}e^{-t\mu}} \\\\ {{1\over4} - {1\over4}e^{-t\mu}} & {{1\over4} - {1\over4}e^{-t\mu}} & {{1\over4} - {1\over4}e^{-t\mu}} & {{1\over4} + {3\over4}e^{-t\mu}}  
-\end{pmatrix} \mbox{  .}
+P_{JC69} = \begin{pmatrix} {{1\over4} + {3\over4}e^{-rt}} & {{1\over4} - {1\over4}e^{-rt}} & {{1\over4} - {1\over4}e^{-rt}} & {{1\over4} - {1\over4}e^{-rt}} \\\\ {{1\over4} - {1\over4}e^{-rt}} & {{1\over4} + {3\over4}e^{-rt}} & {{1\over4} - {1\over4}e^{-rt}} & {{1\over4} - {1\over4}e^{-rt}} \\\\ {{1\over4} - {1\over4}e^{-rt}} & {{1\over4} - {1\over4}e^{-rt}} & {{1\over4} + {3\over4}e^{-rt}} & {{1\over4} - {1\over4}e^{-rt}} \\\\ {{1\over4} - {1\over4}e^{-rt}} & {{1\over4} - {1\over4}e^{-rt}} & {{1\over4} - {1\over4}e^{-rt}} & {{1\over4} + {3\over4}e^{-rt}}  
+\end{pmatrix} \mbox{ ,}
 \end{equation*}
-In the later exercises you will be asked to specify more complex substitution models.
+where $t$ is the branch length in units of time, and $r$ is the rate (clock) for the process. In the later exercises you will be asked to specify more complex substitution models.
 It may seem like a lot of calculations, but the specification and computation of the rate matrix are done by
 \RevBayes.
 Here we only provide some of the equations for the models in case you might be interested in the details.
@@ -262,10 +262,10 @@ phylogeny := treeAssembly(topology, br_lens)
 \subsection{Putting it All Together}
 
 %Having specified virtually all of our phylogenetic model parameters, we can now link all of the parts in the stochastic node that will be clamped by the data. 
-%The sequence substitution model is a distribution called the \textit{phylogenetic continuous-time Markov chain}, and we use the \cl{PhyloCTMC} constructor function to create this node.
+%The sequence substitution model is a distribution called the \textit{phylogenetic continuous-time Markov chain}, and we use the \cl{dnPhyloCTMC} constructor function to create this node.
 % The above two sentences are a bit unclear: I think we could say something like: 
 We have fully specified all of the parameters of our phylogenetic model---the tree topology with branch lengths, and the substitution model that describes how the sequence data evolved over the tree with branch lengths.  
-Collectively, these parameters comprise a distribution called the \textit{phylogenetic continuous-time Markov chain}, and we use the \cl{PhyloCTMC} constructor function to create this node.
+Collectively, these parameters comprise a distribution called the \textit{phylogenetic continuous-time Markov chain}, and we use the \cl{dnPhyloCTMC} constructor function to create this node.
 This distribution requires several input arguments: 
 (1) the \cl{tree} with branch lengths; 
 (2) the instantaneous-rate matrix \cl{Q}, and; 
@@ -277,7 +277,7 @@ seq ~ dnPhyloCTMC(tree=phylogeny, Q=Q, type="DNA")
 \end{snugshade*}}
 
 
-Once the \cl{PhyloCTMC} model has been created, we can attach our sequence data to the tip nodes in the tree.
+Once the \cl{dnPhyloCTMC} model has been created, we can attach our sequence data to the tip nodes in the tree.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 seq.clamp(data)
@@ -778,11 +778,11 @@ moves[++mi] = mvScale(alpha, weight=2.0)
 \end{lstlisting}
 \end{snugshade*}}
 
-Remember that you need to call the \cl{PhyloCTMC} constructor to include the new site-rate parameter:
+Remember that you need to call the \cl{dnPhyloCTMC} constructor to include the new site-rate parameter:
 % This sentence was incomplete previously; I think the revised version is correct.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-seq ~ dnPhyloCTMC(tree=phylogeny, Q=Q, siteRates=gamma_rates , type="DNA")
+seq ~ dnPhyloCTMC(tree=phylogeny, Q=Q, siteRates=gamma_rates, type="DNA")
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -804,7 +804,7 @@ Run an MCMC simulation to estimate the posterior distribution.
 \newpage
 \section{Modeling Invariable Sites}
 All of the substitution models described so far assume that the sequence data are potentially variable.
-That is, we assume that the sequence data are random variables; specifically, we assume that they are realizations of the specified \cl{PhyloCTMC} distribution. 
+That is, we assume that the sequence data are random variables; specifically, we assume that they are realizations of the specified \cl{dnPhyloCTMC} distribution. 
 However, some sites may not be free to vary---when the substitution rate of a site is zero, it is said to be \emph{invariable}.
 Invariable sites are often confused with \emph{invariant} sites---when each species exhibits the same state, it is said to be invariant.
 The concepts are related but distinct.
@@ -839,10 +839,10 @@ moves[mi++] = mvSlide(pinvar)
 \end{lstlisting}
 \end{snugshade*}}
 
-Finally, that you need to call the \cl{PhyloCTMC} constructor to include the new\cl{pinvar} parameter:
+Finally, that you need to call the \cl{dnPhyloCTMC} constructor to include the new\cl{pinvar} parameter:
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-seq ~ dnPhyloCTMC(tree=phylogeny, Q=Q, siteRates=gamma_rates , pInv=pinvar, type="DNA")
+seq ~ dnPhyloCTMC(tree=phylogeny, Q=Q, siteRates=gamma_rates, pInv=pinvar, type="DNA")
 \end{lstlisting}
 \end{snugshade*}}
 
