@@ -880,7 +880,7 @@ seq ~ dnPhyloCTMC(tree=phylogeny, Q=Q, siteRates=gamma_rates, pInv=pinvar, type=
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 br_hyper ~ dnExponential(0.1) # expected value of 10
-oves[++mi] = mvScale(br_hyper, weight=5) 
+moves[++mi] = mvScale(br_hyper, weight=5) 
 for (i in 1:n_branches) {
    br_lens[i] ~ dnExponential(br_hyper)
    moves[++mi] = mvScale(br_lens[i]) 
