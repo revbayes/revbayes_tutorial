@@ -39,14 +39,16 @@ er_prior <- v(1,1,1,1,1,1)
 er ~ dnDirichlet(er_prior)
 moves[++mi] = mvSimplexElementScale(er,weight=3)
 
-
 pi_prior <- v(1,1,1,1) 
 pi ~ dnDirichlet(pi_prior)
 moves[++mi] = mvSimplexElementScale(pi,weight=2)
 
-
 #### create a deterministic variable for the rate matrix ####
 Q := fnGTR(er,pi) 
+
+#### monitor difference between empirical and estimated base frequencies ####
+pi_empirical <- data.getEmpiricalBaseFrequencies()
+pi_diff := pi_empirical - pi
 
 
 
