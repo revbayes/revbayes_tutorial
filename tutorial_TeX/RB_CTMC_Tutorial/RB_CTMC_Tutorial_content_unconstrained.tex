@@ -512,10 +512,10 @@ moves[++mi] = mvSimplexElementScale(pi)
 \end{snugshade*}}
 
 The second new variable is $\kappa$, which specifies the ratio of transition-transversion rates.
-The $\kappa$ parameter must be a positive-real number and a natural choice as the prior distribution is the lognormal distribution:
+The $\kappa$ parameter must be a positive-real number and a natural choice as the prior distribution is the Gamma distribution:
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-kappa ~ dnLnorm(0.0,1.25)
+kappa ~ dnGamma(2,2)
 \end{lstlisting}
 \end{snugshade*}}
 Again, we need to specify a move for this new stochastic variable.
@@ -545,10 +545,19 @@ This should be all for the HKY model.
 	If not, how much do they differ? 
 	Are the estimated base frequencies similar to the empirical base frequencies? 
 	The empirical base frequencies are the frequencies of the characters in the alignment, which can be computed with \RevBayes~by \cl{data.getEmpiricalBaseFrequencies()}.
+	You may monitor the difference between the posterior base frequencies and empirical base frequencies with
+	{\tt \begin{snugshade*}
+	\begin{lstlisting}
+	pi_empirical <- data.getEmpiricalBaseFrequencies()
+	pi_diff := pi_empirical - pi
+	\end{lstlisting}
+	\end{snugshade*}}
+	
+	
 \item Is the inferred rate of transition substitutions higher than the rate of transversion substitutions? If so, by how much?
 \item Like the HKY model, the Felsenstein 1981 (F81) substitution model has unequal stationary frequencies, but it assumes equal transition-transversion rates \citep{Felsenstein1981}.
 	Can you set up the F81 model and run an analysis?
-\item Complete the table of the phylogenetic relationship of Tarsiers.
+\item Complete the table of the phylogenetic relationship of primates.
 \end{itemize}
 
 
@@ -668,13 +677,13 @@ Q := fnGTR(er,pi)
 
 
 
-\subsection{Execise 3}
+\subsection{Exercise 3}
 
 \begin{itemize}
 \item Use one of your previous analysis files---either the \cl{JukesCantor.Rev} or \cl{HKY.Rev}---to specify a GTR analysis in a new file called \cl{GTR.Rev}.
 	Adapt the old analysis to be performed under the GTR substitution model. 
 \item Run an MCMC analysis to estimate the posterior distribution.
-\item Complete the table of the phylogenetic relationship of Tarsiers.
+\item Complete the table of the phylogenetic relationship of primates.
 \end{itemize}
 
 
@@ -787,7 +796,7 @@ seq ~ dnPhyloCTMC(tree=phylogeny, Q=Q, siteRates=gamma_rates, type="DNA")
 \end{snugshade*}}
 
 
-\subsection{Execise 4}
+\subsection{Exercise 4}
 
 Modify the previous GTR analysis to specify the GTR+Gamma model. 
 Run an MCMC simulation to estimate the posterior distribution.
@@ -796,7 +805,7 @@ Run an MCMC simulation to estimate the posterior distribution.
 	Look at the MAP tree and the posterior probabilities of the clades.
 \item What is the estimated tree length? 
 	Is the estimate different to the previous analysis? What could cause this?
-\item Complete the table of the phylogenetic relationship of Tarsiers.
+\item Complete the table of the phylogenetic relationship of primates.
 \end{itemize}
 
 
@@ -814,10 +823,11 @@ However, an invariant site pattern may be achieved via multiple substitutions th
 Here we describe an extension to our phylogenetic model to accommodate invariable sites.
 Under the invariable-sites model \citep[][]{Hasegawa1985}, each site is invariable with probability \cl{pinvar}, and variable with probability $1-$\cl{pinvar}.
 
-First, let's have a look at the data and see how many invariant sites we have:
+First, let's have a look at the data and see what is the frequency of invariant sites:
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-data.getNumInvariantSites()
+finvar <- data.getNumInvariantSites() / data.nchar()
+finvar
 \end{lstlisting}
 \end{snugshade*}}
 There seem to be a substantial number of invariant sites.
@@ -839,6 +849,14 @@ moves[mi++] = mvSlide(pinvar)
 \end{lstlisting}
 \end{snugshade*}}
 
+An easy way to review the difference between posterior probability and empirical frequency of site-invariance is to create a determistic node for monitoring.
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+invar_diff := finvar - pinvar
+\end{lstlisting}
+\end{snugshade*}}
+
+
 Finally, that you need to call the \cl{dnPhyloCTMC} constructor to include the new\cl{pinvar} parameter:
 {\tt \begin{snugshade*}
 \begin{lstlisting}
@@ -853,7 +871,7 @@ seq ~ dnPhyloCTMC(tree=phylogeny, Q=Q, siteRates=gamma_rates, pInv=pinvar, type=
 \item What is the estimated probability of invariable sites and how does it relate to the ratio of invariant sites to the total number of sites?
 \item Extend the GTR+$\Gamma$ model to account for invariable sites and run an analysis.
 \item What is the estimated probability of invariable sites now?
-\item Complete the table of the phylogenetic relationship of Tarsiers.
+\item Complete the table of the phylogenetic relationship of primates.
 \end{itemize} 
 
 \vspace{5cm}
