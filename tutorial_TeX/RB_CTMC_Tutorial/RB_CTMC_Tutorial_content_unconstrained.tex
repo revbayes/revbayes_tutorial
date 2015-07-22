@@ -28,7 +28,7 @@ The estimated trees will be unrooted trees with independent branch-length parame
 All the assumptions will be covered more in detail later in this tutorial.
 
 \subsection*{Requirements}
-We assume that you have read and hopefully completed the following tutorials:
+This tutorial that you have had an introduction to \RevBayes, the \Rev~language, and MCMC. You can get this from the following tutorials:
 \begin{itemize}
 \item \href{https://github.com/revbayes/revbayes_tutorial/raw/master/tutorial_TeX/RB_Getting_Started/RB_Getting_Started.pdf}{Getting Started with \RevBayes}
 \item \href{https://github.com/revbayes/revbayes_tutorial/raw/master/tutorial_TeX/RB_Basics_Tutorial/RB_Basics_Tutorial.pdf}{Basic Introduction to \Rev~\& MCMC}
@@ -60,7 +60,7 @@ You may want to use your own data instead.
 %\newpage
 \FloatBarrier
 \bigskip
-\section{Example: Character Evolution under the Jukes-Cantor Substitution Model}
+\section{Example: Character Evolution under the Jukes-Cantor Substitution Model}\label{Sec:JC}
 
 \bigskip
 \subsection{Getting Started}
@@ -102,29 +102,29 @@ It may seem like a lot of calculations, but the specification and computation of
 Here we only provide some of the equations for the models in case you might be interested in the details.
 You will be able to complete the exercises without delving too deeply into the underlying math.
 
-
-\noindent \\ \impmark It is important to note that you can run all of the \Rev~commands from a \RevBayes~script file \cl{source()} function in the \RevBayes~console. If you create a file called \cl{JukesCantor.Rev} and save all of the commands in this file, run the analysis by calling this function:
+\newpage
+\noindent \\ \impmark It is important to note that you can run all of the \Rev~commands from a \RevBayes~script file using the \cl{source()} function in the \RevBayes~console. If you create a file called \cl{JukesCantor.Rev} and save all of the commands listed below in this file, run the analysis by calling this function:
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 source("JukesCantor.Rev")
 \end{lstlisting}
 \end{snugshade*}}
 
-If everything loaded properly, then you should see the program initiate the Markov chain Monte Carlo analysis that estimates the posterior distribution. 
+You can try this now if you run the file provided on line called \href{https://raw.githubusercontent.com/revbayes/revbayes_tutorial/master/RB_CTMC_Tutorial/RevBayes_scripts/JukesCantor.nonclock.Rev}{\cl{JukesCantor.nonclock.Rev}}. If everything loaded properly, then you should see the program initiate the Markov chain Monte Carlo (MCMC) analysis that estimates the posterior distribution. 
 If you continue to let this run, then you will see it output the states of the Markov chain once the MCMC analysis begins. 
 %(It is worth noting, however, that the file \cl{JukesCantor.Rev} performs shorter runs with fewer generations for the purposes of illustration.)
 
 Ultimately, this is how you will execute most analyses in \RevBayes, with the full specification of the model and analyses contained in the sourced files. 
 You could easily run this entire analysis on your own data by substituting your data file name for that in the model-specification file. 
 However, it is important to understand the components of the model to be able to take full advantage of the flexibility and richness of \RevBayes.
-Furthermore, without inspecting the \Rev~scripts sourced in \cl{JukesCantor.Rev}, you may end up inadvertently performing inappropriate analyses on your dataset, which would be a waste of your time and CPU cycles. 
+Furthermore, without inspecting the \Rev~scripts sourced in a file, you may end up inadvertently performing inappropriate analyses on your dataset, which would be a waste of your time and CPU cycles. 
 The next steps will walk you through the full specification of the model and MCMC analyses. 
 
 \bigskip
 
 \subsection{Loading the Data}
 
-\noindent \\ \impmark You should have already downloaded the data files in Section \ref{Sec:data}. Links to additional files, including the scripts to run these analyses can be found on the \href{http://revbayes.github.io/tutorials.html}{\RevBayes~tutorials website}.
+\noindent \\ \impmark You should have already downloaded the data files in Section \ref{Sec:data}. Links to additional files, including the scripts to run these analyses can be found on the \href{http://revbayes.github.io/tutorials.html}{\RevBayes~tutorials website}. Remember that the data file should be in a directory called \cl{data} that is in your current working directory.
 
 
 First load in the sequences using the \cl{readDiscreteCharacterData()} function. 
@@ -135,7 +135,7 @@ First load in the sequences using the \cl{readDiscreteCharacterData()} function.
 data <- readDiscreteCharacterData("data/primates_cytb.nex")
 \end{lstlisting}
 \end{snugshade*}}
-Executing these lines initializes the data matrix as the respective \Rev~variables. 
+Executing these lines initializes the data matrix and the respective \Rev~variables. 
 To report the current value of any variable, simply type the variable name and press enter. For the \cl{data} matrix, this provides information about the alignment:
 {\tt \begin{snugshade*}
 \begin{lstlisting}
@@ -163,8 +163,8 @@ n_branches <- 2 * n_species - 3
 \end{lstlisting}
 \end{snugshade*}}
 
-Additionally, we set up a counter variable for the number of moves that we already added to our analysis.
-[Recall that moves are algorithms used to propose new parameter values during the MCMC simulation.]
+Additionally, we'll set up a counter variable that counts the number of moves as they are added to the analysis.
+(Recall that moves are algorithms used to propose new parameter values during MCMC simulation.)
 This will make it much easier if we extend the model or analysis to include additional moves or to remove some moves.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
@@ -172,8 +172,8 @@ mi = 0
 \end{lstlisting}
 \end{snugshade*}}
 You may have noticed that we used the \cl{=} operator to create the move index.
-This simply means that the variable is not part of the model.
-You will later see that we use this operator more often, \EG when we create moves and monitors.
+This simply means that the variable is used within the workspace and not part of the model.
+This operator will appear again later on, \EG when we create moves and monitors.
 
 With the data loaded, we can now proceed to specify our Jukes-Cantor substitution model.
 
@@ -200,11 +200,11 @@ Q
 \end{snugshade*}}
 As you can see, all substitution rates are equal.
 
-
+\bigskip
 \subsection{Tree Topology and Branch Lengths}
 
 The tree topology and branch lengths are stochastic nodes in our phylogenetic model. 
-In Figure \ref{fig:jc}, the tree topology is denoted $\tau$ and the length of the branch leading to node $i$ is $\nu_i$.
+In Figure \ref{fig:jc}, the tree topology is denoted $\Psi$ and the length of the branch leading to node $i$ is $\nu_i$.
 
 We will assume that all possible labeled, unrooted tree topologies have equal probability. This is the \cl{dnUniformTopology()} distribution in \RevBayes. Specify the \cl{topology} stochastic node by passing in the tip labels \cl{names} to the \cl{dnUniformTopology()} distribution:
 {\tt \begin{snugshade*}
@@ -216,7 +216,7 @@ topology ~ dnUniformTopology(names)
 Some types of stochastic nodes can be updated by a number of alternative moves. 
 Different moves may explore parameter space in different ways, and it is possible to use multiple different moves for a given parameter to improve mixing (the efficiency of the MCMC simulation). 
 In the case of our unrooted tree topology, for example, we can use both a nearest-neighbor interchange move (\cl{mvNNI}) and a subtree-prune and regrafting move (\cl{mvSPR}). 
-These moves do not have tuning parameters associated with them, thus you only need to pass in the \cl{topology} node and proposal \cl{weight} 
+These moves do not have tuning parameters associated with them, thus you only need to pass in the \cl{topology} node and proposal \cl{weight}. 
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 moves[++mi] = mvNNI(topology, weight=1.0)
@@ -239,7 +239,7 @@ for (i in 1:n_branches) {
 \end{lstlisting}
 \end{snugshade*}}
 
-It is convenient for monitoring purposes to add the tree length as deterministic variable. The tree length is simply the sum of all branch lengths.
+It is convenient for monitoring purposes to add the tree length as deterministic variable. The tree length is simply the sum of all branch lengths. This parameter is denoted $\mathbb{L}$ in Figure \ref{fig:jc}.
 Accordingly, the tree length can be computed using the \cl{sum()} function, which calculates the sum of any vector of values.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
@@ -264,7 +264,7 @@ phylogeny := treeAssembly(topology, br_lens)
 %Having specified virtually all of our phylogenetic model parameters, we can now link all of the parts in the stochastic node that will be clamped by the data. 
 %The sequence substitution model is a distribution called the \textit{phylogenetic continuous-time Markov chain}, and we use the \cl{dnPhyloCTMC} constructor function to create this node.
 % The above two sentences are a bit unclear: I think we could say something like: 
-We have fully specified all of the parameters of our phylogenetic model---the tree topology with branch lengths, and the substitution model that describes how the sequence data evolved over the tree with branch lengths.  
+We have fully specified all of the parameters of our phylogenetic model---the tree topology with branch lengths, and the substitution model describing how the sequence data evolved over the tree with branch lengths.  
 Collectively, these parameters comprise a distribution called the \textit{phylogenetic continuous-time Markov chain}, and we use the \cl{dnPhyloCTMC} constructor function to create this node.
 This distribution requires several input arguments: 
 (1) the \cl{tree} with branch lengths; 
@@ -283,8 +283,8 @@ Once the \cl{dnPhyloCTMC} model has been created, we can attach our sequence dat
 seq.clamp(data)
 \end{lstlisting}
 \end{snugshade*}}
-(Note that although we assume that our sequence data are random variables---they are realizations of our phylogenetic model---for the purposes of inference, we assume that the sequence data are ``clamped''.)
-When this function is called, \RevBayes~sets each of the stochastic nodes representing the tips of the tree to the corresponding nucleotide sequence in the alignment. 
+Note that although we assume that our sequence data are random variables since they are realizations of our phylogenetic model, fix them to the values we observed as ``clamped'' nodes for the purposes of inference.
+When the \cl{clamp} function is called, \RevBayes~sets each of the stochastic nodes representing the tips of the tree to the corresponding nucleotide sequence in the alignment. 
 This essentially tells the program that we have observed data for the sequences at the tips. 
 
 Finally, we wrap the entire model to provide convenient access to the DAG. 
@@ -349,8 +349,8 @@ mymcmc = mcmc(mymodel, monitors, moves)
 We may wish to run the \cl{.burnin()} member function.
 % if we wish to pre-run the chain and discard the initial states. 
 % I think you might want to add a brief explanation here, something like:
-Recall that this function \textbf{does not} specify the number of states that we wish to discard from the MCMC analysis as burnin (i.e., the samples collected before the chain converges to the stationary distribution).  
-Instead, the \cl{.burnin()} function specifies a \textit{completely separate} preliminary MCMC analysis that is used to tune the scale of the moves to improve mixing of the MCMC analysis.
+It is worth noting that this function \textbf{does not} specify the number of states that we wish to discard from the MCMC analysis as burnin (i.e., the samples collected before the chain converges to the stationary distribution).  
+Instead, the \cl{.burnin()} function specifies a \textit{completely separate} preliminary MCMC analysis that is used to tune the scale of the moves to improve mixing of the MCMC analysis and the states are not written to file.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 mymcmc.burnin(generations=10000,tuningInterval=1000)
@@ -369,7 +369,7 @@ When the analysis is complete, you will have the monitored files in your output 
 
 
 Methods for visualizing the marginal densities of parameter values are not currently available in \RevBayes~itself. 
-Thus, it is important to use programs like \texttt{Tracer} \citep{Rambaut2011} to evaluate mixing and non-convergence. (\RevBayes~does, however, have a tool for convergence assessment called \cl{beca}.)
+Thus, it is important to use programs like \href{http://tree.bio.ed.ac.uk/software/tracer/}{\texttt{Tracer}} \citep{Rambaut2011} to evaluate mixing and non-convergence. (\RevBayes~does, however, have a tool for convergence assessment called \cl{beca}.)
 
 \noindent \\ \impmark Look at the file called \cl{output/primates\_cytb\_JC\_posterior.log} in \texttt{Tracer}.
 
@@ -490,9 +490,9 @@ Q_{HKY} = \begin{pmatrix}
 {\pi_A} 			& {\kappa\pi_C} 			& {\pi_G} 	& {\cdot}  
 \end{pmatrix} \mbox{  .}
 \end{equation*}
-[The diagonal ${\cdot}$ entries are equal to the negative sum of the elements in the corresponding row.] 
+The diagonal ${\cdot}$ entries are equal to the negative sum of the elements in the corresponding row. 
 
-\noindent \\ \impmark Use the file \cl{JukesCantor.Rev} as a starting point for the HKY analysis.
+\noindent \\ \impmark Use the file \href{https://raw.githubusercontent.com/revbayes/revbayes_tutorial/master/RB_CTMC_Tutorial/RevBayes_scripts/JukesCantor.nonclock.Rev}{\cl{JukesCantor.nonclock.Rev}} (containing all of the commands from Example \ref{Sec:JC}) as a starting point for the HKY analysis.
 
 Note that we are adding two new variables to our model.
 We can define a variable \cl{pi} for the stationary frequencies that are drawn from a flat Dirichlet distribution by
@@ -539,7 +539,7 @@ This should be all for the HKY model.
 \subsection{Exercise 2}
 
 \begin{itemize}
-\item Copy the file called  \cl{JukesCantor.Rev} and modify it by including the necessary parameters to specify the HKY substitution model.
+\item Copy the file called \href{https://raw.githubusercontent.com/revbayes/revbayes_tutorial/master/RB_CTMC_Tutorial/RevBayes_scripts/JukesCantor.nonclock.Rev}{\cl{JukesCantor.nonclock.Rev}} and modify it by including the necessary parameters to specify the HKY substitution model (change the file name to something like \cl{HKY.nonclock.Rev}).
 \item Run an MCMC analysis to estimate the posterior distribution under the HKY substitution model.
 \item Are the resulting estimates of the base frequencies equal? 
 	If not, how much do they differ? 
@@ -680,7 +680,7 @@ Q := fnGTR(er,pi)
 \subsection{Exercise 3}
 
 \begin{itemize}
-\item Use one of your previous analysis files---either the \cl{JukesCantor.Rev} or \cl{HKY.Rev}---to specify a GTR analysis in a new file called \cl{GTR.Rev}.
+\item Use one of your previous analysis files---either the \href{https://raw.githubusercontent.com/revbayes/revbayes_tutorial/master/RB_CTMC_Tutorial/RevBayes_scripts/JukesCantor.nonclock.Rev}{\cl{JukesCantor.nonclock.Rev}} or \cl{HKY.Rev}---to specify a GTR analysis in a new file called \cl{GTR.Rev}.
 	Adapt the old analysis to be performed under the GTR substitution model. 
 \item Run an MCMC analysis to estimate the posterior distribution.
 \item Complete the table of the phylogenetic relationship of primates.
@@ -691,7 +691,7 @@ Q := fnGTR(er,pi)
 
 
 
-\newpage
+%\newpage
 \section{The Discrete Gamma Model of Among Site Rate Variation}
 
 
@@ -706,16 +706,16 @@ The degree of among-site substitution rate variation is inversely proportional t
 As the value of the $\alpha$-shape increases, the gamma distribution increasingly resembles a normal distribution with decreasing variance, which therefore corresponds to decreasing levels of ASRV (Figure \ref{asrhGammaFig}).
 %If $\alpha = 1$, then the gamma distribution collapses to an exponential distribution with a rate parameter equal to $\beta$.
 % Is it too much detail to describe the special case of |alpha = 1?
-By contrast, when the value of the $\alpha$-shape parameter is $< 1$, the gamma distribution assumes a concave distribution that concentrates most of the prior density on low rates, but retains some prior mass on sites with very high rates, which therefore corresponds to high levels of ASRV (Figure \ref{asrhGammaFig}).
-Note that, when $\alpha = 1$, the gamma distribution collapses to an exponential distribution with a rate parameter equal to $\beta$.
-
-
-\begin{figure}[h]
+\begin{figure}[h!]
 \centering
 \fbox{\includegraphics[width=3.5in]{\ResourcePath figures/asrh_gamma.pdf}}
 \caption{\small The probability density of mean-one gamma-distributed rates for different values of the $\alpha$-shape parameter.}
 \label{asrhGammaFig}
 \end{figure}
+By contrast, when the value of the $\alpha$-shape parameter is $< 1$, the gamma distribution assumes a concave distribution that concentrates most of the prior density on low rates, but retains some prior mass on sites with very high rates, which therefore corresponds to high levels of ASRV (Figure \ref{asrhGammaFig}).
+Note that, when $\alpha = 1$, the gamma distribution collapses to an exponential distribution with a rate parameter equal to $\beta$.
+
+
 
 We typically lack prior knowledge regarding the degree of ASRV for a given alignment.
 Accordingly, rather than specifying a precise value of $\alpha$, we can instead estimate the value of the $\alpha$-shape parameter from the data.
@@ -874,14 +874,17 @@ seq ~ dnPhyloCTMC(tree=phylogeny, Q=Q, siteRates=gamma_rates, pInv=pinvar, type=
 \item Complete the table of the phylogenetic relationship of primates.
 \end{itemize} 
 
-\vspace{5cm}
+%\vspace{5cm}
+\rule{\textwidth}{0.4pt}
+
 Questions about this tutorial can be directed to: \\\vspace{-10mm}
 \begin{itemize}
-\item Tracy Heath (email: \href{mailto:tracyh@berkeley.edu}{tracyh@berkeley.edu}) \\\vspace{-8mm}
+\item Tracy Heath (email: \href{mailto:phylo@iastate.edu}{phylo@iastate.edu}) \\\vspace{-8mm}
 \item Sebastian H\"{o}hna (email: \href{mailto:sebastian.hoehna@gmail.com}{sebastian.hoehna@gmail.com}) \\\vspace{-8mm}
 \item Michael Landis (email: \href{mailto:mlandis@berkeley.edu}{mlandis@berkeley.edu}) \\\vspace{-8mm} 
 \item Brian R. Moore (email: \href{mailto:brianmoore@ucdavis.edu}{brianmoore@ucdavis.edu}) \\\vspace{-8mm}
 \end{itemize}
+\rule{\textwidth}{0.4pt}
 
 \bibliographystyle{sysbio}
 \bibliography{\ResourcePath refs}
