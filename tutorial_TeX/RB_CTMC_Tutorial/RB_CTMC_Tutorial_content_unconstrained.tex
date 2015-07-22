@@ -874,6 +874,12 @@ seq ~ dnPhyloCTMC(tree=phylogeny, Q=Q, siteRates=gamma_rates, pInv=pinvar, type=
 \item Complete the table of the phylogenetic relationship of primates.
 \end{itemize} 
 
+\subsection*{Exercise 6}
+\begin{itemize}
+\item Re-analyze the data under a custom model(s) you design. For example, try changing the branch length prior from {\tt dnExponential(10.0)} to something with a different distribution or a different mean, such as {\tt dnExponential(100)} or {\tt dnGamma(2,2)}.
+\item Review the table of posterior clade support for primates and compare the topological position of Tarsiers as inferred under competing models. What aspects of model complexity affect these estimates most? Using this example, how would you describe the relationship of model complexity, posterior estimate precision, and posterior estimate accuracy? (Consider that a Jukes-Cantor substitution model has perfect precision for estimated base frequencies, but poor accuracy when compared to empirical base frequencies.)
+\end{itemize}
+
 %\vspace{5cm}
 \rule{\textwidth}{0.4pt}
 
