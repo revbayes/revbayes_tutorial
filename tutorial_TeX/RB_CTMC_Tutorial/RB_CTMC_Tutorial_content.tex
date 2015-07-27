@@ -82,7 +82,7 @@ For simplicity and computational efficiency we will use a collapsed for of the s
 \centering
 \fbox{\includegraphics[width=0.6\textwidth,angle=0]{\ResourcePath figures/jc_graphical_module.pdf}}
 \caption{\small Graphical model representation of a simple phylogenetic model. 
-The colapsed graphical model combining all the CTMC variable of the phylogeny.
+The collapsed graphical model combining all the CTMC variable of the phylogeny.
 We still have the rate matrix $Q$ as a constant variable and the stochastic variable for the tree $\Psi$.}
 \label{fig:jc_module}
 \end{figure}
@@ -91,17 +91,18 @@ We first consider the simplest substitution model described by \citet{Jukes1969}
 The instantaneous-rate matrix for the JC substitution model is defined as
 \begin{equation*}
 Q_{JC69} = \begin{pmatrix} 
-{*} & {1} & {1} & {1} \\ 
-{1} & {*} & {1} & {1} \\ 
-{1} & {1} & {*} & {1} \\ 
-{1} & {1} & {1} & {*}  
+{*} & \frac{1}{3} & \frac{1}{3} & \frac{1}{3} \\ 
+\frac{1}{3} & {*} & \frac{1}{3} & \frac{1}{3} \\ 
+\frac{1}{3} & \frac{1}{3} & {*} & \frac{1}{3} \\ 
+\frac{1}{3} & \frac{1}{3} & \frac{1}{3} & {*}  
 \end{pmatrix} \mbox{  ,}
 \end{equation*}
-which has the advantage that the transition probability matrix can be computed analytically:
+which has the advantage that the transition probability matrix can be computed analytically
 \begin{equation*}
-P_{JC69} = \begin{pmatrix} {{1\over4} + {3\over4}e^{-t\mu}} & {{1\over4} - {1\over4}e^{-t\mu}} & {{1\over4} - {1\over4}e^{-t\mu}} & {{1\over4} - {1\over4}e^{-t\mu}} \\\\ {{1\over4} - {1\over4}e^{-t\mu}} & {{1\over4} + {3\over4}e^{-t\mu}} & {{1\over4} - {1\over4}e^{-t\mu}} & {{1\over4} - {1\over4}e^{-t\mu}} \\\\ {{1\over4} - {1\over4}e^{-t\mu}} & {{1\over4} - {1\over4}e^{-t\mu}} & {{1\over4} + {3\over4}e^{-t\mu}} & {{1\over4} - {1\over4}e^{-t\mu}} \\\\ {{1\over4} - {1\over4}e^{-t\mu}} & {{1\over4} - {1\over4}e^{-t\mu}} & {{1\over4} - {1\over4}e^{-t\mu}} & {{1\over4} + {3\over4}e^{-t\mu}}  
-\end{pmatrix} \mbox{  .}
+P_{JC69} = \begin{pmatrix} {{1\over4} + {3\over4}e^{-rt}} & {{1\over4} - {1\over4}e^{-rt}} & {{1\over4} - {1\over4}e^{-rt}} & {{1\over4} - {1\over4}e^{-rt}} \\\\ {{1\over4} - {1\over4}e^{-rt}} & {{1\over4} + {3\over4}e^{-rt}} & {{1\over4} - {1\over4}e^{-rt}} & {{1\over4} - {1\over4}e^{-rt}} \\\\ {{1\over4} - {1\over4}e^{-rt}} & {{1\over4} - {1\over4}e^{-rt}} & {{1\over4} + {3\over4}e^{-rt}} & {{1\over4} - {1\over4}e^{-rt}} \\\\ {{1\over4} - {1\over4}e^{-rt}} & {{1\over4} - {1\over4}e^{-rt}} & {{1\over4} - {1\over4}e^{-rt}} & {{1\over4} + {3\over4}e^{-rt}}  
+\end{pmatrix} \mbox{  ,}
 \end{equation*}
+where $t$ is the branch length in units of time, and $r$ is the rate (clock) for the process.
 In the later exercises you will be asked to specify more complex substitution models.
 \textbf{Don't be scared by the math!}
 \RevBayes will take care of all the computations for you.
@@ -234,7 +235,7 @@ speciation := diversification + turnover
 extinction := turnover
 \end{lstlisting}
 \end{snugshade*}}
-We also need to specify a prior on the root age (our informed guess is about 75-80 mya).
+We also need to specify a prior on the root age (our informed guess is about 75-80 Mya).
 Nevertheless we use a very wide uniform distribution between 0 and 1000.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
@@ -292,7 +293,7 @@ Have a look at the MCMC tutorial for more details about moves and MCMC strategie
 %The sequence substitution model is a distribution called the \textit{phylogenetic continuous-time Markov chain}, and we use the \cl{PhyloCTMC} constructor function to create this node.
 % The above two sentences are a bit unclear: I think we could say something like: 
 We have fully specified all of the parameters of our phylogenetic model---the tree topology with branch lengths, and the substitution model that describes how the sequence data evolved over the tree with branch lengths.  
-Collectively, these parameters comprise a distribution called the \textit{phylogenetic continuous-time Markov chain}, and we use the \cl{PhyloCTMC} constructor function to create this node.
+Collectively, these parameters comprise a distribution called the \textit{phylogenetic continuous-time Markov chain}, and we use the \cl{dnPhyloCTMC} constructor function to create this node.
 This distribution requires several input arguments: 
 (1) the \cl{tree} with branch lengths; 
 (2) the instantaneous-rate matrix \cl{Q};
