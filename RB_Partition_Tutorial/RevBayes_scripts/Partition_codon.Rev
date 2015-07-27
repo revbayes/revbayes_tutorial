@@ -136,8 +136,8 @@ monitors[mni++] = mnFile(er[1], pi[1], alpha[1], norm_gamma_rates[1], pinvar[1],
 
 # run the analysis
 mymcmc = mcmc(mymodel, moves, monitors)
-mymcmc.burnin(10000,100)
-mymcmc.run(100000)
+mymcmc.burnin(10000,250)
+mymcmc.run(30000)
 
 # summarize output
 treetrace = readTreeTrace("output/PS2.tre")
