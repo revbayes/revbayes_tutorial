@@ -60,7 +60,7 @@ alpha_prior <- 0.05
 alpha ~ dnExponential( alpha_prior )
 gamma_rates := fnDiscretizeGamma( alpha, alpha, 4, false )
 
-# add moves for the stationary frequencies, exchangeability rates and the shape parameter
+# add moves the shape parameter
 moves[++mi] = mvScale(alpha,weight=2)
 
 
@@ -95,7 +95,7 @@ phylogeny := treeAssembly(topology, br_lens)
 ###################
 
 # the sequence evolution model
-seq ~ dnPhyloCTMC(tree=phylogeny, Q=Q, type="DNA")
+seq ~ dnPhyloCTMC(tree=phylogeny, Q=Q, siteRates=gamma_rates, type="DNA")
 
 # attach the data
 seq.clamp(data)
@@ -125,9 +125,9 @@ mymcmc.run(generations=30000)
 # Let us start by reading in the tree trace
 treetrace = readTreeTrace("output/primates_cytb_GTR_Gamma_posterior.trees", treetype="non-clock")
 # and get the summary of the tree trace
-treetrace.summarize()
+#treetrace.summarize()
 
-mapTree(treetrace,"output/primates_cytb_GTR_Gamma.tree")
+map_tree = mapTree(treetrace,"output/primates_cytb_GTR_Gamma.tree")
 
 # you may want to quit RevBayes now
 q()

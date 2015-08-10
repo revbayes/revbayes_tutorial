@@ -143,7 +143,7 @@ mymcmc.run(generations=30000)
 # Let us start by reading in the tree trace
 treetrace = readTreeTrace("output/primates_cytb_global_fixed_clock.trees", treetype="clock")
 
-mapTree(treetrace,"output/primates_cytb_global_fixed_clock.tree")
+map_tree = mapTree(treetrace,"output/primates_cytb_global_fixed_clock.tree")
 
 # you may want to quit RevBayes now
 q()

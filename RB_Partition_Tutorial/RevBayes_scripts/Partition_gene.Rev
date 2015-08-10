@@ -119,9 +119,9 @@ mymcmc.run(30000)
 
 # summarize output
 treetrace = readTreeTrace("output/PS1.tre")
-treetrace.summarize()
+#treetrace.summarize()
 
-mapTree(treetrace,"output/PS1_map.tre")
+map_tree = mapTree(treetrace,"output/PS1_map.tre")
 
 
 # you may want to quit RevBayes now

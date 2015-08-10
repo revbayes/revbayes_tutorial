@@ -39,8 +39,7 @@ monitors[2] = mnFile(filename="output/primates_mass_REML.log", printgen=10, sepa
  
 mymcmc = mcmc(mymodel, monitors, moves)
 
-mymcmc.burnin(generations=50000, tuningInterval=250)
+mymcmc.burnin(generations=10000, tuningInterval=250)
+mymcmc.run(300000)
 
-mymcmc.run(500000)
-
-
+q()
