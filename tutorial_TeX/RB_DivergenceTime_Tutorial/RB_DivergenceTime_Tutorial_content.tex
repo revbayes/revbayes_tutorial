@@ -1,8 +1,9 @@
 \section{Overview}
 
-
-This tutorial demonstrates how to estimate divergence times and a dated phylogeny. 
+This tutorial provides an introduction and a very brief overview over how to estimate divergence times and time calibrated phylogeny. 
 The key concepts of this tutorial are the global molecular clock and node- and fossil-calibrations.
+We have later tutorials that will cover each topic more in detail.
+For example, more options on node calibrations are covered in the Node-Calibration tutorial.
 
 
 In this tutorial you will perform a Bayesian inference to estimate a time-calibrated phylogeny.
@@ -29,15 +30,17 @@ You may only need the RB\_Basics\_Tutorial for a more in-depth discussion of con
 %%%%%%%%
 %%   Data   %%
 %%%%%%%%
-\section{Data and files}
+\section{Data and files}\label{Sec:data}
 
-We provide the data file(s) which we will use in this tutorial.
+We provide the data file of DNA sequences required for this tutorial.
 You may want to use your own data instead.
-In the \cl{data} folder, you will find the following files
+
+\noindent \\ \impmark Create a folder called \cl{data} and download the following files:
 \begin{itemize}
-\item
-\cl{primates\_cytb.nex}: Alignment of the \textit{cytochrome b} subunit from 23 primates representing 14 of the 16 families (\textit{Indriidae} and \textit{Callitrichidae} are missing).
+\item \href{http://rawgit.com/revbayes/revbayes_tutorial/master/RB_DivergenceTime_Tutorial/data/primates_cytb.nex}{\cl{primates\_cytb.nex}}: Alignment of the \textit{cytochrome b} subunit from 23 primates representing 14 of the 16 families (\textit{Indriidae} and \textit{Callitrichidae} are missing).
 \end{itemize}
+
+Below you will also find a table with the calibration dates that we will use later in this tutorial (see Table~\ref{primateFossilTable}).
 
 \begin{table}[tbh!]
 \centering
@@ -46,8 +49,8 @@ In the \cl{data} folder, you will find the following files
 \hline
 \multicolumn{1}{@{}l}{\textbf{Clade}}  & &\multicolumn{1}{c}{\textbf{Age range (My)}}  & &\multicolumn{1}{c}{\textbf{Citation}} \\ 
 \hline
-\textit{Simiiformes} & \hspace{2mm} & 43 $\pm$ 4.5 & \hspace{2mm} & \cite{}\\
-\textit{galagids and lorisids} & & 40 $\pm$ 3 &  & \cite{}\\
+\textit{Simiiformes} & \hspace{2mm} & 43 $\pm$ 4.5 & \hspace{2mm} & \cite{Seiffert2003}\\
+\textit{galagids and lorisids} & & 40 $\pm$ 3 &  & \cite{Franzen2009,Poux2004}\\
 \hline
 \end{tabular}
 \end{table}
@@ -65,7 +68,7 @@ In the \cl{data} folder, you will find the following files
 
 
 The first section of this exercise involves:
-(1) setting up a general time reversible (GTR) substitution model with gamma distributed rate variation among sites for an alignment of the cytochrome b subunit;
+(1) setting up a general time reversible (GTR) substitution model \citep{Tavare1986} with gamma distributed rate variation among sites \citep{Yang1994a} for an alignment of the cytochrome b subunit;
 (2) use an informative prior on the clock rate to date the phylogeny;
 (3) approximating the posterior probability of the tree topology and node ages (and all other parameters) using MCMC, and; 
 (4) summarizing the MCMC output by computing the maximum \textit{a posteriori} tree. 
@@ -91,7 +94,7 @@ This figure shows the full model graph.
 
 \subsection{Loading the Data}
 
-\noindent \\ \impmark Download data and output files (if you don't have them already) from: \href{http://revbayes.github.io/tutorials.html}{http://revbayes.github.io/tutorials.html}
+\noindent \\ \impmark You should have already downloaded the data files in Section \ref{Sec:data}. Links to additional files, including the scripts to run these analyses can be found on the \href{http://revbayes.github.io/tutorials.html}{\RevBayes~tutorials website}. Remember that the data file should be in a directory called \cl{data} that is in your current working directory.
 
 First load in the sequences using the \cl{readDiscreteCharacterData()} function. 
 %This function returns a \textit{vector} of data matrices and, even though there is only one element in the vector, we must index that element using the \cl{[1]} notation. 
@@ -226,7 +229,7 @@ moves[++mi] = mvScale(alpha, weight=2.0)
 \subsection{Tree Prior: Tree Topology and Node Ages}
 
 The tree ( the topology and node ages) is a stochastic node in our phylogenetic model. 
-In Figure \ref{fig:jc}, the tree is denoted $\Psi$.
+In Figure \ref{fig:clock_prior}, the tree is denoted $\Psi$.
 
 We will assume a constant-rate birth-death process as the prior distribution on the tree.
 This means that all possible labeled, rooted tree topologies have equal probability. 
@@ -251,8 +254,8 @@ speciation := diversification + turnover
 extinction := turnover
 \end{lstlisting}
 \end{snugshade*}}
-We also need to specify a prior on the root age (our informed guess is about 75-80 mya).
-So we use a uniform distribution between 50 and 100.
+We also need to specify a prior on the root age (our informed guess is about 90 mya).
+So we use a uniform distribution between 0 and 1000.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 root ~ dnUniform(0.0,1000.0)
@@ -305,27 +308,23 @@ Have a look at the MCMC tutorial for more details about moves and MCMC strategie
 
 \subsection{The Global Molecular Clock Model}\label{globalClockSec}
 
-The global molecular clock assumes that the rate of substitution is constant over the tree and over time (Fig.~\ref{m_GMC:fig}).
-
-Here we use an informative prior on the clock rate.
-In several studies it has been suggested that the rate of mitochondrial evolution is about 0.01 (=1\%) per million years per site.
+The global molecular clock assumes that the rate of substitution is constant over the tree and over time (Fig.~\ref{fig:clock_prior}).
+Additionally we assume that the clock rate is known without error.
+Thus, we use the fixed clock rate to calibrate our phylogeny.
+In several studies it has been suggested that the rate of mitochondrial evolution is about 0.01 (=1\%) per million years per site \citep{Ho}.
 Thus, we will specify a narrow prior distribution centered around 0.01.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-clock_M <- 0.01
-clock_s <- 1
-clock_mu <- log(clock_M) - ((clock_s * clock_s) * 0.5)
-
-clockRate ~ dnLognormal(clock_mu, clock_s)
+clockRate <- 0.01
 \end{lstlisting}
 \end{snugshade*}}
-As usual, we need a move on the stochastic variable, the \cl{clockRate}.
-We use a scaling move because this is a rate parameter. 
-{\tt \begin{snugshade*}
-\begin{lstlisting}
-moves[++mi] = mvScale(clockRate,lambda=1,tune=true,weight=1)
-\end{lstlisting}
-\end{snugshade*}}
+%As usual, we need a move on the stochastic variable, the \cl{clockRate}.
+%We use a scaling move because this is a rate parameter. 
+%{\tt \begin{snugshade*}
+%\begin{lstlisting}
+%moves[++mi] = mvScale(clockRate,lambda=1,tune=true,weight=1)
+%\end{lstlisting}
+%\end{snugshade*}}
 
 \subsection{Putting it All Together}
 
@@ -554,7 +553,7 @@ turnover ~ dnGamma(shape=c,rate=d)
 speciation := diversification + turnover
 extinction := turnover
 
-sampling_fraction <- 23 / 270
+sampling_fraction <- 23 / 450
 
 moves[++mi] = mvSlide(diversification,delta=1,tune=true,weight=1)
 moves[++mi] = mvSlide(turnover,delta=1,tune=true,weight=1)
