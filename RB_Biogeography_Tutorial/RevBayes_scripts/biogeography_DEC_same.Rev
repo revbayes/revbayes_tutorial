@@ -115,8 +115,7 @@ for (i in 1:8) {
 }
 
 er := simplex(er_nat)
-bf <- simplex(rep(1,8))
-q := fnFreeK(er, bf)
+q := fnFreeK(er)
 
 # create the cladogenesis transition probability matrix
 widespread_sympatry_wt <- 1

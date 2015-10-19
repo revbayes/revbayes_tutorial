@@ -83,8 +83,7 @@ for (i in 1:3) { 							# ... from area i
 # DEC anagenic Q matrix
 er_nat := fnDECRates(d, e)
 er := simplex(er_nat)
-bf <- simplex(rep(1,8))
-q := fnFreeK(er, bf)
+q := fnFreeK(er)
 
 # create the cladogenesis transition probability matrix
 widespread_sympatry_wt <- 1
