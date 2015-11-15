@@ -124,8 +124,10 @@ allopatry              := clado_type[3]
 
 clado_prob := fnCladoProbs(clado_type, n_areas, 2)
 
+rf <- simplex( rep(1,8) )
+
 # build ctmc
-m ~ dnPhyloCTMCClado( tree=psi, Q=q, cladoProbs=clado_prob, branchRates=clock_bg, nSites=1, type="NaturalNumbers" )
+m ~ dnPhyloCTMCClado( tree=psi, Q=q, cladoProbs=clado_prob, rootFrequencies=rf, branchRates=clock_bg, nSites=1, type="NaturalNumbers" )
 m.clamp(data)
 
 # make model

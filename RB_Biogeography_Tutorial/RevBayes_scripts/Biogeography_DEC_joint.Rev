@@ -106,8 +106,10 @@ clock_scale_bg ~ dnGamma(2.0,2.0)
 clock_bg := clock_mol * clock_scale_bg
 mv[mvi++] = mvScale(clock_scale_bg, lambda=0.1, tune=true, weight=2)
 
+rf <- simplex( rep(1,8) )
+
 # build ctmc
-m ~ dnPhyloCTMCClado( tree=psi, Q=q, cladoProbs=clado_prob, branchRates=clock_bg, nSites=1, type="NaturalNumbers" )
+m ~ dnPhyloCTMCClado( tree=psi, Q=q, cladoProbs=clado_prob, rootFrequencies=rf, branchRates=clock_bg, nSites=1, type="NaturalNumbers" )
 m.clamp(data)
 
 # make model
