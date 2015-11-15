@@ -101,13 +101,13 @@ moves[++mi] = mvSlide(logSigma, delta=1.0, tune=true, weight=2.0)
 
 # univariate Ornstein-Uhlenbeck process along the tree # parameterized by sigma
 for (i in (numNodes-1):(numTips+1) ) {
-  logmass[i] ~ dnOU( x0=logmass[psi.parent(i)], theta=nodeOptim[i], alpha=alpha, sigma=sigma, time=psi.branchLength(i) )
-  # moves on the Brownian process
+  logmass[i] ~ dnOrnsteinUhlenbeck( x0=logmass[psi.parent(i)], theta=nodeOptim[i], alpha=alpha, sigma=sigma, time=psi.branchLength(i) )
+  # moves on the Ornstein-Uhlenbeck process
   moves[++mi] = mvSlide( logmass[i], delta=10, tune=true ,weight=2)
 }
 
 for (i in numTips:1 ) {
-  logmass[i] ~ dnOU( x0=logmass[psi.parent(i)], theta=nodeOptim[i], alpha=alpha, sigma=sigma, time=psi.branchLength(i) )
+  logmass[i] ~ dnOrnsteinUhlenbeck( x0=logmass[psi.parent(i)], theta=nodeOptim[i], alpha=alpha, sigma=sigma, time=psi.branchLength(i) )
   # condition Brownian model on quantitative trait data (first column of the dataset)
   logmass[i].clamp(contData.getTaxon(psi.nodeName(i))[1])
 }

@@ -168,7 +168,7 @@ Let us start by creating the random variables for the internal nodes. Remember t
 \begin{lstlisting}
 # univariate Ornstein-Uhlenbeck process along the tree
 for (i in (numNodes-1):(numTips+1) ) {
-  logmass[i] ~ dnOU( x0=logmass, theta=logOptim, alpha=alpha, sigma=sigma, time=psi.branchLength(i) )
+  logmass[i] ~ dnOrnsteinUhlenbeck( x0=logmass, theta=logOptim, alpha=alpha, sigma=sigma, time=psi.branchLength(i) )
   # moves on the Ornstein-Uhlenbeck process
   moves[++mi] = mvSlide( logmass[i], delta=10, tune=true ,weight=2) 
 }
@@ -180,7 +180,7 @@ Next, we repeat the same loop but now for the tip nodes. Instead of applying a m
 {\tt \small \begin{snugshade*}
 \begin{lstlisting}
 for (i in numTips:1 ) {
-  logmass[i] ~ dnOU( x0=logmass, theta=logOptim, alpha=alpha, sigma=sigma, time=psi.branchLength(i) )
+  logmass[i] ~ dnOrnsteinUhlenbeck( x0=logmass, theta=logOptim, alpha=alpha, sigma=sigma, time=psi.branchLength(i) )
 
   # condition OU model on quantitative trait data (second column of the dataset)
   logmass[i].clamp(contData.getTaxon(psi.nodeName(i))[1])
