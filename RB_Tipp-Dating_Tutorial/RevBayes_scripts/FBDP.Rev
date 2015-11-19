@@ -1,0 +1,158 @@
+#
+# using molecular and morphological data from Pattinson et al. 2015
+# fossil dates are the mean ages reported from PaleoDB and other sources (see spreadsheet)
+#
+
+mi = 0
+
+taxa <- readTaxonData("data/taxa_data.tsv", delimiter=TAB)
+D_mol <- readDiscreteCharacterData("data/molecular.nex")
+D_morph <- readDiscreteCharacterData("data/morph_binary.nex")
+
+
+
+##############
+# Tree model #
+##############
+
+# Specify a prior on the diversification and turnover rate
+diversification ~ dnGamma(5,1)
+turnover ~ dnGamma(5,1)
+
+# now transform the diversification and turnover rates into speciation and extinction rates
+speciation := diversification + turnover
+extinction := turnover
+
+### process time ###
+## Uniform prior on process time
+process_time ~ dnUnif(62, 1000.0) # oldest fossil is 61 Ma
+
+## The sampling-through-time parameter 
+fossil_rate ~ dnGamma(5,1)
+
+## The probability of sampling at the present (rho)
+sampling_prob <- 26 / 450 # 26 out of the ~ 450 extant primate species
+
+## the Birth-death distribution ##
+psi ~ dnFBDP(origin=process_time, lambda=speciation, mu=extinction, psi=fossil_rate, rho=sampling_prob, condition="survival", taxa=taxa)
+
+write(file="starting_tree.tre",psi)
+
+# get the root age as a deterministic node
+root_age := psi.rootAge()
+
+# create some moves that change the stochastic variables
+# all moves are sliding proposals but you could use scaling proposals for the rates too
+moves[++mi] = mvSlide(diversification,delta=1,tune=true,weight=1)
+moves[++mi] = mvSlide(turnover,delta=1,tune=true,weight=1)
+moves[++mi] = mvSlide(fossil_rate,delta=1,tune=true,weight=1)
+moves[++mi] = mvSlide(process_time,delta=1,tune=true,weight=1)
+
+moves[++mi] = mvNarrow(psi, weight=5.0)
+moves[++mi] = mvNNI(psi, weight=1.0)
+moves[++mi] = mvFNPR(psi, weight=3.0)
+moves[++mi] = mvSubtreeScale(psi, weight=3.0)
+moves[++mi] = mvRootTimeSlideUniform(psi, origin=process_time, weight=3.0)
+moves[++mi] = mvNodeTimeSlideUniform(psi, weight=15.0)
+
+moves[++mi] = mvCollapseExpandFossilBranch(psi,process_time,weight=10.0)
+
+
+################################
+# Molecular Substitution Model #
+################################
+
+# substitution model priors
+bf <- v(1,1,1,1)
+e <- v(1,1,1,1,1,1)
+pi ~ dnDirichlet(bf)
+er ~ dnDirichlet(e)
+
+# moves on the substitution process parameters
+# first some moves only changing one value of the simplex
+moves[++mi] = mvSimplexElementScale(pi, alpha=10.0, tune=true, weight=2.0)
+moves[++mi] = mvSimplexElementScale(er, alpha=10.0, tune=true, weight=3.0)
+
+# the rate matrix
+Q_mol := fnGTR(er,pi)
+
+
+####################################
+# Morphological Substitution Model #
+####################################
+
+# the rate matrix
+Q_morph <- fnJC(2)
+
+
+#############################
+# Among Site Rate Variation #
+#############################
+
+alpha_prior <- 0.05
+alpha ~ dnExponential( alpha_prior )
+gamma_rates := fnDiscretizeGamma( alpha, alpha, 4, false )
+
+# add moves for the stationary frequencies, exchangeability rates and the shape parameter
+moves[++mi] = mvScale(alpha,weight=2)
+
+
+#############################
+# Strict global clock model #
+#############################
+
+log_mol_clock_rate ~ dnUniform(-10,2)
+mol_clock_rate := 10^log_mol_clock_rate
+
+moves[++mi] = mvSlide(log_mol_clock_rate, weight=1.0)
+
+log_morph_clock_rate ~ dnUniform(-10,10)
+log_morph_clock_rate.setValue( 7.5 )
+morph_clock_rate := 10^log_morph_clock_rate
+
+moves[++mi] = mvSlide(log_morph_clock_rate, weight=1.0)
+
+
+
+###################
+# PhyloCTMC Model #
+###################
+
+seq_mol ~ dnPhyloCTMC(tree=psi, Q=Q_mol, branchRates=mol_clock_rate, siteRates=gamma_rates, type="DNA")
+seq_morph ~ dnPhyloCTMC(tree=psi, Q=Q_morph, branchRates=morph_clock_rate, type="Standard")
+
+# attach the data
+seq_mol.clamp(D_mol)
+seq_morph.clamp(D_morph)
+
+
+
+
+
+mymodel = model(bf)
+
+
+monitor_index = 0
+monitors[++monitor_index] = mnModel(filename="output/FBDP.log",printgen=10, separator = TAB)
+monitors[++monitor_index] = mnFile(filename="output/FBDP.trees",printgen=10, separator = TAB, psi)
+monitors[++monitor_index] = mnScreen(printgen=10, mol_clock_rate, morph_clock_rate, root_age)
+
+ 
+mymcmc = mcmc(mymodel, monitors, moves)
+
+mymcmc.burnin(generations=1000,250)
+mymcmc.run(generations=5000)
+
+mymcmc.operatorSummary()
+
+# Now, we will analyze the tree output.
+# Let us start by reading in the tree trace
+treetrace = readTreeTrace("output/FBDP.trees", treetype="clock")
+# and get the summary of the tree trace
+#treetrace.summarize()
+
+map_tree = mapTree(treetrace,"output/FBDP.tree")
+
+# you may want to quit RevBayes now
+q()
+
