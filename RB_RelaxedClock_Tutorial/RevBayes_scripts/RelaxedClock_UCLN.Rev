@@ -22,7 +22,7 @@ data <- readDiscreteCharacterData("data/primates_cytb.nex")
 
 # Get some useful variables from the data. We need these later on.
 n_species <- data.ntaxa()
-names <- data.names()
+taxa <- data.taxa()
 n_branches <- 2*n_species - 2
 
 # set my move index
@@ -93,7 +93,7 @@ clade_simiiformes = clade("Chlorocebus_aethiops", "Colobus_guereza", "Hylobates_
 
 
 # construct a variable for the tree drawn from a birth death process
-psi ~ dnBDP(lambda=speciation, mu=extinction, rootAge=abs(root), rho=sampling_fraction, nTaxa=n_species, names=names, constraints=v(clade_galago_loris, clade_catarrhini, clade_platyrrhini, clade_simiiformes) )
+psi ~ dnBDP(lambda=speciation, mu=extinction, rootAge=abs(root), rho=sampling_fraction, taxa=taxa )
 
 
 moves[++mi] = mvNarrow(psi, weight=5.0)

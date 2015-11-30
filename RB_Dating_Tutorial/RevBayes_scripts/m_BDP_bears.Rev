@@ -7,7 +7,7 @@ T <- readTrees("data/bears_dosReis.tre")[1]
 
 ### get helpful variables from the tree
 n_taxa <- T.ntips()
-names <- T.names()
+taxa <- T.taxa()
 
 #######################################
 ###### birth-death process model  #####
@@ -66,7 +66,7 @@ clade_UrsPinn <- clade("Ailuropoda_melanoleuca","Tremarctos_ornatus","Helarctos_
 constraints <- v(clade_Ursidae, clade_UrsPinn)
 
 ### the time tree is a stochastic node modeled by the constant rate birth-death process (dnBDP)
-timetree ~ dnBDP(lambda=birth_rate, mu=death_rate, rho=rho, rootAge=root_time, samplingStrategy="uniform", condition="nTaxa", nTaxa=n_taxa, names=names,constraints=constraints)
+timetree ~ dnBDP(lambda=birth_rate, mu=death_rate, rho=rho, rootAge=root_time, samplingStrategy="uniform", condition="nTaxa", taxa=taxa, constraints=constraints)
 
 ### set the initial value of the time tree to the dos Reis et al. (2013) tree
 ### this is needed because the starting value must be consistent with our internal node constraints

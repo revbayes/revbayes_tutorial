@@ -34,7 +34,7 @@ for ( i in 1:num_loci ) {
 # Get some useful variables from the data. We need these later on.
 primate_tree = readTrees("data/primates.tree")[1]
 n_species <- primate_tree.ntips()
-names <- primate_tree.names()
+taxa <- primate_tree.taxa()
 n_branches <- 2 * n_species - 1 # number of branches in a rooted tree
 
 # set my move index
@@ -77,7 +77,7 @@ moves[++mi] = mvSlide(root,delta=1,tune=true,weight=0.2)
 
 
 # construct a variable for the tree drawn from a birth death process
-psi ~ dnBDP(lambda=speciation, mu=extinction, rootAge=abs(root), rho=sampling_fraction, nTaxa=n_species, names=names )
+psi ~ dnBDP(lambda=speciation, mu=extinction, rootAge=abs(root), rho=sampling_fraction, taxa=taxa )
 
 moves[++mi] = mvNarrow(psi, weight=5.0)
 moves[++mi] = mvNNI(psi, weight=1.0)

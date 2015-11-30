@@ -15,9 +15,17 @@ D_morph <- readDiscreteCharacterData("data/morph_binary.nex")
 # Tree model #
 ##############
 
+#clade_nycticebus <- clade( "Nycticebus", "Nycticeboides" )
+#
+#clade_constraints <- v( clade_nycticebus )
+
 # Specify a prior on the diversification and turnover rate
-diversification ~ dnGamma(5,1)
-turnover ~ dnGamma(5,1)
+diversification ~ dnUniform(0,10)
+#diversification ~ dnGamma(2,2)
+#diversification.setValue(0.01)
+turnover ~ dnUniform(0,10)
+#turnover ~ dnGamma(2,2)
+#turnover.setValue(0.01)
 
 # now transform the diversification and turnover rates into speciation and extinction rates
 speciation := diversification + turnover
@@ -25,16 +33,18 @@ extinction := turnover
 
 ### process time ###
 ## Uniform prior on process time
-process_time ~ dnUnif(62, 1000.0) # oldest fossil is 61 Ma
+process_time ~ dnUnif(62, 250.0) # oldest fossil is 61 Ma
 
 ## The sampling-through-time parameter 
-fossil_rate ~ dnGamma(5,1)
+fossil_rate ~ dnUniform(0,10)
+#fossil_rate ~ dnGamma(2,2)
 
 ## The probability of sampling at the present (rho)
-sampling_prob <- 26 / 450 # 26 out of the ~ 450 extant primate species
+sampling_prob <- 23 / 450 # 23 out of the ~ 450 extant primate species
 
 ## the Birth-death distribution ##
 psi ~ dnFBDP(origin=process_time, lambda=speciation, mu=extinction, psi=fossil_rate, rho=sampling_prob, condition="survival", taxa=taxa)
+#psi ~ dnFBDP(origin=process_time, lambda=speciation, mu=extinction, psi=fossil_rate, rho=sampling_prob, condition="survival", taxa=taxa, constraints=clade_constraints)
 
 write(file="starting_tree.tre",psi)
 
@@ -89,28 +99,49 @@ Q_morph <- fnJC(2)
 # Among Site Rate Variation #
 #############################
 
-alpha_prior <- 0.05
-alpha ~ dnExponential( alpha_prior )
-gamma_rates := fnDiscretizeGamma( alpha, alpha, 4, false )
+#alpha_prior <- 0.05
+#alpha ~ dnExponential( alpha_prior )
+#gamma_rates := fnDiscretizeGamma( alpha, alpha, 4, false )
+#
+## add moves for the stationary frequencies, exchangeability rates and the shape parameter
+#moves[++mi] = mvScale(alpha,weight=2)
+
+
+###################################
+# Among Site Rate Variation Morph #
+###################################
+
+alpha_morph_prior <- 0.05
+alpha_morph ~ dnExponential( alpha_morph_prior )
+gamma_rates_morph := fnDiscretizeGamma( alpha_morph, alpha_morph, 4, false )
 
 # add moves for the stationary frequencies, exchangeability rates and the shape parameter
-moves[++mi] = mvScale(alpha,weight=2)
+moves[++mi] = mvScale(alpha_morph,weight=2)
 
 
 #############################
 # Strict global clock model #
 #############################
 
-log_mol_clock_rate ~ dnUniform(-10,2)
-mol_clock_rate := 10^log_mol_clock_rate
+#log_mol_clock_rate ~ dnUniform(-4,1)
+#mol_clock_rate := 10^log_mol_clock_rate
+#
+#moves[++mi] = mvSlide(log_mol_clock_rate, weight=1.0)
 
-moves[++mi] = mvSlide(log_mol_clock_rate, weight=1.0)
+mol_clock_rate ~ dnExponential( 100.0)
+mol_clock_rate.setValue( 0.01 )
 
-log_morph_clock_rate ~ dnUniform(-10,10)
-log_morph_clock_rate.setValue( 7.5 )
-morph_clock_rate := 10^log_morph_clock_rate
+#moves[++mi] = mvScale(mol_clock_rate, weight=1.0)
 
-moves[++mi] = mvSlide(log_morph_clock_rate, weight=1.0)
+#log_morph_clock_rate ~ dnUniform(-10,2)
+##log_morph_clock_rate.setValue( 7.5 )
+#morph_clock_rate := 10^log_morph_clock_rate
+#
+#moves[++mi] = mvSlide(log_morph_clock_rate, weight=1.0)
+
+morph_clock_rate ~ dnExponential( 100.0 )
+
+moves[++mi] = mvScale(morph_clock_rate, weight=1.0)
 
 
 
@@ -118,8 +149,9 @@ moves[++mi] = mvSlide(log_morph_clock_rate, weight=1.0)
 # PhyloCTMC Model #
 ###################
 
-seq_mol ~ dnPhyloCTMC(tree=psi, Q=Q_mol, branchRates=mol_clock_rate, siteRates=gamma_rates, type="DNA")
-seq_morph ~ dnPhyloCTMC(tree=psi, Q=Q_morph, branchRates=morph_clock_rate, type="Standard")
+#seq_mol ~ dnPhyloCTMC(tree=psi, Q=Q_mol, branchRates=mol_clock_rate, siteRates=gamma_rates, type="DNA")
+seq_mol ~ dnPhyloCTMC(tree=psi, Q=Q_mol, branchRates=mol_clock_rate, type="DNA")
+seq_morph ~ dnPhyloCTMC(tree=psi, Q=Q_morph, branchRates=morph_clock_rate, siteRates=gamma_rates_morph, type="Standard")
 
 # attach the data
 seq_mol.clamp(D_mol)
@@ -140,7 +172,7 @@ monitors[++monitor_index] = mnScreen(printgen=10, mol_clock_rate, morph_clock_ra
  
 mymcmc = mcmc(mymodel, monitors, moves)
 
-mymcmc.burnin(generations=1000,250)
+mymcmc.burnin(generations=1000,100)
 mymcmc.run(generations=5000)
 
 mymcmc.operatorSummary()

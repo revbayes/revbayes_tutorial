@@ -24,7 +24,6 @@ contData.includeCharacter(1)
 
 # get some useful variables from the data
 numTips <- contData.ntaxa()
-names <- contData.names()
 numNodes <- 2*numTips - 1
 numBranches <- 2*numTips - 2
 
