@@ -86,7 +86,7 @@ moves[++mi] = mvGPR(psi, weight=3.0)
 moves[++mi] = mvSubtreeScale(psi, weight=3.0)
 moves[++mi] = mvNodeTimeSlideUniform(psi, weight=15.0)
 
-
+moves[++mi] = mvTreeNodeAgeSlide(psi, weight=50)
 
 ###################
 # Gene-Tree model #
@@ -122,11 +122,16 @@ for (i in 1:num_loci) {
    moves[++mi] = mvFNPR(geneTree[i], 3.0)
    moves[++mi] = mvGPR(geneTree[i], 2.0)
    moves[++mi] = mvSubtreeScale(geneTree[i], 5.0)
-#   moves[++mi] = mvTreeScale(geneTree[i], 1.0, true, 3.0)
+   moves[++mi] = mvTreeScale(geneTree[i], 1.0, true, 3.0)
    moves[++mi] = mvNodeTimeSlideUniform(geneTree[i], 20.0)
-   moves[++mi] = mvRootTimeSlide(geneTree[i], weight=3.0)
+#   moves[++mi] = mvRootTimeSlide(geneTree[i], weight=3.0)
 
 }
+
+
+#moves[++mi] = mvSpeciesNodeTimeSlideUniform(speciesTree=psi, geneTrees=geneTree, weight=20.0)
+#moves[++mi] = mvSpeciesSubtreeScale(speciesTree=psi, geneTrees=geneTree, weight=20.0)
+#moves[++mi] = mvSpeciesSubtreeScaleBeta(speciesTree=psi, geneTrees=geneTree, weight=20.0)
 
 ###############
 # Clock Model #
