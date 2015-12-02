@@ -59,9 +59,6 @@ Scripts are all placed in {\footnotesize \emph{$tutorials/RB\_MultispeciesCoales
 \end{framed}}
 \vspace{5mm}
 
-\begin{center}
-\emph{First RevBayes exercise: loading gene alignments into RevBayes}
-\end{center}
 \begin{enumerate}
 \item Open RevBayes
 \item Let's load all 10 gene alignments.
@@ -137,16 +134,19 @@ First, we need to load in a map of the individual names to the species names.
 In that way we can attribute which individual belongs to which species.
 Have a look in one of these files, for examples \textit{primates\_COIII\_species\_map.txt}.
 We will assume that each branch of the species tree, which represents a population, has its own population size.
-Thus, our prior is that each population size per branch is identically distributed from an exponential distribution with rate 1.
+Thus, our prior is that each population size per branch is identically distributed from an exponential distribution with rate 0.1 (giving an expectation of 10 and thus a relatively flat prior distribution).
+Note that we use fixed population sizes for the terminal branches because we have only a single individual per species and thus have no information about its population size.
 You could use other models for the population sizes too, if you wanted.
 For example we could assume that all branches have the same population size.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-
 # We assume independent effective population size parameters for each branch of the species tree.
-for (i in 1:n_branches) {
-  Ne[i] ~ dnExponential(1.0)
-  moves[++mi] = mvScale(Ne[i],1,tune=true,weight=1.0)
+for (i in 1:n_species) {
+  Ne[i] <- 10.0
+}
+for (i in (n_species+1):n_branches) {
+  Ne[i] ~ dnExponential(0.1)
+  moves[++mi] = mvScale(Ne[i],1,true,1.0)
 }
 
 # We could instead assume a single effective population size for the entire species tree with the following two lines:
@@ -227,8 +227,8 @@ for ( i in 1:num_loci ) {
 
 
 \item Finally, we can create our distribution for the character evolution.
-We will use the common \code{PhyloCTMC} distribution, which is a continuous time Markov process along a phylogenetic tree.
-We create a \code{seq} variable and attach/clamp each gene to one of the \code{seq} variables.
+We will use the common \cl{PhyloCTMC} distribution, which is a continuous time Markov process along a phylogenetic tree.
+We create a \cl{seq} variable and attach/clamp each gene to one of the \cl{seq} variables.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 for ( i in 1:num_loci ) { 
