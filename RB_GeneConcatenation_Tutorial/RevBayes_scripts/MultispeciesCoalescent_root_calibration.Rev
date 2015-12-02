@@ -3,7 +3,7 @@
 # RevBayes Example: Species tree inference using the multispecies coalescent.
 #
 # 
-# This file: specifies the multispecies coalescent, with different effective population sizes for each branch of the species tree.
+# This file: specifies the multispecies coalescent, with different effective population sizes for each branch of the species tree, and with a calibration on the root node.
 # 			 We assume the species tree is drawn from a constant birth-death process.
 #			 Along the branches of the species tree, a multispecies coalescent process generates gene trees.
 #			 Along each gene tree, gene sequences are evolved according to an HKY model with a strict clock. 
@@ -41,30 +41,22 @@ n_branches <- 2 * n_species - 1 # number of branches in a rooted tree
 mi = 0
 
 
+
 ######################
 # Species-Tree model #
 ######################
 
 # Specify a prior on the diversification and turnover rate
-diversification ~ dnGamma(2,2)
+speciation ~ dnGamma(2,2)
 relativeExtinction ~ dnBeta(1,1)
 
 # now transform the diversification and turnover rates into speciation and extinction rates
-speciation := abs(diversification / (1.0 - relativeExtinction) )
 extinction := speciation * relativeExtinction
 
 # specify a prior on the root age (our informed guess is about 75-80 mya)
-root ~ dnUniform(0,1000)
+root ~ dnNormal(mean=75,sd=2.5,min=0.0, max=Inf)
 
-# Now comes the most important trick!!!
-# 
-# We need to set a low root age so that in the beginning of the MCMC all lineages
-# evolve in the same "root" population.
-# This enables that we can quickly get good estimates of the gene-trees and then
-# pull up the species tree.
-root.setValue(0.001)
-
-sampling_fraction <- 23 / 450 # we sampled 23 out of the ~ 450 primate species
+sampling_fraction <- 23 / 450 # 23 out of the ~ 450 primate species
 
 # create some moves that change the stochastic variables
 # all moves are sliding and scaling proposals
@@ -73,11 +65,10 @@ moves[++mi] = mvSlide(relativeExtinction,delta=1,tune=true,weight=2)
 moves[++mi] = mvScale(diversification,lambda=1,tune=true,weight=2)
 moves[++mi] = mvScale(relativeExtinction,lambda=1,tune=true,weight=2)
 moves[++mi] = mvSlide(root,delta=1,tune=true,weight=0.2)
-moves[++mi] = mvScale(root,lambda=1,tune=true,weight=0.2)
 
 
 # construct a variable for the tree drawn from a birth death process
-psi ~ dnBDP(lambda=speciation, mu=extinction, rootAge=abs(root), rho=sampling_fraction, taxa=taxa )
+psi ~ dnBDP(lambda=speciation, mu=extinction, rootAge=root, rho=sampling_fraction, taxa=taxa )
 
 moves[++mi] = mvNarrow(psi, weight=5.0)
 moves[++mi] = mvNNI(psi, weight=1.0)
@@ -85,36 +76,35 @@ moves[++mi] = mvFNPR(psi, weight=3.0)
 moves[++mi] = mvGPR(psi, weight=3.0)
 moves[++mi] = mvSubtreeScale(psi, weight=3.0)
 moves[++mi] = mvNodeTimeSlideUniform(psi, weight=15.0)
-
 moves[++mi] = mvTreeNodeAgeSlide(psi, weight=50)
+
+
 
 ###################
 # Gene-Tree model #
 ###################
 
 
-# We assume independent effective population size parameters for each branch of the species tree.
-for (i in 1:n_species) {
-  Ne[i] <- 10.0
-}
-for (i in (n_species+1):n_branches) {
-  Ne[i] ~ dnExponential(10.0)
-  moves[++mi] = mvScale(Ne[i],1,true,1.0)
+# We assume independent population size parameters for each branch of the species tree.
+for (i in 1:n_branches) {
+  Ne[i] ~ dnExponential(1.0)
+  moves[++mi] = mvScale(Ne[i],1,tune=true,weight=1.0)
 }
 
-# We could instead assume a single effective population size for the entire species tree with the following two lines:
+# We could also assume a single effective population size for the entire species tree.
 #Ne ~ dnGamma(shape=1.0,rate=1.0)
 #moves[++mi] = mvScale(Ne,1,true,1.0)
+
 
 for (i in 1:num_loci) {
 
    # We need to read in files providing the link between gene names and species names
-   taxa = readTaxonData("data/species_maps/primates_" + locus_names[i] + "_species_map.txt")
+   taxon_map = readTaxonData("data/species_maps/primates_" + locus_names[i] + "_species_map.txt")
 
    # The gene tree from the multispecies coalescent process
-   # Note that Ne is a vector of effective population sizes, 
-   # allowing 1 parameter per branch of the species tree.
-   geneTree[i] ~ dnMultiSpeciesCoalescent(speciesTree=psi, Ne=Ne, taxa=taxa)
+   # Note that if Ne had been a vector of effective population sizes, 
+   # allowing 1 parameter per branch of the species tree, the same line would work.
+   geneTree[i] ~ dnMultiSpeciesCoalescent(speciesTree=psi, Ne=Ne, taxa=taxon_map)
 
    # moves on the tree
    moves[++mi] = mvNNI(geneTree[i], 5.0)
@@ -124,46 +114,60 @@ for (i in 1:num_loci) {
    moves[++mi] = mvSubtreeScale(geneTree[i], 5.0)
    moves[++mi] = mvTreeScale(geneTree[i], 1.0, true, 3.0)
    moves[++mi] = mvNodeTimeSlideUniform(geneTree[i], 20.0)
-#   moves[++mi] = mvRootTimeSlide(geneTree[i], weight=3.0)
 
 }
 
-
-#moves[++mi] = mvSpeciesNodeTimeSlideUniform(speciesTree=psi, geneTrees=geneTree, weight=20.0)
-#moves[++mi] = mvSpeciesSubtreeScale(speciesTree=psi, geneTrees=geneTree, weight=20.0)
-#moves[++mi] = mvSpeciesSubtreeScaleBeta(speciesTree=psi, geneTrees=geneTree, weight=20.0)
 
 ###############
 # Clock Model #
 ###############
 
-# We use a fixed estimate of the clock rate which is 1.00 substitution per site per million years 
-# Arbitrarily, we decide that the first gene has a clock rate of 1
-clockRate[1] <- 1.0
-
-# All other genes have clock rates defined relatively to the first gene
-for ( i in 2:num_loci ) { 
-    relativeClockRate[i] ~ dnLognormal(0,1)
-    clockRate[i] := clockRate[1] * relativeClockRate[i]
-    moves[++mi] = mvScale(relativeClockRate[i],lambda=1,tune=true,weight=1)
+for ( i in 1:num_loci ) { 
+   log_clock_rate[i] ~ dnUniform(-4,1)
+   clock_rate[i] := 10^log_clock_rate[i]
+   
+   moves[++mi] = mvSlide(log_clock_rate[i], weight=1.0)
 }
+
 
 ######################
 # Substitution Model #
 ######################
 
+
 for ( i in 1:num_loci ) {
 
-    #### specify the HKY substitution model applied uniformly to all sites
+    #### specify the HKY substitution model applied uniformly to all sites ###
     kappa[i] ~ dnLognormal(0,1)
     moves[++mi] = mvScale(kappa[i],weight=1)
+
 
     pi_prior[i] <- v(1,1,1,1) 
     pi[i] ~ dnDirichlet(pi_prior[i])
     moves[++mi] = mvSimplexElementScale(pi[i],weight=2)
 
-    #### create a deterministic variable for the rate matrix
+
+    #### create a deterministic variable for the rate matrix ####
     Q[i] := fnHKY(kappa[i],pi[i]) 
+
+}
+
+
+
+
+#############################
+# Among Site Rate Variation #
+#############################
+
+
+for ( i in 1:num_loci ) {
+
+    alpha_prior[i] <- 0.05
+    alpha[i] ~ dnExponential( alpha_prior[i] )
+    gamma_rates[i] := fnDiscretizeGamma( alpha[i], alpha[i], 4, false )
+
+    # add moves for the stationary frequencies, exchangeability rates and the shape parameter
+    moves[++mi] = mvScale(alpha[i],weight=2)
 
 }
 
@@ -175,7 +179,7 @@ for ( i in 1:num_loci ) {
 
 for ( i in 1:num_loci ) { 
     # the sequence evolution model
-    seq[i] ~ dnPhyloCTMC(tree=geneTree[i], Q=Q[i], branchRates=clockRate[i], type="DNA")
+    seq[i] ~ dnPhyloCTMC(tree=geneTree[i], Q=Q[i], branchRates=clock_rate[i], siteRates=gamma_rates[i], type="DNA")
 
     # attach the data
     seq[i].clamp(data[i])
@@ -194,11 +198,11 @@ mymodel = model(psi)
 
 # Monitors to check the progression of the program
 monitors[1] = mnScreen(printgen=100, root)
-monitors[2] = mnModel(filename="output/primates_fixed_clock.log",printgen=10, separator = TAB)
-monitors[3] = mnFile(filename="output/primates_fixed_clock.trees",printgen=10, separator = TAB, psi)
+monitors[2] = mnModel(filename="output/primates_root_calibration.log",printgen=10, separator = TAB)
+monitors[3] = mnFile(filename="output/primates_root_calibration.trees",printgen=10, separator = TAB, psi)
 for ( i in 1:num_loci ) { 
     # We add a monitor for each gene tree
-    monitors[i+3] = mnFile(filename="output/primates_fixed_clock_" + locus_names[i] + ".trees",printgen=10, separator = TAB, geneTree[i])
+    monitors[i+3] = mnFile(filename="output/primates_root_calibration_" + locus_names[i] + ".trees",printgen=10, separator = TAB, geneTree[i])
 }
 
 # Here we use a plain MCMC. You could also set nruns=2 for a replicated analysis
@@ -206,17 +210,17 @@ for ( i in 1:num_loci ) {
 mymcmc = mcmc(mymodel, monitors, moves)
 
 # This should be sufficient to obtain enough MCMC samples
-mymcmc.burnin(generations=5000,tuningInterval=250)
-mymcmc.run(generations=50000)
+mymcmc.burnin(generations=3000,tuningInterval=100)
+mymcmc.run(generations=10000)
 
 
 # Now, we will analyze the tree output.
 # Let us start by reading in the tree trace
-treetrace = readTreeTrace("output/primates_fixed_clock.trees", treetype="clock")
+treetrace = readTreeTrace("output/primates_root_calibration.trees", treetype="clock")
 # and get the summary of the tree trace
-treetrace.summarize()
+#treetrace.summarize()
 
-mapTree(treetrace,"output/primates_fixed_clock.tree")
+mapTree(treetrace,"output/primates_root_calibration.tree")
 
 # you may want to quit RevBayes now
 q()
