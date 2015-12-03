@@ -76,7 +76,7 @@ moves[++mi] = mvFNPR(psi, weight=3.0)
 moves[++mi] = mvGPR(psi, weight=3.0)
 moves[++mi] = mvSubtreeScale(psi, weight=3.0)
 moves[++mi] = mvNodeTimeSlideUniform(psi, weight=15.0)
-moves[++mi] = mvTreeNodeAgeSlide(psi, weight=50)
+moves[++mi] = mvTreeNodeAgeSlide(psi, weight=100)
 
 
 
@@ -90,7 +90,7 @@ for (i in 1:n_species) {
   Ne[i] <- 10.0
 }
 for (i in (n_species+1):n_branches) {
-  Ne[i] ~ dnExponential(0.1)
+  Ne[i] ~ dnExponential(0.01)
   moves[++mi] = mvScale(Ne[i],1,true,1.0)
 }
 
@@ -98,6 +98,7 @@ for (i in (n_species+1):n_branches) {
 #Ne ~ dnGamma(shape=1.0,rate=1.0)
 #moves[++mi] = mvScale(Ne,1,true,1.0)
 
+move_species_narrow_exchange = mvSpeciesNarrow( speciesTree=psi, weight=5 )
 
 for (i in 1:num_loci) {
 
@@ -117,8 +118,11 @@ for (i in 1:num_loci) {
    moves[++mi] = mvSubtreeScale(geneTree[i], 5.0)
    moves[++mi] = mvTreeScale(geneTree[i], 1.0, true, 3.0)
    moves[++mi] = mvNodeTimeSlideUniform(geneTree[i], 20.0)
+   move_species_narrow_exchange.addGeneTreeVariable( geneTree[i] )
 
 }
+
+moves[++mi] = move_species_narrow_exchange
 
 
 ###############
@@ -126,10 +130,14 @@ for (i in 1:num_loci) {
 ###############
 
 for ( i in 1:num_loci ) { 
-   log_clock_rate[i] ~ dnUniform(-4,1)
-   clock_rate[i] := 10^log_clock_rate[i]
+#   log_clock_rate[i] ~ dnUniform(-4,1)
+#   clock_rate[i] := 10^log_clock_rate[i]
+#   
+#   moves[++mi] = mvSlide(log_clock_rate[i], weight=1.0)
+
+   clock_rate[i] ~ dnExponential(1.0)
    
-   moves[++mi] = mvSlide(log_clock_rate[i], weight=1.0)
+   moves[++mi] = mvScale(clock_rate[i], weight=1.0)
 }
 
 
