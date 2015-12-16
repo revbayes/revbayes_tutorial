@@ -9,11 +9,11 @@ In this overview we will not detail these models, and we invite the interested r
 
 \subsection{Processes of discord}
 There are several reasons why a gene tree may differ from a species tree. 
-Of course, a gene tree may differ from the species tree just because a mistake was made during the analysis of the gene sequences, at any point in a pipeline going from the sequencing itself to the tree reconstruction.
+Of course, a gene tree may differ from the species tree just because a mistake was made during the analysis of the gene sequences, at any point in a pipeline going from the sequencing itself to the gene tree reconstruction.
 Such a mistake would produce an incorrect gene tree.
 Here we do not mean this kind of discord, but rather discord that comes from a real biological process that generates true gene histories that differ from true species histories.
 These processes include gene duplication, gene loss, gene transfer (used loosely here to also include reticulation, hybridization between species), and incomplete lineage sorting (Fig. \ref{fig1}). 
-Incomplete lineage sorting will be discussed in more details in the following subsection.
+In this tutorial we focus on Incomplete lineage sorting, which will be discussed in more details in the following subsection.
 
 \begin{figure}[h!]
 \centering
@@ -34,19 +34,23 @@ Thanks to \RevBayes~modular design, there is quite a lot of flexibility in speci
 
 
 \subsection{Gene tree discordance is a problem for species tree reconstruction}
-There are several approaches to species tree reconstruction: concatenation and supertree approaches, which have been used for quite some time now, and more recently methods that rely on gene tree-species tree models.\begin{enumerate}
+There have been several approaches to species tree reconstruction: concatenation and supertree approaches, which have been used for quite some time now, and more recently methods that rely on gene tree-species tree models.\begin{enumerate}
 \item Concatenation simply consists in taking all gene alignments, concatenating them into one super alignment, and then analyzing it as if it were a single gene sequence.
-Its main assumption is therefore that all sites of all genes have evolved according to the same species tree.
-This assumption is not correct because all the processes of discord presented above conspire to make gene trees different from the species tree.
+More sophisticated approaches allow different partitions for different genes, but the main assumption at the heart of this approach is that all sites of all genes have evolved according to the same species tree.
+This assumption is often not correct because all the processes of discord presented above conspire to make gene trees different from the species tree.
 In practice, this matters: simulation studies have found that in the presence of incomplete lineage sorting, in some particular areas of the parameter space, concatenation will often return an incorrect species tree \citep{Leache2011}.
-Another example might be found in prokaryotic phylogenetics, where the quest for a tree of life has been difficult, to the point that many doubt that one could find a meaningful species tree representing vertical descent.
-Recent models of gene tree evolution incorporating lateral gene transfer allow tackling this question in a more principled way.
+Concatenation may also be a questionable approach in prokaryotic phylogenetics, where the quest for a tree of life has been difficult, to the point that some doubted that one could find a meaningful species tree representing vertical descent.
+Nonetheless, the concatenation approach may be fairly robust to lateral gene transfers, as it returns good species trees (arguably better than small subunit or large subunit rRNA trees) in a range of prokaryotic groups \citep{Abby2012}.
 \item Supertree approaches differ from concatenation notably by discarding sequence information once individual gene trees have been built.
 Contrary to concatenation approaches that combine individual gene alignments, supertree approaches combine individual gene trees to obtain a species tree.
 Most supertree methods are not based on an explicit model of the processes causing discordance between gene trees and species tree (although there are exceptions, notably modelling incomplete lineage sorting, see below).
 Instead, they aim at finding a tree that would best describe the distribution of gene trees, according to some fairly arbitrary criterion.
 In practice, these methods have been found to provide reasonable results in many cases, but in simulations they are usually less accurate than concatenation.
-\item Methods that rely on gene tree-species tree models appear very promising as they explicitly model the processes of discord, and can be combined with \EG models of sequence evolution, models of co-evolution between gene trees, models of trait evolution... 
+\item Methods that rely on gene tree-species tree models appear very promising as they explicitly model the processes of discord.
+The advantage of these models is that we account for processes that we know have taken a part in generating the data, thus possibly improving the accuracy and robustness of our inferences. 
+Further, these models can be combined with \EG models of sequence evolution, models of co-evolution between gene trees, or models of trait evolution.
+However, these models are computationally challenging to use, because they require estimating jointly gene trees, species trees, and other parameters that entertain strong correlations.
+As a consequence, in many gene tree-species tree models, devising a well-mixing MCMC strategy can be problematic. 
 \end{enumerate}
 
 
