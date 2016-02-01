@@ -7,7 +7,7 @@ T <- readTrees("data/bears_dosReis.tre")[1]
 
 ## get useful variables from the tree
 n_taxa <- T.ntips()
-names <- T.names()
+taxa <- T.taxa()
 
 ## Moves iterator
 mi = 1 

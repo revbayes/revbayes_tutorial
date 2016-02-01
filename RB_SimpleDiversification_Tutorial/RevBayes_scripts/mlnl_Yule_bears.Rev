@@ -8,7 +8,7 @@ T <- readTrees("data/bears_dosReis.tre")[1]
 
 ## get useful variables from the tree
 n_taxa <- T.ntips()
-names <- T.names()
+taxa <- T.taxa()
 
 ## Moves iterator
 mi = 1 
@@ -26,7 +26,7 @@ mymodel.graph("output/m_Yule_bears_GM.dot", verbose=false, bg="honeydew2")
 monitors[1] = mnModel(filename="output/Yule_bears_powp.log",printgen=10, separator = TAB)
 
 ### compute power posterior distributions
-pow_p = powerPosterior(mymodel, moves, monitors, "output/Yule_bears_powers.out", cats=100, sampleFreq=10) 
+pow_p = powerPosterior(mymodel, moves, monitors, "output/Yule_bears_powp.out", cats=100, sampleFreq=10) 
 pow_p.burnin(generations=10000,tuningInterval=1000)
 pow_p.run(generations=10000)  
 

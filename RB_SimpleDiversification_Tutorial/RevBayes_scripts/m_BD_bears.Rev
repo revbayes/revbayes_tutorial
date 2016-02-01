@@ -33,7 +33,7 @@ rho <- 0.068
 root_time <- T.rootAge()
 
 ### the time tree is a stochastic node modeled by the constant rate birth-death process (dnBDP)
-timetree ~ dnBDP(lambda=birth_rate, mu=death_rate, rootAge=root_time, rho=rho, samplingStrategy="uniform", condition="nTaxa", nTaxa=n_taxa, names=names)
+timetree ~ dnBDP(lambda=birth_rate, mu=death_rate, rootAge=root_time, rho=rho, samplingStrategy="uniform", condition="nTaxa", taxa=taxa)
 
 ### clamp the model with the "observed" tree
 timetree.clamp(T)
