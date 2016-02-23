@@ -1,0 +1,37 @@
+\begin{tikzpicture}
+\node[obnode] (nx) at (1,1) {\LARGE $\Psi$};
+\node[detnode] (lambda) at ($(nx)+(-2,2.5)$) {\LARGE $\lambda$};
+\node[detnode] (mu) at ($(nx)+(2,2.5)$) {\LARGE $\mu$};
+\node[snode] (div) at ($(lambda)+(-0.5,1.5)$) {\LARGE $d$};
+\node[snode] (turn) at ($(mu)+(0.5,1.5)$) {\LARGE $r$};
+\node[constnode] (md) at ($(div)+(-0.6,2)$) {\Large $m_d$};
+\node[constnode] (sdd) at ($(div)+(0.6,2)$) {\Large $sd_d$};
+\node[constnode] (mt) at ($(turn)+(-0.6,2)$) {\Large $m_r$};
+\node[constnode] (sdt) at ($(turn)+(0.6,2)$) {\Large $sd_r$};
+\draw [taro] (lambda) -- (nx);
+\draw [taro] (mu) -- (nx);
+\draw [taro] (md) -- (div);
+\draw [taro] (sdd) -- (div);
+\draw [taro] (mt) -- (turn);
+\draw [taro] (sdt) -- (turn);
+\draw [dtaro] (div) -- (lambda);
+\draw [dtaro] (turn) -- (lambda);
+\draw [dtaro] (turn) -- (mu);
+\node at ($(nx)+(0,-1)$) {time tree};
+\node[constnode] (rho) at ($(nx)+(3,0)$) {\LARGE $\rho$};
+\node[constnode] (T) at ($(nx)+(-3,0)$) {\LARGE $T$};
+\draw[taro] (T) -- (nx) ;
+\draw[taro] (rho) -- (nx) ;
+\draw[taro] (rho) -- (nx) ;
+\node[white, fill=blue, shape=rectangle, rounded corners] at ($(md)+(-0.5,1)$) {prior mean};
+\node[white, fill=blue, shape=rectangle, rounded corners] at ($(sdd)+(0.2,1)$) {prior sd};
+\node[white, fill=blue, shape=rectangle, rounded corners] at ($(mt)+(-0.5,1)$) {prior mean};
+\node[white, fill=blue, shape=rectangle, rounded corners] at ($(sdt)+(0.2,1)$) {prior sd};
+\node[white, fill=blue, shape=rectangle, rounded corners] at ($(T)+(0,-1)$) {root age};
+\node[white, fill=blue, shape=rectangle, rounded corners] at ($(rho)+(0,-1)$) {sampling probability};
+\node[white, fill=black!50!white, shape=rectangle, rounded corners] at ($(lambda)+(-0.75,0)$) [left]{speciation rate};
+\node[white, fill=black!50!white, shape=rectangle, rounded corners] at ($(mu)+(0.75,0)$) [right]{extinction rate};
+\node[white, fill=blue, shape=rectangle, rounded corners] at ($(div)+(-0.75,0)$) [left]{diversification rate};
+\node[white, fill=blue, shape=rectangle, rounded corners] at ($(turn)+(0.75,0)$) [right]{turnover};
+%\node at ($(rho)+(-1.5,0)$) {Beta};
+\end{tikzpicture}
