@@ -115,7 +115,7 @@ seq.clamp(data)
 
 
 #############
-# THE Model #
+# The Model #
 #############
 
 # We define our model.
