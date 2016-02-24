@@ -65,6 +65,271 @@ The numerical procedure beaks time into very small time interval and sums over a
 You don't need to worry about any of the technical details.
 \impmark{It is important for you to realize that this model assumes that new rates at a rate-shift event are drawn from a given set (discrete) of rates.}
 
+In \RevBayes we have two implementations (\IE distributions) for modeling a branch-specific birth-death process.
+The first distribution is the \cl{dnBirthDeathMultiRate} (or its alias \cl{dnMRBDP}) and the second is the \cl{dnHeterogeneousBirthDeath} (or its alias \cl{dnHBDP})
+
+
+\bigskip
+\section{Testing for Branch-Specific-Diversification Rates}
+
+In this first exercise we are interested if there is diversification-rate variation among branch for our study tree.
+That is, we want to see if we can reject a constant rate birth-death process.
+Therefore, we don't focus on parameter estimates but instead on the marginal likelihood estimation for model testing.
+
+\impmark{We assume that you have completed the RB\_BasicDiversificationRate\_Tutorial to estimate the marginal likelihood under a constant-rate birth-death process. If you haven't done so, then you should go back and do this now!}
+
+
+\subsection{Read the tree}
+
+Begin by reading in the observed tree. 
+
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+T <- readTrees("data/primates_springer.tre")[1]
+\end{lstlisting}
+\end{snugshade*}}
+
+From this tree, we can get some helpful variables:
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+taxa <- T.taxa()
+\end{lstlisting}
+\end{snugshade*}}
+
+Additionally, we can initialize an iterator variable for our vector of moves:
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+mi = 0
+\end{lstlisting}
+\end{snugshade*}}
+
+Finally, we create a helper variable that specifies the number of discrete rate categories.
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+NUM_RATE_CATEGORIES = 4
+\end{lstlisting}
+\end{snugshade*}}
+Using this variable we can easily change our script to use more or fewer categories and test the impact.
+
+
+
+\subsection{Specifying the model}
+
+\subsubsection{Priors on rates}
+\begin{figure}[htbp!]
+\centering
+\fbox{\includegraphics[width=\textwidth]{\ResourcePath figures/discretized_lognormal.pdf}}
+\caption{\small Discretization of a lognormal distribution. The two left figures have 4 rate categories and the two right plots have 10 rate categories. The top plots have the 95\% probability interval spanning one order of magnitude (\cl{sd} $=0.587405$) and the bottom plots have the 95\% probability interval spanning two orders of magnitude (\cl{sd} $=2*0.587405$)}}
+\label{fig:BSBD_likelihood}
+\end{figure}
+Instead of using a continuous probability distribution we will use a discrete approximation of the distribution, as done for modeling rate variation across sites \citep{Yang1994a} and for modeling relaxed molecular clocks \citep{Drummond2006}.
+That means, we assume that the speciation rates are drawn from one of the $N$ quantiles of the lognormal distribution.
+For this we will use the function \cl{fnDiscretizeDistribution} which takes in a distribution as its first argument and the number of quantile as the second argument.
+The return value is a vector of quantiles.
+We use it as a deterministic variable and every time the parameters of the base distribution (\IE the lognormal distribution in our case) change the quantiles will update automatically as well.
+Thus we only need to specify parameters for our base distribution, the lognormal distribution.
+We choose a stochastic variable for the mean parameter of the lognormal distribution drawn from another lognormal prior distribution.
+We fix the prior mean on this mean diversification rate on our expected diversification rate, which is $\ln( \ln(\frac{\#Taxa}{2})/age )$.
+Remember that the median of a lognormal distribution is equal to the exponential of the mean parameter.
+This is why we used a log-transform of the actual mean.
+This prior density is analogous to the prior on the diversification rate in the constant-rate birth-death process.
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+diversification_prior_mean <- ln( ln(450.0/2.0) / T.rootAge() )
+diversification_mean ~ dnLognormal(mean=diversification_prior_mean, sd=0.587405)
+moves[++mi] = mvScale(diversification_mean,lambda=1,tune=true,weight=5)
+\end{lstlisting}
+\end{snugshade*}}
+Additionally, we choose a fixed standard deviation of $0.587405*2$ for the speciation rates because it represents two orders of magnitude variance in the rate categories.
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+diversification_sd <- 0.587405*2
+diversification := fnDiscretizeDistribution( dnLognormal(ln(diversification_mean), diversification_sd), NUM_RATE_CATEGORIES )
+\end{lstlisting}
+\end{snugshade*}}
+For each of the speciation rate categories we need a extinction rate category.
+We are completely free to choose how we construct these rate categories.
+For example, we could chose a similar discretization of a lognormal distribution using its quantiles to provide different extinction rate categories.
+The only drawback of this approach is that low speciation rates are paired by definition with low extinction rates and high extinction rates are paired with high extinction rates.
+This is because rates are pared by their index, thus the speciation rate with index $j$ is paired with the extinction rate with index $j$.
+We could avoid this by estimating $N$ independent rate categories instead of assuming that the rate categories are computed by the quantile function.
+
+Another option is to simply assume that the relative extinction rate is equal for all rate category.
+We use this model choice in this exercise.
+Hence, we only need to create one random variable for the relative extinction rate.
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+turnover_prior_mean <- ln( ln(450.0/2.0) / T.rootAge() )
+turnover_mean ~ dnLognormal(mean=turnover_prior_mean,sd=0.587405*2) 
+moves[++mi] = mvScale(turnover_mean,lambda=1.0,tune=true,weight=3.0)
+\end{lstlisting}
+\end{snugshade*}}
+Then we multiply each speciation rate category by the relative extinction rate to obtain the extinction rates per rate category.
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+turnover := fnDiscretizeDistribution( dnLognormal(ln(turnover_mean), 0.587405), NUM_RATE_CATEGORIES )
+\end{lstlisting}
+\end{snugshade*}}
+Finally, we transform the diversification and turnover rate into the speciation and extinction rate parameters, as required by the birth-death process.
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+speciation := diversification + turnover
+extinction := turnover 
+\end{lstlisting}
+\end{snugshade*}}
+
+Next, we need a rate parameter for the rate-shifts events.
+Again, there we do not have much prior information about this rate and choose an exponential distribution with rate 1.0.
+As usual for rate parameter, we apply a scaling move to the \cl{event\_rate} variable.
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+event_rate ~ dnExponential(1.0)
+moves[++mi] = mvScale(event_rate,lambda=1,tune=true,weight=5)
+\end{lstlisting}
+\end{snugshade*}}
+
+Additionally, we need a rate-matrix parameter providing the relative rates between rate categories.
+In this case we simply use equal rates between each rate category; and thus use the Jukes-Cantor rate matrix.
+You could, for example, also use an ordered rate matrix where the process needs to go through rate 2 before going to rate 3 when starting in rate 1.
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+rate_matrix <- fnJC( NUM_RATE_CATEGORIES )
+\end{lstlisting}
+\end{snugshade*}}
+Furthermore, we need prior probabilities for the process being in either rate category at the root.
+Given our lack of prior knowledge we create a flat prior distribution giving each rate category equal weight.
+We do this by create a constant variable using the simplex function.
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+rate_category_prior <- simplex( rep(1,NUM_RATE_CATEGORIES) )
+\end{lstlisting}
+\end{snugshade*}}
+
+
+
+\subsubsection{Incomplete Taxon Sampling}
+
+We know that we have sampled 369 out of 450 living primate species. 
+To account for this we can set the sampling parameter as a constant node with a value of 369/450
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+rho <- 369/450
+\end{lstlisting}
+\end{snugshade*}}
+
+
+\subsubsection{Root age}
+
+The birth-death process requires a parameter for the root age.
+In this exercise we use a fix tree and thus we know the age of the tree.
+Hence, we can get the value for the root from the \citet{Springer2012} tree.
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+root_time <- T.rootAge()
+\end{lstlisting}
+\end{snugshade*}}
+
+\subsubsection{The time tree}
+
+Now we have all of the parameters we need to specify the full episodic birth-death model. 
+We initialize the stochastic node representing the time tree.
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+timetree ~ dnMRBDP(lambda=speciation, mu=extinction, rootAge=root, rho=rho, Q=rate_matrix, pi=rate_category_prior, delta=event_rate, taxa=taxa )
+\end{lstlisting}
+\end{snugshade*}}
+And then we attach data to it.
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+timetree.clamp(T)
+\end{lstlisting}
+\end{snugshade*}}
+
+
+
+Finally, we create a workspace object of our whole model using the \cl{model()} function. 
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+mymodel = model(speciation)
+\end{lstlisting}
+\end{snugshade*}}
+
+The \cl{model()} function traversed all of the connections and found all of the nodes we specified. 
+
+
+\subsection{Running a marginal likelihood estimation}
+
+\subsubsection{Specifying Monitors}
+
+For the marginal likelihood analysis we don't necessarily need monitors because we are not going to look into the samples.
+However, as good practice we still define our two standard monitors: the model monitor and a screen monitor
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+monitors[1] = mnModel(filename="output/primates_MRBD.log",printgen=10, separator = TAB)
+monitors[2] = mnScreen(printgen=10, diversification_mean, turnover)
+\end{lstlisting}
+\end{snugshade*}}
+
+\subsubsection{Initializing and Running the MCMC Simulation}
+
+With a fully specified model, a set of monitors, and a set of moves, we can now set up the MCMC algorithm that will sample parameter values in proportion to their posterior probability. The \cl{mcmc()} function will create our MCMC object:
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+mymcmc = mcmc(mymodel, monitors, moves)
+\end{lstlisting}
+\end{snugshade*}}
+
+First, we will run a pre-burnin to tune the moves and to obtain starting values from the posterior distribution.
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+mymcmc.burnin(generations=10000,tuningInterval=200)
+\end{lstlisting}
+\end{snugshade*}}
+
+
+Now, run the MCMC:
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+mymcmc.run(generations=50000)
+\end{lstlisting}
+\end{snugshade*}}
+
+When the analysis is complete, you will have the monitored files in your output directory.
+You can then visualize the branch-specific rates by attaching them to the tree.
+This is actually done automatically in our \cl{mapTree} function.
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+treetrace = readTreeTrace("output/primates_BSBD.trees", treetype="clock")
+map_tree = mapTree(treetrace,"output/primates_BSBD_MAP.tree")
+\end{lstlisting}
+\end{snugshade*}}
+Now you can open the tree in \FigTree.
+
+
+\impmark{The \Rev file for performing this analysis: \href{https://github.com/revbayes/revbayes_tutorial/raw/master/RB_DiversificationRateBranchSpecific_Tutorial/RevBayes_scripts/mcmc_BSBD.Rev}{\cl{mcmc\_BSBD.Rev}}.}
+
+
+\subsection{Exercise}
+
+\begin{itemize}
+\item Run an MCMC simulation to estimate the posterior distribution of the speciation rate and extinction rate.
+\item Visualize the branch-specific rates in \FigTree.
+\item Do you see evidence for rate decreases or increases? What is the general trend?
+\item Run the analysis using a different number of categories, \EG 5 or 50. How do the rates change?
+\item Modify the model by specifying a prior on the log-diversification and log-turnover rate and then estimate the diversification rates through time. Do you see any differences in the estimates? 
+\end{itemize}
+
+
+
+
+
+
+
+\bigskip
+\section{Estimating Branch-Specific Diversification Rates}
+
+In this second analysis we are interested in estimating the branch-specific diversification rates.
+
 \subsection{Read the tree}
 
 Begin by reading in the observed tree. 
