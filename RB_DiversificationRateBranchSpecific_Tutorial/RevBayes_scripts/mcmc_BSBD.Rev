@@ -48,16 +48,18 @@ diversification := fnDiscretizeDistribution( dnLognormal(ln(diversification_mean
 
 
 ### Create a lognormal distributed variable for the turnover rate
-turnover_mean <- ln( ln(450.0/2.0) / T.rootAge() )
-turnover_sd <- 0.587405*2
-turnover ~ dnLognormal(mean=turnover_mean,sd=turnover_sd) 
-moves[++mi] = mvScale(turnover,lambda=1.0,tune=true,weight=3.0)
+turnover_prior_mean <- ln( ln(450.0/2.0) / T.rootAge() )
+turnover_mean ~ dnLognormal(mean=turnover_prior_mean,sd=0.587405*2) 
+moves[++mi] = mvScale(turnover_mean,lambda=1.0,tune=true,weight=3.0)
+
+### Create a deterministic variable for the turnover rate categories
+### using a discretized lognormal distribution (the N-quantiles of it)
+turnover := fnDiscretizeDistribution( dnLognormal(ln(turnover_mean), 0.587405), NUM_RATE_CATEGORIES )
 
 
 ### Transform the parameters
-tmp <- rep(1.0, NUM_RATE_CATEGORIES)
 speciation := diversification + turnover
-extinction := turnover * tmp
+extinction := turnover 
 
 
 ### Create a uniformly distributed variable for the category at the root
@@ -114,7 +116,7 @@ mymodel = model(rho)
 ### set up the monitors that will output parameter values to file and screen 
 monitors[1] = mnModel(filename="output/primates_BSBD.log",printgen=10, separator = TAB)
 monitors[2] = mnExtNewick(filename="output/primates_BSBD.trees", isNodeParameter=FALSE, printgen=10, separator = TAB, tree=timetree, avg_lambda, avg_mu)
-monitors[3] = mnScreen(printgen=10, event_rate, mean_speciation, root_category, total_num_events)
+monitors[3] = mnScreen(printgen=10, event_rate, diversification_mean, turnover_mean, root_category, total_num_events)
 
 
 ################
