@@ -33,32 +33,20 @@ NUM_RATE_CATEGORIES = 10
 # Create the rates #
 ####################
 
-### Specify a prior on the diversification and turnover rate
-
-### Create a lognormal distributed variable for the mean diversification rate
-diversification_prior_mean <- ln( ln(450.0/2.0) / T.rootAge() )
-diversification_mean ~ dnLognormal(mean=diversification_prior_mean, sd=0.587405)
-moves[++mi] = mvScale(diversification_mean,lambda=1,tune=true,weight=5)
-
-
-### Create a deterministic variable for the diversification rate categories
-### using a discretized lognormal distribution (the N-quantiles of it)
-diversification_sd <- 0.587405*2
-diversification := fnDiscretizeDistribution( dnLognormal(ln(diversification_mean), diversification_sd), NUM_RATE_CATEGORIES )
+# Specify a prior on the diversification and turnover rate
+mean_speciation ~ dnUniform(-10,10)
+sd_speciation <- 0.587405*2
+speciation := fnDiscretizeDistribution( dnLognormal(mean_speciation, sd_speciation), NUM_RATE_CATEGORIES )
+moves[++mi] = mvSlide(mean_speciation,delta=1,tune=true,weight=5)
 
 
-### Create a lognormal distributed variable for the turnover rate
-turnover_mean <- ln( ln(450.0/2.0) / T.rootAge() )
-turnover_sd <- 0.587405*2
-turnover ~ dnLognormal(mean=turnover_mean,sd=turnover_sd) 
-moves[++mi] = mvScale(turnover,lambda=1.0,tune=true,weight=3.0)
-
-
-### Transform the parameters
-tmp <- rep(1.0, NUM_RATE_CATEGORIES)
-speciation := diversification + turnover
-extinction := turnover * tmp
-
+### Create a random variable for the relative extinction rate
+relative_extinction ~ dnBeta(1,1)
+moves[++mi] = mvSlide(relative_extinction,delta=1,tune=true,weight=5)
+### Compute the extinction rate by multiplying the speciation rate with the relative extinction rate
+for (i in 1:NUM_RATE_CATEGORIES) {
+    extinction[i] := relative_extinction * exp( speciation[i] )
+}
 
 ### Create a uniformly distributed variable for the category at the root
 root_category ~ dnUniformNatural(1,NUM_RATE_CATEGORIES)
