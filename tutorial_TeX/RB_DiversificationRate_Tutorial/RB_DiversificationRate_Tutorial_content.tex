@@ -137,11 +137,11 @@ moves[++mi] = mvScale(birth_rate,lambda=1,tune=true,weight=3)
 
 \subsubsection{Sampling probability}
 
-Our prior belief is that we have sampled 369 out of 450 living primate species. 
+Our prior belief is that we have sampled 367 out of 450 living primate species. 
 To account for this we can set the sampling parameter as a constant node with a value of 369/450
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-rho <- 369/450
+rho <- T.ntips()/450
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -169,7 +169,7 @@ We can initialize the stochastic node representing the time tree.
 Note that we set the \cl{mu} parameter to the constant value \cl{0.0}.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-timetree ~ dnBDP(lambda=birth_rate, mu=0.0, rho=rho, rootAge=root_time, samplingStrategy="uniform", condition="survial", taxa=taxa)
+timetree ~ dnBDP(lambda=birth_rate, mu=0.0, rho=rho, rootAge=root_time, samplingStrategy="uniform", condition="survival", taxa=taxa)
 \end{lstlisting}
 \end{snugshade*}}
 

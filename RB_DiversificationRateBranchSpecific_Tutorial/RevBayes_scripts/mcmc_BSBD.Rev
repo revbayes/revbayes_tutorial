@@ -77,9 +77,9 @@ root <- T.rootAge()
 
 
 ### rho is the probability of sampling species at the present
-### fix this to 369/450, since there are ~450 described species of primates
-### and we have sampled 369
-rho <- 369/450
+### fix this to 367/450, since there are ~450 described species of primates
+### and we have sampled 367
+rho <- T.ntips()/450
 
 
 #### construct a variable for the tree drawn from a birth death process

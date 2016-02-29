@@ -211,11 +211,11 @@ rate_category_prior <- simplex( rep(1,NUM_RATE_CATEGORIES) )
 
 \subsubsection{Incomplete Taxon Sampling}
 
-We know that we have sampled 369 out of 450 living primate species. 
+We know that we have sampled 367 out of 450 living primate species. 
 To account for this we can set the sampling parameter as a constant node with a value of 369/450
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-rho <- 369/450
+rho <- T.ntips()/450
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -484,11 +484,11 @@ moves[++mi] = mvRandomIntegerWalk(root_category,weight=1)
 
 \subsubsection{Incomplete Taxon Sampling}
 
-We know that we have sampled 369 out of 450 living primate species. 
+We know that we have sampled 367 out of 450 living primate species. 
 To account for this we can set the sampling parameter as a constant node with a value of 369/450
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-rho <- 369/450
+rho <- T.ntips()/450
 \end{lstlisting}
 \end{snugshade*}}
 
