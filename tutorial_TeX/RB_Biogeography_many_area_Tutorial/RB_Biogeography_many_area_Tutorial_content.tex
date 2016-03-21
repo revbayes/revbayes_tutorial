@@ -136,7 +136,7 @@ First, create a biogeographical clock to scale the rate of range evolution.
 \begin{snugshade}
 \begin{lstlisting}
 clock_bg ~ dnExponential(10)
-moves[++mi] = mvScale(clock_bg, lambda=0.5, weight=5.0)
+moves[++mvi] = mvScale(clock_bg, lambda=0.5, weight=5.0)
 \end{lstlisting}
 \end{snugshade}
 
@@ -145,7 +145,7 @@ Next, instantiate a simplex of gain and loss rates, distributed by a flat Dirich
 \begin{snugshade}
 \begin{lstlisting}
 glr ~ dnDirichlet([1,1])
-moves[++mi] = mvSimplexElementScale(glr, alpha=30.0, weight=5.0)
+moves[++mvi] = mvSimplexElementScale(glr, alpha=30.0, weight=5.0)
 \end{lstlisting}
 \end{snugshade}
 
@@ -174,7 +174,7 @@ We'll use an exponential distribution with mean 1.0 as a prior for {\tt dp}.
 \begin{snugshade}
 \begin{lstlisting}
 dp ~ dnExponential(10.0)
-moves[++mi] = mvScale(x=dp, lambda=0.5, tune=true, weight=5.0)
+moves[++mvi] = mvScale(x=dp, lambda=0.5, tune=true, weight=5.0)
 \end{lstlisting}
 \end{snugshade}
 
@@ -207,7 +207,7 @@ clado_prob ~ dnDirichlet( [1, 1, 1] )
 widespread_sympatry := clado_prob[1]
 subset_sympatry     := clado_prob[2]
 allopatry           := clado_prob[3]
-moves[++mi] = mvSimplexElementScale(clado_prob, alpha=20.0, weight=5.0)
+moves[++mvi] = mvSimplexElementScale(clado_prob, alpha=20.0, weight=5.0)
 \end{lstlisting}
 \end{snugshade}
 
@@ -251,9 +251,9 @@ Let's create the character history moves as follows: conservative character hist
 
 \begin{snugshade}
 \begin{lstlisting}
-moves[++mi] = mvCharacterHistory(ctmc=m, qmap=q_range, tree=psi, lambda=0.05, 
+moves[++mvi] = mvCharacterHistory(ctmc=m, qmap=q_range, tree=psi, lambda=0.05, 
           type="Biogeo", graph="node", proposal="rejection", weight=n_nodes*5)
-moves[++mi] = mvCharacterHistory(ctmc=m, qmap=q_range, tree=psi, lambda=0.05, 
+moves[++mvi] = mvCharacterHistory(ctmc=m, qmap=q_range, tree=psi, lambda=0.05, 
           type="Biogeo", graph="branch", proposal="rejection", weight=n_nodes)
 \end{lstlisting}
 \end{snugshade}
@@ -262,9 +262,9 @@ and the same proposals for moderately-sized character history updates, with {\tt
 
 \begin{snugshade}
 \begin{lstlisting}
-moves[++mi] = mvCharacterHistory(ctmc=m, qmap=q_range, tree=psi, lambda=0.2, 
+moves[++mvi] = mvCharacterHistory(ctmc=m, qmap=q_range, tree=psi, lambda=0.2, 
           type="Biogeo", graph="node", proposal="rejection", weight=n_nodes*5)
-moves[++mi] = mvCharacterHistory(ctmc=m, qmap=q_range, tree=psi, lambda=0.2, 
+moves[++mvi] = mvCharacterHistory(ctmc=m, qmap=q_range, tree=psi, lambda=0.2, 
           type="Biogeo", graph="branch", proposal="rejection", weight=n_nodes)
 \end{lstlisting}
 \end{snugshade}
@@ -273,9 +273,9 @@ and radical updates
 
 \begin{snugshade}
 \begin{lstlisting}
-moves[++mi] = mvCharacterHistory(ctmc=m, qmap=q_range, tree=psi, lambda=1.0, 
+moves[++mvi] = mvCharacterHistory(ctmc=m, qmap=q_range, tree=psi, lambda=1.0, 
           type="Biogeo", graph="node", proposal="rejection", weight=n_nodes*5)
-moves[++mi] = mvCharacterHistory(ctmc=m, qmap=q_range, tree=psi, lambda=1.0, 
+moves[++mvi] = mvCharacterHistory(ctmc=m, qmap=q_range, tree=psi, lambda=1.0, 
           type="Biogeo", graph="branch", proposal="rejection", weight=n_nodes)
 \end{lstlisting}
 \end{snugshade}
@@ -446,4 +446,4 @@ More data-exploration functions are found in {\tt bg\_parse.py}.
 
 
 \bibliographystyle{sysbio}
-\bibliography{\ResourcePath bayes}
+\bibliography{\GlobalResourcePath refs}

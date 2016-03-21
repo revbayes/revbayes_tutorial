@@ -183,7 +183,7 @@ First, create a extinction rate parameter and assign it a scale move
 \begin{snugshade}
 \begin{lstlisting}
 r_e ~ dnExponential(10.0)
-mv[++mi] = mvScale(r_e, weight=5)
+mv[++mvi] = mvScale(r_e, weight=5)
 \end{lstlisting}
 \end{snugshade}
 
@@ -202,7 +202,7 @@ Now create the dispersal rate and scale move
 \begin{snugshade}
 \begin{lstlisting}
 r_d ~ dnExponential(10.0)
-mv[++mi] = mvScale(r_d, weight=5)
+mv[++mvi] = mvScale(r_d, weight=5)
 \end{lstlisting}
 \end{snugshade}
 
@@ -318,7 +318,7 @@ then create the distribution over cladogenic event types and add its MCMC move
 \begin{snugshade}
 \begin{lstlisting}
 clado_type             ~ dnDirichlet(clado_prior)
-mv[++mi]               = mvSimplexElementScale(clado_type, alpha=10, weight=5)
+mv[++mvi]               = mvSimplexElementScale(clado_type, alpha=10, weight=5)
 \end{lstlisting}
 \end{snugshade}
 
@@ -346,7 +346,7 @@ As a prior, an exponential distribution with rate 10 generates one dispersal or 
 \begin{snugshade}
 \begin{lstlisting}
 clock_bg ~ dnExponential(10)
-mv[++mi] = mvScale(clock_bg, weight=5)
+mv[++mvi] = mvScale(clock_bg, weight=5)
 \end{lstlisting}
 \end{snugshade}
 
@@ -404,7 +404,7 @@ Rather than constraining all events of a type to share a common rate, instead yo
 \begin{lstlisting}
 for (i in 1:3) {
     e[i] ~ dnExponential(10.0)
-    mv[++mi] = mvScale(e[i], weight=5)
+    mv[++mvi] = mvScale(e[i], weight=5)
 }
 \end{lstlisting}
 \end{snugshade}
@@ -418,7 +418,7 @@ for (i in 1:3) {
     	d[i][j] <- 0.0
         if (i != j) {
             d[i][j] ~ dnExponential(10.0)
-            mv[++mi] = mvScale(d[i][j], weight=5)
+            mv[++mvi] = mvScale(d[i][j], weight=5)
         }
     }
 }
@@ -470,8 +470,8 @@ Instead of having a fixed tree as in the previous, we should now define a \emph{
 \begin{lstlisting}
 speciation ~ dnExponential(10.)
 extinction ~ dnExponential(10.)
-moves[++mi] = mvScale(speciation, lambda=1, tune=true, weight=3.0)
-moves[++mi] = mvScale(extinction, lambda=1, tune=true, weight=3.0)
+moves[++mvi] = mvScale(speciation, lambda=1, tune=true, weight=3.0)
+moves[++mvi] = mvScale(extinction, lambda=1, tune=true, weight=3.0)
 \end{lstlisting}
 \end{snugshade*}}
 The phylogeny that we used are obviously not a complete sample of all the species and you should take the incomplete sampling into account. We will simply use an empirical estimate of the fraction of species which we included in this study. For more information about incomplete taxon sampling see \cite{Hohna2011} and \cite{Hohna2014a}. 
@@ -491,16 +491,16 @@ Note that, here, we do not have included any fossil information: we are merely d
 The first moves on the tree which we specify are moves that change the node ages. The first move randomly picks a subtree and rescales it, and the second move randomly pick a node and uniformly proposes a new node age between its parent age and oldest child's age.
 {\tt \small \begin{snugshade*}
 \begin{lstlisting}
-moves[++mi] = mvSubtreeScale(psi, weight=5.0)
-moves[++mi] = mvNodeTimeSlideUniform(psi, weight=10.0)
+moves[++mvi] = mvSubtreeScale(psi, weight=5.0)
+moves[++mvi] = mvNodeTimeSlideUniform(psi, weight=10.0)
 \end{lstlisting}
 \end{snugshade*}}
 
 We also need moves on the tree topology to estimate the phylogeny. The two moves which you use are the nearest-neighbor interchange (NNI) and the fixed-nodeheight-prune-and-regraft (FNPR) \citep{Hohna2012}.
 {\tt \small \begin{snugshade*}
 \begin{lstlisting}
-moves[++mi] = mvNNI(psi, weight=5.0)
-moves[++mi] = mvFNPR(psi, weight=5.0)\end{lstlisting}
+moves[++mvi] = mvNNI(psi, weight=5.0)
+moves[++mvi] = mvFNPR(psi, weight=5.0)\end{lstlisting}
 \end{snugshade*}}
 
 
@@ -519,8 +519,8 @@ pi_mol ~ dnDirichlet(pi_mol_prior)
 Now add the simplex scale move one each the exchangeability rates \cl{er\_mol} and the stationary frequencies \cl{pi\_mol} to the moves vector:
 {\tt \small \begin{snugshade*}
 \begin{lstlisting}
-moves[++mi] = mvSimplexElementScale(er_mol,weight=15) 
-moves[++mi] = mvSimplexElementScale(pi_mol,weight=5)  
+moves[++mvi] = mvSimplexElementScale(er_mol,weight=15) 
+moves[++mvi] = mvSimplexElementScale(pi_mol,weight=5)  
 \end{lstlisting}
 \end{snugshade*}}
 We can finish setting up this part of the model by creating a deterministic node for the GTR instantaneous-rate matrix \cl{Q\_mol}. 
@@ -553,7 +553,7 @@ The random variable that controls the rate variation is the stochastic node \cl{
 We will apply a simple scale move to this parameter.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-moves[++mi] = mvScale(alpha, weight=2.0)
+moves[++mvi] = mvScale(alpha, weight=2.0)
 \end{lstlisting}
 \end{snugshade*}}
 This finishes the substitution process part of the model.
@@ -562,7 +562,7 @@ Then next part of the model is the clock model. Here we need a clock model becau
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 clock_mol ~ dnExponential(10)
-moves[++mi] = mvScale(clock_mol, lambda=1, tune=true, weight=2.0)
+moves[++mvi] = mvScale(clock_mol, lambda=1, tune=true, weight=2.0)
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -898,5 +898,4 @@ which also produces the above Phylowood animation file.
 
 
 \bibliographystyle{sysbio}
-\bibliography{\ResourcePath bayes}
-
+\bibliography{\GlobalResourcePath refs}
