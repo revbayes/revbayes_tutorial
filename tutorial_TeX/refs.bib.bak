@@ -4371,6 +4371,20 @@ Description of their Conitnous Change proposal and the NNI and SPR. the CC is si
   Timestamp                = {2009.07.23}
 }
 
+@Article{Kishino1990,
+  Title                    = {{Maximum likelihood inference of protein phylogeny and the origin of chloroplasts}},
+  Author                   = {Kishino, Hirohisa and Miyata, Takashi and Hasegawa, Masami},
+  Journal                  = JME,
+  Year                     = {1990},
+  Number                   = {2},
+  Pages                    = {151--160},
+  Volume                   = {31},
+
+  Owner                    = {hoehna},
+  Publisher                = {Springer},
+  Timestamp                = {2016.03.20}
+}
+
 @Article{Kishino2001,
   Title                    = {Performance of a divergence time estimation method under a probabilistic model of rate evolution},
   Author                   = {Kishino, Hirohisa and Thorne, Jeffrey L and Bruno, William J},
@@ -4860,6 +4874,20 @@ Their algorithms are available in BAMBE (Bayesian Analysis in Molecular Biology 
   Owner                    = {Hoehna},
   Publisher                = {SMBE},
   Timestamp                = {2010.03.26}
+}
+
+@Article{Lepage2006,
+  Title                    = {Continuous and tractable models for the variation of evolutionary rates},
+  Author                   = {Lepage, Thomas and Lawi, Stephan and Tupper, Paul and Bryant, David},
+  Journal                  = {Mathematical biosciences},
+  Year                     = {2006},
+  Number                   = {2},
+  Pages                    = {216--233},
+  Volume                   = {199},
+
+  Owner                    = {hoehna},
+  Publisher                = {Elsevier},
+  Timestamp                = {2016.03.20}
 }
 
 @Article{Leventhal2014,
@@ -6220,6 +6248,20 @@ Their algorithms are available in BAMBE (Bayesian Analysis in Molecular Biology 
   Timestamp                = {2012.09.26}
 }
 
+@Article{Parham2012,
+  Title                    = {{Best practices for justifying fossil calibrations}},
+  Author                   = {Parham, James F and Donoghue, Philip CJ and Bell, Christopher J and Calway, Tyler D and Head, Jason J and Holroyd, Patricia A and Inoue, Jun G and Irmis, Randall B and Joyce, Walter G and Ksepka, Daniel T and others},
+  Journal                  = SYSBIO,
+  Year                     = {2012},
+  Number                   = {2},
+  Pages                    = {346--359},
+  Volume                   = {61},
+
+  Owner                    = {hoehna},
+  Publisher                = {Oxford University Press},
+  Timestamp                = {2016.03.20}
+}
+
 @Book{Pawitan2001,
   Title                    = {{In all likelihood: statistical modelling and inference using likelihood}},
   Author                   = {Pawitan, Y.},
@@ -6281,6 +6323,20 @@ Their algorithms are available in BAMBE (Bayesian Analysis in Molecular Biology 
   Owner                    = {hoehna},
   Publisher                = {Public Library of Science},
   Timestamp                = {2013.02.05}
+}
+
+@Article{Perelman2011,
+  Title                    = {{A molecular phylogeny of living primates}},
+  Author                   = {Perelman, Polina and Johnson, Warren E and Roos, Christian and Seu{\'a}nez, Hector N and Horvath, Julie E and Moreira, Miguel AM and Kessing, Bailey and Pontius, Joan and Roelke, Melody and Rumpler, Yves and others},
+  Journal                  = PGENETICS,
+  Year                     = {2011},
+  Number                   = {3},
+  Pages                    = {e1001342},
+  Volume                   = {7},
+
+  Owner                    = {hoehna},
+  Publisher                = {Public Library of Science},
+  Timestamp                = {2016.03.20}
 }
 
 @Article{Peskun1973,
@@ -6803,6 +6859,20 @@ Their algorithms are available in BAMBE (Bayesian Analysis in Molecular Biology 
 
   Owner                    = {shhn001},
   Timestamp                = {2008.09.16}
+}
+
+@Article{Rambaut1998,
+  Title                    = {{Estimating divergence dates from molecular sequences.}},
+  Author                   = {Rambaut, Andrew and Bromham, Lindell},
+  Journal                  = MBE,
+  Year                     = {1998},
+  Number                   = {4},
+  Pages                    = {442--448},
+  Volume                   = {15},
+
+  Owner                    = {hoehna},
+  Publisher                = {SMBE},
+  Timestamp                = {2016.03.20}
 }
 
 @Misc{Rambaut2011,
@@ -7746,6 +7816,20 @@ Only done with MP!},
   Owner                    = {hoehna},
   Publisher                = {Wiley Online Library},
   Timestamp                = {2013.05.31}
+}
+
+@Article{Springer2012,
+  Title                    = {Macroevolutionary dynamics and historical biogeography of primate diversification inferred from a species supermatrix},
+  Author                   = {Springer, Mark S and Meredith, Robert W and Gatesy, John and Emerling, Christopher A and Park, Jong and Rabosky, Daniel L and Stadler, Tanja and Steiner, Cynthia and Ryder, Oliver A and Jane{\v{c}}ka, Jan E and others},
+  Journal                  = PONE,
+  Year                     = {2012},
+  Number                   = {11},
+  Pages                    = {e49521},
+  Volume                   = {7},
+
+  Owner                    = {hoehna},
+  Publisher                = {Public Library of Science},
+  Timestamp                = {2016.02.22}
 }
 
 @Article{Springer2003,
