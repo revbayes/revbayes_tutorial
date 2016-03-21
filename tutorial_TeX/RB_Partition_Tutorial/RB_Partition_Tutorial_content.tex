@@ -4,20 +4,20 @@
 This tutorial demonstrates how to accommodate variation in the substitution process across sites of an alignment.
 In the preceding tutorials, we assumed that all sites in an alignment evolved under an identical substitution process.
 This assumption is likely to be violated biologically, since different nucleotide sites are subject to different selection pressures, such as depending on which gene or codon position the site belongs to.
-Here, we will demonstrate how to specify---and select among---alternative \emph{mixed models} using \RevBayes.
+Here, we will demonstrate how to specify---and select among---alternative \emph{data partition schemes} using \RevBayes.
 This is commonly referred to as partitioned-data analysis, where two or more subsets of sites in our alignment are assumed to evolve under distinct processes.
 
 This tutorial will construct two multi-gene models.
-The first model, PS0, assumes all genes evolve under the same process parameters.
-The second model, PS1, assumes all genes evolve according to the same process, but each gene has it's own set of process parameters.
-The third model, PS2, partitions the data not only by gene, but also by codon position.
+The first model, Partition\_uniform, assumes all genes evolve under the same process parameters.
+The second model, Partition\_gene, assumes all genes evolve according to the same process, but each gene has it's own set of process parameters.
+The third model, Partition\_codon, partitions the data not only by gene, but also by codon position.
 Each analysis will generate a {\it maximum a posteriori} tree to summarize the inferred phylogeny.
 An advanced exercise introduces how to compute Bayes factors to select across various partitioning schemes.
 
 All of the files for this analysis are provided for you and you can run these without significant effort using the \cl{source()} function in the \RevBayes console, \EG
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-source("RevBayes_scripts/model_PS0.Rev")
+source("RevBayes_scripts/mcmc_Partition_uniform.Rev")
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -51,53 +51,50 @@ In the \cl{data} folder, you will find the following files
 
 
 
-\section{Introduction}
+\section{Introduction \& Background}
 
 Variation in the evolutionary process across the sites of nucleotide sequence alignments is well established, and is an increasingly pervasive feature of datasets composed of gene regions sampled from multiple loci and/or different genomes.
 Inference of phylogeny from these data demands that we adequately model the underlying process heterogeneity; failure to do so can lead to biased estimates of phylogeny and other parameters \citep{Brown2007}.
-%To accommodate process heterogeneity within and/or between various gene(omic) regions, we will evaluate the support for various partition schemes using Bayes factors to compare the marginal likelihoods of the candidate partition schemes.
 
-Accounting for process heterogeneity involves adopting a `mixed-model' approach, \citep{Ronquist2003} in which the sequence alignment is first parsed into a number of partitions that are intended to capture plausible process heterogeneity within the data.
+Accounting for process heterogeneity involves adopting a partitioned data approach (sometimes also called a `mixed-model' approach \citep{Ronquist2003}), in which the sequence alignment is first parsed into a number of data subsets that are intended to capture plausible process heterogeneity within the data.
 The determination of the partitioning scheme is guided by biological considerations regarding the dataset at hand.
 For example, we might wish to evaluate possible variation in the evolutionary process within a single gene region (\EG between stem and loop regions of ribosomal sequences), or among gene regions in a concatenated alignment (\EG comprising multiple nuclear loci and/or gene regions sampled from different genomes).
 The choice of partitioning scheme is up to the investigator and many possible partitions might be considered for a typical dataset.
 
-%Next, a substitution model is specified for each predefined process partition (using a given model-selection criterion, such as Bayes factors).
-In this exercise, we assume that each partition evolved under an independent general-time reversible model with gamma-distributed rates across sites (GTR+$\Gamma$). 
-Under this model the observed data are conditionally dependent on the exchangeability rates ($\theta$), stationary base frequencies ($\pi$), and the degree of gamma-distributed among-site rate variation ($\alpha$), as well as the unrooted tree topology ($\Psi$) and branch lengths ($\nu$).
-We show the graphical model representation of the GTR+$\Gamma$ mode in Figure \ref{pipeline}. 
-When we assume different GTR+$\Gamma$ models for each partitions, this results in a composite model, in which all sites are assumed to share a common, unrooted tree topology and proportional branch lengths, but subsets of sites (`data partitions') are assumed to have independent substitution model parameters.
-This composite model is referred to as a \emph{mixed model}. 
-%\taha{need to change the graphical model above to have the same symbols as in this paragraph since this refers to the figure \ref{pipeline} and it may be harder to change that figure.}
+In this exercise, we assume that each data subset evolved under an independent general-time reversible model with gamma-distributed rates across sites (GTR+$\Gamma$). 
+Under this model the observed data are conditionally dependent on the exchangeability rates ($\theta$), stationary base frequencies ($\pi$), and the degree of gamma-distributed among-site rate variation ($\alpha$), as well as the rooted tree ($\Psi$) and branch lengths.
+We show the graphical model representation of the GTR+$\Gamma$ mode in Figure \ref{fig:pipeline}. 
+When we assume different GTR+$\Gamma$ models for each data subset, this results in a composite model, in which all sites are assumed to share a common, rooted tree topology and proportional branch lengths, but subsets of sites are assumed to have independent substitution model parameters.
+Finally, we perform a separate MCMC simulation to approximate the joint posterior probability density of the phylogeny and other parameters. 
 
-
-
-Finally, we perform a separate MCMC simulation to approximate the joint posterior probability density of the phylogeny and other parameters.  Note that, in this approach, the mixed model is a fixed assumption of the inference (\IE the parameter estimates are conditioned on the specified mixed model), and the parameters for each process partition are independently estimated.
-
-For most sequence alignments, several (possibly many) partition schemes of varying complexity are plausible {\it a priori}, which therefore requires a way to objectively identify the partition scheme that balances estimation bias and error variance associated with under- and over-parameterized mixed models, respectively.
-Increasingly, mixed-model selection is based on \textit{Bayes factors} \citep[{\it e.g.},][]{Suchard2001}, which involves first calculating the marginal likelihood under each candidate partition scheme and then comparing the ratio of the marginal likelihoods for the set of candidate partition schemes \citep{Brandley2005,Nylander2004,Mcguire2007}.
-The analysis pipeline that we will use in this tutorial is depicted in Figure \ref{pipeline}.
+For most sequence alignments, several (possibly many) partition schemes of varying complexity are plausible \emph{a priori}, which therefore requires a way to objectively identify the partition scheme that balances estimation bias and error variance associated with under- and over-parameterized mixed models, respectively.
+Increasingly, partition-model selection is based on \textit{Bayes factors} \citep[\EG][]{Suchard2001}, which involves first calculating the marginal likelihood under each candidate partition scheme and then comparing the ratio of the marginal likelihoods for the set of candidate partition schemes \citep{Brandley2005,Nylander2004,Mcguire2007}.
+The analysis pipeline that we will use in this tutorial is depicted in Figure \ref{fig:pipeline}.
 
 \begin{figure}[ht!]
 \centering
 \fbox{\includegraphics[width=6.8in,angle=0]{\ResourcePath figures/pipeline.eps}}
 \caption{\small The analysis pipeline for Exercise 1. We will explore three partition schemes for the primates dataset.
 The first model (the `uniform model', $M_0$) assumes that all sites evolved under a common GTR+$\Gamma$ substitution model.
-The second model (the `moderately partitioned' model, $M_1$) invokes two data partitions corresponding to the two gene regions (cytB and cox2), and assumes each subset of sites evolved under an independent GTR+$\Gamma$ model.
-The final mixed model (the `highly partitioned' model, $M_2$) invokes four data partitions---the first two partitions corresponds to the cytB gene region, where the first and second codon position sites share a partition distinct from the third codon position sites, and the cox2 has two partitions of its own, partitioned by codon positions in the same way---and each data partition is assumed evolved under an independent GTR+$\Gamma$ substitution model.
-Note that we assume that all sites share a common tree topology, $\Psi$, and branch-length proportions, $\nu$, for each of the candidate partition schemes.
-We perform two separate sets of analyses for each mixed model---a Metropolis-coupled MCMC simulation to approximate the joint posterior probability density of the mixed-model parameters, and a `stepping-stone' MCMC simulation to approximate the marginal likelihood for each mixed model.
-The resulting marginal-likelihood estimates are then evaluated using Bayes factors to assess the fit of the data to the three candidate mixed models.  
+The second model (the `moderately partitioned' model, $M_1$) invokes two data subsets corresponding to the two gene regions (cytB and cox2), and assumes each subset of sites evolved under an independent GTR+$\Gamma$ model.
+The final partition model (the `highly partitioned' model, $M_2$) invokes four data subsets---the first two subsets corresponds to the cytB gene region, where the first and second codon position sites are combined into one subset distinct from the third codon position sites, and the cox2 has two subsets of its own, partitioned by codon positions in the same way---and each data subset is assumed evolved under an independent GTR+$\Gamma$ substitution model.
+Note that we assume that all sites share a common tree topology, $\Psi$, and branch-length proportions, for each of the candidate partition schemes.
+We perform two separate sets of analyses for each partition model---a MCMC simulation to approximate the joint posterior probability density of the partition-model parameters, and a `power-posterior' MCMC simulation to approximate the marginal likelihood for each mixed model.
+The resulting marginal-likelihood estimates are then evaluated using Bayes factors to assess the fit of the data to the three candidate partition models.  
 }
-\label{pipeline}
+\label{fig:pipeline}
 \end{figure}
 \newpage
 
 
 
-\section{Concatenated, Non-partitioned}\label{secUnif} 
+\section{Concatenated, Non-partitioned}\label{sec:unif} 
 
 Our first exercise is to construct a multi-gene analysis where all genes evolve under the same process and parameters.
+
+\subsection{Setting up the model}
+
+\subsubsection{Loading and preparing the data}
 
 To begin, load in the sequences using the \cl{readDiscreteCharacterData()} function. 
 {\tt \begin{snugshade*}
@@ -133,25 +130,22 @@ Typing \cl{data} reports the dimensions of the concatenated matrix, this provide
 \end{lstlisting}
 \end{snugshade*}}
 
-For later use, we will store the taxon labels (\cl{names}), the number of species (\cl{n\_species}), the number of internal branches (\cl{n\_branches}), and the number of sites (\cl{n\_sites}).
-
+For later use, we will store the taxon information (\cl{taxa}).
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-names <- data.names()
-n_species <- data.ntaxa()
-n_branches <- 2 * n_species - 3
-n_sites <- data.nchar()
+taxa <- data.taxa()
 \end{lstlisting}
 \end{snugshade*}}
 
 Additionally, we will create some move and monitor index variables to create our move and monitor vectors.
-
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-mvi <- 1
-mni <- 1
+mvi = 0
+mni = 0
 \end{lstlisting}
 \end{snugshade*}}
+
+\subsubsection{Substitution model}
 
 Now we can proceed with building our GTR$+\Gamma$ model.
 First, we will define and specify a prior on the exchangeability rates of the GTR model
@@ -167,7 +161,7 @@ and assign its move
 
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-moves[mvi++] = mvSimplexElementScale(er, alpha=10, tune=true, weight=3) 
+moves[++mvi] = mvBetaSimplex(er, alpha=10, tune=true, weight=3) 
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -185,7 +179,7 @@ Now add the simplex scale move on the stationary frequencies to the moves vector
 
 {\tt \small \begin{snugshade*}
 \begin{lstlisting}
-moves[mvi++] = mvSimplexElementScale(pi, alpha=10, tune=true, weight=2) 
+moves[++mvi] = mvBetaSimplex(pi, alpha=10, tune=true, weight=2) 
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -198,132 +192,176 @@ Q := fnGTR(er,pi)
 \end{snugshade*}}
 
 
-We will also assume that the substitution rates vary among sites according to a gamma distribution, which has two parameters: the shape parameter, $\alpha$, and the rate parameter, $\beta$. 
-In order that we can interpret the branch lengths as the expected number of substitutions per site, this model assumes that the mean site rate is equal to 1.
-%Consequently, we wish to specify a gamma distribution with a mean of 1.
-The mean of the gamma is equal to $\alpha/\beta$, so a mean-one gamma is specified by setting the two parameters to be equal, $\alpha=\beta$.
-Therefore, we need only consider the single shape parameter, $\alpha$ \citep{Yang1994a}. 
-The degree of among-site substitution rate variation (ASRV) is inversely proportional to the value of the shape parameter---as the value of $\alpha$-shape parameter increases, the gamma distribution increasingly resembles a normal distribution with decreasing variance, which corresponds to decreasing levels of ASRV (Figure \ref{asrhGammaFig}).
-If $\alpha = 1$, then the gamma distribution collapses to an exponential distribution with a rate parameter equal to $\beta$.
-By contrast, when the value of the $\alpha$-shape parameter is $< 1$, the gamma distribution assumes a concave distribution that places most of the prior density on low rates but allows some prior mass on sites with very high rates, which corresponds to high levels of ASRV (Figure \ref{asrhGammaFig}).
+\subsubsection{Among site rate variation}
 
-\begin{figure}[h]
-\centering
-\fbox{\includegraphics[width=2.5in,angle=-90]{\ResourcePath figures/asrh_gamma.eps}}
-\caption{\small The probability density of mean-one gamma-distributed rates under different shape parameters.}
-\label{asrhGammaFig}
-\end{figure}
-
-
-Alternatively, we might not have good prior knowledge about the variance in site rates, thus we can place an uninformative prior on the shape parameter.
-For this analysis, we will use an uniform distribution for values 0.1 to 50.0 to reflect our ignorance of what shape we expect.
-
-Create a constant nodes called \cl{alpha\_prior\_min} and \cl{alpha\_prior\_max} to specify the interval for the uniform prior on the gamma-shape parameter
+We will also assume that the substitution rates vary among sites according to an one-parametric gamma distribution, \IE where the shape equals the rate ($\alpha=\beta$) and thus with mean 1.0 \citep{Yang1994a}. 
+Since we do not have good prior knowledge about the variance in site rates, thus we can place a relative diffuse lognormal prior on the shape parameter.
+Create a constant node called \cl{alpha\_prior\_mean} for the mean parameter and a constant node called \cl{alpha\_prior\_sd} for the standard deviation of the lognormal prior on the gamma-shape parameter (this is represented as the constant $m_\alpha$ and $sd_\alpha$ parameters in Figure \ref{fig:gtrg}):
 {\tt\begin{snugshade*}
 \begin{lstlisting}
-alpha_prior_min <- 0.1
-alpha_prior_max <- 50.0
+alpha_prior_mean <- 5.0
+alpha_prior_sd <- 0.587405
 \end{lstlisting}
 \end{snugshade*}}
 
-Then create a stochastic node called \cl{alpha} to represent the $\alpha$ node in Figure \ref{pipeline}, with an exponential density as a prior:
+Then create a stochastic node called \cl{alpha} with a lognormal prior:
 {\tt\begin{snugshade*}
 \begin{lstlisting}
-alpha ~ dnUnif( alpha_prior_min, alpha_prior_max )
+alpha ~ dnLognormal( alpha_prior_mean, alpha_prior_sd )
 \end{lstlisting}
 \end{snugshade*}}
 
-The way the ASRV model is implemented involves discretizing the mean-one gamma distribution into a set number of rate categories. Thus, we can analytically marginalize over the uncertainty in the rate at each site. To do this, we need a deterministic node that is a vector of rates calculated from the gamma distribution and the number of rate categories. The \cl{fnDiscretizeGamma()} function returns this deterministic node and takes three arguments: the shape and rate of the gamma distribution and the number of categories. Since we want to discretize a mean-one gamma distribution, we can pass in \cl{alpha} for both the shape and rate.
+The way the ASRV model is implemented involves discretizing the mean-one gamma distribution into a set number of rate categories. 
+Thus, we can analytically marginalize over the uncertainty in the rate at each site. 
+To do this, we need a deterministic node that is a vector of rates calculated from the gamma distribution and the number of rate categories. 
+The \cl{fnDiscretizeGamma()} function returns this deterministic node and takes three arguments: the shape and rate of the gamma distribution and the number of categories. 
+Since we want to discretize a mean-one gamma distribution, we can pass in \cl{alpha} for both the shape and rate.
 
 Initialize the \cl{gamma\_rates} deterministic node vector using the  \cl{fnDiscretizeGamma()} function with \cl{4} bins:
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-norm_gamma_rates := fnDiscretizeGamma( alpha, alpha, 4, false )
+gamma_rates := fnDiscretizeGamma( alpha, alpha, 4, false )
 \end{lstlisting}
 \end{snugshade*}}
 
-The random variable that controls the rate variation is the stochastic node \cl{alpha}. This variable is a single, real positive value (\cl{RevType = RealPos}). 
+The random variable that controls the rate variation is the stochastic node \cl{alpha}. 
+This variable is a single, real positive value (\cl{RevType = RealPos}). 
 We will apply a simple scale move to this parameter.
 The scale move's tuning parameter is called \cl{lambda} and this value dictates the size of the proposal.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-moves[mvi++] = mvScale(alpha, lambda=0.1, tune=false, weight=4.0)
+moves[++mvi] = mvScale(alpha, lambda=0.1, tune=false, weight=4.0)
 \end{lstlisting}
 \end{snugshade*}}
+
+\subsubsection{Invariant sites}
 
 Invariant sites (sites that remain fixed throughout their evolutionary history) may be seen as an extreme case of among-site rate variation.
 In contrast to $+ \Gamma$ models, the $+I$ model allows site some probability of having substitution rate equal to zero.
-Only if a site has an invariant pattern (they are all are equal) there is some non-zero probability of the site being classified as invariant.
-(Seeing an invariant site pattern does not necessarily indicate the site evolved according to an invariant process: there is some probability of some substitution later being erased through a character reversion, which must be accounted for in the $+I$ model.)
-
-Here, we give the probability of a site being invariant with {\tt pinvar}
+Here, we give the probability of a site being invariant with \cl{pinvar}
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 pinvar ~ dnBeta(1,1)
-moves[mvi++] = mvScale(pinvar, lambda=0.1, tune=false, weight=2.0)
-moves[mvi++] = mvSlide(pinvar, delta=10.0, tune=false, weight=2.0)
+moves[++mvi] = mvScale(pinvar, lambda=0.1, tune=false, weight=2.0)
+moves[++mvi] = mvSlide(pinvar, delta=10.0, tune=false, weight=2.0)
 \end{lstlisting}
 \end{snugshade*}}
 
-Note, if the $+\Gamma$ model allows for one rate category to take a very small value, it approximates the zero-rate value for the $+I$ model.
-This means when invariant site patterns are present, the $+\Gamma$ and $+I$ models vie to explain the same underlying evolutionary process of some sites evolving at a zero or near-zero rate.
+%Note, if the $+\Gamma$ model allows for one rate category to take a very small value, it approximates the zero-rate value for the $+I$ model.
+%This means when invariant site patterns are present, the $+\Gamma$ and $+I$ models vie to explain the same underlying evolutionary process of some sites evolving at a zero or near-zero rate.
+
+
+
+\subsubsection{Tree prior}
 
 The tree topology and branch lengths are also stochastic nodes in our model. 
 In Figure \ref{pipeline}, the tree topology is denoted $\Psi$ and the length of the branch leading to node $i$ is $\nu_i$.
 
-We will assume the topology and divergence times are distributed by a birth-death process called \cl{dnBDP()} in RevBayes.
-First, we will define the distribution's speciation rate, {\tt lambda}, and an extinction rate {\tt mu}
+We will assume the topology and divergence times are distributed by a birth-death process called \cl{dnBDP()} in \RevBayes.
+We will assume a constant-rate birth-death process as the prior distribution on the tree.
+This means that all possible labeled, rooted tree topologies have equal probability. 
+The distribution in \RevBayes is \cl{dnBDP()}. 
+For the birth-death process we need a speciation rate and extinction rate parameter as well as a root age parameter.
 
+We begin with the root age parameter.
+From other empirical studies we know that crown age of primates is about 90 Mya \citep{Perelman2011}.
+Thus, for the sake of simplicity in this tutorial we fix it to 90 Mya.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-speciation ~ dnExponential(10.0)
-extinction ~ dnExponential(10.0)
-moves[mvi++] = mvScale(speciation, weight=5)
-moves[mvi++] = mvScale(extinction, weight=5)
+root_time <- 90
 \end{lstlisting}
 \end{snugshade*}}
-
-Since we know our analysis contains only 23 of 270 known primate species, we may inform the birth-death process only a portion of taxa were sampled.
-Failing to do so artificially inflates the extinction rate.
-
+Next, we specify the two rate variables.
+We use a \textit{lognormal} distribution for both the \cl{diversification} and \cl{turnover} variables.
+We fix the mean of both prior distributions on the expected diversification rate and allow for one and two orders of magnitude prior uncertainty, repsectively.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-sampling_fraction <- 23. / 270 # 23 out of the ~ 270 primate species
+diversification_mean <- ln( ln(450.0/2.0) / root_time )
+diversification_sd <- 0.587405
+diversification ~ dnLognormal(mean=diversification_mean,sd=diversification_sd) 
+turnover_mean <- ln( ln(450.0/2.0) / root_time )
+turnover_sd <- 0.587405*2
+turnover ~ dnLognormal(mean=turnover_mean,sd=turnover_sd) 
 \end{lstlisting}
 \end{snugshade*}}
-
-To simplify the analysis, we assume the tree height is known to be 75, although in practice this quantity should be treated as a free parameter to estimate.
-
+Now we can transform the \cl{diversification} and \cl{turnover} into the \cl{speciation} rate and \cl{extinction} rate.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-psi ~ dnBDP(lambda=speciation, mu=extinction, rho=sampling_fraction, rootAge=75, names=names)
+birth_rate := diversification + turnover
+death_rate := turnover
 \end{lstlisting}
 \end{snugshade*}}
-
-Finally, we will provide moves so the MCMC may explore the space of tree topologies ({\tt mvNNI} and {\tt mvFNPR}, the nearest-neighbor interchange and fixed-node-height-prune-regraft proposals, resp.) and the space of divergence times ({\tt mvNodeTimeSlideUniform}).
-
+Additionally, we know that we do not have all primate species included in this data set.
+We only have 23 out of the approximately 450 primate species.
+Thus, we use a sampling fraction to represent this incomplete taxon sampling  \citep{Hoehna2011,Hoehna2014a}.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-moves[mvi++] = mvNNI(psi, weight=10.0)
-moves[mvi++] = mvFNPR(psi, weight=5.0)
-moves[mvi++] = mvNodeTimeSlideUniform(psi, weight=10.0)
+rho <- taxa.size()/450
+\end{lstlisting}
+\end{snugshade*}}
+Here we have created our first two stochastic variables.
+For each one of them we need to create at least one moves that change the stochastic variables.
+In this case we use scaling proposals because these are rate parameters and defined only on positive real numbers.
+{\tt \begin{snugshade*}
+\begin{lstlisting} 
+moves[++mvi] = mvScale(diversification,lambda=1.0,tune=true,weight=3.0)
+moves[++mvi] = mvScale(turnover,lambda=1.0,tune=true,weight=3.0)
 \end{lstlisting}
 \end{snugshade*}}
 
-Also for simplicity, we assume a global molecular clock
-
-{\tt \small \begin{snugshade*}
+Next, specify the \cl{tree} stochastic node by passing in the taxon information \cl{taxa} to the \cl{dnBDP()} distribution:
+{\tt \begin{snugshade*}
 \begin{lstlisting}
-clock ~ dnExponential(10.0)
-moves[mvi++] = mvScale(clock, lambda=1, tune=true, weight=3.0)
+psi ~ dnBDP(lambda=birth_rate, mu=death_rate, rho=rho, rootAge=root_time, samplingStrategy="uniform", condition="survival", taxa=taxa)
 \end{lstlisting}
 \end{snugshade*}}
+
+Some types of stochastic nodes can be updated by a number of alternative moves. 
+Different moves may explore parameter space in different ways, and it is possible to use multiple different moves for a given parameter to improve mixing (the efficiency of the MCMC simulation). 
+In the case of our rooted tree, for example, we can use both a nearest-neighbor interchange move without and with changing the node ages (\cl{mvNarrow} and \cl{mvNNI}) and a fixed-nodeheight subtree-prune and regrafting move (\cl{mvFNPR}) and its Metroploized-Gibbs variant (\cl{mvGPR}) \citep{Hoehna2008,Hoehna2012}. 
+We also need moves that change the ages of the internal nodes; which are for example the \cl{mvSubtreeScale} and \cl{mvNodeTimeSlideUniform}.
+These moves do not have tuning parameters associated with them, thus you only need to pass in the \cl{psi} node and proposal \cl{weight}. 
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+moves[++mvi] = mvNarrow(psi, weight=5.0)
+moves[++mvi] = mvNNI(psi, weight=1.0)
+moves[++mvi] = mvFNPR(psi, weight=3.0)
+moves[++mvi] = mvGPR(psi, weight=3.0)
+moves[++mvi] = mvSubtreeScale(psi, weight=3.0)
+moves[++mvi] = mvNodeTimeSlideUniform(psi, weight=15.0)
+\end{lstlisting}
+\end{snugshade*}}
+The weight specifies how often the move will be applied either on average per iteration or relative to all other moves.
+Have a look at the MCMC tutorial for more details about moves and MCMC strategies: \href{http://revbayes.github.io/tutorials.html}{http://revbayes.github.io/tutorials.html}
+
+
+\impmark{Fore more information on tree priors please read the \href{https://github.com/revbayes/revbayes_tutorial/raw/master/tutorial_TeX/RB_DiversificationRate_Tutorial/RB_DiversificationRate_Tutorial.pdf}{RB\_DiversificationRate\_Tutorial}.}
+
+\subsubsection{Molecular clock}
+
+We know from empirical estimates that the molecular clock rate is about  0.01 (=1\%) per million years per site
+Nevertheless, we will estimate it here because we fixed the root age.
+We use a uniform prior on the log-transform clock rate.
+This specifies our lack of prior knowledge on the magnitude of the clock rate.
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+log_clock_rate ~ dnUniform(-6,1)
+moves[++mvi] = mvSlide(log_clock_rate, weight=2.0)
+clock_rate := 10^log_clock_rate
+\end{lstlisting}
+\end{snugshade*}}
+
+Instead, you could also fix the clock rate and estimate the root age
+\impmark{Fore more information on molecular clocks please read the \href{https://github.com/revbayes/revbayes_tutorial/raw/master/tutorial_TeX/RB_DivergenceTimeCalibration_Tutorial/RB_DivergenceTimeCalibration_Tutorial.pdf}{RB\_DivergenceTime\_Tutorial}.}
+
+
+\subsection{Putting it All Together}
 
 We now have all the parameters needed to model the phylogenetic molecular substitution process
 
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-phyloSeq ~ dnPhyloCTMC(tree=psi, Q=Q, branchRates=clock, siteRates=norm_gamma_rates, pInv=pinvar, type="DNA")
+phyloSeq ~ dnPhyloCTMC(tree=psi, Q=Q, branchRates=clock_rate, siteRates=gamma_rates, pInv=pinvar, type="DNA")
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -343,12 +381,15 @@ mymodel = model(Q)
 \end{lstlisting}
 \end{snugshade*}}
 
+
+\subsubsection{Specifying Monitors}
+
 For our MCMC analysis we need to set up a vector of \textit{monitors} to save the states of our Markov chain. 
 The monitor functions are all called \cl{mn*}, where \cl{*} is the wildcard representing the monitor type.
 First, we will initialize the model monitor using the \cl{mnModel} function. This creates a new monitor variable that will output the states for all model parameters when passed into a MCMC function. 
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-monitors[mni++] = mnModel(filename="output/PS0.params.txt",printgen=10)
+monitors[++mni] = mnModel(filename="output/PS_uniform.log",printgen=10)
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -356,16 +397,19 @@ The \cl{mnFile} monitor will record the states for only the parameters passed in
 
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-monitors[mni++] = mnFile(psi, filename="output/PS0.tre", printgen=100)
+monitors[++mni] = mnFile(psi, filename="output/PS_uniform.trees", printgen=10)
 \end{lstlisting}
 \end{snugshade*}}
 
 Finally, create a screen monitor that will report the states of specified variables to the screen with \cl{mnScreen}:
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-monitors[mni++] = mnScreen(er, pi, alpha, norm_gamma_rates, pinvar, speciation, extinction, clock, printgen=100)
+monitors[++mni] = mnScreen(alpha, pinvar, clock_rate, printgen=1000)
 \end{lstlisting}
 \end{snugshade*}}
+
+
+\subsubsection{Initializing and Running the MCMC Simulation}
 
 With a fully specified model, a set of monitors, and a set of moves, we can now set up the MCMC algorithm that will sample parameter values in proportion to their posterior probability. The \cl{mcmc()} function will create our MCMC object:
 {\tt \begin{snugshade*}
@@ -391,12 +435,10 @@ mymcmc.run(generations=30000)
 
 When the analysis is complete, you will have the monitor files in your output directory.
 
-Methods for visualizing the marginal densities of parameter values are not currently available in \RevBayes. Thus, it is important to use programs like Tracer \citep{Rambaut2011} to evaluate mixing and non-convergence. (RevBayes does, however, have a tool for convergence assessment called \cl{beca}.)
-
 \RevBayes~can also summarize the tree samples by reading in the tree-trace file:
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-treetrace = readTreeTrace("output/PS0.tre")
+treetrace = readTreeTrace("output/PS_uniform.trees")
 treetrace.summarize()
 \end{lstlisting}
 \end{snugshade*}}
@@ -405,7 +447,7 @@ treetrace.summarize()
 The \cl{mapTree()} function will summarize the tree samples and write the maximum a posteriori tree to file:
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-mapTree(treetrace,"output/PS0_map.tre")
+map_tree = mapTree(treetrace,"output/PS_uniform_map.tre")
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -426,7 +468,7 @@ clear()
 \end{lstlisting}
 \end{snugshade*}}
 
-Since we wish to avoid individually specifying each parameterster of the GTR+$\Gamma$ model for each of our data partitions, we can \textit{loop} over our datasets and create vectors of nodes.
+Since we wish to avoid individually specifying each parameter of the GTR+$\Gamma$ model for each of our data partitions, we can \textit{loop} over our datasets and create vectors of nodes.
 To do this, we begin by creating a vector of data file names:
 {\tt \begin{snugshade*}
 \begin{lstlisting}
@@ -437,14 +479,14 @@ filenames <- v("data/primates_cox2.nex", "data/primates_cytb.nex")
 Set a variable for the number of partitions:
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-n_parts <- filenames.size()
+n_data_subsets <- filenames.size()
 \end{lstlisting}
 \end{snugshade*}}
 
 And create a vector of data matrices called \cl{data}:
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-for (i in 1:n_parts){
+for (i in 1:n_data_subsets){
    data[i] = readDiscreteCharacterData(filenames[i])
 }
 \end{lstlisting}
@@ -453,16 +495,14 @@ for (i in 1:n_parts){
 Next, we can initialize some important variables. This does require, however, that both of our alignments have the same number of species and matching tip names.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-n_species <- data[1].ntaxa()
-names <- data[1].names()
-n_branches <- 2 * n_species - 3
+taxa <- data[1].taxa()
 \end{lstlisting}
 \end{snugshade*}}
 
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-mvi <- 1
-mni <- 1
+mvi = 0 
+mni = 0
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -470,18 +510,18 @@ mni <- 1
 \subsection{Specify the Parameters by Looping Over Partitions}
 
 We can avoid creating unique names for every node in our model if we use a \cl{for} loop to iterate over our partitions. Thus, we will only have to type in our entire GTR+$\Gamma$ model parameters once. 
-This will produce a vector for each of the unlinked parameters --- e.g., there will be a vector of \cl{alpha} nodes where the stochastic node for the first partition (cytB) will be \cl{alpha[1]} and the stochastic node for the second partition (cox2) will be called \cl{alpha[2]}.
+This will produce a vector for each of the unlinked parameters ---\EG there will be a vector of \cl{alpha} nodes where the stochastic node for the first partition (cytB) will be \cl{alpha[1]} and the stochastic node for the second partition (cox2) will be called \cl{alpha[2]}.
 
-The script for the model, {\tt RevBayes\_scripts/model\_PS1.Rev}, creates the model parameters for each partition in one large loop.
+The script for the model, {\tt RevBayes\_scripts/mcmc\_Partition\_gene.Rev}, creates the model parameters for each partition in one large loop.
 Here, we will split the loop into smaller parts to achieve the same end.
 
 First, we will create the GTR rate matrix for partition $i$ by first creating exchangeability rates
 {\tt \small \begin{snugshade*}
 \begin{lstlisting}
-for (i in 1:n_parts) {
+for (i in 1:n_data_subsets) {
   er_prior[i] <- v(1,1,1,1,1,1)
   er[i] ~ dnDirichlet(er_prior[i])
-  moves[mvi++] = mvSimplexElementScale(er[i], alpha=10, tune=true, weight=3) 
+  moves[++mvi] = mvBetaSimplex(er[i], alpha=10, tune=true, weight=3) 
 }
 \end{lstlisting}
 \end{snugshade*}}
@@ -490,10 +530,10 @@ and stationary frequencies
 
 {\tt \small \begin{snugshade*}
 \begin{lstlisting}
-for (i in 1:n_parts) {
+for (i in 1:n_data_subsets) {
   pi_prior[i] <- v(1,1,1,1)
   pi[i] ~ dnDirichlet(pi_prior[i])
-  moves[mvi++] = mvSimplexElementScale(pi[i], alpha=10, tune=true, weight=2)
+  moves[++mvi] = mvBetaSimplex(pi[i], alpha=10, tune=true, weight=2)
 }
 \end{lstlisting}
 \end{snugshade*}}
@@ -502,23 +542,24 @@ then passing those parameters into a rate matrix function
 
 {\tt \small \begin{snugshade*}
 \begin{lstlisting}
-for (i in 1:n_parts) {
+for (i in 1:n_data_subsets) {
   Q[i] := fnGTR(er[i],pi[i]) 
 }
 \end{lstlisting}
 \end{snugshade*}}
 
 which states the rate matrix ({\tt Q[i]}) for partition $i$ is determined by the exchangeability rates ({\tt er[i]}) and stationary frequencies ({\tt pi[i]}) also defined for partition $i$.
-Following this format, we construct the remainin partition parameters: the $+\Gamma$ mixture model
+Following this format, we construct the remaining partition parameters: the $+\Gamma$ mixture model
 
 {\tt \small \begin{snugshade*}
 \begin{lstlisting}
-for (i in 1:n_parts) {
-  alpha_prior_min[i] <- 0.1
-  alpha_prior_max[i] <- 50.0
-  alpha[i] ~ dnUnif( alpha_prior_min[i], alpha_prior_max[i] )
-  norm_gamma_rates[i] := fnDiscretizeGamma( alpha[i], alpha[i], 4, false )
-  moves[mvi++] = mvScale(alpha[i], lambda=0.8, tune=true, weight=3.0)
+for (i in 1:n_data_subsets) {
+    alpha_prior_mean[i] <- 5.0
+    alpha_prior_sd[i] <- 0.587405
+    alpha[i] ~ dnLognormal( alpha_prior_mean[i], alpha_prior_sd[i] )
+    gamma_rates[i] := fnDiscretizeGamma( alpha[i], alpha[i], 4, false )
+
+    moves[++mvi] = mvScale(alpha[i],weight=2)
 }
 \end{lstlisting}
 \end{snugshade*}}
@@ -527,55 +568,79 @@ the $+I$ invariant sites model
 
 {\tt \small \begin{snugshade*}
 \begin{lstlisting}
-for (i in 1:n_parts) {
+for (i in 1:n_data_subsets) {
   pinvar[i] ~ dnBeta(1,1)
-  moves[mvi++] = mvScale(pinvar[i], lambda=0.1, tune=true, weight=2.0)
-  moves[mvi++] = mvSlide(pinvar[i], delta=0.1, tune=true, weight=2.0)
+  moves[++mvi] = mvScale(pinvar[i], lambda=0.1, tune=true, weight=2.0)
+  moves[++mvi] = mvSlide(pinvar[i], delta=0.1, tune=true, weight=2.0)
 }
+\end{lstlisting}
+\end{snugshade*}}
+
+and the global (\IE base) molecular clock
+{\tt \small \begin{snugshade*}
+\begin{lstlisting}
+log_global_clock_rate ~ dnUniform(-6,1)
+moves[++mvi] = mvSlide(log_global_clock_rate, weight=2.0)
+global_clock_rate := 10^log_global_clock_rate
 \end{lstlisting}
 \end{snugshade*}}
 
 and the per-partition molecular clock
-
 {\tt \small \begin{snugshade*}
 \begin{lstlisting}
-for (i in 1:n_parts) {
-  part_rate_mult[i] ~ dnExponential( 1.0 )
-  moves[mvi++] = mvScale(part_rate_mult[i], lambda=1.0, tune=true, weight=2.0)
+part_rate_mult ~ dnDirichlet( rep(1.0, n_data_subsets) )
+moves[++mvi] = mvBetaSimplex(part_rate_mult, alpha=1.0, tune=true, weight=n_data_subsets)
+moves[++mvi] = mvDirichletSimplex(part_rate_mult, alpha=1.0, tune=true, weight=2.0)
+
+for (i in 1:n_data_subsets) {
+    part_rate[i] := part_rate_mult[i] * n_data_subsets * global_clock_rate
 }
 \end{lstlisting}
 \end{snugshade*}}
 
-Our two genes evolve under different GTR rate matrices with different mean-one gamma distributions on the site rates.
-However, we do assume that they share a single topology and set of branch lengths.
+\subsubsection{Tree prior}
+
+We assume that both genes evolve along the same tree.
+Hence, we need to specify a random variable for our tree parameter which is the same as was specified for {\tt mcmc\_Partition\_uniform.Rev}.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-speciation ~ dnExponential(10.)
-extinction ~ dnExponential(10.)
+root_time <- 90
 
-# rescaling mv on speciation and extinction rates
-moves[mvi++] = mvScale(speciation, lambda=1, tune=true, weight=3.0)
-moves[mvi++] = mvScale(extinction, lambda=1, tune=true, weight=3.0)
+diversification_mean <- ln( ln(450.0/2.0) / root_time )
+diversification_sd <- 0.587405
+diversification ~ dnLognormal(mean=diversification_mean,sd=diversification_sd) 
+turnover_mean <- ln( ln(450.0/2.0) / root_time )
+turnover_sd <- 0.587405*2
+turnover ~ dnLognormal(mean=turnover_mean,sd=turnover_sd) 
 
-sampling_fraction <- 23. / 270 # 23 out of the ~ 270 primate species
+birth_rate := diversification + turnover
+death_rate := turnover
 
-psi ~ dnBDP(lambda=speciation, mu=extinction, rho=sampling_fraction, rootAge=75, names=names)
+rho <- taxa.size()/450
 
-# moves on the tree
-moves[mvi++] = mvNNI(psi, weight=10.0)
-moves[mvi++] = mvFNPR(psi, weight=5.0)
-moves[mvi++] = mvNodeTimeSlideUniform(psi, weight=10.0)
+moves[++mvi] = mvScale(diversification,lambda=1.0,tune=true,weight=3.0)
+moves[++mvi] = mvScale(turnover,lambda=1.0,tune=true,weight=3.0)
+
+psi ~ dnBDP(lambda=birth_rate, mu=death_rate, rho=rho, rootAge=root_time, samplingStrategy="uniform", condition="survival", taxa=taxa)
+
+moves[++mvi] = mvNarrow(psi, weight=5.0)
+moves[++mvi] = mvNNI(psi, weight=1.0)
+moves[++mvi] = mvFNPR(psi, weight=3.0)
+moves[++mvi] = mvGPR(psi, weight=3.0)
+moves[++mvi] = mvSubtreeScale(psi, weight=3.0)
+moves[++mvi] = mvNodeTimeSlideUniform(psi, weight=15.0)
 \end{lstlisting}
 \end{snugshade*}}
 
-which is the same as was specified for {\tt model\_PS0.Rev}.
+
+\subsection{Putting it all together}
 
 Since we have a rate matrix and a site-rate model for each partition, we must create a phylogenetic CTMC for each gene. 
 Additionally, we must fix the values of these nodes by attaching their respective data matrices.
 These two nodes are linked by the \cl{psi} node and their log-likelihoods are added to get the likelihood of the whole DAG.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-for (i in 1:n_parts) {
+for (i in 1:n_data_subsets) {
   phyloSeq[i] ~ dnPhyloCTMC(tree=psi, Q=Q[i], branchRates=part_rate_mult[i], siteRates=norm_gamma_rates[i], pInv=pinvar[i], type="DNA")
   phyloSeq[i].clamp(data[i])
 }
@@ -591,13 +656,15 @@ mymodel = model(psi)
 \end{lstlisting}
 \end{snugshade*}}
 
+\subsection{Create monitors}
+
 create the monitors
 
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-monitors[mni++] = mnScreen(er, pi, alpha, norm_gamma_rates, pinvar, speciation, extinction, part_rate_mult, printgen=100)
-monitors[mni++] = mnFile(psi, filename="output/PS1.tre", printgen=100)
-monitors[mni++] = mnFile(er[1], pi[1], alpha[1], norm_gamma_rates[1], pinvar[1], part_rate_mult[1], er[2], pi[2], alpha[2], norm_gamma_rates[2], pinvar[2], part_rate_mult[2], speciation, extinction, filename="output/PS1.params.txt",printgen=10)
+monitors[++mni] = mnModel(filename="output/PS_gene.log",printgen=10)
+monitors[++mni] = mnFile(psi, filename="output/PS_gene.trees", printgen=100)
+monitors[++mni] = mnScreen(global_clock_rate, printgen=1000)
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -615,9 +682,9 @@ and summarize the posterior density of trees with a MAP tree
 
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-treetrace = readTreeTrace("output/PS1.tre")
+treetrace = readTreeTrace("output/PS_gene.trees")
 treetrace.summarize()
-mapTree(treetrace,"output/PS1_map.tre")
+mapTree(treetrace,"output/PS_gene_MAP.tre")
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -673,222 +740,45 @@ data[4].setCodonPartition( 3 )
 \end{lstlisting}
 \end{snugshade*}}
 
-Now we can query the vector of data matrices to get the size, which is 4:
-{\tt \begin{snugshade*}
-\begin{lstlisting}
-n_parts <- data.size()
-\end{lstlisting}
-\end{snugshade*}}
+Now we have a data vector containing for subset.
+We can then specify the independent substitution models per data subset.
+The remaining parts of the model are identical to the previous exercise where we partitioned by gene.
 
-Record the number of sites per partition:
-{\tt \begin{snugshade*}
-\begin{lstlisting}
-for (i in 1:n_parts)
-    n_sites[i] <- data[i].nchar()
-\end{lstlisting}
-\end{snugshade*}}
-
-And set the special variables from the data:
-{\tt \begin{snugshade*}
-\begin{lstlisting}
-n_species <- data[1].ntaxa()
-names <- data[1].names()
-n_branches <- 2 * n_species - 3
-\end{lstlisting}
-\end{snugshade*}}
-
-Create index variables to populate the move and monitor vectors.
-{\tt \begin{snugshade*}
-\begin{lstlisting}
-mvi <- 1
-mni <- 1
-\end{lstlisting}
-\end{snugshade*}}
-
-Setting up the GTR+$\Gamma$ model is just like in the two-gene analysis, except this time \cl{n\_parts} is equal to 4, so now our vectors of stochastic nodes should all contain nodes for the four pairs of codon-gene partitions.
-
-The script for the model, {\tt RevBayes\_scripts/model\_PS2.Rev}, creates the model parameters for each partition in one large loop.
-Like before, we will split the loop into smaller parts to achieve the same end.
-
-First, we will create the GTR rate matrix for partition $i$ by first creating exchangeability rates
-{\tt \small \begin{snugshade*}
-\begin{lstlisting}
-for (i in 1:n_parts) {
-  er_prior[i] <- v(1,1,1,1,1,1)
-  er[i] ~ dnDirichlet(er_prior[i])
-  moves[mvi++] = mvSimplexElementScale(er[i], alpha=10, tune=true, weight=3) 
-}
-\end{lstlisting}
-\end{snugshade*}}
-
-and stationary frequencies
-
-{\tt \small \begin{snugshade*}
-\begin{lstlisting}
-for (i in 1:n_parts) {
-  pi_prior[i] <- v(1,1,1,1)
-  pi[i] ~ dnDirichlet(pi_prior[i])
-  moves[mvi++] = mvSimplexElementScale(pi[i], alpha=10, tune=true, weight=2)
-}
-\end{lstlisting}
-\end{snugshade*}}
-
-then passing those parameters into a rate matrix function
-
-{\tt \small \begin{snugshade*}
-\begin{lstlisting}
-for (i in 1:n_parts) {
-  Q[i] := fnGTR(er[i],pi[i]) 
-}
-\end{lstlisting}
-\end{snugshade*}}
-
-which states the rate matrix ({\tt Q[i]}) for partition $i$ is determined by the exchangeability rates ({\tt er[i]}) and stationary frequencies ({\tt pi[i]}) also defined for partition $i$.
-Following this format, we construct the remainin partition parameters: the $+\Gamma$ mixture model
-
-{\tt \small \begin{snugshade*}
-\begin{lstlisting}
-for (i in 1:n_parts) {
-  alpha_prior_min[i] <- 0.1
-  alpha_prior_max[i] <- 50.0
-  alpha[i] ~ dnUnif( alpha_prior_min[i], alpha_prior_max[i] )
-  norm_gamma_rates[i] := fnDiscretizeGamma( alpha[i], alpha[i], 4, false )
-  moves[mvi++] = mvScale(alpha[i], lambda=0.8, tune=true, weight=3.0)
-}
-\end{lstlisting}
-\end{snugshade*}}
-
-the $+I$ invariant sites model
-
-{\tt \small \begin{snugshade*}
-\begin{lstlisting}
-for (i in 1:n_parts) {
-  pinvar[i] ~ dnBeta(1,1)
-  moves[mvi++] = mvScale(pinvar[i], lambda=0.1, tune=true, weight=2.0)
-  moves[mvi++] = mvSlide(pinvar[i], delta=0.1, tune=true, weight=2.0)
-}
-\end{lstlisting}
-\end{snugshade*}}
-
-and the per-partition molecular clock
-
-{\tt \small \begin{snugshade*}
-\begin{lstlisting}
-for (i in 1:n_parts) {
-  part_rate_mult[i] ~ dnExponential( 1.0 )
-  moves[mvi++] = mvScale(part_rate_mult[i], lambda=1.0, tune=true, weight=2.0)
-}
-\end{lstlisting}
-\end{snugshade*}}
-
-
-Note that applying the per-partition model parameters only depends on the number of partitions, which means the script describing the partitioned model will work so long as you correctly populate the {\tt data} vector.
-
-We are still assuming that the genes share a single topology and branch lengths.
-{\tt \begin{snugshade*}
-\begin{lstlisting}
-speciation ~ dnExponential(10.)
-extinction ~ dnExponential(10.)
-
-# rescaling mv on speciation and extinction rates
-moves[mvi++] = mvScale(speciation, lambda=1, tune=true, weight=3.0)
-moves[mvi++] = mvScale(extinction, lambda=1, tune=true, weight=3.0)
-
-sampling_fraction <- 23. / 270 # 23 out of the ~ 270 primate species
-
-psi ~ dnBDP(lambda=speciation, mu=extinction, rho=sampling_fraction, rootAge=75, names=names)
-
-# moves on the tree
-moves[mvi++] = mvNNI(psi, weight=10.0)
-moves[mvi++] = mvFNPR(psi, weight=5.0)
-moves[mvi++] = mvNodeTimeSlideUniform(psi, weight=10.0)
-\end{lstlisting}
-\end{snugshade*}}
-
-We must specify a phylogenetic CTMC node for each of our partition models.
-{\tt \begin{snugshade*}
-\begin{lstlisting}
-for (i in 1:n_parts){
-  phyloSeq[i] ~ dnPhyloCTMC(tree=psi, Q=Q[i], branchRates=part_rate_mult[i], siteRates=norm_gamma_rates[i], pInv=pinvar[i], type="DNA")
-  phyloSeq[i].clamp(data[i])
-}
-
-\end{lstlisting}
-\end{snugshade*}}
-
-And then wrap up the DAG using the \cl{model()} function:
-{\tt \begin{snugshade*}
-\begin{lstlisting}
-mymodel = model(psi)
-\end{lstlisting}
-\end{snugshade*}}
-
-Monitor the model parameters, monitoring the tree seperately:
-
-{\tt \begin{snugshade*}
-\begin{lstlisting}
-monitors[mni++] = mnScreen(er, pi, alpha, norm_gamma_rates, pinvar, speciation, extinction, part_rate_mult, printgen=100)
-monitors[mni++] = mnFile(psi, filename="output/PS2.tre", printgen=100)
-monitors[mni++] = mnFile(er[1], pi[1], alpha[1], norm_gamma_rates[1], pinvar[1], part_rate_mult[1], er[2], pi[2], alpha[2], norm_gamma_rates[2], pinvar[2], part_rate_mult[2], er[3], pi[3], alpha[3], norm_gamma_rates[3], pinvar[3], part_rate_mult[3], er[4], pi[4], alpha[4], norm_gamma_rates[4], pinvar[4], part_rate_mult[4], speciation, extinction, filename="output/PS2.params.txt",printgen=10)
-\end{lstlisting}
-\end{snugshade*}}
-
-Set up and run the MCMC analysis:
-
-{\tt \begin{snugshade*}
-\begin{lstlisting}
-mymcmc = mcmc(mymodel, moves, monitors)
-mymcmc.burnin(10000,100)
-mymcmc.run(100000) # run for fewer iterations for classroom exercises
-\end{lstlisting}
-\end{snugshade*}}
-
-And, when MCMC completes, compute the MAP tree:
-
-{\tt \begin{snugshade*}
-\begin{lstlisting}
-treetrace = readTreeTrace("output/PS2.tre")
-treetrace.summarize()
-mapTree(treetrace,"output/PS2_map.tre")
-\end{lstlisting}
-\end{snugshade*}}
+\impmark{Don't forget to rename the output files!}
 
 \subsection{Exercises}
-\begin{itemize}
+\begin{enumerate}
 
-\item {\bf 1) Reviewing posterior estimates.} Open the {\tt PS2.params.txt} file in Tracer. Remember that partitions 1 and 2 are for cox2, partitions 3 and 4 are for cytB, partitions 1 and 3 are for sites in the first and second codon positions (per gene), and partitions 2 and 4 are for sites in the third and fourth codon positions (per gene).
+\item {\bf Reviewing posterior estimates.} Open the {\tt PS\_codon.log} file in \Tracer. Remember that data subsets 1 and 2 are for cox2, partitions 3 and 4 are for cytB, subsets 1 and 3 are for sites in the first and second codon positions (per gene), and subsets 2 and 4 are for sites in the third and fourth codon positions (per gene).
 
-Aside from the tree topology and divergence times, each partition is modeled to have its own set of parameters.
-However, the posterior estimates for some parameters appear quite similar between some pairs of partitions yet different between other pairs of partitions.
-For example, {\tt part\_rate\_mult} is the per-partition molecular clock.
-This clock is approximately two orders of magnitude faster for partitions 2 and 4 (third codon position sites) than it is for partitions 1 and 3 (non-third codon position sites).
+Aside from the tree topology and divergence times, each data subset is modeled to have its own set of parameters.
+However, the posterior estimates for some parameters appear quite similar between some pairs of subsets yet different between other pairs of subsets.
+For example, {\tt part\_rate} is the per-subset molecular clock.
+This clock is approximately two orders of magnitude faster for partitions 2 and 4 (third codon position sites) than it is for subsets 1 and 3 (non-third codon position sites).
 
-Identify other parameter-partition relationships like this in the posterior.
+Identify other parameter-subset relationships like this in the posterior.
 Under this model, would you consider the gene or the codon site position to hold greater influence over the site's evolutionary mode?
 
-\item {\bf 2) Comparison of MAP trees.} Open the three inferred MAP trees in FigTree.
+\item {\bf Comparison of MAP trees.} Open the three inferred MAP trees in \FigTree.
 Check to enable ``Node Labels'', click ``Display'' and select ``posterior'' from the dropdown menu.
 Internal nodes now report the probability of the clade appearing in the posterior density of sampled trees.
 Do different models yield different tree topologies?
 Generally, do complex models provide higher or lower clade support?
 
-\item {\bf 3) Partitioned model selection.}
+\item {\bf Partitioned model selection.}
 Bayes factors are computed as the ratio of marginal likelihoods (see the marginal likelihood tutorial (Section XXX) for more details).
 Rather than constructing the analysis with an {\tt mcmc} object, marginal likelihood computations rely on output from a {\tt powerPosterior} object.
 
-Copy {\tt model\_PS0.Rev} to {\tt marginal\_PS0.Rev}.
-In {\tt marginal\_PS0.Rev}, delete all lines after the {\tt model} function is called, so the MCMC is never run and the MAP tree is never computed.
-Additionally, remove the line creating {\tt mnScreen}, which will conflict with output produced by the power posterior analysis.
-
-
+Copy {\tt mcmc\_Partition\_uniform.Rev} to {\tt ml\_Partition\_uniform.Rev}.
+In {\tt ml\_Partition\_uniform.Rev}, delete all lines after the {\tt model} function is called, so the MCMC is never run and the MAP tree is never computed.
 
 Instead, configure and run a power posterior analysis
 
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-pow_p = powerPosterior(mymodel, moves, monitors, "output/model1.out", cats=50)
-pow_p.burnin(generations=10000,tuningInterval=1000)
-pow_p.run(generations=1000)
+pow_p = powerPosterior(mymodel, moves, monitors, "output/model_uniform.out", cats=100)
+pow_p.burnin(generations=5000,tuningInterval=200)
+pow_p.run(generations=2000)
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -896,7 +786,7 @@ then compute the marginal likelihood using the stepping stone sampler
 
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-ss = steppingStoneSampler(file="output/PS0.out", powerColumnName="power", likelihoodColumnName="likelihood")
+ss = steppingStoneSampler(file="output/model_uniform.out", powerColumnName="power", likelihoodColumnName="likelihood")
 ss.marginal()
 \end{lstlisting}
 \end{snugshade*}}
@@ -905,22 +795,23 @@ and again using the path sampler
 
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-ps = pathSampler(file="PS0.out", powerColumnName="power", likelihoodColumnName="likelihood")
+ps = pathSampler(file="model_uniform.out", powerColumnName="power", likelihoodColumnName="likelihood")
 ps.marginal()\end{lstlisting}
 \end{snugshade*}}
 
 
-\item {\bf 4) Customized partition models (advanced).} Create the partitioned model where first, second, and third codon positions are partitioned per gene.
-The substitution parameters for each partition are independent {\it except} the first and second codon positions per gene share stationary frequencies.
-These parameters would be $\pi_{12}^{(cytB)}$, $\pi_{3}^{(cytB)}$, $\pi_{12}^{(cox2)}$, $\pi_{3}^{(cox2)}$.
+%\item {\bf 4) Customized partition models (advanced).} Create the partitioned model where first, second, and third codon positions are partitioned per gene.
+%The substitution parameters for each partition are independent {\it except} the first and second codon positions per gene share stationary frequencies.
+%These parameters would be $\pi_{12}^{(cytB)}$, $\pi_{3}^{(cytB)}$, $\pi_{12}^{(cox2)}$, $\pi_{3}^{(cox2)}$.
+%
+%The easiest way to accomplish this is to copy {\tt model\_PS2.Rev} to {\tt model\_PS3.Rev} and modify the new file's contents.
+%Specifically, you will need to adjust how the codon position partitions are defined to yield six (instead of four) partitions.
+%When looping over partitions, you will need an if-statement to assign stationary frequencies properly.
+%Take some care when applying monitors and moves to the new model.
 
-The easiest way to accomplish this is to copy {\tt model\_PS2.Rev} to {\tt model\_PS3.Rev} and modify the new file's contents.
-Specifically, you will need to adjust how the codon position partitions are defined to yield six (instead of four) partitions.
-When looping over partitions, you will need an if-statement to assign stationary frequencies properly.
-Take some care when applying monitors and moves to the new model.
 
+\end{enumerate}
 
-\end{itemize}
 
 \bibliographystyle{sysbio}
-\bibliography{\ResourcePath refs}
+\bibliography{\GlobalResourcePath refs}
