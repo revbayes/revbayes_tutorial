@@ -1,0 +1,115 @@
+\section{Background}
+
+Estimating nodes ages (\IE branch lengths in proportion to time) is confounded by the fact that the rate of evolution and time are intrinsically linked when inferring genetic differences between species. 
+\begin{equation}
+\text{branch length} = \text{rate} \times \text{time}
+\end{equation}
+A model of substitution rate and divergence time must be applied to tease apart rate and time. 
+When applied in methods for divergence time estimation, the resulting trees have branch lengths that are proportional to time. 
+External node age estimates from the fossil record or other sources are necessary for inferring the real-time (or
+absolute) ages of lineage divergences (Figure~\ref{fig:}).
+
+
+\subsection{Modeling lineage-specific substitution rates}
+
+Many factors can influence the rate of substitution in a population such as mutation rate, generation time, and selection. 
+As a result, many models have been proposed that describe how substitution rate may vary across the Tree of Life.
+The simplest model, the molecular clock, assumes that the rate of substitution remains constant over time \citep{Zuckerkandl1962}.
+However, many studies have shown that molecular data (in general) violate the assumption of a molecular clock and that there exists considerable variation in the rates of substitution among lineages.
+
+Several models have been developed and implemented for inferring divergence times without assuming a strict molecular clock and are commonly applied to empirical data sets. 
+Some models assume that rates are heritable and autocorrelated over the tree, others model rate change as a step-wise process, and others assume that the rates on each branch are independently drawn from a single distribution. 
+Many of these models have been applied as priors using Bayesian inference methods. 
+The implementation of dating methods in a Bayesian framework provides a flexible way to model rate variation and obtain reliable estimates of speciation times, provided the assumptions of the models are adequate. 
+When coupled with numerical methods, such as MCMC, for approximating the posterior probability distribution of parameters, Bayesian methods are extremely powerful for estimating the parameters of a statistical model and are widely used in phylogenetics.
+
+
+\subsubsection{Some models of lineage-specific rate variation:}
+\begin{description}[align=left]
+\item [Global molecular clock:] a constant rate of substitution over time \citep{Zuckerkandl1962}.
+\item [Local molecular clocks:] Closely related lineages share the same rate and rates are clustered by sub-clades \citep{Kishino1990,Rambaut1998,Yang2003,Drummond2010} 
+\item [Compound Poisson process:] Rate changes occur along lineages according to a point process and at rate-change events, the new rate is a product of the old rate and a $\Gamma$-distributed multiplier \citep{Huelsenbeck2000a}.
+\item [Autocorrelated rates:] substitution rates evolve gradually over the tree
+\begin{itemize}
+\item \textit{Log-normally distributed rates:} the rate at a node is drawn from a log-normal distribution with
+a mean equal to the parent rate \citep{Thorne1998,Kishino2001,Thorne2002}
+\item \textit{Cox-Ingersoll-Ross Process:} the rate of the daughter branch is determined by a non-central $\chi^2$ distribution. 
+This process includes a parameter that determines the intensity of the force that drives the process to its stationary distribution \citep{Lepage2006}.
+\end{itemize}
+\item [Uncorrelated rates:] The rate associated with each branch is drawn from a single underlying parametric distribution
+such as an exponential or log-normal \citep{Drummond2006,Rannala2007,Lepage2007}.
+\item [Mixture model on branch rates:] Branches are assigned to distinct rate categories according to a Dirichlet process \citep{Heath2012b}.
+\end{description}
+
+
+
+\subsection{Priors on node times}
+
+There are many components that make up a Bayesian analysis of divergence time. 
+One that is often overlooked is the prior on node times, often called a tree prior. 
+This model describes how speciation events are distributed over time. 
+When this model is combined with a model for branch rate, Bayesian inference allows you to estimate relative divergence times. 
+Furthermore, because the rate and time are confounded in the branch-length parameter, the prior describing the branching times may have a strong effect on divergence time estimation.
+
+
+We can separate the priors on node ages into different categories:
+\begin{description}[align=left]
+\item [Phenomenological:] models that make no explicit assumptions about the biological processes that
+generated the tree. These priors are conditional on the age of the root.
+\begin{itemize}
+\item \textit{Uniform distribution:} This simple model assumes that internal nodes are uniformly distributed
+between the root and tip nodes \citep{Lepage2007,Ronquist2012}.
+\item \textit{Dirichlet distribution:} A flat Dirichlet distribution describes the placement of internal nodes on
+every path between the root and tips \citep{Kishino2001,Thorne2002}.
+\end{itemize}
+\item [Mechanistic:] models that describe the biological processes responsible for generating the pattern of
+lineage divergences.
+\begin{itemize}
+\item \textit{Population-level processes:} Coalescent processes describe the time, in generations, between coalescent
+events and allow for the estimation of population-level parameters \citep{Kingman1982}. Furthermore, they describe demographic processes (suitable for describing differences among individuals in the same species/population).
+\item \textit{Species-level processes:} Birth-death stochastic branching models describe lineage diversification (suitable
+for describing the timing of divergences between samples from different species) \citep{Kendall1948,Thompson1975,Nee1994b,Rannala1996, Yang1997,Hoehna2015a}.
+\end{itemize}
+\end{description}
+We cover the different process that can be used for tree and divergence time prior distributions in detail in the  \href{https://github.com/revbayes/revbayes_tutorial/raw/master/tutorial_TeX/RB_DiversificationRate_Tutorial/RB_DiversificationRate_Tutorial.pdf}{RB\_DiversificationRate\_Tutorial} because of their interest in estimating diversification rates and patterns.
+
+
+\subsection{Calibration to absolute time}\label{sec:calibration}
+Without external information to calibrate the tree, divergence time estimation methods can only reliably provide estimates of relative divergence times and not absolute node ages; or if one would know the (average) rate of substitutions. 
+Calibration information can come from a variety of sources including ``known'' substitution rates (often secondary calibrations estimated from a previous study), dated tip sequences from serially sampled data (time-stamped virus data or ancient DNA), or geological date estimates (fossils or biogeographical data).
+Age estimates from fossil organisms are the most common form of divergence time calibration information.
+These data are used as age constraints on their putative ancestral nodes. 
+There are numerous difficulties with incorporating node age estimates from fossil data including disparity in fossilization and sampling, uncertainty in dating, and correct phylogenetic placement of the fossil. 
+Thus, it is critical that careful attention is paid to the paleontological data included in phylogenetic divergence time analyses. 
+With an accurately dated and identified fossil in hand, further consideration is required to determine how to apply the node-age constraint. 
+If the fossil is truly a descendant of the node it calibrates, then it provides a reliable minimum age bound on the ancestral node time. 
+However, maximum bounds are far more difficult to come by. 
+
+Bayesian methods provide a way to account for uncertainty in fossil calibrations. Prior
+distributions reflecting our knowledge (or lack thereof) of the amount of elapsed time from the ancestral
+node to is calibrating fossil are easily incorporated into these methods.
+A nice review paper by \cite{Ho2009} outlines a number of different parametric distributions
+appropriate for use as priors on calibrated nodes.
+\begin{description}
+\item [Uniform distribution:] Typically, you must have both maximum and minimum age bounds when applying
+a uniform calibration prior (though some methods are available for applying uniform constraints with soft bounds). The minimum bound is provided by the fossil member of the clade. The maximum bound may
+come from a bracketing method or other external source. This distribution places equal probability across
+all ages spanning the interval between the lower and upper bounds.
+\item [Normal distribution:] When applying a biogeographical date (\EG the Isthmus of Panama) or a secondary calibration (a node age estimate from a previous study), the normal distribution can be a useful calibration prior. 
+This distribution is always symmetrical and places the greatest prior weight on the mean. 
+Its scale is determined by the standard deviation parameter.  
+\item [Exponential distribution:] The exponential distribution is characterized by a single rate parameter and is useful for calibration if the fossil age is very close to the age of its ancestral node. 
+The expected (mean) age difference under this distribution is equal to the 1/rate. 
+Under the exponential distribution, the greatest prior weight is placed on node ages very close to the age of the fossil with diminishing probability to $\infty$. 
+As the rate parameter is increased, this prior density becomes strongly informative, whereas very low values of the rate result in a fairly non-informative prior (Figure 3a).
+\item [Log-normal distribution:] An offset, log-normal prior on the calibrated node age places the highest probability on ages somewhat older than the fossil, with non-zero probability to $\infty$. 
+\end{description}
+
+\subsection{Integrating Fossil Occurrence Times in the Speciation Model}
+Calibrating Bayesian divergence-time estimates using parametric densities (as described in the previous section: Sec.~\ref{sec:calibration}) are typically applied in a multiplicative manner such that the prior probability of a calibrated node age is the product o the probability coming from the tree-wide speciation model and the probability under the calibration density \citep{Heled2012,Warnock2012,Warnock2015}. 
+However, when using fossil information, it is also possible to account for the fact that the fossils are part of the same diversification process (\IE birth-death model) that generated the extant species using the fossilized birth-death (FBD) model described in \cite{Stadler2010} and \cite{Heath2014}. 
+This model simply treats the fossil observations as part of the prior on node times. 
+The fossilized birth-death process provides a model for the distribution of speciation times, tree topology, and distribution of lineage samples before the present (\IE non-contemporaneous samples like fossils or viruses). 
+Thus, it provides a reasonable prior distribution for analyses combining morphological
+or DNA data for both extant and fossil taxa---\IE the so-called `total-evidence' or `tip-dating' approaches described by \cite{Ronquist2012a} (also see \cite{Pyron2011}). 
+When matrices of discrete morphological characters for both living and fossil species are unavailable, the fossilized birth-death model imposes a time structure on the tree by marginalizing over all possible attachment points for the fossils on the extant tree \citep{Heath2014}, therefore, some prior knowledge of phylogenetic relationships is important, much like for calibration-density approaches.
