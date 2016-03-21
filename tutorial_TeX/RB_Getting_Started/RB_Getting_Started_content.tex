@@ -1,8 +1,8 @@
 
 \section{Overview}
 
-\RevBayes~has as its central idea that any statistical model, for example a phylogenetic model, is composed of smaller parts that can be decomposed and put back together in a modular fashion. This comes from considering (phylogenetic) models as \textit{probabilistic graphical models}, which lends flexibility and enhances the capabilities of the program. 
-Users interact with \RevBayes~via an interactive shell.
+\RevBayes has as its central idea that any statistical model, for example a phylogenetic model, is composed of smaller parts that can be decomposed and put back together in a modular fashion. This comes from considering (phylogenetic) models as \textit{probabilistic graphical models}, which lends flexibility and enhances the capabilities of the program. 
+Users interact with \RevBayes via an interactive shell.
 Users communicate commands using a language specifically designed for \RevBayes, called \Rev; an R-like language (complete with control statements, user-defined functions, and loops) that enables the user to build up (phylogenetic) models from simple parts (random variables, variable/parameter transformations, models, and constants of different sorts).
  
 Here we assume that you have successfully installed \RevBayes.
@@ -13,9 +13,9 @@ If this isn't the case, then please consult our website on how to install \RevBa
 \bigskip
 \section{Getting Started}
 
-For the examples outlined in each tutorial, we will use \RevBayes~interactively by typing commands in the command-line console.
-For the exercises you can either use \RevBayes~interactively or run an entire script.
-Execute the \RevBayes~binary. If this program is in your path, then you can simply type in your Unix terminal:
+For the examples outlined in each tutorial, we will use \RevBayes interactively by typing commands in the command-line console.
+For the exercises you can either use \RevBayes interactively or run an entire script.
+Execute the \RevBayes binary. If this program is in your path, then you can simply type in your Unix terminal:
 
 \exs{\cl{\$ rb}}
 
@@ -23,16 +23,16 @@ When you execute the program, you will see a brief program information, includin
 Remember that more information can be obtained from \href{www.RevBayes.com}{ww.RevBayes.com}.
 When you execute the program with an additional filename, \EG
 \exs{\cl{\$ rb my\_analysis.Rev}}
-then \RevBayes~will run all commands specified in your file.
+then \RevBayes will run all commands specified in your file.
 
-You may want to run \RevBayes~in parallel using multiple processes.
-This can be done by starting \RevBayes~with
+You may want to run \RevBayes in parallel using multiple processes.
+This can be done by starting \RevBayes with
 \exs{\cl{\$ mpirun -np 4 rb-mpi}}
 which starts 4 processes of \RevBayes.
 You may want to change the number of processes depending on your available hardware.
 
-The format of the exercises uses \colorbox{shadecolor}{\tt lavender blush shaded boxes} to delineate code examples that you should type into \RevBayes. 
-For example, after opening the \RevBayes~program, you can load your data file:
+The format of the exercises uses \colorbox{shadecolor}{\tt blue shaded boxes} to delineate code examples that you should type into \RevBayes. 
+For example, after opening the \RevBayes program, you can load your data file:
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 data <- readDiscreteCharacterData("data/primates_cytb.nex")
@@ -50,23 +50,23 @@ for( i in 1:12 ){
 \end{lstlisting}
 \end{snugshade*}}
 
-The various \RevBayes~commands and syntax within the text are specified using \cl{typewriter text}. 
+The various \RevBayes commands and syntax within the text are specified using \cl{typewriter text}. 
 
 Most tutorials also includes hyperlinks: bibliographic citations are {\textcolor{citescol}{burnt orange}} and link to the full citation in the references, external URLs are {\textcolor{urlscol}{cerulean}}, and internal references to figures and equations are {\textcolor{linkscol}{purple}}.
 
 The various exercises in this tutorial take you through the steps required to perform phylogenetic analyses of the example datasets. 
-In addition, we have provided the \Rev~scripts and output files for some exercise so you can verify your results. (Note that since the MCMC runs you perform will start from different random seeds, the output files resulting from your analyses \textit{will not} be identical to the ones we provide you.)
+In addition, we have provided the \Rev scripts and output files for some exercise so you can verify your results. (Note that since the MCMC runs you perform will start from different random seeds, the output files resulting from your analyses \textit{will not} be identical to the ones we provide you.)
 
 
 \bigskip
 \section{Probabilistic Graphical Models}
 
-\RevBayes~uses \textit{probabilistic graphical models} for model specification, visualization, and implementation \citep{Hohna2014b}. 
+\RevBayes uses \textit{probabilistic graphical models} for model specification, visualization, and implementation \citep{Hoehna2014b}. 
 Graphical models are frequently used in machine learning and statistics to conceptually represent the conditional dependence structure of complex statistical models with many parameters \citep{Gilks1994,Lunn2000,Jordan2004,Koller2009,Lunn2009}. 
 The graphical model framework allows for flexible model specification and implementation and reduces redundant code. 
 This framework provides a set of symbols for depicting a \href{http://en.wikipedia.org/wiki/Directed_acyclic_graph}{\textit{directed acyclic graph}} (DAG). 
-\citet{Hohna2014b} described the use of probabilistic graphical models for phylogenetics. 
-The different nodes and components of a phylogenetic graphical model are shown in Figure \ref{gmnotation} \citep[Fig. 1 from][]{Hohna2014b}. 
+\citet{Hoehna2014b} described the use of probabilistic graphical models for phylogenetics. 
+The different nodes and components of a phylogenetic graphical model are shown in Figure \ref{gmnotation} \citep[Fig. 1 from][]{Hoehna2014b}. 
 \begin{figure}[h!]
 \centering
 \fbox{\includegraphics[width=1.8in,angle=0]{\ResourcePath figures/GM_notation_figure.eps}}
@@ -77,7 +77,7 @@ These variables correspond to random variables and may depend on other variables
 c) Deterministic nodes (dotted circles) indicate variables that are determined by a specific function applied to another variable. 
 They can be thought of as variable transformations. 
 d) Observed states are placed in clamped stochastic nodes, represented by gray-shaded circles. e) Replication over a set of variables is indicated by enclosing the replicated nodes in a plate (dashed rectangle). 
-[Partially reproduced from Fig.~1 in \citet{Hohna2014b}.]
+[Partially reproduced from Fig.~1 in \citet{Hoehna2014b}.]
 }
 \label{gmnotation}
 \end{figure}
@@ -112,12 +112,12 @@ The stochastic variable $\sigma$ is exponentially distributed with fixed value f
 
 
 \bigskip
-\section{\Rev: The \RevBayes~Language}
+\section{\Rev: The \RevBayes Language}
 
-In \RevBayes~models and analyses are specified using an interpreted language called \Rev. 
+In \RevBayes models and analyses are specified using an interpreted language called \Rev. 
 \Rev~bears similarities to the compiled language in WinBUGS and the interpreted \R~language. 
-Setting up and executing a statistical analysis in \RevBayes~requires the user to specify all of the parameters of their model and the type of analysis (\EG an MCMC run). 
-By using an interpreted language, \RevBayes~enables the practitioner to build complex, hierarchical models and to check the current states of variables while building the model. 
+Setting up and executing a statistical analysis in \RevBayes requires the user to specify all of the parameters of their model and the type of analysis (\EG an MCMC run). 
+By using an interpreted language, \RevBayes enables the practitioner to build complex, hierarchical models and to check the current states of variables while building the model. 
 This will be very useful in the beginning.
 Later on you, when you run very complex analyses, you may want to write \Rev-scripts.
 
@@ -127,7 +127,7 @@ We do implicit typing to help users who do not know about the actual types of th
 However, strongly typed means that every variable has a type and arguments of functions need to match the required types.
 The strong type requirements ensures that you build meaningful model graphs. 
 For example, the variance parameter of a normal distribution needs to be a positive number, and thus you can only use variables that are positive real numbers.
-\RevBayes~does automatic type conversion.
+\RevBayes does automatic type conversion.
 
 \bigskip
 \subsection{Specifying Models}
@@ -252,10 +252,10 @@ You may notice that the value of $x$ has now changed and is equal to the observa
 
 \section{Getting help in \RevBayes}
 
-\RevBayes~provides an elaborate help system. 
+\RevBayes provides an elaborate help system. 
 Most of the help is found online on our website \\
 http://www.RevBayes.com.
-Within \RevBayes~you can display the help for a function, distribution or any other type using the \cl{?} symbol followed by the command you want help for:
+Within \RevBayes you can display the help for a function, distribution or any other type using the \cl{?} symbol followed by the command you want help for:
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 ?dnNorm
@@ -264,7 +264,7 @@ Within \RevBayes~you can display the help for a function, distribution or any ot
 \end{lstlisting}
 \end{snugshade*}}
 
-Additionally, \RevBayes~will print the correct usage of a function if you only type in its name and hit return:
+Additionally, \RevBayes will print the correct usage of a function if you only type in its name and hit return:
 {\tt \small \begin{snugshade*}
 \begin{lstlisting}
 mcmc
@@ -290,11 +290,11 @@ setOption("helpdir", "/Users/hoehna/Software-Development/revbayes-development/he
 \bigskip
 \subsection{RevBayes Users' Forum}
 
-An email list has been created for users of \RevBayes~to discuss \RevBayes-related topics, including: \RevBayes~installation and use, scripting and programming, phylogenetics, population genetics, models of evolution, graphical models, etc. The forum is hosted by Google Groups:
+An email list has been created for users of \RevBayes to discuss \RevBayes-related topics, including: \RevBayes installation and use, scripting and programming, phylogenetics, population genetics, models of evolution, graphical models, etc. The forum is hosted by Google Groups:
 
 \exs{\href{http://bit.ly/107aW2R}{revbayes-users}}
 
 
 \bibliographystyle{sysbio}
-\bibliography{\ResourcePath refs}
+\bibliography{\GlobalResourcePath refs}
 

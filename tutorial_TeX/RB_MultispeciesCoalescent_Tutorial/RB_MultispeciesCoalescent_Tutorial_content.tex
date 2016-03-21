@@ -1,4 +1,4 @@
-\section{Modelling incomplete lineage sorting: the multispecies coalescent}
+\section{Modeling incomplete lineage sorting: the multispecies coalescent}
 Incomplete lineage sorting is a population-level process.
 In a species, at a given time, there are several alleles for a given locus in the genome.
 These alleles have their own history, they diverged from each other at various times in the past.
@@ -108,23 +108,23 @@ sampling_fraction <- 23 / 450 # we sampled 23 out of the ~ 450 primate species
 
 # create some moves that change the stochastic variables
 # Moves are sliding and scaling proposals
-moves[++mi] = mvSlide(diversification,delta=1,tune=true,weight=2)
-moves[++mi] = mvSlide(relativeExtinction,delta=1,tune=true,weight=2)
-moves[++mi] = mvScale(diversification,lambda=1,tune=true,weight=2)
-moves[++mi] = mvScale(relativeExtinction,lambda=1,tune=true,weight=2)
-moves[++mi] = mvSlide(root,delta=1,tune=true,weight=0.2)
+moves[++mvi] = mvSlide(diversification,delta=1,tune=true,weight=2)
+moves[++mvi] = mvSlide(relativeExtinction,delta=1,tune=true,weight=2)
+moves[++mvi] = mvScale(diversification,lambda=1,tune=true,weight=2)
+moves[++mvi] = mvScale(relativeExtinction,lambda=1,tune=true,weight=2)
+moves[++mvi] = mvSlide(root,delta=1,tune=true,weight=0.2)
 
 
 # construct a variable for the tree drawn from a birth-death process
 psi ~ dnBDP(lambda=speciation, mu=extinction, rootAge=root, rho=sampling_fraction, taxa=taxa )
 
-moves[++mi] = mvNarrow(psi, weight=5.0)
-moves[++mi] = mvNNI(psi, weight=1.0)
-moves[++mi] = mvFNPR(psi, weight=3.0)
-moves[++mi] = mvGPR(psi, weight=3.0)
-moves[++mi] = mvSubtreeScale(psi, weight=3.0)
-moves[++mi] = mvNodeTimeSlideUniform(psi, weight=15.0)
-moves[++mi] = mvTreeNodeAgeSlide(psi, weight=50)
+moves[++mvi] = mvNarrow(psi, weight=5.0)
+moves[++mvi] = mvNNI(psi, weight=1.0)
+moves[++mvi] = mvFNPR(psi, weight=3.0)
+moves[++mvi] = mvGPR(psi, weight=3.0)
+moves[++mvi] = mvSubtreeScale(psi, weight=3.0)
+moves[++mvi] = mvNodeTimeSlideUniform(psi, weight=15.0)
+moves[++mvi] = mvTreeNodeAgeSlide(psi, weight=50)
 
 
 \end{lstlisting}
@@ -146,12 +146,12 @@ for (i in 1:n_species) {
 }
 for (i in (n_species+1):n_branches) {
   Ne[i] ~ dnExponential(0.1)
-  moves[++mi] = mvScale(Ne[i],1,true,1.0)
+  moves[++mvi] = mvScale(Ne[i],1,true,1.0)
 }
 
 # We could instead assume a single effective population size for the entire species tree with the following two lines:
 #Ne ~ dnGamma(shape=1.0,rate=1.0)
-#moves[++mi] = mvScale(Ne,1,true,1.0)
+#moves[++mvi] = mvScale(Ne,1,true,1.0)
 
 for (i in 1:num_loci) {
 
@@ -164,13 +164,13 @@ for (i in 1:num_loci) {
    geneTree[i] ~ dnCoalMultiSpeciesConst(speciesTree=psi, Ne=Ne, taxa=taxon_map)
 
    # moves on the tree
-   moves[++mi] = mvNNI(geneTree[i], 5.0)
-   moves[++mi] = mvNarrow(geneTree[i], 5.0)
-   moves[++mi] = mvFNPR(geneTree[i], 3.0)
-   moves[++mi] = mvGPR(geneTree[i], 2.0)
-   moves[++mi] = mvSubtreeScale(geneTree[i], 5.0)
-   moves[++mi] = mvTreeScale(geneTree[i], 1.0, true, 3.0)
-   moves[++mi] = mvNodeTimeSlideUniform(geneTree[i], 20.0)
+   moves[++mvi] = mvNNI(geneTree[i], 5.0)
+   moves[++mvi] = mvNarrow(geneTree[i], 5.0)
+   moves[++mvi] = mvFNPR(geneTree[i], 3.0)
+   moves[++mvi] = mvGPR(geneTree[i], 2.0)
+   moves[++mvi] = mvSubtreeScale(geneTree[i], 5.0)
+   moves[++mvi] = mvTreeScale(geneTree[i], 1.0, true, 3.0)
+   moves[++mvi] = mvNodeTimeSlideUniform(geneTree[i], 20.0)
 
 }
 
@@ -187,7 +187,7 @@ for ( i in 1:num_loci ) {
    log_clock_rate[i] ~ dnUniform(-4,1)
    clock_rate[i] := 10^log_clock_rate[i]
    
-   moves[++mi] = mvSlide(log_clock_rate[i], weight=1.0)
+   moves[++mvi] = mvSlide(log_clock_rate[i], weight=1.0)
 }
 \end{lstlisting}
 \end{snugshade*}}
@@ -202,11 +202,11 @@ for ( i in 1:num_loci ) {
 
     #### specify the HKY substitution model applied uniformly to all sites of a gene
     kappa[i] ~ dnLognormal(0,1)
-    moves[++mi] = mvScale(kappa[i],weight=1)
+    moves[++mvi] = mvScale(kappa[i],weight=1)
 
     pi_prior[i] <- v(1,1,1,1) 
     pi[i] ~ dnDirichlet(pi_prior[i])
-    moves[++mi] = mvSimplexElementScale(pi[i],weight=2)
+    moves[++mvi] = mvSimplexElementScale(pi[i],weight=2)
 
 
     #### create a deterministic variable for the rate matrix
@@ -218,7 +218,7 @@ for ( i in 1:num_loci ) {
     gamma_rates[i] := fnDiscretizeGamma( alpha[i], alpha[i], 4, false )
 
     # add moves for the stationary frequencies, exchangeability rates and the shape parameter
-    moves[++mi] = mvScale(alpha[i],weight=2)
+    moves[++mvi] = mvScale(alpha[i],weight=2)
 
 }
 
@@ -302,14 +302,6 @@ In particular, does the full multispecies coalescent mix well?
 Why can we expect this model in particular would have difficulties mixing?
 
 
-\bigskip
-Questions about this tutorial can be directed to: \\\vspace{-10mm}
-\begin{itemize}
-\item Bastien Boussau (email: \href{mailto:boussau@gmail.com}{boussau@gmail.com}) \\\vspace{-8mm}
-\item Sebastian H\"{o}hna (email: \href{mailto:sebastian.hoehna@gmail.com}{sebastian.hoehna@gmail.com})
-\end{itemize}
-
-
-\bibliographystyle{mbe}
-\bibliography{\ResourcePath refs}
+\bibliographystyle{sysbio}
+\bibliography{\GlobalResourcePath refs}
 
