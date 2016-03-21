@@ -74,20 +74,7 @@ The only free parameters of this model, the Jukes-Cantor model, are the tree $\P
 \label{fig:jc}
 \end{figure}
 
-The general structure of the model is represented in Figure~\ref{fig:jc}.
-This figure shows the full model graph.
-For simplicity and computational efficiency we will use a collapsed for of the same graphical model as shown in Figure~\ref{fig:jc_module}
-
-\begin{figure}[h!]
-\centering
-\fbox{\includegraphics[width=0.6\textwidth,angle=0]{\ResourcePath figures/jc_graphical_module.pdf}}
-\caption{\small Graphical model representation of a simple phylogenetic model. 
-The collapsed graphical model combining all the CTMC variable of the phylogeny.
-We still have the rate matrix $Q$ as a constant variable and the stochastic variable for the tree $\Psi$.}
-\label{fig:jc_module}
-\end{figure}
-
-We first consider the simplest substitution model described by \citet{Jukes1969}.
+We first consider the simplest substitution model described by \cite{Jukes1969}.
 The instantaneous-rate matrix for the JC substitution model is defined as
 \begin{equation*}
 Q_{JC69} = \begin{pmatrix} 
@@ -119,7 +106,6 @@ source("RevBayes_scripts/JukesCantor.Rev")
 
 If everything loaded properly, then you should see the program initiate the Markov chain Monte Carlo analysis that estimates the posterior distribution. 
 If you continue to let this run, then you will see it output the states of the Markov chain once the MCMC analysis begins. 
-%(It is worth noting, however, that the file \cl{JukesCantor.Rev} performs shorter runs with fewer generations for the purposes of illustration.)
 
 Ultimately, this is how you will execute most analyses in \RevBayes, with the full specification of the model and analyses contained in the sourced files. 
 You could easily run this entire analysis on your own data by substituting your data file name for that in the model-specification file. 
@@ -131,12 +117,10 @@ The next steps will walk you through the full specification of the model and MCM
 
 \subsection{Loading the Data}
 
-\noindent \\ \impmark Download data and output files (if you don't have them already) from: \href{http://revbayes.github.io/tutorials.html}{http://revbayes.github.io/tutorials.html}
+\noindent \\ \impmark Download data and output files (if you don't have them already) from: \\ \href{http://revbayes.github.io/tutorials.html}{http://revbayes.github.io/tutorials.html}
 
 
 First load in the sequences using the \cl{readDiscreteCharacterData()} function. 
-%This function returns a \textit{vector} of data matrices and, even though there is only one element in the vector, we must index that element using the \cl{[1]} notation. 
-%(You will also note that list indexing in Rev starts with \cl{1} like in the R language.)
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 data <- readDiscreteCharacterData("data/primates_cytb.nex")
@@ -159,22 +143,24 @@ data
 \end{snugshade*}}
 
 
-Next we will specify some useful variables based on our dataset. The variable \cl{data} has \textit{member functions} that we can use to retrieve information about the dataset. 
-These include the number of species (\cl{n\_species}) and the tip labels (\cl{names}).
-Each of these variables will be necessary for setting up different parts of our model.
+Next we will specify some useful variables based on our dataset. The variable \cl{data} has \emph{member functions} that we can use to retrieve information about the dataset. 
+These include, for example, the number of species and the taxa.
+We will need that taxon information for setting up different parts of our model.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 n_species <- data.ntaxa()
-names <- data.names()	
+taxa <- data.taxa()	
 \end{lstlisting}
 \end{snugshade*}}
 
 Additionally, we set up a counter variable for the number of moves that we already added to our analysis.
 [Recall that moves are algorithms used to propose new parameter values during the MCMC simulation.]
 This will make it much easier if we extend the model or analysis to include additional moves or to remove some moves.
+Similarly, we set up a counter variable for the number of monitors (monitors are devices that print variable, \EG to the screen or file).
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-mi = 0 
+mvi = 0 
+mni = 0
 \end{lstlisting}
 \end{snugshade*}}
 You may have noticed that we used the \cl{=} operator to create the move index.
@@ -215,83 +201,102 @@ In Figure \ref{fig:jc}, the tree is denoted $\Psi$.
 We will assume a constant-rate birth-death process as the prior distribution on the tree.
 This means that all possible labeled, rooted tree topologies have equal probability. 
 The distribution in \RevBayes is \cl{dnBDP()}. 
-For the birth-death process we need a speciation rate and extinction rate parameter.
-Let us start with those two variables.
-We use a \textit{gamma} distribution with rate $a=5$ and shape $b=1$ for both the \cl{diversification} and \cl{turnover} variables.
+For the birth-death process we need a speciation rate and extinction rate parameter as well as a root age parameter.
+
+We begin with the root age parameter.
+From other empirical studies we know that crown age of primates is about 90 Mya \citep{Perelman2011}.
+Thus, for the sake of simplicity in this tutorial we fix it to 90 Mya.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-a <- 5
-b <- 1
-diversification ~ dnGamma(shape=a, rate=b)
-c <- 5
-d <- 1
-turnover ~ dnGamma(shape=c,rate=d)
+root_time <- 90
+\end{lstlisting}
+\end{snugshade*}}
+Next, we specify the two rate variables.
+We use a \textit{lognormal} distribution for both the \cl{diversification} and \cl{turnover} variables.
+We fix the mean of both prior distributions on the expected diversification rate and allow for one and two orders of magnitude prior uncertainty, repsectively.
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+diversification_mean <- ln( ln(450.0/2.0) / root_time )
+diversification_sd <- 0.587405
+diversification ~ dnLognormal(mean=diversification_mean,sd=diversification_sd) 
+turnover_mean <- ln( ln(450.0/2.0) / root_time )
+turnover_sd <- 0.587405*2
+turnover ~ dnLognormal(mean=turnover_mean,sd=turnover_sd) 
 \end{lstlisting}
 \end{snugshade*}}
 Now we can transform the \cl{diversification} and \cl{turnover} into the \cl{speciation} rate and \cl{extinction} rate.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-speciation := diversification + turnover
-extinction := turnover
-\end{lstlisting}
-\end{snugshade*}}
-We also need to specify a prior on the root age (our informed guess is about 75-80 Mya).
-Nevertheless we use a very wide uniform distribution between 0 and 1000.
-{\tt \begin{snugshade*}
-\begin{lstlisting}
-root ~ dnUniform(0.0,1000.0)
+birth_rate := diversification + turnover
+death_rate := turnover
 \end{lstlisting}
 \end{snugshade*}}
 Additionally, we know that we do not have all primate species included in this data set.
 We only have 23 out of the approximately 450 primate species.
-Thus, we use a sampling fraction to represent this incomplete taxon sampling.
+Thus, we use a sampling fraction to represent this incomplete taxon sampling \citep{Hoehna2011,Hoehna2014a}.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-sampling_fraction <- 23 / 450
+rho <- n_species/450
 \end{lstlisting}
 \end{snugshade*}}
-Here we have created our first three stochastic variables.
+Here we have created our first two stochastic variables.
 For each one of them we need to create at least one moves that change the stochastic variables.
-In this case we use sliding window proposals but you could use scaling proposals for the rates too.
+In this case we use scaling proposals because these are rate parameters and defined only on positive real numbers.
 {\tt \begin{snugshade*}
-\begin{lstlisting}
-moves[++mi] = mvSlide(diversification,delta=1,tune=true,weight=1)
-moves[++mi] = mvSlide(turnover,delta=1,tune=true,weight=1)
-moves[++mi] = mvSlide(root,delta=1,tune=true,weight=1)
+\begin{lstlisting} 
+moves[++mvi] = mvScale(diversification,lambda=1.0,tune=true,weight=3.0)
+moves[++mvi] = mvScale(turnover,lambda=1.0,tune=true,weight=3.0)
 \end{lstlisting}
 \end{snugshade*}}
 
-Next, specify the \cl{tree} stochastic node by passing in the tip labels \cl{names} to the \cl{dnBDP()} distribution:
+Next, specify the \cl{tree} stochastic node by passing in the taxon information \cl{taxa} to the \cl{dnBDP()} distribution:
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-psi ~ dnBDP(lambda=speciation, mu=extinction, rootAge=abs(root), rho=sampling_fraction, nTaxa=n_species, names=names )
+psi ~ dnBDP(lambda=birth_rate, mu=death_rate, rho=rho, rootAge=root_time, samplingStrategy="uniform", condition="survival", taxa=taxa)
 \end{lstlisting}
 \end{snugshade*}}
 
 Some types of stochastic nodes can be updated by a number of alternative moves. 
 Different moves may explore parameter space in different ways, and it is possible to use multiple different moves for a given parameter to improve mixing (the efficiency of the MCMC simulation). 
-In the case of our rooted tree, for example, we can use both a nearest-neighbor interchange move without and with changing the node ages (\cl{mvNarrow} and \cl{mvNNI}) and a fixed-nodeheight subtree-prune and regrafting move (\cl{mvFNPR}). 
+In the case of our rooted tree, for example, we can use both a nearest-neighbor interchange move without and with changing the node ages (\cl{mvNarrow} and \cl{mvNNI}) and a fixed-nodeheight subtree-prune and regrafting move (\cl{mvFNPR}) and its Metroploized-Gibbs variant (\cl{mvGPR}) \citep{Hoehna2008,Hoehna2012}. 
 We also need moves that change the ages of the internal nodes; which are for example the \cl{mvSubtreeScale} and \cl{mvNodeTimeSlideUniform}.
 These moves do not have tuning parameters associated with them, thus you only need to pass in the \cl{psi} node and proposal \cl{weight}. 
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-moves[++mi] = mvNarrow(psi, weight=5.0)
-moves[++mi] = mvNNI(psi, weight=1.0)
-moves[++mi] = mvFNPR(psi, weight=3.0)
-moves[++mi] = mvSubtreeScale(psi, weight=3.0)
-moves[++mi] = mvNodeTimeSlideUniform(psi, weight=15.0)
+moves[++mvi] = mvNarrow(psi, weight=5.0)
+moves[++mvi] = mvNNI(psi, weight=1.0)
+moves[++mvi] = mvFNPR(psi, weight=3.0)
+moves[++mvi] = mvGPR(psi, weight=3.0)
+moves[++mvi] = mvSubtreeScale(psi, weight=3.0)
+moves[++mvi] = mvNodeTimeSlideUniform(psi, weight=15.0)
 \end{lstlisting}
 \end{snugshade*}}
 The weight specifies how often the move will be applied either on average per iteration or relative to all other moves.
 Have a look at the MCMC tutorial for more details about moves and MCMC strategies: \href{http://revbayes.github.io/tutorials.html}{http://revbayes.github.io/tutorials.html}
 
 
+\impmark{Fore more information on tree priors please read the \href{https://github.com/revbayes/revbayes_tutorial/raw/master/tutorial_TeX/RB_DiversificationRate_Tutorial/RB_DiversificationRate_Tutorial.pdf}{RB\_DiversificationRate\_Tutorial}.}
+
+\subsection{Molecular clock}
+
+We know from empirical estimates that the molecular clock rate is about  0.01 (=1\%) per million years per site
+Nevertheless, we will estimate it here because we fixed the root age.
+We use a uniform prior on the log-transform clock rate.
+This specifies our lack of prior knowledge on the magnitude of the clock rate.
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+log_clock_rate ~ dnUniform(-6,1)
+moves[++mvi] = mvSlide(log_clock_rate, weight=2.0)
+clock_rate := 10^log_clock_rate
+\end{lstlisting}
+\end{snugshade*}}
+
+Instead, you could also fix the clock rate and estimate the root age
+\impmark{Fore more information on molecular clocks please read the \href{https://github.com/revbayes/revbayes_tutorial/raw/master/tutorial_TeX/RB_DivergenceTime_Tutorial/RB_DivergenceTime_Tutorial.pdf}{RB\_DivergenceTime\_Tutorial}.}
+
 
 \subsection{Putting it All Together}
 
-%Having specified virtually all of our phylogenetic model parameters, we can now link all of the parts in the stochastic node that will be clamped by the data. 
-%The sequence substitution model is a distribution called the \textit{phylogenetic continuous-time Markov chain}, and we use the \cl{PhyloCTMC} constructor function to create this node.
-% The above two sentences are a bit unclear: I think we could say something like: 
 We have fully specified all of the parameters of our phylogenetic model---the tree topology with branch lengths, and the substitution model that describes how the sequence data evolved over the tree with branch lengths.  
 Collectively, these parameters comprise a distribution called the \textit{phylogenetic continuous-time Markov chain}, and we use the \cl{dnPhyloCTMC} constructor function to create this node.
 This distribution requires several input arguments: 
@@ -300,17 +305,12 @@ This distribution requires several input arguments:
 (3) the clock rate, and; 
 (4) the \cl{type} of character data.
 
-For now we use an empirical estimate of the clock rate which is 0.01 (=1\%) per million years per site.
-{\tt \begin{snugshade*}
-\begin{lstlisting}
-clockRate <- 0.01
-\end{lstlisting}
-\end{snugshade*}}
+
 Build the random variable for the character data (sequence alignment).
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 # the sequence evolution model
-seq ~ dnPhyloCTMC(tree=psi, Q=Q, branchRates=clockRate, type="DNA")
+seq ~ dnPhyloCTMC(tree=psi, Q=Q, branchRates=clock_rate, type="DNA")
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -354,7 +354,7 @@ The monitor functions are all called \cl{mn*}, where \cl{*} is the wildcard repr
 First, we will initialize the model monitor using the \cl{mnModel} function. This creates a new monitor variable that will output the states for all model parameters when passed into a MCMC function. 
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-monitors[1] = mnModel(filename="output/primates_cytb_JC_posterior.log",printgen=10, separator = TAB)
+monitors[++mni] = mnModel(filename="output/primates_cytb_JC_posterior.log",printgen=10, separator = TAB)
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -362,7 +362,7 @@ The \cl{mnFile} monitor will record the states for only the parameters passed in
 
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-monitors[2] = mnFile(filename="output/primates_cytb_JC_posterior.trees",printgen=10, separator = TAB, psi)
+monitors[++mni] = mnFile(filename="output/primates_cytb_JC_posterior.trees",printgen=10, separator = TAB, psi)
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -370,7 +370,7 @@ monitors[2] = mnFile(filename="output/primates_cytb_JC_posterior.trees",printgen
 Finally, create a screen monitor that will report the states of specified variables to the screen with \cl{mnScreen}:
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-monitors[3] = mnScreen(printgen=1000, diversification, turnover)
+monitors[++mni] = mnScreen(printgen=1000, clock_rate, diversification, turnover)
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -385,8 +385,6 @@ mymcmc = mcmc(mymodel, monitors, moves)
 
 
 We may wish to run the \cl{.burnin()} member function.
-% if we wish to pre-run the chain and discard the initial states. 
-% I think you might want to add a brief explanation here, something like:
 Recall that this function \textbf{does not} specify the number of states that we wish to discard from the MCMC analysis as burnin (i.e., the samples collected before the chain converges to the stationary distribution).  
 Instead, the \cl{.burnin()} function specifies a \textit{completely separate} preliminary MCMC analysis that is used to tune the scale of the moves to improve mixing of the MCMC analysis.
 {\tt \begin{snugshade*}
@@ -407,9 +405,9 @@ When the analysis is complete, you will have the monitored files in your output 
 
 
 Methods for visualizing the marginal densities of parameter values are not currently available in \RevBayes itself. 
-Thus, it is important to use programs like \Tracer \citep{Rambaut2011} to evaluate mixing and non-convergence. (\RevBayes does, however, have a tool for convergence assessment called \cl{beca}.)
+Thus, it is important to use programs like \Tracer \citep{Rambaut2011} to evaluate mixing and non-convergence.
 
-\noindent \\ \impmark Look at the file called \cl{output/primates\_cytb\_JC\_posterior.log} in \texttt{Tracer}.
+\noindent \\ \impmark Look at the file called \cl{output/primates\_cytb\_JC\_posterior.log} in \texttt{Tracer}. There you see the posterior distributions of the continuous parameters, \EG, the clock rate and diversification rates.
 
 
 \subsection{Exercise 1}
@@ -429,45 +427,44 @@ The \cl{mapTree()} function will summarize the tree samples and write the maximu
 mapTree(treetrace,"output/primates_cytb_JC.tree")
 \end{lstlisting}
 \end{snugshade*}}
-Fill in the following table as you go through the tutorial.
+\begin{figure}[htbp!]
+\centering
+\fbox{\includegraphics[width=0.8\textwidth]{\ResourcePath figures/primates_cytb_JC_tree.pdf}}
+\caption{\small Maximum a posteriori estimate of the primate phylogeny under a Jukes-Cantor substitution model. 
+The numbers at the nodes show the posterior probabilities for the clades.}
+\label{fig:jc_tree}
+\end{figure}
+\noindent \\ \impmark Look at the file called \cl{output/primates\_cytb\_JC.tree} in \texttt{FigTree}. We show it in Figure~\ref{fig:jc_tree}.
 
-\noindent \\ \impmark Look at the file called \cl{output/primates\_cytb\_JC.tree} in \texttt{FigTree}.
+
+\noindent \\ \impmark Fill in the following table as you go through the tutorial.
 
 \begin{Form}
 \begin{table}[h!]
 \centering
 \caption{\small Posterior probabilities of phylogenetic relationship$^*$.}
 \resizebox{\textwidth}{!}{%
-\begin{tabular}{l c c c c c}
+\begin{tabular}{l c c c c}
 \hline
-\textbf{Model} & \textit{Lemuroidea} & \textit{Lorisoidea} & \textit{Platyrrhini} & \textit{Catarrhini} & \textit{other} \\ 
-\hline
-\vspace{1mm}
-Jukes-Cantor & \TextField[name=pp11,backgroundcolor={.85 .85 .85},color={1 0 0},height=4ex]{}  & \TextField[name=pp12,backgroundcolor={.85 .85 .85},color={0 0 1},height=4ex]{}  & \TextField[name=pp13,backgroundcolor={.85 .85 .85},color={0 0 1},height=4ex]{}  & \TextField[name=pp14,backgroundcolor={.85 .85 .85},color={0 0 1},height=4ex]{} & \TextField[name=pp15,backgroundcolor={.85 .85 .85},color={0 0 1},height=4ex]{} \\
+\textbf{Model} & \textit{Lemuroidea} & \textit{Lorisoidea} & \textit{Platyrrhini} & \textit{Catarrhini} \\ 
 \hline
 \vspace{1mm}
-HKY85 & \TextField[name=pp21,backgroundcolor={.85 .85 .85},color={1 0 0},height=4ex]{}  & \TextField[name=pp22,backgroundcolor={.85 .85 .85},color={0 0 1},height=4ex]{}  & \TextField[name=pp23,backgroundcolor={.85 .85 .85},color={0 0 1},height=4ex]{}  & \TextField[name=pp24,backgroundcolor={.85 .85 .85},color={0 0 1},height=4ex]{} & \TextField[name=pp25,backgroundcolor={.85 .85 .85},color={0 0 1},height=4ex]{} \\
+Jukes-Cantor & \TextField[name=pp11,backgroundcolor={.85 .85 .85},color={1 0 0},height=4ex]{}  & \TextField[name=pp12,backgroundcolor={.85 .85 .85},color={0 0 1},height=4ex]{}  & \TextField[name=pp13,backgroundcolor={.85 .85 .85},color={0 0 1},height=4ex]{}  & \TextField[name=pp14,backgroundcolor={.85 .85 .85},color={0 0 1},height=4ex]{}\\
 \hline
 \vspace{1mm}
-F81 & \TextField[name=pp31,backgroundcolor={.85 .85 .85},color={1 0 0},height=4ex]{}  & \TextField[name=pp32,backgroundcolor={.85 .85 .85},color={0 0 1},height=4ex]{}  & \TextField[name=pp33,backgroundcolor={.85 .85 .85},color={0 0 1},height=4ex]{}  & \TextField[name=pp34,backgroundcolor={.85 .85 .85},color={0 0 1},height=4ex]{} & \TextField[name=pp35,backgroundcolor={.85 .85 .85},color={0 0 1},height=4ex]{} \\
+HKY85 & \TextField[name=pp21,backgroundcolor={.85 .85 .85},color={1 0 0},height=4ex]{}  & \TextField[name=pp22,backgroundcolor={.85 .85 .85},color={0 0 1},height=4ex]{}  & \TextField[name=pp23,backgroundcolor={.85 .85 .85},color={0 0 1},height=4ex]{}  & \TextField[name=pp24,backgroundcolor={.85 .85 .85},color={0 0 1},height=4ex]{} \\
 \hline
 \vspace{1mm}
-GTR & \TextField[name=pp41,backgroundcolor={.85 .85 .85},color={1 0 0},height=4ex]{}  & \TextField[name=pp42,backgroundcolor={.85 .85 .85},color={0 0 1},height=4ex]{}  & \TextField[name=pp43,backgroundcolor={.85 .85 .85},color={0 0 1},height=4ex]{}  & \TextField[name=pp44,backgroundcolor={.85 .85 .85},color={0 0 1},height=4ex]{} & \TextField[name=pp45,backgroundcolor={.85 .85 .85},color={0 0 1},height=4ex]{} \\
+F81 & \TextField[name=pp31,backgroundcolor={.85 .85 .85},color={1 0 0},height=4ex]{}  & \TextField[name=pp32,backgroundcolor={.85 .85 .85},color={0 0 1},height=4ex]{}  & \TextField[name=pp33,backgroundcolor={.85 .85 .85},color={0 0 1},height=4ex]{}  & \TextField[name=pp34,backgroundcolor={.85 .85 .85},color={0 0 1},height=4ex]{} \\
 \hline
 \vspace{1mm}
-GTR+$\Gamma$ & \TextField[name=pp51,backgroundcolor={.85 .85 .85},color={1 0 0},height=4ex]{}  & \TextField[name=pp52,backgroundcolor={.85 .85 .85},color={0 0 1},height=4ex]{}  & \TextField[name=pp53,backgroundcolor={.85 .85 .85},color={0 0 1},height=4ex]{}  & \TextField[name=pp54,backgroundcolor={.85 .85 .85},color={0 0 1},height=4ex]{} & \TextField[name=pp55,backgroundcolor={.85 .85 .85},color={0 0 1},height=4ex]{} \\
+GTR & \TextField[name=pp41,backgroundcolor={.85 .85 .85},color={1 0 0},height=4ex]{}  & \TextField[name=pp42,backgroundcolor={.85 .85 .85},color={0 0 1},height=4ex]{}  & \TextField[name=pp43,backgroundcolor={.85 .85 .85},color={0 0 1},height=4ex]{}  & \TextField[name=pp44,backgroundcolor={.85 .85 .85},color={0 0 1},height=4ex]{} \\
 \hline
 \vspace{1mm}
-GTR+$\Gamma$+I & \TextField[name=pp61,backgroundcolor={.85 .85 .85},color={1 0 0},height=4ex]{}  & \TextField[name=pp62,backgroundcolor={.85 .85 .85},color={0 0 1},height=4ex]{}  & \TextField[name=pp63,backgroundcolor={.85 .85 .85},color={0 0 1},height=4ex]{}  & \TextField[name=pp64,backgroundcolor={.85 .85 .85},color={0 0 1},height=4ex]{} & \TextField[name=pp65,backgroundcolor={.85 .85 .85},color={0 0 1},height=4ex]{} \\
+GTR+$\Gamma$ & \TextField[name=pp51,backgroundcolor={.85 .85 .85},color={1 0 0},height=4ex]{}  & \TextField[name=pp52,backgroundcolor={.85 .85 .85},color={0 0 1},height=4ex]{}  & \TextField[name=pp53,backgroundcolor={.85 .85 .85},color={0 0 1},height=4ex]{}  & \TextField[name=pp54,backgroundcolor={.85 .85 .85},color={0 0 1},height=4ex]{} \\
 \hline
 \vspace{1mm}
-Your model 1 & \TextField[name=pp71,backgroundcolor={.85 .85 .85},color={1 0 0},height=4ex]{}  & \TextField[name=pp72,backgroundcolor={.85 .85 .85},color={0 0 1},height=4ex]{}  & \TextField[name=pp73,backgroundcolor={.85 .85 .85},color={0 0 1},height=4ex]{}  & \TextField[name=pp74,backgroundcolor={.85 .85 .85},color={0 0 1},height=4ex]{} & \TextField[name=pp75,backgroundcolor={.85 .85 .85},color={0 0 1},height=4ex]{} \\
-\hline
-\vspace{1mm}
-Your model 2 & \TextField[name=pp81,backgroundcolor={.85 .85 .85},color={1 0 0},height=4ex]{}  & \TextField[name=pp82,backgroundcolor={.85 .85 .85},color={0 0 1},height=4ex]{}  & \TextField[name=pp83,backgroundcolor={.85 .85 .85},color={0 0 1},height=4ex]{}  & \TextField[name=pp84,backgroundcolor={.85 .85 .85},color={0 0 1},height=4ex]{} & \TextField[name=pp85,backgroundcolor={.85 .85 .85},color={0 0 1},height=4ex]{} \\
-\hline
-\vspace{1mm}
-Your model 3 & \TextField[name=pp91,backgroundcolor={.85 .85 .85},color={1 0 0},height=4ex]{}  & \TextField[name=pp92,backgroundcolor={.85 .85 .85},color={0 0 1},height=4ex]{}  & \TextField[name=pp93,backgroundcolor={.85 .85 .85},color={0 0 1},height=4ex]{}  & \TextField[name=pp94,backgroundcolor={.85 .85 .85},color={0 0 1},height=4ex]{} & \TextField[name=pp95,backgroundcolor={.85 .85 .85},color={0 0 1},height=4ex]{} \\
+GTR+$\Gamma$+I & \TextField[name=pp61,backgroundcolor={.85 .85 .85},color={1 0 0},height=4ex]{}  & \TextField[name=pp62,backgroundcolor={.85 .85 .85},color={0 0 1},height=4ex]{}  & \TextField[name=pp63,backgroundcolor={.85 .85 .85},color={0 0 1},height=4ex]{}  & \TextField[name=pp64,backgroundcolor={.85 .85 .85},color={0 0 1},height=4ex]{} \\
 \hline
 {\footnotesize{$^*$you can edit this table}}\\
 \end{tabular}}
@@ -545,7 +542,7 @@ A good move on variables drawn from a Dirichlet distribution is the \cl{mvSimple
 This move randomly takes an element from the simplex, proposes a new value for it drawn from a Beta distribution, and then rescales all values of the simplex to sum to 1 again.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-moves[++mi] = mvSimplexElementScale(pi)
+moves[++mvi] = mvSimplexElementScale(pi)
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -560,7 +557,7 @@ Again, we need to specify a move for this new stochastic variable.
 A simple scaling move should do the job.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-moves[++mi] = mvScale(kappa)
+moves[++mvi] = mvScale(kappa)
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -586,7 +583,7 @@ This should be all for the HKY model.
 \item Is the inferred rate of transition substitutions higher than the rate of transversion substitutions? If so, by how much?
 \item Like the HKY model, the Felsenstein 1981 (F81) substitution model has unequal stationary frequencies, but it assumes equal transition-transversion rates \citep{Felsenstein1981}.
 	Can you set up the F81 model and run an analysis?
-\item Complete the table of the phylogenetic relationship of Tarsiers.
+\item Complete the table of the phylogenetic relationship of primates.
 \end{itemize}
 
 
@@ -622,9 +619,6 @@ where the six exchangeability parameters, $r_{ij}$, specify the relative rates o
 \label{fig:gtr}
 \end{figure}
 
-
-%\subsection{Exchangeability Rate Parameters}
-
 The GTR model requires that we define and specify a prior on the six exchangeability rates, which we will describe using a flat Dirichlet distribution.
 As we did previously for the Dirichlet prior on base frequencies, we first define a constant node specifying the vector of concentration-parameter values using the \cl{v()} function:
 {\tt \begin{snugshade*}
@@ -645,13 +639,10 @@ er ~ dnDirichlet(er_prior)
 The Dirichlet distribution assigns probability densities to a group of parameters: e.g., those that measure proportions and must sum to 1. 
 Here, we have specified a six-parameter Dirichlet prior, where each value describes one of the six relative rates of the GTR model: 
 (1) $A\leftrightarrows C$; (2) $A\leftrightarrows G$; (3) $A\leftrightarrows T$; (4) $C\leftrightarrows G$; (5) $C\leftrightarrows T$; (6) $G\leftrightarrows T$. 
-The input 
-% why not describe these as hyperparameters?
-parameters of a Dirichlet distribution are called shape (or concentration) parameters. 
+The input parameters of a Dirichlet distribution are called shape (or concentration) parameters. 
 The expectation and variance for each variable are related to the sum of the shape parameters.
 The prior we specified above is a `flat' or symmetric Dirichlet distribution; all of the shape parameters are equal (1,1,1,1,1,1).
 This describes a model that allows for equal rates of change between nucleotides, such that the expected rate for each is equal to $\frac{1}{6}$ (Figure \ref{dirichletFig}a).
-%Figure \ref{dirichletFig}a shows the probability density of each rate under this model.
 We might also parameterize the Dirichlet distribution such that all of the shape parameters were equal to 100, which would also specify a prior with an expectation of equal exchangeability rates (Figure \ref{dirichletFig}b). 
 However, by increasing the values of the shape parameters, \cl{er\_prior <- v(100,100,100,100,100,100)}, the Dirichlet distribution will more strongly favor equal exchangeability rates; ({\it i.e.}, providing is a relatively {\em informative} prior). 
 Alternatively, we might consider an asymmetric Dirichlet parameterization that could reflect a strong prior belief that transition and transversion substitutions occur at different rates.
@@ -674,7 +665,7 @@ The Dirichlet prior on our parameter \cl{er} creates a \href{http://en.wikipedia
 
 {\tt\small \begin{snugshade*}
 \begin{lstlisting}
-moves[++mi] = mvSimplexElementScale(er) 
+moves[++mvi] = mvSimplexElementScale(er) 
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -691,7 +682,7 @@ The node \cl{pi} represents the $\pi$ node in Figure \ref{fig:gtr}.
 Now add the simplex scale move on the stationary frequencies to the moves vector:
 {\tt \small \begin{snugshade*}
 \begin{lstlisting}
-moves[++mi] = mvSimplexElementScale(pi)  
+moves[++mvi] = mvSimplexElementScale(pi)  
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -712,7 +703,7 @@ Q := fnGTR(er,pi)
 \item Use one of your previous analysis files---either the \cl{JukesCantor.Rev} or \cl{HKY.Rev}---to specify a GTR analysis in a new file called \cl{GTR.Rev}.
 	Adapt the old analysis to be performed under the GTR substitution model. 
 \item Run an MCMC analysis to estimate the posterior distribution.
-\item Complete the table of the phylogenetic relationship of Tarsiers.
+\item Complete the table of the phylogenetic relationship of primates.
 \end{itemize}
 
 
@@ -725,16 +716,13 @@ Q := fnGTR(er,pi)
 
 
 Members of the GTR family of substitution models assume that rates are homogeneous across sites, an assumption that is often violated by real data.
-We can accommodate variation in substitution rate among sites (ASRV) by adopting the discrete-gamma model \citep{yang94a}.
+We can accommodate variation in substitution rate among sites (ASRV) by adopting the discrete-gamma model \citep{Yang1994a}.
 This model assumes that the substitution rate at each site is a random variable that is described by a discretized gamma distribution, which has two parameters: the shape parameter, $\alpha$, and the rate parameter, $\beta$. 
 In order that we can interpret the branch lengths as the expected number of substitutions per site, this model assumes that the mean site rate is equal to 1.
-%Consequently, we wish to specify a gamma distribution with a mean of 1.
 The mean of the gamma is equal to $\alpha/\beta$, so a mean-one gamma is specified by setting the two parameters to be equal, $\alpha=\beta$.
 This means that we can fully describe the gamma distribution with the single shape parameter, $\alpha$. 
 The degree of among-site substitution rate variation is inversely proportional to the value of the $\alpha$-shape parameter.
 As the value of the $\alpha$-shape increases, the gamma distribution increasingly resembles a normal distribution with decreasing variance, which therefore corresponds to decreasing levels of ASRV (Figure \ref{asrhGammaFig}).
-%If $\alpha = 1$, then the gamma distribution collapses to an exponential distribution with a rate parameter equal to $\beta$.
-% Is it too much detail to describe the special case of |alpha = 1?
 By contrast, when the value of the $\alpha$-shape parameter is $< 1$, the gamma distribution assumes a concave distribution that concentrates most of the prior density on low rates, but retains some prior mass on sites with very high rates, which therefore corresponds to high levels of ASRV (Figure \ref{asrhGammaFig}).
 Note that, when $\alpha = 1$, the gamma distribution collapses to an exponential distribution with a rate parameter equal to $\beta$.
 
@@ -749,47 +737,37 @@ Note that, when $\alpha = 1$, the gamma distribution collapses to an exponential
 We typically lack prior knowledge regarding the degree of ASRV for a given alignment.
 Accordingly, rather than specifying a precise value of $\alpha$, we can instead estimate the value of the $\alpha$-shape parameter from the data.
 This requires that we specify a diffuse (relatively `uninformative') prior on the $\alpha$-shape parameter.
-% I think we should be careful with the our use of `uninformative' and `informative' priors---even a very vague prior can still impact the posterior, and so it is technically informative.
-% This can lead to misconceptions that `flat' priors are necessarily `uninformative', which is often misleading.  So, it may be better to describe priors as more or less diffuse/informative.
-For this analysis, we will use an exponential distribution with a rate parameter, \cl{shape\_prior}, equal to \cl{0.05}.
-An exponential prior assigns non-zero probability on values of $\alpha$ ranging from 0 to $\infty$. 
-The rate parameter of an exponential distribution, often denoted $\lambda$, controls both the mean and variance of this distribution, such that the expected (or mean) value of $\alpha$ is:
-$\mathbb{E}[\alpha] = \frac{1}{\lambda}.$
-Thus, if we set $\lambda=0.05$, then $\mathbb{E}[\alpha] = 20$.
+For this analysis, we will use a lognormal distribution with a mean parameter, \cl{alpha\_prior\_mean}, equal to \cl{5.0}, and standard deviation, \cl{alpha\_prior\_sd}, equal to 0.587405 (thus, 95\% of the prior density spans exactly one order of magnitude).
 
 This approach for accommodating ASRV is another example of a hierarchical model (Figure \ref{fig:gtrg}).
-That is, variation in substitution rates across sites is addressed by applyig a site-specific rate multiplier to each of the $j$ sites, $r_j$.
+That is, variation in substitution rates across sites is addressed by applying a site-specific rate multiplier to each of the $j$ sites, $r_j$.
 These rate-multipliers are drawn from a discrete, mean-one gamma distribution; the shape of this prior distribution (and the corresponding degree of ASRV) is governed by the $\alpha$-shape parameter.
 The $\alpha$-shape parameter, in turn, is treated as an exponentially distributed random variable.
 Finally, the shape of the exponential prior is governed by the rate parameter, $\lambda$, which is set to a fixed value.   
 
 \begin{figure}[h!]
 \centering
-\fbox{\includegraphics[width=\textwidth,angle=0]{\ResourcePath figures/gtrg_graphical_model_2.pdf}}
+\fbox{\includegraphics[width=\textwidth,angle=0]{\ResourcePath figures/gtrg_graphical_model.pdf}}
 \caption{\small Graphical model representation of the General Time Reversible (GTR) + Gamma phylogenetic model.}
 \label{fig:gtrg}
 \end{figure}
 
 \subsection{Setting up the Gamma Model in \RevBayes}
 
-Create a constant node called \cl{shape\_prior} for the rate parameter of the exponential prior on the gamma-shape parameter (this is represented as the constant $\lambda$-rate parameter in Figure \ref{fig:gtrg}):
+Create a constant node called \cl{alpha\_prior\_mean} for the mean parameter and a constant node called \cl{alpha\_prior\_sd} for the standard deviation of the lognormal prior on the gamma-shape parameter (this is represented as the constant $m_\alpha$ and $sd_\alpha$ parameters in Figure \ref{fig:gtrg}):
 {\tt\begin{snugshade*}
 \begin{lstlisting}
-shape_prior <- 0.05                                                                             
+alpha_prior_mean <- 5.0
+alpha_prior_sd <- 0.587405
 \end{lstlisting}
 \end{snugshade*}}
-% I changed this from ``alpha_prior'' to match the description in the text
 
-Then create a stochastic node called \cl{alpha} with an exponential prior (this represents the stochastic node for the $\alpha$-shape parameter in Figure \ref{fig:gtrg}):
-% The GTR+G graphical model figure was not previously included...I added a modified version below that 
-% horizontally compressed the GTR part of the model; the modified version is called `gtrg_graphical_model_2.'
-% I changed this from \cl{shape} in tis sentence to \cl{alpha} so that it matched the description in the code and the GTR + G graphical model description
+Then create a stochastic node called \cl{alpha} with a lognormal prior (this represents the stochastic node for the $\alpha$-shape parameter in Figure \ref{fig:gtrg}):
 {\tt\begin{snugshade*}
 \begin{lstlisting}
-alpha ~ dnExponential(shape_prior)
+alpha ~ dnLognormal( alpha_prior_mean, alpha_prior_sd )
 \end{lstlisting}
 \end{snugshade*}}
-% I changed this from ``alpha_prior'' to match the description in the txt
 
 The way the ASRV model is implemented involves discretizing the mean-one gamma distribution into a set number of rate categories, $k$. 
 Thus, we can analytically marginalize over the uncertainty in the rate at each site. 
@@ -797,7 +775,6 @@ The likelihood of each site is averaged over the $k$ rate categories, where the 
 To specify this, we need a deterministic node that is a vector that will hold the set of $k$ rates drawn from the gamma distribution with $k$ rate categories. 
 The \cl{fnDiscretizeGamma()} function returns this deterministic node and takes three arguments: the shape and rate of the gamma distribution and the number of categories. 
 Since we want to discretize a mean-one gamma distribution, we can pass in \cl{alpha} for both the shape and rate.
-% I changed this from \cl{shape} in tis sentence to \cl{alpha} so that it matched the description in the code and the GTR + G graphical model description
 
 Initialize the \cl{gamma\_rates} deterministic node vector using the  \cl{fnDiscretizeGamma()} function with \cl{4} bins:
 {\tt \begin{snugshade*}
@@ -808,16 +785,14 @@ gamma_rates := fnDiscretizeGamma( alpha, alpha, 4 )
 
 Note that here, by convention, we set $k = 4$.
 The random variable that controls the rate variation is the stochastic node \cl{alpha}. 
-% I changed this from \cl{shape} in tis sentence to \cl{alpha} so that it matched the description in the code and the GTR + G graphical model description
 We will apply a simple scale move to this parameter.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-moves[++mi] = mvScale(alpha, weight=2.0)
+moves[++mvi] = mvScale(alpha, weight=2.0)
 \end{lstlisting}
 \end{snugshade*}}
 
 Remember that you need to call the \cl{PhyloCTMC} constructor to include the new site-rate parameter:
-% This sentence was incomplete previously; I think the revised version is correct.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 seq ~ dnPhyloCTMC(tree=psi, Q=Q, branchRates=clockRate, siteRates=gamma_rates, type="DNA")
@@ -832,9 +807,7 @@ Run an MCMC simulation to estimate the posterior distribution.
 \begin{itemize}
 \item Is there an impact on the estimated phylogeny compared with the previous analyses? 
 	Look at the MAP tree and the posterior probabilities of the clades.
-\item What is the estimated tree length? 
-	Is the estimate different to the previous analysis? What could cause this?
-\item Complete the table of the phylogenetic relationship of Tarsiers.
+\item Complete the table of the phylogenetic relationship of primates.
 \end{itemize}
 
 
@@ -873,7 +846,7 @@ The \cl{Beta(1,1)} distribution is a flat prior distribution that specifies equa
 Then, as usual, we add a move to change this stochastic variable; we'll used a simple sliding window move.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-moves[++mi] = mvSlide(pinvar)
+moves[++mvi] = mvSlide(pinvar)
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -891,9 +864,9 @@ seq ~ dnPhyloCTMC(tree=psi, Q=Q, branchRates=clockRate, siteRates=gamma_rates, p
 \item What is the estimated probability of invariable sites and how does it relate to the ratio of invariant sites to the total number of sites?
 \item Extend the GTR+$\Gamma$ model to account for invariable sites and run an analysis.
 \item What is the estimated probability of invariable sites now?
-\item Complete the table of the phylogenetic relationship of Tarsiers.
+\item Complete the table of the phylogenetic relationship of primates.
 \end{itemize} 
 
 
 \bibliographystyle{sysbio}
-\bibliography{\ResourcePath refs}
+\bibliography{\GlobalResourcePath refs}
