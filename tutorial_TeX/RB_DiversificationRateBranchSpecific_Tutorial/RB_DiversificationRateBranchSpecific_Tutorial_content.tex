@@ -139,7 +139,7 @@ This prior density is analogous to the prior on the diversification rate in the 
 \begin{lstlisting}
 diversification_prior_mean <- ln( ln(450.0/2.0) / T.rootAge() )
 diversification_mean ~ dnLognormal(mean=diversification_prior_mean, sd=0.587405)
-moves[++mi] = mvScale(diversification_mean,lambda=1,tune=true,weight=5)
+moves[++mvi] = mvScale(diversification_mean,lambda=1,tune=true,weight=5)
 \end{lstlisting}
 \end{snugshade*}}
 Additionally, we choose a fixed standard deviation of $0.587405*2$ for the speciation rates because it represents two orders of magnitude variance in the rate categories.
@@ -163,7 +163,7 @@ Hence, we only need to create one random variable for the relative extinction ra
 \begin{lstlisting}
 turnover_prior_mean <- ln( ln(450.0/2.0) / T.rootAge() )
 turnover_mean ~ dnLognormal(mean=turnover_prior_mean,sd=0.587405*2) 
-moves[++mi] = mvScale(turnover_mean,lambda=1.0,tune=true,weight=3.0)
+moves[++mvi] = mvScale(turnover_mean,lambda=1.0,tune=true,weight=3.0)
 \end{lstlisting}
 \end{snugshade*}}
 Then we multiply each speciation rate category by the relative extinction rate to obtain the extinction rates per rate category.
@@ -186,7 +186,7 @@ As usual for rate parameter, we apply a scaling move to the \cl{event\_rate} var
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 event_rate ~ dnExponential(1.0)
-moves[++mi] = mvScale(event_rate,lambda=1,tune=true,weight=5)
+moves[++mvi] = mvScale(event_rate,lambda=1,tune=true,weight=5)
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -428,7 +428,7 @@ Thus, we create first our hyper-prior on the mean diversification rate, which is
 \begin{lstlisting}
 diversification_prior_mean <- ln( ln(450.0/2.0) / T.rootAge() )
 diversification_mean ~ dnLognormal(mean=diversification_prior_mean, sd=0.587405)
-moves[++mi] = mvScale(diversification_mean,lambda=1,tune=true,weight=5)
+moves[++mvi] = mvScale(diversification_mean,lambda=1,tune=true,weight=5)
 \end{lstlisting}
 \end{snugshade*}}
 Additionally, we choose a fixed standard deviation of $0.587405*2$ for the speciation rates because it represents two orders of magnitude variance in the rate categories.
@@ -443,7 +443,7 @@ We define the prior on the turnover rate in the same way as we did for the diver
 \begin{lstlisting}
 turnover_prior_mean <- ln( ln(450.0/2.0) / T.rootAge() )
 turnover_mean ~ dnLognormal(mean=turnover_prior_mean,sd=0.587405*2) 
-moves[++mi] = mvScale(turnover_mean,lambda=1.0,tune=true,weight=3.0)
+moves[++mvi] = mvScale(turnover_mean,lambda=1.0,tune=true,weight=3.0)
 \end{lstlisting}
 \end{snugshade*}}
 Then we multiply each speciation rate category by the relative extinction rate to obtain the extinction rates per rate category.
@@ -466,7 +466,7 @@ As usual for rate parameter, we apply a scaling move to the \cl{event\_rate} var
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 event_rate ~ dnExponential(1.0)
-moves[++mi] = mvScale(event_rate,lambda=1,tune=true,weight=5)
+moves[++mvi] = mvScale(event_rate,lambda=1,tune=true,weight=5)
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -476,7 +476,7 @@ The move for this random variable is a random integer walk because the random va
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 root_category ~ dnUniformNatural(1,NUM_RATE_CATEGORIES)
-moves[++mi] = mvRandomIntegerWalk(root_category,weight=1)
+moves[++mvi] = mvRandomIntegerWalk(root_category,weight=1)
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -527,10 +527,10 @@ We use a \cl{mvBirthDeathEvent} to add and remove events, a \cl{mvEventTimeSlide
 and a \cl{mvDiscreteEventCategoryRandomWalk} to change the new rate categories after an event occured.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-moves[++mi] = mvBirthDeathEvent(timetree,weight=2)
-moves[++mi] = mvEventTimeSlide(timetree,weight=2)
-moves[++mi] = mvEventTimeBeta(timetree,weight=2)
-moves[++mi] = mvDiscreteEventCategoryRandomWalk(timetree,weight=2)
+moves[++mvi] = mvBirthDeathEvent(timetree,weight=2)
+moves[++mvi] = mvEventTimeSlide(timetree,weight=2)
+moves[++mvi] = mvEventTimeBeta(timetree,weight=2)
+moves[++mvi] = mvDiscreteEventCategoryRandomWalk(timetree,weight=2)
 \end{lstlisting}
 \end{snugshade*}}
 

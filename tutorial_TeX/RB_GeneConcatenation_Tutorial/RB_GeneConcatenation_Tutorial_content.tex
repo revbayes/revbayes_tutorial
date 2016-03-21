@@ -65,22 +65,22 @@ sampling_fraction <- 23 / 450 # we sampled 23 out of the ~ 450 primate species
 
 # create some moves that change the stochastic variables
 # Moves are sliding and scaling proposals
-moves[++mi] = mvSlide(diversification,delta=1,tune=true,weight=2)
-moves[++mi] = mvSlide(relativeExtinction,delta=1,tune=true,weight=2)
-moves[++mi] = mvScale(diversification,lambda=1,tune=true,weight=2)
-moves[++mi] = mvScale(relativeExtinction,lambda=1,tune=true,weight=2)
-moves[++mi] = mvSlide(root,delta=1,tune=true,weight=0.2)
+moves[++mvi] = mvSlide(diversification,delta=1,tune=true,weight=2)
+moves[++mvi] = mvSlide(relativeExtinction,delta=1,tune=true,weight=2)
+moves[++mvi] = mvScale(diversification,lambda=1,tune=true,weight=2)
+moves[++mvi] = mvScale(relativeExtinction,lambda=1,tune=true,weight=2)
+moves[++mvi] = mvSlide(root,delta=1,tune=true,weight=0.2)
 
 
 # construct a variable for the tree drawn from a birth-death process
 psi ~ dnBDP(lambda=speciation, mu=extinction, rootAge=root, rho=sampling_fraction, taxa=taxa )
 
-moves[++mi] = mvNarrow(psi, weight=5.0)
-moves[++mi] = mvNNI(psi, weight=1.0)
-moves[++mi] = mvFNPR(psi, weight=3.0)
-moves[++mi] = mvGPR(psi, weight=3.0)
-moves[++mi] = mvSubtreeScale(psi, weight=3.0)
-moves[++mi] = mvNodeTimeSlideUniform(psi, weight=15.0)
+moves[++mvi] = mvNarrow(psi, weight=5.0)
+moves[++mvi] = mvNNI(psi, weight=1.0)
+moves[++mvi] = mvFNPR(psi, weight=3.0)
+moves[++mvi] = mvGPR(psi, weight=3.0)
+moves[++mvi] = mvSubtreeScale(psi, weight=3.0)
+moves[++mvi] = mvNodeTimeSlideUniform(psi, weight=15.0)
 
 
 \end{lstlisting}
@@ -97,7 +97,7 @@ for ( i in 1:num_loci ) {
    log_clock_rate[i] ~ dnUniform(-8,4)
    clock_rate[i] := 10^log_clock_rate[i]
    
-   moves[++mi] = mvSlide(log_clock_rate[i], weight=1.0)
+   moves[++mvi] = mvSlide(log_clock_rate[i], weight=1.0)
 }
 \end{lstlisting}
 \end{snugshade*}}
@@ -112,11 +112,11 @@ for ( i in 1:num_loci ) {
 
     #### specify the HKY substitution model applied uniformly to all sites of a gene
     kappa[i] ~ dnLognormal(0,1)
-    moves[++mi] = mvScale(kappa[i],weight=1)
+    moves[++mvi] = mvScale(kappa[i],weight=1)
 
     pi_prior[i] <- v(1,1,1,1) 
     pi[i] ~ dnDirichlet(pi_prior[i])
-    moves[++mi] = mvSimplexElementScale(pi[i],weight=2)
+    moves[++mvi] = mvSimplexElementScale(pi[i],weight=2)
 
 
     #### create a deterministic variable for the rate matrix
@@ -128,7 +128,7 @@ for ( i in 1:num_loci ) {
     gamma_rates[i] := fnDiscretizeGamma( alpha[i], alpha[i], 4, false )
 
     # add moves for the stationary frequencies, exchangeability rates and the shape parameter
-    moves[++mi] = mvScale(alpha[i],weight=2)
+    moves[++mvi] = mvScale(alpha[i],weight=2)
 
 }
 
@@ -199,15 +199,6 @@ mapTree(treetrace,"output/primates_concatenation_root_calibration")
 
 
 
-
-\bigskip
-Questions about this tutorial can be directed to: \\\vspace{-10mm}
-\begin{itemize}
-\item Bastien Boussau (email: \href{mailto:boussau@gmail.com}{boussau@gmail.com}) \\\vspace{-8mm}
-\item Sebastian H\"{o}hna (email: \href{mailto:sebastian.hoehna@gmail.com}{sebastian.hoehna@gmail.com})
-\end{itemize}
-
-
-\bibliographystyle{mbe}
-\bibliography{\ResourcePath refs}
+\bibliographystyle{sysbio}
+\bibliography{\GlobalResourcePath refs}
 

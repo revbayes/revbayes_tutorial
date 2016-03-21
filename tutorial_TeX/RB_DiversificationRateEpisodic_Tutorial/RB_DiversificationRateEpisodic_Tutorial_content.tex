@@ -111,8 +111,8 @@ extinction_sd ~ dnExponential(1.0)
 We apply a simple scaling move on each prior parameter.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-moves[++mi] = mvScale(speciation_sd,weight=5.0)
-moves[++mi] = mvScale(extinction_sd,weight=5.0)
+moves[++mvi] = mvScale(speciation_sd,weight=5.0)
+moves[++mvi] = mvScale(extinction_sd,weight=5.0)
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -129,8 +129,8 @@ extinction_prior_mean ~ dnUniform(-5.0,5.0)
 This time we will apply a simple sliding window move because both parameters are location parameters instead of scale or variance parameters.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-moves[++mi] = mvSlide(speciation_prior_mean,weight=5.0)
-moves[++mi] = mvSlide(extinction_prior_mean,weight=5.0)
+moves[++mvi] = mvSlide(speciation_prior_mean,weight=5.0)
+moves[++mvi] = mvSlide(extinction_prior_mean,weight=5.0)
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -151,8 +151,8 @@ Normally we would use scaling moves but in this case we work on the log-transfor
 If you are keen you can test the differences.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-moves[++mi] = mvSlide(log_speciation[1], weight=2)
-moves[++mi] = mvSlide(log_extinction[1], weight=2)
+moves[++mvi] = mvSlide(log_speciation[1], weight=2)
+moves[++mvi] = mvSlide(log_extinction[1], weight=2)
 \end{lstlisting}
 \end{snugshade*}}
 Now we transform the parameters.
@@ -174,8 +174,8 @@ for (i in 1:NUM_INTERVALS) {
     log_speciation[index] ~ dnNormal( mean=log_speciation[i], sd=speciation_sd )
     log_extinction[index] ~ dnNormal( mean=log_extinction[i], sd=extinction_sd )
 
-    moves[++mi] = mvSlide(log_speciation[index], weight=2)
-    moves[++mi] = mvSlide(log_extinction[index], weight=2)
+    moves[++mvi] = mvSlide(log_speciation[index], weight=2)
+    moves[++mvi] = mvSlide(log_extinction[index], weight=2)
 
     speciation[index] := exp( log_speciation[index] )
     extinction[index] := exp( log_extinction[index] )
@@ -187,8 +187,8 @@ Finally, we apply moves that slide all values in the vectors, \IE all speciation
 This again considerably improves the efficiency of our MCMC analysis.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-moves[++mi] = mvVectorSlide(log_speciation, weight=10)
-moves[++mi] = mvVectorSlide(log_extinction, weight=10)
+moves[++mvi] = mvVectorSlide(log_speciation, weight=10)
+moves[++mvi] = mvVectorSlide(log_extinction, weight=10)
 \end{lstlisting}
 \end{snugshade*}}
 

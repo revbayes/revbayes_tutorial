@@ -102,7 +102,8 @@ taxa <- T.taxa()
 Additionally, we can initialize an iterator variable for our vector of moves:
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-mi = 0
+mvi = 0
+mni = 0
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -131,7 +132,7 @@ We need to create a vector of moves and we can do this by using vector indexing 
 We will use a scaling move on $\lambda$ called \cl{mvScale}.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-moves[++mi] = mvScale(birth_rate,lambda=1,tune=true,weight=3)
+moves[++mvi] = mvScale(birth_rate,lambda=1,tune=true,weight=3)
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -204,14 +205,14 @@ The monitor functions are all called \cl{mn*}, where \cl{*} is the wildcard repr
 First, we will initialize the model monitor using the \cl{mnModel} function. This creates a new monitor variable that will output the states for all model parameters when passed into a MCMC function. 
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-monitors[1] = mnModel(filename="output/primates_Yule.log",printgen=10, separator = TAB)
+monitors[++mni] = mnModel(filename="output/primates_Yule.log",printgen=10, separator = TAB)
 \end{lstlisting}
 \end{snugshade*}}
 
 Additionally, create a screen monitor that will report the states of specified variables to the screen with \cl{mnScreen}:
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-monitors[2] = mnScreen(printgen=1000, birth_rate)
+monitors[++mni] = mnScreen(printgen=1000, birth_rate)
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -262,7 +263,7 @@ When the analysis is complete, you will have the monitored files in your output 
 
 With a fully specified model, we can set up the \cl{powerPosterior()} analysis to create a file of `powers' and likelihoods from which we can estimate the marginal likelihood using stepping-stone or path sampling. 
 This method computes a vector of powers from a beta distribution, then executes an MCMC run for each power step while raising the likelihood to that power. In this implementation, the vector of powers starts with 1, sampling the likelihood close to the posterior and incrementally sampling closer and closer to the prior as the power decreases. 
-Fore more information on marginal likelihood estimation please read the \href{https://github.com/revbayes/revbayes_tutorial/raw/master/tutorial_TeX/RB_BayesFactor_Tutorial/RB_BayesFactor_Tutorial.pdf}{RB\_BayesFactor\_Tutorial}.
+For more information on marginal likelihood estimation please read the \href{https://github.com/revbayes/revbayes_tutorial/raw/master/tutorial_TeX/RB_BayesFactor_Tutorial/RB_BayesFactor_Tutorial.pdf}{RB\_BayesFactor\_Tutorial}.
 
 First, we create the variable containing the power posterior. 
 This requires us to provide a model and vector of moves, as well as an output file name. 
@@ -395,7 +396,7 @@ Thus, we just use the same prior for the diversification rate as we used before 
 diversification_mean <- ln( ln(450.0/2.0) / T.rootAge() )
 diversification_sd <- 0.587405
 diversification ~ dnLognormal(mean=diversification_mean,sd=diversification_sd) 
-moves[++mi] = mvScale(diversification,lambda=1.0,tune=true,weight=3.0)
+moves[++mvi] = mvScale(diversification,lambda=1.0,tune=true,weight=3.0)
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -408,7 +409,7 @@ For simplicity we use the same prior on the turnover rate but with two orders of
 turnover_mean <- ln( ln(450.0/2.0) / T.rootAge() )
 turnover_sd <- 0.587405*2
 turnover ~ dnLognormal(mean=turnover_mean,sd=turnover_sd) 
-moves[++mi] = mvScale(turnover,lambda=1.0,tune=true,weight=3.0)
+moves[++mvi] = mvScale(turnover,lambda=1.0,tune=true,weight=3.0)
 \end{lstlisting}
 \end{snugshade*}}
 
