@@ -1,0 +1,160 @@
+################################################################################
+#
+# RevBayes Exercise: Bayesian inference using MCMC and output analysis
+# 
+# This file: Specifies the full model parameters and moves for a 2-gene
+#        partition model
+#
+# authors: Tracy A. Heath, Michael Landis, Sebastian Hoehna and Brian R. Moore
+#
+################################################################################
+
+
+#######################
+# Reading in the Data #
+#######################
+
+# read in the character data
+filenames <- v("data/primates_cox2.nex", "data/primates_cytb.nex")
+
+n_data_subsets <- filenames.size()
+for (i in 1:n_data_subsets) {
+    data[i] = readDiscreteCharacterData(filenames[i])
+}
+
+# Get some useful variables from the data. We need these later on.
+taxa <- data[1].taxa()
+
+mvi = 0
+mni = 0
+
+##################################
+#      Substitution Model        #
+#   Loop over each data subset   #
+##################################
+  
+for (i in 1:n_data_subsets) {
+
+    # exchangeability rates for partition i
+    er_prior[i] <- v(1,1,1,1,1,1)
+    er[i] ~ dnDirichlet(er_prior[i])
+    moves[++mvi] = mvSimplexElementScale(er[i], alpha=10, tune=true, weight=3) 
+
+    # stationary frequencies for partition i
+    pi_prior[i] <- v(1,1,1,1)
+    pi[i] ~ dnDirichlet(pi_prior[i])
+    moves[++mvi] = mvSimplexElementScale(pi[i], alpha=10, tune=true, weight=2) 
+
+    # rate matrix for partition i
+    Q[i] := fnGTR(er[i],pi[i]) 
+  
+    # +Gamma for partition i
+    alpha_prior_mean[i] <- 5.0
+    alpha_prior_sd[i] <- 0.587405
+    alpha[i] ~ dnLognormal( alpha_prior_mean[i], alpha_prior_sd[i] )
+    gamma_rates[i] := fnDiscretizeGamma( alpha[i], alpha[i], 4, false )
+
+    # add moves for the alpha parameter
+    moves[++mvi] = mvScale(alpha[i],weight=2)
+
+    # the probability of a site being invariable
+    pinvar[i] ~ dnBeta(1,1)
+    moves[++mvi] = mvScale(pinvar[i], lambda=0.1, tune=true, weight=2.0)
+    moves[++mvi] = mvSlide(pinvar[i], delta=0.1, tune=true, weight=2.0)
+
+}
+
+##############
+# Tree model #
+##############
+
+### the BDP is conditioned on the root time
+### here we fix it to 90 million year ago
+root_time <- 90
+
+### the birth rate is a stochastic random variable drawn from a lognormal prior
+### MCMC samples this variable using a scale proposal
+diversification_mean <- ln( ln(450.0/2.0) / root_time )
+diversification_sd <- 0.587405
+diversification ~ dnLognormal(mean=diversification_mean,sd=diversification_sd) 
+moves[++mvi] = mvScale(diversification,lambda=1.0,tune=true,weight=3.0)
+
+turnover_mean <- ln( ln(450.0/2.0) / root_time )
+turnover_sd <- 0.587405*2
+turnover ~ dnLognormal(mean=turnover_mean,sd=turnover_sd) 
+moves[++mvi] = mvScale(turnover,lambda=1.0,tune=true,weight=3.0)
+
+### Transform the parameters
+birth_rate := diversification + turnover
+death_rate := turnover
+
+### rho is the probability of sampling species at the present
+### fix this to 23/450, since there are ~450 described species of primates
+### and we have sampled 23
+rho <- taxa.size()/450
+
+### the time tree is a stochastic node modeled by the constant rate birth-death process (dnBDP)
+psi ~ dnBDP(lambda=birth_rate, mu=death_rate, rho=rho, rootAge=root_time, samplingStrategy="uniform", condition="survival", taxa=taxa)
+
+moves[++mvi] = mvNarrow(psi, weight=5.0)
+moves[++mvi] = mvNNI(psi, weight=1.0)
+moves[++mvi] = mvFNPR(psi, weight=3.0)
+#moves[++mvi] = mvGPR(psi, weight=3.0)
+moves[++mvi] = mvSubtreeScale(psi, weight=3.0)
+moves[++mvi] = mvNodeTimeSlideUniform(psi, weight=15.0)
+
+
+###################
+# Molecular clock #
+###################
+
+### Here, we will estimate the clock rate here because we fixed the root age
+### we use a uniform prior on the log-transform clock rate
+log_global_clock_rate ~ dnUniform(-6,1)
+moves[++mvi] = mvSlide(log_global_clock_rate, weight=2.0)
+global_clock_rate := 10^log_global_clock_rate
+
+# specify a rate multiplier for each partition
+part_rate_mult ~ dnDirichlet( rep(1.0, n_data_subsets) )
+moves[++mvi] = mvBetaSimplex(part_rate_mult, alpha=1.0, tune=true, weight=n_data_subsets)
+moves[++mvi] = mvDirichletSimplex(part_rate_mult, alpha=1.0, tune=true, weight=2.0)
+
+for (i in 1:n_data_subsets) {
+    part_rate[i] := part_rate_mult[i] * n_data_subsets * global_clock_rate
+}
+
+###################
+# PhyloCTMC Model #
+###################
+
+for (i in 1:n_data_subsets) {
+    phyloSeq[i] ~ dnPhyloCTMC(tree=psi, Q=Q[i], branchRates=part_rate[i], siteRates=gamma_rates[i], pInv=pinvar[i], type="DNA")
+    phyloSeq[i].clamp(data[i])
+}
+
+
+############
+# Analysis #
+############
+
+mymodel = model(psi)
+
+# add monitors
+monitors[++mni] = mnModel(filename="output/PS_gene.log",printgen=10)
+monitors[++mni] = mnFile(psi, filename="output/PS_gene.trees", printgen=100)
+monitors[++mni] = mnScreen(global_clock_rate, printgen=1000)
+
+# run the analysis
+mymcmc = mcmc(mymodel, moves, monitors)
+mymcmc.burnin(10000,200)
+mymcmc.run(30000)
+
+# summarize output
+treetrace = readTreeTrace("output/PS_gene.trees")
+#treetrace.summarize()
+
+map_tree = mapTree(treetrace,"output/PS_gene_map.tre")
+
+
+# you may want to quit RevBayes now
+q()
