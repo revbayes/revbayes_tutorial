@@ -22,7 +22,7 @@ T <- readTrees("data/primates_Springer.tre")[1]
 taxa <- T.taxa()
 
 # set my move index
-mi = 0
+mvi = 0
 
 
 ######################
@@ -34,7 +34,7 @@ mi = 0
 birth_rate_mean <- ln( ln(450.0/2.0) / T.rootAge() )
 birth_rate_sd <- 0.587405
 birth_rate ~ dnLognormal(mean=birth_rate_mean,sd=birth_rate_sd) 
-moves[++mi] = mvScale(birth_rate,lambda=1.0,tune=true,weight=3.0)
+moves[++mvi] = mvScale(birth_rate,lambda=1.0,tune=true,weight=3.0)
 
 ### rho is the probability of sampling species at the present
 ### fix this to 367/450, since there are ~450 described species of primates

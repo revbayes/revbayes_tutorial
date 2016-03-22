@@ -1,0 +1,266 @@
+\section{Estimating Speciation \& Extinction Rates Through Time}
+
+\subsection{Outline}
+
+This tutorial describes how to specify a character-dependent branching-process models in \RevBayes;
+a birth-death process where diversification rates are dependent on the state of a discrete character \citep{Maddison2007,Fitzjohn2012}.
+The probabilistic graphical model is given for this tutorial.
+Finally, you will estimate speciation and extinction rates through-time using Markov chain Monte Carlo (MCMC).
+
+
+\subsection{Requirements}
+We assume that you have read and hopefully completed the following tutorials:
+\begin{itemize}
+\item RB\_Getting\_Started
+\item RB\_Basics\_Tutorial
+\item RB\_BayesFactor\_Tutorial
+\item RB\_BasicDiversificationRate\_Tutorial
+\end{itemize}
+Note that the RB\_Basics\_Tutorial introduces the basic syntax of \Rev but does not cover any phylogenetic models.
+You may skip the RB\_Basics\_Tutorial if you have some familiarity with \R.
+The RB\_BayesFactor\_Tutorial introduced Bayesian model selection by means of Bayes factors, which can be skipped by readers familiar with Bayesian model selection.
+We tried to keep this tutorial very basic and introduce all the language concepts and theory on the way.
+You may only need the RB\_Basics\_Tutorial for a more in-depth discussion of concepts in \Rev.
+
+
+%%%%%%%%
+%%   Data   %%
+%%%%%%%%
+\section{Data and files}
+
+We provide the data file(s) which we will use in this tutorial.
+You may want to use your own data instead.
+In the \cl{data} folder, you will find the following files
+\begin{itemize}
+\item \cl{primates\_springer.tre}: Dated primates phylogeny including 369 out of 450 species from .
+\end{itemize}
+
+
+\impmark{Open the tree \cl{data/primates\_springer.tre} in FigTree.}
+
+
+\bigskip
+\section{Character-dependent diversification rates}\label{sec:CDBDP}
+
+
+\subsection{Read the tree}
+
+Begin by reading in the observed tree. 
+
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+T <- readTrees("data/Primates_tree.nex")[1]
+data <- readDiscreteCharacterData("data/Primates_morph.nex")
+\end{lstlisting}
+\end{snugshade*}}
+On this example we are only going to use the first character of the matrix.
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+data.excludeAll()
+data.includeCharacter(1)
+\end{lstlisting}
+\end{snugshade*}}
+
+From this tree, we can get some helpful variables:
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+taxa <- T.taxa()
+\end{lstlisting}
+\end{snugshade*}}
+
+Additionally, we can initialize an iterator variable for our vector of moves:
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+mvi = 0
+\end{lstlisting}
+\end{snugshade*}}
+
+Finally, we create a helper variable that specifies the number of intervals.
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+NUM_STATES = 2
+\end{lstlisting}
+\end{snugshade*}}
+Using this variable we can easily change our script to break-up time into many or few intervals.
+
+
+
+\subsection{Specifying the model}
+
+The basic idea behind the model in this example is that speciation and extinction rates are dependent on a binary character.
+
+
+\subsubsection{Priors on rates}
+We start by specifying prior distributions on the rates.
+
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+diversification_mean <- ln( ln(450.0/2.0) / T.rootAge() )
+turnover_mean <- ln( ln(450.0/2.0) / T.rootAge() )
+diversification_sd <- 0.587405*2
+turnover_sd <- 0.587405*2
+\end{lstlisting}
+\end{snugshade*}}
+
+
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+for (i in 1:NUM_STATES) {
+
+    ### Create a lognormal distributed variable for the diversification rate
+    diversification[i] ~ dnLognormal(mean=diversification_mean,sd=diversification_sd) 
+    moves[++mvi] = mvScale(diversification[i],lambda=1.0,tune=true,weight=3.0)
+
+    ### Create a lognormal distributed variable for the turnover rate
+    turnover[i] ~ dnLognormal(mean=turnover_mean,sd=turnover_sd) 
+    moves[++mvi] = mvScale(turnover[i],lambda=1.0,tune=true,weight=3.0)
+
+
+    ### Transform the parameters
+    speciation[i] := ln( diversification[i] + turnover[i] )
+    extinction[i] := ln( turnover[i] ) 
+
+}
+\end{lstlisting}
+\end{snugshade*}}
+
+Create a rate-matrix for the relative-rate of change between categories.
+Here we simply use equal rates, that is,  a Jukes-Cantor rate-matrix with \cl{NUM\_STATES} states.
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+rate_matrix <- fnJC( NUM_STATES )
+\end{lstlisting}
+\end{snugshade*}}
+
+Create a constant variable with the prior probabilities of each rate category at the root.
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+rate_category_prior <- simplex( rep(1,NUM_STATES) )
+\end{lstlisting}
+\end{snugshade*}}
+
+Create a exponential distributed variable for the rate of rate-shift events
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+event_rate ~ dnExponential(1.0)
+moves[++mvi] = mvScale(event_rate,lambda=1,tune=true,weight=5)
+\end{lstlisting}
+\end{snugshade*}}
+
+
+
+\subsubsection{Incomplete Taxon Sampling}
+
+We know that we have sampled 369 out of 450 living primate species. 
+To account for this we can set the sampling parameter as a constant node with a value of 369/450
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+rho <- T.ntips()/450
+\end{lstlisting}
+\end{snugshade*}}
+
+
+\subsubsection{Root age}
+
+The birth-death process requires a parameter for the root age.
+In this exercise we use a fix tree and thus we know the age of the tree.
+Hence, we can get the value for the root from the \citet{Springer2012} tree.
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+root_time <- T.rootAge()
+\end{lstlisting}
+\end{snugshade*}}
+
+\subsubsection{The time tree}
+
+Now we have all of the parameters we need to specify the full episodic birth-death model. 
+We initialize the stochastic node representing the time tree.
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+timetree ~ dnCDBDP( rootAge                   = root,
+                    hiddenSpeciationRates     = [ 0.0 ],
+                    observedSpeciationRates   = speciation,
+                    hiddenExtinctionRates     = [ 0.0 ],
+                    observedExtinctionRates   = extinction, 
+                    Q                         = rate_matrix,
+                    delta                     = event_rate,
+                    pi                        = rate_category_prior,
+                    rho                       = rho,
+                    condition                 = "survival",
+                    taxa                      = taxa )
+\end{lstlisting}
+\end{snugshade*}}
+And then we attach data to it.
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+timetree.clamp( T )
+timetree.clampCharData( data )
+\end{lstlisting}
+\end{snugshade*}}
+
+Finally, we create a workspace object of our whole model using the \cl{model()} function. 
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+mymodel = model(rho)
+\end{lstlisting}
+\end{snugshade*}}
+
+The \cl{model()} function traversed all of the connections and found all of the nodes we specified. 
+
+
+\subsection{Running an MCMC analysis}
+
+\subsubsection{Specifying Monitors}
+
+For our MCMC analysis, we set up a vector of \emph{monitors} to record the states of our Markov chain. 
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+monitors[1] = mnModel(filename="output/primates_CBBD.log",printgen=10, separator = TAB)
+monitors[2] = mnScreen(printgen=10, event_rate)
+\end{lstlisting}
+\end{snugshade*}}
+
+\subsubsection{Initializing and Running the MCMC Simulation}
+
+With a fully specified model, a set of monitors, and a set of moves, we can now set up the MCMC algorithm that will sample parameter values in proportion to their posterior probability. The \cl{mcmc()} function will create our MCMC object:
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+mymcmc = mcmc(mymodel, monitors, moves)
+\end{lstlisting}
+\end{snugshade*}}
+
+First, we will run a pre-burnin to tune the moves and to obtain starting values from the posterior distribution.
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+mymcmc.burnin(generations=10000,tuningInterval=200)
+\end{lstlisting}
+\end{snugshade*}}
+
+
+Now, run the MCMC:
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+mymcmc.run(generations=50000)
+\end{lstlisting}
+\end{snugshade*}}
+
+
+%\impmark{The \Rev file for performing this analysis: \href{https://github.com/revbayes/revbayes_tutorial/raw/master/RB_DiversificationRateEpisodic_Tutorial/RevBayes_scripts/mcmc_EBD.Rev}{\cl{mcmc\_EBD.Rev}}.}
+%\impmark{An \R file for plotting the output: \href{https://github.com/revbayes/revbayes_tutorial/raw/master/RB_DiversificationRateEpisodic_Tutorial/RevBayes_scripts/Plot_EBD_RevBayes.R}{\cl{Plot\_EBD\_RevBayes.R}}.}
+
+
+%\subsection{Exercise}
+
+%\begin{itemize}
+%\item Run an MCMC simulation to estimate the posterior distribution of the speciation rate and extinction rate.
+%\item Visualize the rate through time using \R.
+%\item Do you see evidence for rate decreases or increases? What is the general trend?
+%\item Run the analysis using a different number of intervals, \EG 5 or 50. How do the rates change?
+%\item Modify the model by specifying a prior on the log-diversification and log-turnover rate and then estimate the diversification rates through time. Do you see any differences in the estimates? 
+%\end{itemize}
+
+
+
+
+\bibliographystyle{sysbio}
+\bibliography{\GlobalResourcePath refs}

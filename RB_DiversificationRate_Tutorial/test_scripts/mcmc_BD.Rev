@@ -22,7 +22,8 @@ T <- readTrees("data/primates_Springer.tre")[1]
 taxa <- T.taxa()
 
 # set my move index
-mi = 0
+mvi = 0
+mni = 0
 
 
 ######################
@@ -34,12 +35,12 @@ mi = 0
 diversification_mean <- ln( ln(450.0/2.0) / T.rootAge() )
 diversification_sd <- 0.587405
 diversification ~ dnLognormal(mean=diversification_mean,sd=diversification_sd) 
-moves[++mi] = mvScale(diversification,lambda=1.0,tune=true,weight=3.0)
+moves[++mvi] = mvScale(diversification,lambda=1.0,tune=true,weight=3.0)
 
 turnover_mean <- ln( ln(450.0/2.0) / T.rootAge() )
 turnover_sd <- 0.587405*2
 turnover ~ dnLognormal(mean=turnover_mean,sd=turnover_sd) 
-moves[++mi] = mvScale(turnover,lambda=1.0,tune=true,weight=3.0)
+moves[++mvi] = mvScale(turnover,lambda=1.0,tune=true,weight=3.0)
 
 ### Transform the parameters
 birth_rate := diversification + turnover

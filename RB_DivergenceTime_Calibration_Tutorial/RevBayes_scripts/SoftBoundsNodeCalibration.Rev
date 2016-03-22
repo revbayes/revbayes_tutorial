@@ -118,7 +118,7 @@ min_age_catarrhini <- 20.55
 max_age_catarrhini <- 37.3
 width_age_prior_catarrhini <- (max_age_catarrhini-min_age_catarrhini)/2.0
 mean_age_prior_catarrhini <- min_age_catarrhini + width_age_prior_catarrhini
-obs_age_catarrhini ~ dnSoftBoundUniformNormal(min=age_catarrhini - width_age_prior_catarrhini, max=age_catarrhini + width_age_prior_catarrhini, sd=5, p=0.1)
+obs_age_catarrhini ~ dnSoftBoundUniformNormal(min=age_catarrhini - width_age_prior_catarrhini, max=age_catarrhini + width_age_prior_catarrhini, sd=2.5, p=0.95)
 obs_age_catarrhini.clamp( mean_age_prior_catarrhini )
 
 ### platyrrhini
@@ -128,7 +128,7 @@ min_age_platyrrhini <- 11.8
 max_age_platyrrhini <- 37.3
 width_age_prior_platyrrhini <- (max_age_platyrrhini-min_age_platyrrhini)/2.0
 mean_age_prior_platyrrhini <- min_age_platyrrhini + width_age_prior_platyrrhini
-obs_age_platyrrhini ~ dnSoftBoundUniformNormal(min=age_platyrrhini - width_age_prior_platyrrhini, max=age_platyrrhini + width_age_prior_platyrrhini, sd=5, p=0.1)
+obs_age_platyrrhini ~ dnSoftBoundUniformNormal(min=age_platyrrhini - width_age_prior_platyrrhini, max=age_platyrrhini + width_age_prior_platyrrhini, sd=2.5, p=0.95)
 obs_age_platyrrhini.clamp( mean_age_prior_platyrrhini )
 
 ### simiiformes
@@ -138,7 +138,7 @@ min_age_simiiformes <- 28.3
 max_age_simiiformes <- 56
 width_age_prior_simiiformes <- (max_age_simiiformes-min_age_simiiformes)/2.0
 mean_age_prior_simiiformes <- min_age_simiiformes + width_age_prior_simiiformes
-obs_age_simiiformes ~ dnSoftBoundUniformNormal(min=age_simiiformes - width_age_prior_simiiformes, max=age_simiiformes + width_age_prior_simiiformes, sd=5, p=0.1)
+obs_age_simiiformes ~ dnSoftBoundUniformNormal(min=age_simiiformes - width_age_prior_simiiformes, max=age_simiiformes + width_age_prior_simiiformes, sd=2.5, p=0.95)
 obs_age_simiiformes.clamp( mean_age_prior_simiiformes )
 
 ### lorisiformes
@@ -148,7 +148,7 @@ min_age_lorisiformes <- 37.1
 max_age_lorisiformes <- 56
 width_age_prior_lorisiformes <- (max_age_lorisiformes-min_age_lorisiformes)/2.0
 mean_age_prior_lorisiformes <- min_age_lorisiformes + width_age_prior_lorisiformes
-obs_age_lorisiformes ~ dnSoftBoundUniformNormal(min=age_lorisiformes - width_age_prior_lorisiformes, max=age_lorisiformes + width_age_prior_lorisiformes, sd=5, p=0.1)
+obs_age_lorisiformes ~ dnSoftBoundUniformNormal(min=age_lorisiformes - width_age_prior_lorisiformes, max=age_lorisiformes + width_age_prior_lorisiformes, sd=2.5, p=0.95)
 obs_age_lorisiformes.clamp( mean_age_prior_lorisiformes )
 
 
