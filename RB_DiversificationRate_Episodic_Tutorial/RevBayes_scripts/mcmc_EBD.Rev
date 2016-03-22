@@ -22,7 +22,7 @@ T <- readTrees("data/primates_Springer.tre")[1]
 taxa <- T.taxa()
 
 # set my move index
-mi = 0
+mvi = 0
 
 NUM_INTERVALS = 10
 
@@ -35,19 +35,19 @@ NUM_INTERVALS = 10
 # first we create the sd of the rates between intervals
 # draw the sd from an exponential distribution
 speciation_sd ~ dnExponential(1.0)
-moves[++mi] = mvScale(speciation_sd,weight=5.0)
+moves[++mvi] = mvScale(speciation_sd,weight=5.0)
 
 extinction_sd ~ dnExponential(1.0)
-moves[++mi] = mvScale(extinction_sd,weight=5.0)
+moves[++mvi] = mvScale(extinction_sd,weight=5.0)
 
 
 
 # draw the mean from a uniform distribution
 speciation_prior_mean ~ dnUniform(-4.0,2.0)
-moves[++mi] = mvSlide(speciation_prior_mean,weight=5.0)
+moves[++mvi] = mvSlide(speciation_prior_mean,weight=5.0)
 
 extinction_prior_mean ~ dnUniform(-4.0,2.0)
-moves[++mi] = mvSlide(extinction_prior_mean,weight=5.0)
+moves[++mvi] = mvSlide(extinction_prior_mean,weight=5.0)
 
 
 
@@ -56,8 +56,8 @@ log_speciation[1] ~ dnNormal( mean=speciation_prior_mean, sd=speciation_sd )
 log_extinction[1] ~ dnNormal( mean=extinction_prior_mean, sd=extinction_sd )
 
 
-moves[++mi] = mvSlide(log_speciation[1], weight=2)
-moves[++mi] = mvSlide(log_extinction[1], weight=2)
+moves[++mvi] = mvSlide(log_speciation[1], weight=2)
+moves[++mvi] = mvSlide(log_extinction[1], weight=2)
 
 
 speciation[1] := exp( log_speciation[1] )
@@ -71,8 +71,8 @@ for (i in 1:NUM_INTERVALS) {
     log_extinction[index] ~ dnNormal( mean=log_extinction[i], sd=extinction_sd )
 
 
-    moves[++mi] = mvSlide(log_speciation[index], weight=2)
-    moves[++mi] = mvSlide(log_extinction[index], weight=2)
+    moves[++mvi] = mvSlide(log_speciation[index], weight=2)
+    moves[++mvi] = mvSlide(log_extinction[index], weight=2)
 
 
     speciation[index] := exp( log_speciation[index] )
@@ -80,8 +80,8 @@ for (i in 1:NUM_INTERVALS) {
 
 }
 
-moves[++mi] = mvVectorSlide(log_speciation, weight=10)
-moves[++mi] = mvVectorSlide(log_extinction, weight=10)
+moves[++mvi] = mvVectorSlide(log_speciation, weight=10)
+moves[++mvi] = mvVectorSlide(log_extinction, weight=10)
 
 
 interval_times = T.rootAge() * (1:NUM_INTERVALS) / (NUM_INTERVALS) * 0.8

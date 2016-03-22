@@ -51,25 +51,25 @@ In its simplest form, the speciation rate remains constant over time.
 As a result, the waiting time between speciation events is exponential, where the rate of the exponential distribution is the product of the number of extant lineages ($n$) at that time and the speciation rate: $n\lambda$ \citep{Yule1925,Aldous2001,Hoehna2014a}. 
 The pure-birth branching model does not allow for lineage extinction (\IE the extinction rate $\mu=0$). 
 However, the model depends on a second parameter $\rho$ which is the probability of sampling a species in the present time as well as the time of the start of the process, whether that is the origin time or root age.
-Therefore, the probabilistic graphical model of the pure-birth process is quite simple, where the observed time tree topology and node ages are conditional on the speciation rate, sampling probability, and root age (Fig.~\ref{yuleGMfig}).
+Therefore, the probabilistic graphical model of the pure-birth process is quite simple, where the observed time tree topology and node ages are conditional on the speciation rate, sampling probability, and root age (Fig.~\ref{fig:yule_gm}).
 \begin{figure}[h!]
 \centering
 \fbox{\includegraphics[width=3in]{\ResourcePath figures/yule_gm.eps}}
 \caption{\small The graphical model representation of the pure-birth (Yule) process.}
-\label{yuleGMfig}
+\label{fig:yule_gm}
 \end{figure}
 
-We can add hierarchical structure to this model and account for uncertainty in the value of the speciation rate by placing a hyperprior on $\lambda$ (Fig.~\ref{yuleGMfig2}). 
-The graphical models in Figures \ref{yuleGMfig} and \ref{yuleGMfig2} demonstrate the simplicity of the Yule model. 
+We can add hierarchical structure to this model and account for uncertainty in the value of the speciation rate by placing a hyperprior on $\lambda$ (Fig.~\ref{fig:yule_gm2}). 
+The graphical models in Figures \ref{fig:yule_gm} and \ref{fig:yule_gm2} demonstrate the simplicity of the Yule model. 
 Ultimately, the pure birth model is just a special case of the birth-death process, where the extinction rate (typically denoted $\mu$) is a constant node with the value 0. 
 \begin{figure}[h!]
 \centering
 \fbox{\includegraphics[width=4in]{\ResourcePath figures/yule_gm2.eps}}
 \caption{\small The graphical model representation of the pure-birth (Yule) process, where the speciation rate is treated as a random variable drawn from a lognormal distribution.}
-\label{yuleGMfig2}
+\label{fig:yule_gm2}
 \end{figure}
 
-For this exercise, we will specify a Yule model, such that the speciation rate is a stochastic node, drawn from a lognormal distribution as in Figure \ref{yuleGMfig2}.
+For this exercise, we will specify a Yule model, such that the speciation rate is a stochastic node, drawn from a lognormal distribution as in Figure \ref{fig:yule_gm2}.
 In a Bayesian framework, we are interested in estimating the posterior probability of $\lambda$ given that we observe a time tree.
 \begin{align}\label{bayesTher}
 \mathbb{P}(\lambda \mid \Psi) &= \frac{\mathbb{P}(\Psi \mid \lambda)\mathbb{P}(\lambda \mid \nu)}{\mathbb{P}(\Psi)}
@@ -112,7 +112,7 @@ mni = 0
 
 \subsubsection{Birth rate}
 
-The model we are specifying only has three nodes (Fig.~\ref{yuleGMfig2}). 
+The model we are specifying only has three nodes (Fig.~\ref{fig:yule_gm2}). 
 We can specify the birth rate $\lambda$, the mean and standard deviation of the lognormal hyperprior on $\lambda$, and the conditional dependency of the two parameters all in one line of \Rev code.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
@@ -174,7 +174,7 @@ timetree ~ dnBDP(lambda=birth_rate, mu=0.0, rho=rho, rootAge=root_time, sampling
 \end{lstlisting}
 \end{snugshade*}}
 
-If you refer back to Equation \ref{bayesTher} and Figure \ref{yuleGMfig2}, the time tree $\Psi$ is the variable we observe, \IE the data. 
+If you refer back to Equation \ref{bayesTher} and Figure \ref{fig:yule_gm2}, the time tree $\Psi$ is the variable we observe, \IE the data. 
 We can set this in \Rev by using the \cl{clamp()} function.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
@@ -250,13 +250,17 @@ When the analysis is complete, you will have the monitored files in your output 
 \subsection{Exercise 1}
 
 \begin{itemize}
-\item Run an MCMC simulation to estimate the posterior distribution of the speciation rate.
-\item Load the generated output file into \Tracer: What is the mean posterior rate and what is the estimated HPD?
-\item Compare the prior mean with the posterior mean. Are they different? Is the posterior mean outside the prior 95\% probability interval?
+\item Run an MCMC simulation to estimate the posterior distribution of the speciation rate (\cl{birth\_rate}).
+\item Load the generated output file into \Tracer: What is the mean posterior estimate of the \cl{birth\_rate} and what is the estimated HPD?
+\item Compare the prior mean with the posterior mean. (\textbf{Hint:} Use the optional argument \cl{underPrior=TRUE} in the function \cl{mymcmc.run()}) Are they different (\EG Figure~\ref{fig:prior_posterior})? Is the posterior mean outside the prior 95\% probability interval?
 \item Repeat the analysis and allow for two orders of magnitude of prior uncertainty.
 \end{itemize}
-
-
+\begin{figure}[h!]
+\centering
+\fbox{\includegraphics[width=3in]{\ResourcePath figures/birth_rate_prior_posterior.pdf}}
+\caption{\small Estimates of the posterior and prior distribution of the \cl{birth\_rate} visualized in \Tracer. The prior (black curve) shows lognormal distribution that we chose as the prior distribution.}
+\label{fig:prior_posterior}
+\end{figure}
 
 
 \section{Estimating the marginal likelihood of the model}
@@ -270,7 +274,7 @@ This requires us to provide a model and vector of moves, as well as an output fi
 The \cl{cats} argument sets the number of power steps.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-pow_p = powerPosterior(mymodel, moves, "output/Yule_powp.out", cats=100) 
+pow_p = powerPosterior(mymodel, moves, monitors, "output/Yule_powp.out", cats=100, sampleFreq=10) 
 \end{lstlisting}
 \end{snugshade*}}
 

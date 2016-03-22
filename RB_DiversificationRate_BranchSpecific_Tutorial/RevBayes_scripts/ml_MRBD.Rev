@@ -22,7 +22,7 @@ T <- readTrees("data/primates_Springer.tre")[1]
 taxa <- T.taxa()
 
 # set my move index
-mi = 0
+mvi = 0
 
 
 NUM_RATE_CATEGORIES = 10
@@ -38,7 +38,7 @@ NUM_RATE_CATEGORIES = 10
 ### Create a lognormal distributed variable for the mean diversification rate
 diversification_prior_mean <- ln( ln(450.0/2.0) / T.rootAge() )
 diversification_mean ~ dnLognormal(mean=diversification_prior_mean, sd=0.587405)
-moves[++mi] = mvScale(diversification_mean,lambda=1,tune=true,weight=5)
+moves[++mvi] = mvScale(diversification_mean,lambda=1,tune=true,weight=5)
 
 
 ### Create a deterministic variable for the diversification rate categories
@@ -50,7 +50,7 @@ diversification := fnDiscretizeDistribution( dnLognormal(ln(diversification_mean
 ### Create a lognormal distributed variable for the turnover rate
 turnover_prior_mean <- ln( ln(450.0/2.0) / T.rootAge() )
 turnover_mean ~ dnLognormal(mean=turnover_prior_mean,sd=0.587405*2) 
-moves[++mi] = mvScale(turnover_mean,lambda=1.0,tune=true,weight=3.0)
+moves[++mvi] = mvScale(turnover_mean,lambda=1.0,tune=true,weight=3.0)
 
 ### Create a deterministic variable for the turnover rate categories
 ### using a discretized lognormal distribution (the N-quantiles of it)
@@ -65,7 +65,7 @@ extinction := turnover
 
 ### Create an exponential distributed variable for the rate of rate-shift events
 event_rate ~ dnExponential(1.0)
-moves[++mi] = mvScale(event_rate,lambda=1,tune=true,weight=5)
+moves[++mvi] = mvScale(event_rate,lambda=1,tune=true,weight=5)
 
 
 ### Create the fix parameter for the age of the root set to the observed age
