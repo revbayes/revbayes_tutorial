@@ -1,0 +1,20 @@
+Solitariness	
+no = 0, yes = 1
+
+Activity Period	
+Diurnal = 0, Nocturnal = 1
+
+Terrestrially	
+arb = 0, terres = 1
+
+Habitat	
+forest = 0, savanna = 1
+
+Diet Class	
+frugivore = 0, insectivore = 1, folivore = 2, gummnivore = 3, omnivore = 4, gramnivore = 5
+
+Mating System	
+Mon = 0, PG = 1, PGA = 2, PA = 3
+
+No of Males in Group	
+SM = 0, SMM = 1, MM = 2

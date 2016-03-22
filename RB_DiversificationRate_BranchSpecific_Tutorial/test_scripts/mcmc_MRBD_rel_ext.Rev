@@ -1,0 +1,100 @@
+################################################################################
+#
+# RevBayes Example: Bayesian inference of diversification rates under a
+#                   multi-rate birth-death model
+# 
+#
+# authors: Sebastian Hoehna
+#
+################################################################################
+
+#######################
+# Reading in the Data #
+#######################
+
+###### This just defines a single model for all sites #######
+
+### Read in sequence data for both genes
+
+T <- readTrees("data/primates_Springer.tre")[1]
+
+# Get some useful variables from the data. We need these later on.
+taxa <- T.taxa()
+
+# set my move index
+mi = 0
+
+
+NUM_RATE_CATEGORIES = 2
+
+
+
+####################
+# Create the rates #
+####################
+
+# Specify a prior on the diversification and turnover rate
+mean_speciation ~ dnUniform(-10,10)
+moves[++mi] = mvSlide(mean_speciation,delta=1,tune=true,weight=5)
+
+sd_speciation <- 0.587405*2
+speciation := fnDiscretizeDistribution( dnLognormal(mean_speciation, sd_speciation), NUM_RATE_CATEGORIES )
+
+relative_extinction ~ dnBeta(1,1)
+moves[++mi] = mvSlide(relative_extinction,delta=1,tune=true,weight=5)
+tmp <- rep(1.0, NUM_RATE_CATEGORIES)
+extinction := relative_extinction * exp( mean_speciation ) * tmp
+
+event_rate ~ dnExponential(1.0)
+moves[++mi] = mvScale(event_rate,lambda=1,tune=true,weight=5)
+
+# specify a prior on the root age (this is simply a relative age)
+root <- T.rootAge()
+
+
+### rho is the probability of sampling species at the present
+### fix this to 369/450, since there are ~450 described species of primates
+### and we have sampled 369
+rho <- 369/450
+
+rate_matrix <- fnJC( NUM_RATE_CATEGORIES )
+rate_category_prior <- simplex( rep(1,NUM_RATE_CATEGORIES) )
+
+# construct a variable for the tree drawn from a birth death process
+timetree ~ dnMRBDP(lambda=speciation, mu=extinction, rootAge=root, rho=rho, Q=rate_matrix, pi=rate_category_prior, delta=event_rate, taxa=taxa )
+
+### clamp the model with the "observed" tree
+timetree.clamp(T)
+
+
+
+
+#############
+# The Model #
+#############
+
+
+### workspace model wrapper ###
+mymodel = model(rho)
+
+### set up the monitors that will output parameter values to file and screen 
+monitors[1] = mnModel(filename="output/primates_MRBD.log",printgen=10, separator = TAB)
+monitors[2] = mnScreen(printgen=10, event_rate, mean_speciation)
+
+
+################
+# The Analysis #
+################
+
+### workspace mcmc ###
+mymcmc = mcmc(mymodel, monitors, moves)
+
+### pre-burnin to tune the proposals ###
+mymcmc.burnin(generations=10000,tuningInterval=200)
+
+### run the MCMC ###
+mymcmc.run(generations=50000)
+
+
+## quit ##
+q()
