@@ -62,7 +62,7 @@ timetree.clamp(T)
 mymodel = model(birth_rate)
 
 ### set up the monitors that will output parameter values to file and screen 
-monitors[1] = mnModel(filename="output/primates_Yule_prior.log",printgen=10, separator = TAB)
+monitors[1] = mnModel(filename="output/primates_Yule.log",printgen=10, separator = TAB)
 monitors[2] = mnScreen(printgen=1000, birth_rate)
 
 
@@ -75,10 +75,11 @@ monitors[2] = mnScreen(printgen=1000, birth_rate)
 mymcmc = mcmc(mymodel, monitors, moves)
 
 ### pre-burnin to tune the proposals ###
-#mymcmc.burnin(generations=10000,tuningInterval=200)
+mymcmc.burnin(generations=10000,tuningInterval=200)
 
 ### run the MCMC ###
-mymcmc.run(generations=50000, underPrior=TRUE)
+mymcmc.run(generations=50000)
+#mymcmc.run(generations=50000, underPrior=TRUE)
 
 
 
