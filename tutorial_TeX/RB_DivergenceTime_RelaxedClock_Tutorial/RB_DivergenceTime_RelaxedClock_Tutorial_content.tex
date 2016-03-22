@@ -2,8 +2,7 @@
 
 This tutorial extends on the node and fossil calibration tutorial and focuses on relaxed clock methods. 
 In the first part we will use an uncorrelated lognormal (UCLN) relaxed clock model.
-%In the second analysis you will use informative node- and fossil-calibrations instead of the informative prior on the root age.
-%In the third analysis you will use minimum and maximum age constraint (both using hard and soft constraints) to calibrate the phylogeny.
+In the second analysis you a random local clock to identify potential rate shifts.
 All the assumptions will be covered more in detail later in this tutorial.
 
 \subsection*{Requirements}
@@ -381,13 +380,15 @@ The \cl{fnDiscretizeDistribution} function can be applied to discretize any dist
 rate_categories := fnDiscretizeDistribution(dnLnorm(ucln_log_mean, ucln_sigma), NUM_RATE_CATEGORIES)
 \end{lstlisting}
 \end{snugshade*}}
-
+Next, we need a prior probability for each rate category.
+We will simply say that each rate category is equally probable \emph{a priori}.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 rate_probs <- simplex(rep(1, NUM_RATE_CATEGORIES))
 \end{lstlisting}
 \end{snugshade*}}
-
+Now, we can draw a random variable for each branch rate by using the \cl{dnMixture} to draw a rate from one of the rate categories.
+We do this for each branch by using a for loop over all branches.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 for (j in 1:n_branches) {
@@ -397,7 +398,8 @@ for (j in 1:n_branches) {
 }
 \end{lstlisting}
 \end{snugshade*}}
-
+Finally, we create a deterministic helper variable that holds the mean of all branch rates.
+We may or may not be interested in this later.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 mean_rt := mean(branch_rates)
@@ -457,11 +459,11 @@ monitors[++mni] = mnModel(filename="output/primates_cytb_UCLN.log",printgen=10, 
 \end{lstlisting}
 \end{snugshade*}}
 
-The \cl{mnFile} monitor will record the states for only the parameters passed in as arguments. 
-We use this monitor to specify the output for our sampled trees.
+The \cl{mnExtNewick} monitor will record the tree and node or branch parameters.
+These parameters can be summarized automatically in our 
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-monitors[++mni] = mnFile(filename="output/primates_cytb_UCLN.trees",printgen=10, separator = TAB, psi)
+monitors[++mni] = mnExtNewick(filename="output/primates_cytb_UCLN.trees", isNodeParameter=FALSE, printgen=10, separator = TAB, tree=psi, branch_rates)
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -497,8 +499,23 @@ mymcmc.run(generations=30000)
 \end{snugshade*}}
 
 When the analysis is complete, you will have the monitored files in your output directory.
+Hence, we can read in the tree trace and compile the \emph{maximum a posteriori} (MAP) tree.
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+treetrace = readTreeTrace("output/primates_cytb_UCLN.trees", treetype="clock")
+map_tree = mapTree(treetrace,"output/primates_cytb_UCLN.tree")
+\end{lstlisting}
+\end{snugshade*}}
 
-\noindent \\ \impmark Look at the file called \cl{output/primates\_cytb\_UCLN.log} in \texttt{Tracer}.
+Now, run the MCMC:
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+mymcmc.run(generations=30000)
+\end{lstlisting}
+\end{snugshade*}}
+
+\noindent \\ \impmark Look at the file called \cl{output/primates\_cytb\_UCLN.log} in \Tracer.
+\noindent \\ \impmark Look at the file called \cl{output/primates\_cytb\_UCLN.tree} in \texttt{FigTree}.
 
 
 \subsection{Exercise 1}
@@ -514,15 +531,6 @@ Again, we are interested in the divergence time estimate between \emph{Simiiform
 \item \textbf{*} Repeat the analysis using an exponential distribution for the branch rates.
 \end{itemize}
 
-To obtain an estimate of the divergence time we read in the tree trace and build the annotated maximum \textit{a posteriori} tree.
-{\tt \begin{snugshade*}
-\begin{lstlisting}
-treetrace = readTreeTrace("output/primates_cytb_UCLN.trees",
-                             treetype="clock")
-mapTree(treetrace,"output/primates_cytb_UCLN.tree")
-\end{lstlisting}
-\end{snugshade*}}
-\noindent \\ \impmark Look at the file called \cl{output/primates\_cytb\_UCLN.tree} in \texttt{FigTree}.
 
 
 \begin{Form}
@@ -550,6 +558,64 @@ mapTree(treetrace,"output/primates_cytb_UCLN.tree")
 \label{tab:divergence_times}
 \end{table}
 \end{Form}
+
+
+
+\newpage
+\section{Random local clock}\label{sec:RLC}
+
+In the previous example we used uncorrelated lognormal distributed clock rates.
+Often, one may be interested if there are discrete jumps in the clock rates but otherwise the clock rates remain constant.
+This can be modeled by a random local clock \citep{Drummond2010}.
+
+We start by specifying a prior probability of a rate change on a branch.
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+rho <- 0.01
+\end{lstlisting}
+\end{snugshade*}}
+Next, we specify a prior on the root clock rate.
+Here we use the same prior as if we would assume a global strict clock.
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+log_clock_mean ~ dnUniform(-6,1)
+moves[++mvi] = mvSlide(log_clock_mean, weight=2.0)
+clock_mean := 10^log_clock_mean
+\end{lstlisting}
+\end{snugshade*}}
+
+The next part is the interesting part of setting up the random local clock.
+We loop again over all branches to create a branch specific clock rate.
+Then, we draw a clock rate multiplier for a branch from a \cl{dnReversibleJumpMixture}.
+This is a reversible jump distribution.
+Either, the value is constant (\EG 1.0) or drawn from some distribution (\EG a gamma distribution) with some probability \cl{rho}.
+Then we can simply compute the rate for a given branch by the product of the ancestral branch times the rate multiplier.
+Only for the descendent branches of the root node, which does not have an ancestral branch rate, we take the \cl{clock\_mean} instead.
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+for (i in n_branches:1) {
+   rateChangeProbability[i] := Probability(1-rho)
+   clockRateMultiplier[i] ~ dnReversibleJumpMixture(1, dnGamma(2,2), rateChangeProbability[i] )
+   if ( psi.isRoot( psi.parent(i) ) ) {
+      branch_rates[i] := clock_mean * clockRateMultiplier[i]
+   } else {
+      branch_rates[i] := branch_rates[psi.parent(i)] * clockRateMultiplier[i]
+   }
+   clockRateChange[i] := ifelse( clockRateMultiplier[i] == 1, 0, 1 )
+   moves[++mvi] = mvRJSwitch(clockRateMultiplier[i], weight=1.0)
+   moves[++mvi] = mvScale(clockRateMultiplier[i], lambda=0.1, tune=true, weight=2.0)
+}
+\end{lstlisting}
+\end{snugshade*}}
+
+Finally, we create two deterministic helper variable that holds the mean of all branch rates and the number of rate shifts.
+We may or may not be interested in this later.
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+numRateChanges := sum( clockRateChange )
+mean_rt := mean(branch_rates)
+\end{lstlisting}
+\end{snugshade*}}
 
 
 \bibliographystyle{sysbio}
