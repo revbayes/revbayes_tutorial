@@ -1,6 +1,6 @@
 ############################################################################################
 #   File: timetree tutorial model specification and sampler setup for estimating marginal
-#		  likelihoods under the UCLN model on a fixed tree
+#          likelihoods under the UCLN model on a fixed tree
 ############################################################################################
 
 ### Load the sequence alignment
