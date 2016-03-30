@@ -1,8 +1,8 @@
 ################################################################################
 #
-# RevBayes Example: Bayesian inference of divergence times using molecular and 
-#                   morphological data from Pattinson et al. (2015). fossil dates are
-#                   the mean ages reported from PaleoDB and other sources.
+# RevBayes Example: Bayesian inference of divergence times under 
+#                   the fossilized birth-death process using molecular and
+#                   fossil dates are the mean ages reported from PaleoDB.
 #
 #
 # authors: Sebastian Hoehna
@@ -11,12 +11,12 @@
 
 
 taxa <- readTaxonData("data/taxa_data.tsv", delimiter=TAB)
-D_mol <- readDiscreteCharacterData("data/molecular.nex")
-D_morph <- readDiscreteCharacterData("data/morph_binary.nex")
+D_mol <- readDiscreteCharacterData("data/primates_cytb.nex")
 
 
 mvi = 0
 mni = 0
+
 
 ##############
 # Tree model #
@@ -24,9 +24,7 @@ mni = 0
 
 # Specify a prior on the diversification and turnover rate
 diversification ~ dnUniform(0,10)
-diversification.setValue(0.01)
 turnover ~ dnUniform(0,10)
-turnover.setValue(0.01)
 
 # now transform the diversification and turnover rates into speciation and extinction rates
 speciation := diversification + turnover
@@ -43,20 +41,35 @@ fossil_rate ~ dnUniform(0,10)
 sampling_prob <- 23 / 450 # 23 out of the ~ 450 extant primate species
 
 ## the Birth-death distribution ##
-psi ~ dnFBDP(rootAge=root_time, lambda=speciation, mu=extinction, psi=fossil_rate, rho=sampling_prob, condition="survival", taxa=taxa)
+tree_prior = dnFBDP(rootAge=root_time, lambda=speciation, mu=extinction, psi=fossil_rate, rho=sampling_prob, condition="survival", taxa=taxa)
+
+clade_platyrrhini   = clade("Alouatta_palliata", "Aotus_trivirgatus", "Callicebus_donacophilus", "Cebus_albifrons", "Saimiri_sciureus")
+clade_catarrhini    = clade("Chlorocebus_aethiops", "Colobus_guereza", "Hylobates_lar", "Macaca_mulatta", "Pan_paniscus")
+clade_lemuriformes  = clade("Cheirogaleus_major", "Lemur_catta", "Lepilemur_hubbardorum", "Microcebus_murinus", "Propithecus_coquereli", "Varecia_variegata_variegata") 
+clade_lorisiformes  = clade("Galago_senegalensis", "Loris_tardigradus", "Nycticebus_coucang", "Otolemur_crassicaudatus", "Perodicticus_potto")
+
+
+clade_catarrhini_fossils = clade("Aegyptopithecus", "Catopithecus", "Moeripithecus", "Oligopithecus", "Propliopithecus", clade_catarrhini)
+clade_lorisiformes_fossils = clade("Komba", "Nycticeboides", clade_lorisiformes)
+clade_lemuriformes_fossils = clade("Anchomomys", clade_lemuriformes)
+clade_platyrrhini_fossils = clade( "Branisella", clade_platyrrhini)
+
+clade_constraints = [ clade_catarrhini_fossils, clade_lorisiformes_fossils, clade_lemuriformes_fossils, clade_platyrrhini_fossils ]
+
+
+psi ~ dnConstrainedTopology(tree_prior, clade_constraints)
 
 # create some moves that change the stochastic variables
 # all moves are sliding proposals but you could use scaling proposals for the rates too
 moves[++mvi] = mvSlide(diversification,delta=1,tune=true,weight=1)
 moves[++mvi] = mvSlide(turnover,delta=1,tune=true,weight=1)
 moves[++mvi] = mvSlide(fossil_rate,delta=1,tune=true,weight=1)
-moves[++mvi] = mvSlide(process_time,delta=1,tune=true,weight=1)
+moves[++mvi] = mvSlide(root_time,delta=1,tune=true,weight=1)
 
 moves[++mvi] = mvNarrow(psi, weight=5.0)
 moves[++mvi] = mvNNI(psi, weight=1.0)
 moves[++mvi] = mvFNPR(psi, weight=3.0)
 moves[++mvi] = mvSubtreeScale(psi, weight=3.0)
-moves[++mvi] = mvRootTimeSlide(psi, origin=process_time, weight=3.0)
 moves[++mvi] = mvNodeTimeSlideUniform(psi, weight=15.0)
 
 #moves[++mvi] = mvCollapseExpandFossilBranch(psi,process_time,weight=10.0)
@@ -81,49 +94,30 @@ moves[++mvi] = mvSimplexElementScale(er, alpha=10.0, tune=true, weight=3.0)
 Q_mol := fnGTR(er,pi)
 
 
-####################################
-# Morphological Substitution Model #
-####################################
-
-# the rate matrix
-Q_morph <- fnJC(2)
-
 
 #############################
 # Among Site Rate Variation #
 #############################
 
-alpha_prior <- 0.05
-alpha ~ dnExponential( alpha_prior )
+alpha_prior_mean <- 5.0
+alpha_prior_sd <- 0.587405
+alpha ~ dnLognormal( alpha_prior_mean, alpha_prior_sd )
 gamma_rates := fnDiscretizeGamma( alpha, alpha, 4, false )
 
 # add moves for the stationary frequencies, exchangeability rates and the shape parameter
 moves[++mvi] = mvScale(alpha,weight=2)
 
 
+
 #############################
 # Strict global clock model #
 #############################
 
-#log_mol_clock_rate ~ dnUniform(-4,1)
-#mol_clock_rate := 10^log_mol_clock_rate
-#
-#moves[++mvi] = mvSlide(log_mol_clock_rate, weight=1.0)
+log_mol_clock_rate ~ dnUniform(-8,2)
+mol_clock_rate := 10^log_mol_clock_rate
 
-mol_clock_rate ~ dnExponential( 100.0)
-mol_clock_rate.setValue( 0.01 )
+moves[++mvi] = mvSlide(log_mol_clock_rate, weight=1.0)
 
-moves[++mvi] = mvScale(mol_clock_rate, weight=1.0)
-
-#log_morph_clock_rate ~ dnUniform(-10,2)
-##log_morph_clock_rate.setValue( 7.5 )
-#morph_clock_rate := 10^log_morph_clock_rate
-#
-#moves[++mvi] = mvSlide(log_morph_clock_rate, weight=1.0)
-
-morph_clock_rate ~ dnExponential( 100.0 )
-
-moves[++mvi] = mvScale(morph_clock_rate, weight=1.0)
 
 
 
@@ -132,11 +126,9 @@ moves[++mvi] = mvScale(morph_clock_rate, weight=1.0)
 ###################
 
 seq_mol ~ dnPhyloCTMC(tree=psi, Q=Q_mol, branchRates=mol_clock_rate, siteRates=gamma_rates, type="DNA")
-seq_morph ~ dnPhyloCTMC(tree=psi, Q=Q_morph, branchRates=morph_clock_rate, type="Standard")
 
 # attach the data
 seq_mol.clamp(D_mol)
-seq_morph.clamp(D_morph)
 
 
 
@@ -147,7 +139,7 @@ mymodel = model(bf)
 
 monitors[++mni] = mnModel(filename="output/FBDP.log",printgen=10, separator = TAB)
 monitors[++mni] = mnFile(filename="output/FBDP.trees",printgen=10, separator = TAB, psi)
-monitors[++mni] = mnScreen(printgen=1000, mol_clock_rate, morph_clock_rate, root_time)
+monitors[++mni] = mnScreen(printgen=1000, mol_clock_rate, root_time)
 
  
 mymcmc = mcmc(mymodel, monitors, moves)
