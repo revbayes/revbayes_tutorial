@@ -1,6 +1,6 @@
 ############################################################################################
 #   File: timetree tutorial full model specification and MCMC set up for estimating
-#		  time-calibrated phylogenies under a strict clock model
+#          time-calibrated phylogenies under a strict clock model
 ############################################################################################
 
 ### Load the sequence alignment
@@ -8,6 +8,9 @@ D <- readDiscreteCharacterData(file="data/bears_irbp.nex")
 
 ### initialize an iterator for the moves vector
 mi = 1
+
+n_sites <- D.nchar()
+
 
 ### set up the birth-death model from file
 ### this file includes tree topology moves

@@ -151,7 +151,7 @@ From the tree we can initialize some useful variables.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 n_taxa <- T.ntips()
-names <- T.names()
+taxa <- taxa()
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -278,13 +278,22 @@ constraints <- v(clade_Ursidae, clade_UrsPinn)
 \end{lstlisting}
 \end{snugshade*}}
 
-Now we have all of the elements needed to specify the time-tree parameter.
+Now we have all of the elements needed to create a distribution object that will act as the generating model for our time tree. We need a separate distribution in the workspace because we have to create a separate stochastic node to represent the {\em constrained} time tree.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-timetree ~ dnBDP(lambda=birth_rate, mu=death_rate, rho=rho, rootAge=root_time, samplingStrategy="uniform", condition="nTaxa", nTaxa=n_taxa, names=names,constraints=constraints)
+bd_tree_dn = dnBDP(lambda=birth_rate, mu=death_rate, rho=rho, rootAge=root_time, samplingStrategy="uniform", condition="nTaxa", taxa=taxa)
 \end{lstlisting}
 \end{snugshade*}}
 
+Note that the distribution object \cl{bd\_tree\_dn} was instantiated using the \cl{=} operator. This is because this is a workspace variable and we will use this distribution as a part of our constrained topology node.
+
+The \cl{timetree} initialized below is the stochastic node that is distributed according to a birth-death process with topology constraints. This is done with the \cl{dnConstrainedTopology} distribution.
+
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+timetree ~ dnConstrainedTopology(treeDistribution=bd_tree_dn,constraints=constraints)
+\end{lstlisting}
+\end{snugshade*}}
 
 \subsubsection{Calibrating Constrained Nodes}
 

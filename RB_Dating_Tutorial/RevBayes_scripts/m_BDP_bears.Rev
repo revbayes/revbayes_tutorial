@@ -57,16 +57,18 @@ root_time ~ dnLnorm(mu_ra, stdv_ra, offset=tHesperocyon)
 ### first we have to create constraints on which we will condition the birth-death process tree topology
 ### create a constraint using the clade function for the bear family Ursidae
 clade_Ursidae <- clade("Ailuropoda_melanoleuca","Tremarctos_ornatus","Helarctos_malayanus",
-						"Ursus_americanus","Ursus_thibetanus","Ursus_arctos","Ursus_maritimus","Melursus_ursinus")
+                        "Ursus_americanus","Ursus_thibetanus","Ursus_arctos","Ursus_maritimus","Melursus_ursinus")
 ### create a constraint for Ursidae + Pinnipedia (Phoca largha)
 clade_UrsPinn <- clade("Ailuropoda_melanoleuca","Tremarctos_ornatus","Helarctos_malayanus",
-						"Ursus_americanus","Ursus_thibetanus","Ursus_arctos","Ursus_maritimus","Melursus_ursinus",
-						"Phoca_largha")
+                        "Ursus_americanus","Ursus_thibetanus","Ursus_arctos","Ursus_maritimus","Melursus_ursinus",
+                        "Phoca_largha")
 ### load the constraints into a vector for the BDP model
 constraints <- v(clade_Ursidae, clade_UrsPinn)
 
 ### the time tree is a stochastic node modeled by the constant rate birth-death process (dnBDP)
-timetree ~ dnBDP(lambda=birth_rate, mu=death_rate, rho=rho, rootAge=root_time, samplingStrategy="uniform", condition="nTaxa", taxa=taxa, constraints=constraints)
+bd_tree_dn = dnBDP(lambda=birth_rate, mu=death_rate, rho=rho, rootAge=root_time, samplingStrategy="uniform", condition="nTaxa", taxa=taxa)
+
+timetree ~ dnConstrainedTopology(treeDistribution=bd_tree_dn,constraints=constraints)
 
 ### set the initial value of the time tree to the dos Reis et al. (2013) tree
 ### this is needed because the starting value must be consistent with our internal node constraints
