@@ -1,0 +1,139 @@
+################################################################################
+#
+# RevBayes Example: Bayesian inference of divergence times using molecular and 
+#                   morphological data from Pattinson et al. (2015). fossil dates are
+#                   the mean ages reported from PaleoDB and other sources.
+#
+#
+# authors: Sebastian Hoehna
+#
+################################################################################
+
+
+taxa <- readTaxonData("data/taxa_data.tsv", delimiter=TAB)
+D_morph <- readDiscreteCharacterData("data/morph_binary.nex")
+
+n_states = 2
+n_sites = D_morph.nchar()
+
+mvi = 0
+mni = 0
+
+##############
+# Tree model #
+##############
+
+# Specify a prior on the diversification and turnover rate
+diversification ~ dnUniform(0,10)
+diversification.setValue(0.01)
+turnover ~ dnUniform(0,10)
+turnover.setValue(0.01)
+
+# now transform the diversification and turnover rates into speciation and extinction rates
+speciation := diversification + turnover
+extinction := turnover
+
+### process time ###
+## Uniform prior on process time
+root_time ~ dnUnif(62, 5000.0) # oldest fossil is 61 Ma
+
+## The sampling-through-time parameter 
+fossil_rate ~ dnUniform(0,10)
+
+## The probability of sampling at the present (rho)
+sampling_prob <- 23 / 450 # 23 out of the ~ 450 extant primate species
+
+## the Birth-death distribution ##
+psi ~ dnFBDP(rootAge=root_time, lambda=speciation, mu=extinction, psi=fossil_rate, rho=sampling_prob, condition="survival", taxa=taxa)
+
+# create some moves that change the stochastic variables
+# all moves are sliding proposals but you could use scaling proposals for the rates too
+moves[++mvi] = mvSlide(diversification,delta=1,tune=true,weight=1)
+moves[++mvi] = mvSlide(turnover,delta=1,tune=true,weight=1)
+moves[++mvi] = mvSlide(fossil_rate,delta=1,tune=true,weight=1)
+moves[++mvi] = mvSlide(root_time,delta=1,tune=true,weight=1)
+
+moves[++mvi] = mvNarrow(psi, weight=5.0)
+moves[++mvi] = mvNNI(psi, weight=1.0)
+moves[++mvi] = mvFNPR(psi, weight=3.0)
+moves[++mvi] = mvSubtreeScale(psi, weight=3.0)
+moves[++mvi] = mvNodeTimeSlideUniform(psi, weight=15.0)
+
+#moves[++mvi] = mvCollapseExpandFossilBranch(psi,process_time,weight=10.0)
+
+
+
+####################################
+# Morphological Substitution Model #
+####################################
+
+# Now create a deterministic variable for the nucleotide substitution rate matrix.
+for (i in 1:n_sites) {
+    pi_morph[i] ~ dnDirichlet( rep(1,n_states) )
+    moves[++mvi] = mvBetaSimplex(pi_morph[i], weight=n_states)
+    moves[++mvi] = mvDirichletSimplex(pi_morph[i], offset=1, weight=n_states)
+#    pi[i] <- simplex(1,1)
+    Q_morph[i] := fnF81( pi_morph[i] )
+}
+
+
+
+
+###################
+# Molecular clock #
+###################
+
+### we use a uniform prior on the log-transform clock rate
+log_morph_clock_rate ~ dnUniform(-6,1)
+moves[++mvi] = mvSlide(log_morph_clock_rate, weight=2.0)
+morph_clock_rate := 10^log_morph_clock_rate
+
+
+
+
+###################
+# PhyloCTMC Model #
+###################
+
+
+for (i in 1:n_sites) {
+    seq_morph[i] ~ dnPhyloCTMC(tree=psi, Q=Q_morph[i], branchRates=morph_clock_rate, type="Standard")
+#    seq_morph[i] ~ dnPhyloCTMC(tree=psi, Q=Q_morph[i], rootFrequencies=rf_morph[i], branchRates=morph_clock_rate, type="Standard")
+
+    # attach the data
+    data_morph_site[i] <- D_morph
+    data_morph_site[i].excludeAll()
+    data_morph_site[i].includeCharacter(i)
+    seq_morph[i].clamp(data_morph_site[i])
+}
+
+
+
+
+
+mymodel = model(psi)
+
+
+monitors[++mni] = mnModel(filename="output/FBDP_morph_ind_rf.log",printgen=10, separator = TAB)
+monitors[++mni] = mnFile(filename="output/FBDP_morph_ind_rf.trees",printgen=100, separator = TAB, psi)
+monitors[++mni] = mnScreen(printgen=1000, morph_clock_rate, root_time)
+
+ 
+mymcmc = mcmc(mymodel, monitors, moves)
+
+mymcmc.burnin(generations=10000,200)
+mymcmc.run(generations=20000)
+
+
+
+# Now, we will analyze the tree output.
+# Let us start by reading in the tree trace
+treetrace = readTreeTrace("output/FBDP_morph_ind_rf.trees", treetype="clock")
+# and get the summary of the tree trace
+#treetrace.summarize()
+
+map_tree = mapTree(treetrace,"output/FBDP_morph_ind_rf.tree")
+
+# you may want to quit RevBayes now
+q()
+
