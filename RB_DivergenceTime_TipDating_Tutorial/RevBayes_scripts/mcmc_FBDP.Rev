@@ -16,7 +16,7 @@ D_morph <- readDiscreteCharacterData("data/morph_binary.nex")
 
 
 mvi = 0
-++mni = 0
+mni = 0
 
 ##############
 # Tree model #

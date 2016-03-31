@@ -97,7 +97,8 @@ pow_p.run(generations=2000)
 
 ### Use stepping-stone sampling to calculate marginal likelihoods
 ss = steppingStoneSampler(file="output/morph_MK_ind.out", powerColumnName="power", likelihoodColumnName="likelihood")
-ss.marginal() 
+ss_ml = ss.marginal() 
+write(ss_ml,file="my_estimate.txt")
 
 ### Use path-sampling to calculate marginal likelihoods
 ps = pathSampler(file="output/morph_MK_ind.out", powerColumnName="power", likelihoodColumnName="likelihood")

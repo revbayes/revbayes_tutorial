@@ -42,4 +42,4 @@ mymcmc = mcmc(mymodel, monitors, moves)
 mymcmc.burnin(generations=10000, tuningInterval=250)
 mymcmc.run(300000)
 
-q()
+#q()
