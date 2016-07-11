@@ -34,10 +34,10 @@ NUM_INTERVALS = 10
 
 # first we create the sd of the rates between intervals
 # draw the sd from an exponential distribution
-speciation_sd ~ dnExponential(1.0)
+speciation_sd ~ dnExponential(10.0)
 moves[++mvi] = mvScale(speciation_sd,weight=5.0)
 
-extinction_sd ~ dnExponential(1.0)
+extinction_sd ~ dnExponential(10.0)
 moves[++mvi] = mvScale(extinction_sd,weight=5.0)
 
 

@@ -1,0 +1,156 @@
+################################################################################
+#
+# RevBayes Exercise: Bayesian inference using MCMC and output analysis
+# 
+# This file: Specifies the full model parameters and moves for a single, uniform
+#				partition model
+#
+# authors: Tracy A. Heath, Michael Landis, Sebastian Hoehna and Brian R. Moore
+#
+################################################################################
+
+###### This just defines a single model for all sites #######
+
+### Read in sequence data for both genes
+data_cox2 = readDiscreteCharacterData("data/primates_cox2.nex")
+data_cytb = readDiscreteCharacterData("data/primates_cytb.nex")
+
+### Create concatenated data matrix
+data = concatenate( data_cox2, data_cytb )
+
+# Get some useful variables from the data. We need these later on.
+taxa <- data.taxa()
+
+mvi = 0 
+mni = 0
+
+
+######################
+# Substitution Model #
+######################
+
+#### specify the GTR+G+I substitution model applied uniformly to all sites ###
+er_prior <- v(1,1,1,1,1,1)
+er ~ dnDirichlet(er_prior)
+moves[++mvi] = mvSimplexElementScale(er, alpha=10.0, tune=true, weight=3.0)
+
+pi_prior <- v(1,1,1,1) 
+pi ~ dnDirichlet(pi_prior)
+moves[++mvi] = mvSimplexElementScale(pi, alpha=10.0, tune=true, weight=2.0)
+
+
+#### create a deterministic variable for the rate matrix ####
+Q := fnGTR(er,pi) 
+
+
+#############################
+# Among Site Rate Variation #
+#############################
+
+alpha_prior_mean <- 5.0
+alpha_prior_sd <- 0.587405
+alpha ~ dnLognormal( alpha_prior_mean, alpha_prior_sd )
+gamma_rates := fnDiscretizeGamma( alpha, alpha, 4, false )
+
+# add moves for the stationary frequencies, exchangeability rates and the shape parameter
+moves[++mvi] = mvScale(alpha,weight=2)
+
+
+# the probability of a site being invariable
+pinvar ~ dnBeta(1,1)
+moves[++mvi] = mvScale(pinvar, lambda=0.1, tune=true, weight=2.0)
+moves[++mvi] = mvSlide(pinvar, delta=10.0, tune=true, weight=2.0)
+
+
+##############
+# Tree model #
+##############
+
+### the BDP is conditioned on the root time
+### here we fix it to 90 million year ago
+root_time <- 90
+
+### the birth rate is a stochastic random variable drawn from a lognormal prior
+### MCMC samples this variable using a scale proposal
+diversification_mean <- ln( ln(450.0/2.0) / root_time )
+diversification_sd <- 0.587405
+diversification ~ dnLognormal(mean=diversification_mean,sd=diversification_sd) 
+moves[++mvi] = mvScale(diversification,lambda=1.0,tune=true,weight=3.0)
+
+turnover_mean <- ln( ln(450.0/2.0) / root_time )
+turnover_sd <- 0.587405*2
+turnover ~ dnLognormal(mean=turnover_mean,sd=turnover_sd) 
+moves[++mvi] = mvScale(turnover,lambda=1.0,tune=true,weight=3.0)
+
+### Transform the parameters
+birth_rate := diversification + turnover
+death_rate := turnover
+
+### rho is the probability of sampling species at the present
+### fix this to 23/450, since there are ~450 described species of primates
+### and we have sampled 23
+rho <- taxa.size()/450
+
+### the time tree is a stochastic node modeled by the constant rate birth-death process (dnBDP)
+psi ~ dnBDP(lambda=birth_rate, mu=death_rate, rho=rho, rootAge=root_time, samplingStrategy="uniform", condition="survival", taxa=taxa)
+
+moves[++mvi] = mvNarrow(psi, weight=5.0)
+moves[++mvi] = mvNNI(psi, weight=1.0)
+moves[++mvi] = mvFNPR(psi, weight=3.0)
+#moves[++mvi] = mvGPR(psi, weight=3.0)
+moves[++mvi] = mvSubtreeScale(psi, weight=3.0)
+moves[++mvi] = mvNodeTimeSlideUniform(psi, weight=15.0)
+
+
+
+
+###################
+# Molecular clock #
+###################
+
+### Here, we will estimate it here because we fixed the root age
+### we use a uniform prior on the log-transform clock rate
+log_clock_rate ~ dnUniform(-6,1)
+moves[++mvi] = mvSlide(log_clock_rate, weight=2.0)
+clock_rate := 10^log_clock_rate
+
+
+
+###################
+# PhyloCTMC Model #
+###################
+
+# the sequence evolution model
+phyloSeq ~ dnPhyloCTMC(tree=psi, Q=Q, branchRates=clock_rate, siteRates=gamma_rates, pInv=pinvar, type="DNA")
+
+# attach the data
+phyloSeq.clamp(data)
+
+
+############
+# Analysis #
+############
+
+mymodel = model(psi)
+
+# add monitors
+monitors[++mni] = mnScreen(alpha, pinvar, clock_rate, printgen=1000)
+monitors[++mni] = mnFile(psi, filename="output/PS_uniform.trees", printgen=10)
+monitors[++mni] = mnModel(filename="output/PS_uniform.log",printgen=10)
+
+# run the analysis
+mymcmc = mcmc(mymodel, moves, monitors)
+mymcmc.burnin(10000,100)
+mymcmc.run(30000)
+
+
+# summarize output
+treetrace = readTreeTrace("output/PS_uniform.trees")
+#treetrace.summarize()
+
+map_tree = mapTree(treetrace,"output/PS_uniform_map.tre")
+
+
+# you may want to quit RevBayes now
+q()
+
