@@ -6,7 +6,7 @@
 # This file: Runs the full MCMC on a single gene under the general time reversible 
 #            substitution model using an unconstrained non-clock tree.
 #
-# authors: Sebastian Hoehna, Tracy A. Heath, Michael Landis and Brian R. Moore
+# authors: Sebastian Hoehna, Michael Landis, Tracy A. Heath and Brian R. Moore
 #
 ################################################################################
 
@@ -62,7 +62,6 @@ gamma_rates := fnDiscretizeGamma( alpha, alpha, 4, false )
 
 # add moves the shape parameter
 moves[++mi] = mvScale(alpha,weight=2)
-
 
 
 ##############
