@@ -72,9 +72,20 @@ The first section of this exercise involves:
 
 \begin{figure}[h!]
 \centering
+\fbox{\includegraphics[width=\textwidth,angle=0]{\ResourcePath figures/full_JC_unconstrained.pdf}}
+\caption{\small Standard graphical representation of a simple phylogenetic model. 
+The graphical model shows the dependencies between the parameters and the explicit relationship among the internal nodes for a fixed tree topology.
+Here, the rate matrix $Q$ is a constant variable because it is fixed and does not depend on any parameters.
+The only free parameters of this model, the unconstrained Jukes-Cantor model, are the tree topology $\Psi$ and the branch lengths $\nu_i$. The deterministic variable $\mathbb{L}$ is the total tree length, which is computed by summing all of the branch lengths.}
+\label{fig:jc_full}
+\end{figure}
+
+\begin{figure}[h!]
+\centering
 \fbox{\includegraphics[width=\textwidth,angle=0]{\ResourcePath figures/jc_graphical_model_unconstrained.pdf}}
-\caption{\small Graphical model representation of a simple phylogenetic model. 
+\caption{\small Treeplate graphical representation of a simple phylogenetic model. 
 The graphical model shows the dependencies between the parameters.
+The tree plate shows the recursive and random phylogenetic relationships modeled by the tree topology variable, $\Psi$.
 Here, the rate matrix $Q$ is a constant variable because it is fixed and does not depend on any parameters.
 The only free parameters of this model, the unconstrained Jukes-Cantor model, are the tree topology $\Psi$ and the branch lengths $\nu_i$. The deterministic variable $\mathbb{L}$ is the total tree length, which is computed by summing all of the branch lengths.}
 \label{fig:jc}
