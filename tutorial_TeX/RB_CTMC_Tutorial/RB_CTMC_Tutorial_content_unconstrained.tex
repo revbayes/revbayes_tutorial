@@ -327,7 +327,7 @@ The monitor functions are all called \cl{mn*}, where \cl{*} is the wildcard repr
 First, we will initialize the model monitor using the \cl{mnModel} function. This creates a new monitor variable that will output the states for all model parameters when passed into a MCMC function. 
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-monitors[1] = mnModel(filename="output/primates_cytb_JC_posterior.log",printgen=10, separator = TAB)
+monitors[1] = mnModel(filename="output/primates_cytb_JC_nonclock.log",printgen=10, separator = TAB)
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -335,7 +335,7 @@ The \cl{mnFile} monitor will record the states for only the parameters passed in
 
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-monitors[2] = mnFile(filename="output/primates_cytb_JC_posterior.trees",printgen=10, separator = TAB, phylogeny)
+monitors[2] = mnFile(filename="output/primates_cytb_JC_nonclock.trees",printgen=10, separator = TAB, phylogeny)
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -382,7 +382,7 @@ When the analysis is complete, you will have the monitored files in your output 
 Methods for visualizing the marginal densities of parameter values are not currently available in \RevBayes~itself. 
 Thus, it is important to use programs like \href{http://tree.bio.ed.ac.uk/software/tracer/}{\texttt{Tracer}} \citep{Rambaut2011} to evaluate mixing and non-convergence. (\RevBayes~does, however, have a tool for convergence assessment called \cl{beca}.)
 
-\noindent \\ \impmark Look at the file called \cl{output/primates\_cytb\_JC\_posterior.log} in \texttt{Tracer}.
+\noindent \\ \impmark Look at the file called \cl{output/primates\_cytb\_JC\_nonclock.log} in \texttt{Tracer}.
 
 \bigskip
 \subsection{Exercise 1}
@@ -391,7 +391,7 @@ We are interested in the phylogenetic relationship of the Tarsiers. Therefore, w
 \RevBayes~can summarize the sampled trees by reading in the tree-trace file:
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-treetrace = readTreeTrace("output/primates_cytb_JC_posterior.trees",
+treetrace = readTreeTrace("output/primates_cytb_JC_nonclock.trees",
                              treetype="non-clock")
 treetrace.summarize()
 \end{lstlisting}
@@ -399,12 +399,12 @@ treetrace.summarize()
 The \cl{mapTree()} function will summarize the tree samples and write the maximum \textit{a posteriori} tree to file:
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-mapTree(treetrace,"output/primates_cytb_JC.tree")
+mapTree(treetrace,"output/primates_cytb_JC_nonclock.tree")
 \end{lstlisting}
 \end{snugshade*}}
 Fill in the following table as you go through the tutorial.
 
-\noindent \\ \impmark Look at the file called \cl{output/primates\_cytb\_JC.tree} in \texttt{FigTree}.
+\noindent \\ \impmark Look at the file called \cl{output/primates\_cytb\_JC\_nonclock.tree} in \texttt{FigTree}.
 
 \begin{Form}
 \begin{table}[h!]
@@ -707,7 +707,7 @@ Q := fnGTR(er,pi)
 
 
 Members of the GTR family of substitution models assume that rates are homogeneous across sites, an assumption that is often violated by real data.
-We can accommodate variation in substitution rate among sites (ASRV) by adopting the discrete-gamma model \citep{yang94a}.
+We can accommodate variation in substitution rate among sites (ASRV) by adopting the discrete-gamma model \citep{Yang1994a}.
 This model assumes that the substitution rate at each site is a random variable that is described by a discretized gamma distribution, which has two parameters: the shape parameter, $\alpha$, and the rate parameter, $\beta$. 
 In order that we can interpret the branch lengths as the expected number of substitutions per site, this model assumes that the mean site rate is equal to 1.
 %Consequently, we wish to specify a gamma distribution with a mean of 1.
