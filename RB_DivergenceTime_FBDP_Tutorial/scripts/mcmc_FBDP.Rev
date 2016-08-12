@@ -32,7 +32,7 @@ extinction := turnover
 
 ### process time ###
 ## Uniform prior on process time
-root_time ~ dnUnif(62, 5000.0) # oldest fossil is 61 Ma
+root_time ~ dnUnif(62, 500.0) # oldest fossil is 61 Ma
 
 ## The sampling-through-time parameter 
 fossil_rate ~ dnUniform(0,10)
@@ -41,7 +41,7 @@ fossil_rate ~ dnUniform(0,10)
 sampling_prob <- 23 / 450 # 23 out of the ~ 450 extant primate species
 
 ## the Birth-death distribution ##
-tree_prior = dnFBDP(rootAge=root_time, lambda=speciation, mu=extinction, psi=fossil_rate, rho=sampling_prob, condition="survival", taxa=taxa)
+tree_prior = dnFBDP(startAge=root_time, startCondition="root", lambda=speciation, mu=extinction, psi=fossil_rate, rho=sampling_prob, condition="survival", taxa=taxa)
 
 clade_platyrrhini   = clade("Alouatta_palliata", "Aotus_trivirgatus", "Callicebus_donacophilus", "Cebus_albifrons", "Saimiri_sciureus")
 clade_catarrhini    = clade("Chlorocebus_aethiops", "Colobus_guereza", "Hylobates_lar", "Macaca_mulatta", "Pan_paniscus")
@@ -58,6 +58,8 @@ clade_constraints = [ clade_catarrhini_fossils, clade_lorisiformes_fossils, clad
 
 
 psi ~ dnConstrainedTopology(tree_prior, clade_constraints)
+
+#psi_extant := fnExtantTree( psi )
 
 # create some moves that change the stochastic variables
 # all moves are sliding proposals but you could use scaling proposals for the rates too
@@ -138,14 +140,14 @@ mymodel = model(bf)
 
 
 monitors[++mni] = mnModel(filename="output/FBDP.log",printgen=10, separator = TAB)
-monitors[++mni] = mnFile(filename="output/FBDP.trees",printgen=10, separator = TAB, psi)
-monitors[++mni] = mnScreen(printgen=1000, mol_clock_rate, root_time)
+#monitors[++mni] = mnFile(filename="output/FBDP.trees",printgen=10, separator = TAB, psi_extant)
+monitors[++mni] = mnScreen(printgen=100, mol_clock_rate, root_time)
 
  
 mymcmc = mcmc(mymodel, monitors, moves)
 
-mymcmc.burnin(generations=5000,100)
-mymcmc.run(generations=20000)
+mymcmc.burnin(generations=5000,200)
+mymcmc.run(generations=25000)
 
 
 
