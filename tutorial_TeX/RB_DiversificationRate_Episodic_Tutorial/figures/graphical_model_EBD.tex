@@ -1,0 +1,31 @@
+\begin{tikzpicture}
+\node[obnode] (nx) at (1,1) {\LARGE $\Psi$};
+\node[snode] (lambda) at ($(nx)+(-1.5,2.5)$) {$\lambda_{i+1}$};
+\node[snode] (mu) at ($(nx)+(1.5,2.5)$) {$\mu_{i+1}$};
+\node[snode] (lambda_prev) at ($(lambda)-(1.5,0)$) {\LARGE $\lambda_{i}$};
+\node[snode] (mu_prev) at ($(mu)+(1.5,0)$) {\LARGE $\mu_{i}$};
+\node[constnode] (sdd) at ($(lambda)+(0,2)$) {\Large $sd_d$};
+\node[constnode] (sdt) at ($(mu)+(-0,2)$) {\Large $sd_r$};
+\draw [taro] (lambda) -- (nx);
+\draw [taro] (mu) -- (nx);
+\draw [taro] (lambda_prev) -- (lambda);
+\draw [taro] (sdd) -- (lambda);
+\draw [taro] (mu_prev) -- (mu);
+\draw [taro] (sdt) -- (mu);
+\node at ($(nx)+(0,-1)$) {time tree};
+\node[constnode] (rho) at ($(nx)+(3,0)$) {\LARGE $\rho$};
+\node[constnode] (T) at ($(nx)+(-3,0)$) {\LARGE $T$};
+\draw[taro] (T) -- (nx) ;
+\draw[taro] (rho) -- (nx) ;
+\node[white, fill=blue, shape=rectangle, rounded corners] at ($(sdd)+(0.0,1)$) {sd speciation};
+\node[white, fill=blue, shape=rectangle, rounded corners] at ($(sdt)+(0.0,1)$) {sd extinction};
+\node[white, fill=blue, shape=rectangle, rounded corners] at ($(T)+(0,-1)$) {root age};
+\node[white, fill=blue, shape=rectangle, rounded corners] at ($(rho)+(0,-1)$) {sampling probability};
+\node[white, fill=blue, shape=rectangle, rounded corners] at ($(lambda_prev)+(-1,0)$) [left]{speciation rates};
+\node[white, fill=blue, shape=rectangle, rounded corners] at ($(mu_prev)+(1,0)$) [right]{extinction rates};
+\node[rectangle,dashed, thick, inner sep=4mm, draw=black!100, fit = (lambda_prev) (lambda)] (divPlate) {};
+\node[rectangle,dashed, thick, inner sep=4mm, draw=black!100, fit = (mu_prev) (mu)] (extPlate) {};
+\node[anchor=south west,inner sep=3pt] at (divPlate.south west) {\small $i \in N$};
+\node[anchor=south east,inner sep=3pt] at (extPlate.south east) {\small $i \in N$};
+%\node at ($(rho)+(-1.5,0)$) {Beta};
+\end{tikzpicture}
