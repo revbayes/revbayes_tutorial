@@ -757,7 +757,7 @@ Finally, the shape of the exponential prior is governed by the rate parameter, $
 Create a constant node called \cl{alpha\_prior\_mean} for the mean parameter and a constant node called \cl{alpha\_prior\_sd} for the standard deviation of the lognormal prior on the gamma-shape parameter (this is represented as the constant $m_\alpha$ and $sd_\alpha$ parameters in Figure \ref{fig:gtrg}):
 {\tt\begin{snugshade*}
 \begin{lstlisting}
-alpha_prior_mean <- 5.0
+alpha_prior_mean <- ln(5.0)
 alpha_prior_sd <- 0.587405
 \end{lstlisting}
 \end{snugshade*}}

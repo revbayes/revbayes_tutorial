@@ -1,0 +1,54 @@
+################################################################################
+#
+# RevBayes Analysis: Bayesian inference of correlated diversification rates through time
+# 
+# Model: Episodic birth-death model and diversification rates and environmental variable 
+#        are drawn from a multivariate normal distribution.
+#
+# authors: Sebastian Hoehna
+#
+################################################################################
+
+
+
+#######################
+# The missing species #
+#######################
+
+
+Galagidae     = clade("Galago_senegalensis",  "Otolemur_crassicaudatus", missing= 17)
+Lorisidae     = clade("Perodicticus_potto", "Loris_tardigradus", "Nycticebus_coucang", missing=6)
+Cheirogaleoidea         = clade("Cheirogaleus_major", "Microcebus_murinus", missing= 19)
+Lemuridae        = clade("Lemur_catta", "Varecia_variegata_variegata", missing=17)
+LEMURIFORMES          = clade(Lemuridae, Cheirogaleoidea, missing=29)
+Atelidae_Aotidae        = clade("Alouatta_palliata", "Aotus_trivirgatus", missing=30)
+
+NWM        = clade(Atelidae_Aotidae,"Callicebus_donacophilus", "Saimiri_sciureus", missing=2491)
+
+missing_species_counts = v(Heli_All, Sen_Ant_As, Cory, Cicho, Gym, Perty, Cardu, Gochn, Wund, Stiff, Mut, Barna)
+
+
+
+		Alouatta_palliata
+		Aotus_trivirgatus
+		Callicebus_donacophilus
+		Cebus_albifrons
+		Cheirogaleus_major
+		Chlorocebus_aethiops
+		Colobus_guereza
+		Daubentonia_madagascariensis
+		Galago_senegalensis
+		Hylobates_lar
+		Lemur_catta
+		Lepilemur_hubbardorum
+		Loris_tardigradus
+		Macaca_mulatta
+		Microcebus_murinus
+		Nycticebus_coucang
+		Otolemur_crassicaudatus
+		Pan_paniscus
+		Perodicticus_potto
+		Propithecus_coquereli
+		Saimiri_sciureus
+		Tarsius_syrichta
+		Varecia_variegata_variegata
