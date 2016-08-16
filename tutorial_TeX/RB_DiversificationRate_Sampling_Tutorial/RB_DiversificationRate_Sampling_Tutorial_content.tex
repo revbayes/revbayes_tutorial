@@ -2,10 +2,11 @@
 
 \subsection{Outline}
 
-This tutorial describes how to specify an episodic branching-process models in \RevBayes;
-a birth-death process where diversification rates vary episodically through time model by piecewise constant rates \citep{Stadler2011,Hoehna2015a}.
-The probabilistic graphical model is given for each component of this tutorial.
-Finally, you will estimate speciation and extinction rates through-time using Markov chain Monte Carlo (MCMC).
+This tutorial describes how to specify different models of incomplete taxon sampling for estimating diversification rates in \RevBayes \citep{Hoehna2011,Hoehna2014a,Hoehna2016b}.
+Specifically, we will discuss \emph{uniform}, \emph{diversified}, and \emph{empirical} taxon sampling.
+All analyses in this tutorial will focus on diversification rate estimation through-time and thus use a birth-death process where diversification rates vary episodically through time model by piecewise constant rates \RevBayes \citep{Hoehna2015a,May2016}.
+The probabilistic graphical model is given only once for this tutorial.
+Finally, you will estimate speciation and extinction rates through-time using Markov chain Monte Carlo (MCMC) and assess the impact of incomplete taxon sampling as well as the sampling scheme.
 
 
 \subsection{Requirements}
@@ -13,12 +14,10 @@ We assume that you have read and hopefully completed the following tutorials:
 \begin{itemize}
 \item RB\_Getting\_Started
 \item RB\_Basics\_Tutorial
-\item RB\_BayesFactor\_Tutorial
 \item RB\_BasicDiversificationRate\_Tutorial
 \end{itemize}
 Note that the RB\_Basics\_Tutorial introduces the basic syntax of \Rev but does not cover any phylogenetic models.
 You may skip the RB\_Basics\_Tutorial if you have some familiarity with \R.
-The RB\_BayesFactor\_Tutorial introduced Bayesian model selection by means of Bayes factors, which can be skipped by readers familiar with Bayesian model selection.
 We tried to keep this tutorial very basic and introduce all the language concepts and theory on the way.
 You may only need the RB\_Basics\_Tutorial for a more in-depth discussion of concepts in \Rev.
 
@@ -36,7 +35,7 @@ In the \cl{data} folder, you will find the following files
 \end{itemize}
 
 
-\impmark{Open the tree \cl{data/primates\_springer.tre} in FigTree.}
+\impmark{Open the tree \cl{data/primates\_springer.tre} in \FigTree.}
 
 
 \bigskip
@@ -53,6 +52,13 @@ The assumption of autocorrelated rates does not only makes sense biologically bu
 \begin{figure}[h!]
 \centering
 \fbox{\includegraphics[width=\textwidth]{\ResourcePath figures/EBD_scenarios.pdf}}
+\caption{\small Four scenarios of birth-death models.}
+\label{fig:EBD}
+\end{figure}
+
+\begin{figure}[h!]
+\centering
+\fbox{\includegraphics[width=\textwidth]{\ResourcePath figuresdiversified-sampling.pdf}}
 \caption{\small Four scenarios of birth-death models.}
 \label{fig:EBD}
 \end{figure}

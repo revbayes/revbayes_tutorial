@@ -6,7 +6,7 @@ Moreover, stochastic branching models allow for inference of speciation and exti
 These inferences allow us to investigate key questions in evolutionary biology.
 
 Similarly, diversification-rate parameters are also included as nuisance parameters of other phylogenetic models---\IE where these diversification-rate parameters are not of direct interest.
-For example, many methods for estimating species divergence times---such as \BEAST \citep{Drummond2012}, \MrBayes \citep{Ronquist2012}, and \RevBayes \citep{Hoehna2015}---implement `relaxed-clock models' that include a constant-rate birth-death branching process as a prior model on the distribution of tree topologies and node ages.
+For example, many methods for estimating species divergence times---such as \BEAST \citep{Drummond2012}, \MrBayes \citep{Ronquist2012}, and \RevBayes \citep{Hoehna2016b}---implement `relaxed-clock models' that include a constant-rate birth-death branching process as a prior model on the distribution of tree topologies and node ages.
 Although the parameters of these `tree priors' are not typically of direct interest, they are nevertheless estimated as part of the joint posterior probability distribution of the relaxed-clock model, and so can be estimated simply by querying the corresponding marginal posterior probability densities.
 In fact, this may provide more robust estimates of the diversification-rate parameters, as they accommodate uncertainty in the other phylogenetic-model parameters (including the tree topology, divergence-time estimates, and the other relaxed-clock model parameters).
 
