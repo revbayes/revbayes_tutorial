@@ -14,7 +14,7 @@ n_sites <- D.nchar()
 
 ### set up the birth-death model from file
 ### this file includes tree topology moves
-source("RevBayes_scripts/m_BDP_bears.Rev")
+source("scripts/m_BDP_bears.Rev")
 
 ### and moves for the tree topology
 moves[mi++] = mvNNI(timetree, weight=8.0)
@@ -26,7 +26,7 @@ moves[mi++] = mvFNPR(timetree, weight=8.0)
 ############ Your favorite model ###########
 ###########################################################
 
-source("RevBayes_scripts/m_UCLN_bears.Rev")
+source("scripts/m_UCLN_bears.Rev")
 
 #############################
 ############ MCMC ###########

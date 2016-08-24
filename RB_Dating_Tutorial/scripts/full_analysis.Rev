@@ -1,20 +1,20 @@
-source("RevBayes_Scripts/mcmc_GMC.Rev")
+source("scripts/mcmc_GMC.Rev")
 clear()
 
 
-source("RevBayes_Scripts/mcmc_UCLN.Rev")
+source("scripts/mcmc_UCLN.Rev")
 clear()
 
 
-source("RevBayes_Scripts/mlnl_GMC_bears.Rev")
+source("scripts/mlnl_GMC_bears.Rev")
 clear()
 
 
-source("RevBayes_Scripts/mlnl_UCLN_bears.Rev")
+source("scripts/mlnl_UCLN_bears.Rev")
 clear()
 
 
-source("RevBayes_Scripts/compute_BF.Rev")
+source("scripts/compute_BF.Rev")
 clear()
 
 q()
