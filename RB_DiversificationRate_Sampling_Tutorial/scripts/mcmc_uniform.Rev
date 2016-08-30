@@ -16,7 +16,7 @@
 
 ### Read in sequence data for both genes
 
-T <- readTrees("data/primates_Springer.tre")[1]
+T <- readTrees("data/primates.tre")[1]
 
 # Get some useful variables from the data. We need these later on.
 taxa <- T.taxa()
@@ -24,7 +24,7 @@ taxa <- T.taxa()
 # set my move index
 mvi = 0
 
-NUM_INTERVALS = 10
+NUM_INTERVALS = 20
 
 
 
@@ -34,19 +34,21 @@ NUM_INTERVALS = 10
 
 # first we create the sd of the rates between intervals
 # draw the sd from an exponential distribution
-speciation_sd ~ dnExponential(1.0)
-moves[++mvi] = mvScale(speciation_sd,weight=5.0)
+#speciation_sd ~ dnExponential(1.0)
+#moves[++mvi] = mvScale(speciation_sd,weight=5.0)
 
-extinction_sd ~ dnExponential(1.0)
-moves[++mvi] = mvScale(extinction_sd,weight=5.0)
+#extinction_sd ~ dnExponential(1.0)
+#moves[++mvi] = mvScale(extinction_sd,weight=5.0)
 
+speciation_sd <- 1.0
+extinction_sd <- 1.0
 
 
 # draw the mean from a uniform distribution
-speciation_prior_mean ~ dnUniform(-4.0,2.0)
+speciation_prior_mean ~ dnUniform(-10.0,10.0)
 moves[++mvi] = mvSlide(speciation_prior_mean,weight=5.0)
 
-extinction_prior_mean ~ dnUniform(-4.0,2.0)
+extinction_prior_mean ~ dnUniform(-10.0,10.0)
 moves[++mvi] = mvSlide(extinction_prior_mean,weight=5.0)
 
 
@@ -88,11 +90,11 @@ interval_times = T.rootAge() * (1:NUM_INTERVALS) / (NUM_INTERVALS) * 0.8
 
 
 ### rho is the probability of sampling species at the present
-### fix this to 367/450, since there are ~450 described species of primates
+### fix this to 367/450, since there are ~377 described species of primates
 ### and we have sampled 367
-rho <- T.ntips()/450
+rho <- T.ntips()/377
 
-timetree ~ dnEpisodicBirthDeath(rootAge=T.rootAge(), lambdaRates=speciation, lambdaTimes=interval_times, muRates=extinction, muTimes=interval_times, rho=rho, taxa=taxa)
+timetree ~ dnEpisodicBirthDeath(rootAge=T.rootAge(), lambdaRates=speciation, lambdaTimes=interval_times, muRates=extinction, muTimes=interval_times, rho=rho, samplingStrategy="uniform", taxa=taxa)
 
 ### clamp the model with the "observed" tree
 timetree.clamp(T)
@@ -105,12 +107,12 @@ timetree.clamp(T)
 
 
 ### workspace model wrapper ###
-mymodel = model(rho)
+mymodel = model(timetree)
 
 ### set up the monitors that will output parameter values to file and screen 
-monitors[1] = mnModel(filename="output/primates_EBD.log",printgen=10, separator = TAB)
-monitors[2] = mnFile(filename="output/primates_EBD_speciation.log",printgen=10, separator = TAB, speciation)
-monitors[3] = mnFile(filename="output/primates_EBD_extinction.log",printgen=10, separator = TAB, extinction)
+monitors[1] = mnModel(filename="output/primates_uniform.log",printgen=10, separator = TAB)
+monitors[2] = mnFile(filename="output/primates_uniform_speciation.log",printgen=10, separator = TAB, speciation)
+monitors[3] = mnFile(filename="output/primates_uniform_extinction.log",printgen=10, separator = TAB, extinction)
 monitors[4] = mnScreen(printgen=1000, speciation_prior_mean, extinction_prior_mean)
 
 
