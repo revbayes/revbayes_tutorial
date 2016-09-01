@@ -52,7 +52,7 @@ for( i in 1:12 ){
 
 The various \RevBayes commands and syntax within the text are specified using \cl{typewriter text}. 
 
-Most tutorials also includes hyperlinks: bibliographic citations are {\textcolor{citescol}{burnt orange}} and link to the full citation in the references, external URLs are {\textcolor{urlscol}{cerulean}}, and internal references to figures and equations are {\textcolor{linkscol}{purple}}.
+Most tutorials also includes hyperlinks: bibliographic citations are {\textcolor{citescol}{medium sea green}} and link to the full citation in the references, external URLs are {\textcolor{urlscol}{cerulean}}, and internal references to figures and equations are {\textcolor{linkscol}{forest green}}.
 
 The various exercises in this tutorial take you through the steps required to perform phylogenetic analyses of the example datasets. 
 In addition, we have provided the \Rev scripts and output files for some exercise so you can verify your results. (Note that since the MCMC runs you perform will start from different random seeds, the output files resulting from your analyses \textit{will not} be identical to the ones we provide you.)
@@ -115,13 +115,13 @@ The stochastic variable $\sigma$ is exponentially distributed with fixed value f
 \section{\Rev: The \RevBayes Language}
 
 In \RevBayes models and analyses are specified using an interpreted language called \Rev. 
-\Rev~bears similarities to the compiled language in WinBUGS and the interpreted \R~language. 
+\Rev bears similarities to the compiled language in WinBUGS and the interpreted \R language. 
 Setting up and executing a statistical analysis in \RevBayes requires the user to specify all of the parameters of their model and the type of analysis (\EG an MCMC run). 
 By using an interpreted language, \RevBayes enables the practitioner to build complex, hierarchical models and to check the current states of variables while building the model. 
 This will be very useful in the beginning.
 Later on you, when you run very complex analyses, you may want to write \Rev-scripts.
 
-Differently to \R~and BUGS, \Rev~is a strongly but implicitly typed language.
+Differently to \R and BUGS, \Rev is a strongly but implicitly typed language.
 It is implicitly typed, and thus similar to Python, because you do not need to provide the type of a variable (which you need to in languages such as C++ and Java).
 We do implicit typing to help users who do not know about the actual types of the variables.
 However, strongly typed means that every variable has a type and arguments of functions need to match the required types.
@@ -134,7 +134,7 @@ For example, the variance parameter of a normal distribution needs to be a posit
 
 \begin{table}[h!]
 \centering
-\caption{\Rev~assignment operators, clamp function, and plate/loop syntax.}\label{operatorTable}
+\caption{\Rev assignment operators, clamp function, and plate/loop syntax.}\label{operatorTable}
 \begin{tabular}{@{\extracolsep{\fill}}l  c r }
 \hline
 \multicolumn{1}{l}{\textbf{Operator}} & \multicolumn{1}{c}{ } & \multicolumn{1}{r}{\textbf{Variable}}  \\ 
@@ -149,9 +149,9 @@ For example, the variance parameter of a normal distribution needs to be a posit
 \end{tabular}
 \end{table}
 
-The variables/parameters of a statistical model are created using different operators in \Rev~(Table \ref{operatorTable}). 
-In Figure \ref{revgmexample}, the \Rev~syntax for creating the model in Figure \ref{simpleGM} is provided.
-Because \Rev~is an interpreted language, it is important to consider the order in which you specify your variables (\CF BUGS where the order is not important). 
+The variables/parameters of a statistical model are created using different operators in \Rev (Table \ref{operatorTable}). 
+In Figure \ref{revgmexample}, the \Rev syntax for creating the model in Figure \ref{simpleGM} is provided.
+Because \Rev is an interpreted language, it is important to consider the order in which you specify your variables (\CF BUGS where the order is not important). 
 Thus, typically the first variables that are instantiated are \emph{constant variables}. 
 Constant variables require you to assign a fixed value using the \cl{<-} operator. 
 Stochastic variables are initialized using the \cl{\rbdn} operator followed by the constructor function for a distribution. 
@@ -180,7 +180,7 @@ M ~ dnBimodalLognormal(mean_1, mean_2, sd_1, sd_2, weight)
 \end{lstlisting}
 \end{snugshade*}}
 
-\Rev~does allow you to specify constant-variable values in the distribution constructor function, therefore this also works:
+\Rev does allow you to specify constant-variable values in the distribution constructor function, therefore this also works:
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 M ~ dnBimodalLognormal(0.5, 2.0, 1.0, 1.0, 0.5)
@@ -222,7 +222,7 @@ mu := ln(M) - (sigma^2)/2.0
 
 Replication over lists of variables as a plate object is specified using \cl{for} loops. 
 A for-loop is an iterator statement that performs a function a given number of times. 
-In \Rev~you can use this syntax to create a vector of 7 stochastic variables, each drawn from a lognormal distribution:
+In \Rev you can use this syntax to create a vector of 7 stochastic variables, each drawn from a lognormal distribution:
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 for( i in 1:7 ) {

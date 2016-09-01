@@ -1,17 +1,21 @@
 \section{Overview: Diversification Rate Estimation}
 
-Models of speciation and extinction are fundamental to any phylogenetic analysis of macroevolutionary processes.
-A prior describing the distribution of speciation events over time is critical to estimating phylogenies with branch lengths proportional to time.
-Moreover, stochastic branching models allow for inference of speciation and extinction rates.
+Models of speciation and extinction are fundamental to any phylogenetic analysis of macroevolutionary processes (\EG divergence time estimation, diversification rate estimation, continuous and discrete trait evolution, and historical biogeography).
+First, a prior model describing the distribution of speciation events over time is critical to estimating phylogenies with branch lengths proportional to time.
+Second, stochastic branching models allow for inference of speciation and extinction rates.
 These inferences allow us to investigate key questions in evolutionary biology.
 
-Similarly, diversification-rate parameters are also included as nuisance parameters of other phylogenetic models---\IE where these diversification-rate parameters are not of direct interest.
+Diversification-rate parameters may be included as nuisance parameters of other phylogenetic models---\IE where these diversification-rate parameters are not of direct interest.
 For example, many methods for estimating species divergence times---such as \BEAST \citep{Drummond2012}, \MrBayes \citep{Ronquist2012}, and \RevBayes \citep{Hoehna2016b}---implement `relaxed-clock models' that include a constant-rate birth-death branching process as a prior model on the distribution of tree topologies and node ages.
 Although the parameters of these `tree priors' are not typically of direct interest, they are nevertheless estimated as part of the joint posterior probability distribution of the relaxed-clock model, and so can be estimated simply by querying the corresponding marginal posterior probability densities.
 In fact, this may provide more robust estimates of the diversification-rate parameters, as they accommodate uncertainty in the other phylogenetic-model parameters (including the tree topology, divergence-time estimates, and the other relaxed-clock model parameters).
+More recent work \citep{Heath2014} is using macroevolutionary models (the fossilized birth-death process) to calibrate phylogenies and thus infer dated trees.
+
+In these tutorials we focus on the different types of macroevolutionary models to study diversification processes and thus the diversification-rate parameters themselves.
+Nevertheless, these macroevolutionary models should be used for other evolutionary questions, when an appropriate prior distribution on the tree and divergence times is needed.
+
 
 \subsection{Types of Hypotheses for Estimating Diversification Rates}
-
 
 Many evolutionary phenomena entail differential rates of diversification (speciation -- extinction); \EG adaptive radiation, diversity-dependent diversification, key innovations, and mass extinction.
 The specific study questions regarding lineage diversification may be classified within three fundamental categories of inference problems.
@@ -39,13 +43,6 @@ Furthermore, these models are important to answer questions such as:
 Character-dependent diversification-rate models aim to identify overall correlations between diversification rates and organismal features (binary and multi-state discrete morphological traits, continuous morphological traits, geographic range, etc.).
 For example, one can hypothesize that a binary character, say if an organism is herbivorous/carnivorous or self-compatible/self-incompatible, impact the diversification rates.
 Then, if the organism is in state 0 (\EG is herbivorous) it has a lower (or higher) diversification rate than if the organism is in state 1 (\EG carnivorous).
-
-
-%Questions regarding mass-extinction events can be inferred using \TESS by performing specific hypothesis tests (see Section~\ref{sec:mass-extinction}) or analyses under the CPP on Mass-Extinction Times (\CoMET) model \citep{May2015}.
-%These analyses can identify whether your study tree has been impacted by mass extinction, and if so, can identify the number and timing of these events.
-%Additionally, the \CoMET model can be used to explore events other than mass extinction---such as the number of tree-wide diversification-rate shifts, the timing of those events, and the rate parameters (\EG speciation and extinction rates) associated with those events.
-%However, the reliability to detect tree-wide diversification-rate shifts is currently being explored.
-%We describe how to use \TESS and \CoMET to explore mass-extinction events in Section \ref{sec:CoMET} of this guide.
 
 
 \section{Models}\label{sec:Models}
