@@ -1,0 +1,15 @@
+
+# incomplete taxon sampling
+cd RB_DiversificationRate_Sampling_Tutorial
+pdflatex RB_DiversificationRate_Sampling_Tutorial.tex
+bibtex RB_DiversificationRate_Sampling_Tutorial
+pdflatex RB_DiversificationRate_Sampling_Tutorial.tex
+pdflatex RB_DiversificationRate_Sampling_Tutorial.tex
+
+rm RB_DiversificationRate_Sampling_Tutorial.aux
+rm RB_DiversificationRate_Sampling_Tutorial.bbl
+rm RB_DiversificationRate_Sampling_Tutorial.blg
+rm RB_DiversificationRate_Sampling_Tutorial.log
+rm RB_DiversificationRate_Sampling_Tutorial.out
+
+cd ..
