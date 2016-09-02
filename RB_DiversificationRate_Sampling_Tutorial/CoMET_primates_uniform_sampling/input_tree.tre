@@ -1,0 +1,59 @@
+#NEXUS
+[R-package APE, Wed Aug 31 13:24:38 2016]
+
+BEGIN TAXA;
+	DIMENSIONS NTAX = 23;
+	TAXLABELS
+		Cheirogaleus_major
+		Microcebus_murinus
+		Lepilemur_hubbardorum
+		Lemur_catta
+		Varecia_variegata_variegata
+		Propithecus_coquereli
+		Daubentonia_madagascariensis
+		Tarsius_syrichta
+		Galago_senegalensis
+		Otolemur_crassicaudatus
+		Perodicticus_potto
+		Loris_tardigradus
+		Nycticebus_coucang
+		Alouatta_palliata
+		Aotus_trivirgatus
+		Cebus_albifrons
+		Saimiri_sciureus
+		Callicebus_donacophilus
+		Chlorocebus_aethiops
+		Macaca_mulatta
+		Colobus_guereza
+		Hylobates_lar
+		Pan_paniscus
+	;
+END;
+BEGIN TREES;
+	TRANSLATE
+		1	Cheirogaleus_major,
+		2	Microcebus_murinus,
+		3	Lepilemur_hubbardorum,
+		4	Lemur_catta,
+		5	Varecia_variegata_variegata,
+		6	Propithecus_coquereli,
+		7	Daubentonia_madagascariensis,
+		8	Tarsius_syrichta,
+		9	Galago_senegalensis,
+		10	Otolemur_crassicaudatus,
+		11	Perodicticus_potto,
+		12	Loris_tardigradus,
+		13	Nycticebus_coucang,
+		14	Alouatta_palliata,
+		15	Aotus_trivirgatus,
+		16	Cebus_albifrons,
+		17	Saimiri_sciureus,
+		18	Callicebus_donacophilus,
+		19	Chlorocebus_aethiops,
+		20	Macaca_mulatta,
+		21	Colobus_guereza,
+		22	Hylobates_lar,
+		23	Pan_paniscus
+	;
+	TREE * UNTITLED = [&R] (((((((1:20.444567,2:20.444567):7.062678,3:27.507245):3.088872,((4:18.757531,5:18.757531):7.897006,6:26.654537):3.941579):15.56541,7:46.161527):2.158622,8:48.320149):3.053296,(((9:16.02904,10:16.02904):12.217814,11:28.246854):8.889551,(12:28.796777,13:28.796777):8.339628):14.23704):21.152637,(((((14:14.151494,15:14.151494):9.054932,16:23.206425):1.962936,17:25.169361):2.642498,18:27.811859):26.852089,(((19:16.42987,20:16.42987):8.317945,21:24.747815):11.669495,(22:23.782923,23:23.782923):12.634387):18.246639):17.862134):0;
+END;

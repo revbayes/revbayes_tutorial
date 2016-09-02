@@ -1,0 +1,138 @@
+################################################################################
+#
+# RevBayes Example: Bayesian inference of diversification rates under a
+#                   episodic birth-death model
+# 
+#
+# authors: Sebastian Hoehna
+#
+################################################################################
+
+#######################
+# Reading in the Data #
+#######################
+
+###### This just defines a single model for all sites #######
+
+### Read in sequence data for both genes
+
+T <- readTrees("data/primates.tre")[1]
+
+# Get some useful variables from the data. We need these later on.
+taxa <- T.taxa()
+
+# set my move index
+mvi = 0
+
+NUM_INTERVALS = 20
+
+
+
+####################
+# Create the rates #
+####################
+
+sd_mean <- ln(0.5)
+sd_sd <- 0.587405
+
+# first we create the sd of the rates between intervals
+# draw the sd from an exponential distribution
+#speciation_sd ~ dnExponential(10.0)
+speciation_sd ~ dnLognormal(mean=sd_mean,sd=sd_sd)
+moves[++mvi] = mvScale(speciation_sd,weight=5.0)
+
+
+# draw the mean from a uniform distribution
+speciation_prior_mean ~ dnUniform(-10.0,10.0)
+moves[++mvi] = mvSlide(speciation_prior_mean,weight=5.0)
+
+extinction_mean ~ dnLognormal(-5,sd=2*0.587405)
+moves[++mvi] = mvScale(extinction_mean,weight=5.0)
+extinction[1] := extinction_mean
+extinction[2] := extinction_mean
+
+
+
+# create a random variable at the present time
+log_speciation[1] ~ dnNormal( mean=speciation_prior_mean, sd=speciation_sd )
+
+
+moves[++mvi] = mvSlide(log_speciation[1], weight=2)
+
+
+speciation[1] := exp( log_speciation[1] )
+
+
+for (i in 1:NUM_INTERVALS) {
+    index = i+1
+    
+    log_speciation[index] ~ dnNormal( mean=log_speciation[i], sd=speciation_sd )
+
+
+    moves[++mvi] = mvSlide(log_speciation[index], weight=2)
+
+
+    speciation[index] := exp( log_speciation[index] )
+
+}
+
+moves[++mvi] = mvShrinkExpand( log_speciation, weight=10 )
+
+spec_slide_move = mvUpDownSlide(weight=10)
+spec_slide_move.addVariable( log_speciation, TRUE )
+spec_slide_move.addVariable( speciation_prior_mean, TRUE )
+moves[++mvi] = spec_slide_move
+
+
+interval_times <- T.rootAge() * (1:NUM_INTERVALS) / (NUM_INTERVALS) * 0.8
+
+
+### rho is the probability of sampling species at the present
+### fix this to 23/377, since there are ~377 described species of primates
+### and we have sampled 23
+rho <- T.ntips()/377
+
+timetree ~ dnEpisodicBirthDeath(rootAge=T.rootAge(), lambdaRates=speciation, lambdaTimes=interval_times, muRates=extinction, muTimes=[10], rho=rho, samplingStrategy="uniform", condition="time", taxa=taxa)
+
+### clamp the model with the "observed" tree
+timetree.clamp(T)
+
+
+
+#############
+# The Model #
+#############
+
+
+### workspace model wrapper ###
+mymodel = model(timetree)
+
+mni = 0
+
+### set up the monitors that will output parameter values to file and screen 
+monitors[++mni] = mnModel(filename="output/primates_uniform.log",printgen=10, separator = TAB)
+#monitors[++mni] = mnFile(filename="output/primates_uniform_speciation_rates.log",printgen=10, separator = TAB, speciation)
+#monitors[++mni] = mnFile(filename="output/primates_uniform_speciation_times.log",printgen=10, separator = TAB, interval_times)
+#monitors[++mni] = mnFile(filename="output/primates_uniform_extinction_rates.log",printgen=10, separator = TAB, extinction)
+#monitors[++mni] = mnFile(filename="output/primates_uniform_extinction_times.log",printgen=10, separator = TAB, interval_times)
+monitors[++mni] = mnScreen(printgen=1000, speciation_prior_mean, speciation_sd)
+
+
+
+################
+# The Analysis #
+################
+
+### workspace mcmc ###
+mymcmc = mcmc(mymodel, monitors, moves)
+
+### pre-burnin to tune the proposals ###
+mymcmc.burnin(generations=10000,tuningInterval=200)
+
+### run the MCMC ###
+mymcmc.run(generations=500000)
+
+mymcmc.operatorSummary()
+
+## quit ##
+q()

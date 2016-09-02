@@ -1,3 +1,17 @@
+# diversification rates through time
+cd RB_DiversificationRate_Episodic_Tutorial
+pdflatex RB_DiversificationRate_Episodic_Tutorial.tex
+bibtex RB_DiversificationRate_Episodic_Tutorial
+pdflatex RB_DiversificationRate_Episodic_Tutorial.tex
+pdflatex RB_DiversificationRate_Episodic_Tutorial.tex
+
+rm RB_DiversificationRate_Episodic_Tutorial.aux
+rm RB_DiversificationRate_Episodic_Tutorial.bbl
+rm RB_DiversificationRate_Episodic_Tutorial.blg
+rm RB_DiversificationRate_Episodic_Tutorial.log
+rm RB_DiversificationRate_Episodic_Tutorial.out
+
+cd ..
 
 # incomplete taxon sampling
 cd RB_DiversificationRate_Sampling_Tutorial

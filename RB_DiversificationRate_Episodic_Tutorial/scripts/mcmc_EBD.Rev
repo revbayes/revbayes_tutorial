@@ -23,8 +23,9 @@ taxa <- T.taxa()
 
 # set my move index
 mvi = 0
+mni = 0
 
-NUM_INTERVALS = 10
+NUM_INTERVALS = 200
 
 
 
@@ -34,65 +35,59 @@ NUM_INTERVALS = 10
 
 # first we create the sd of the rates between intervals
 # draw the sd from an exponential distribution
-speciation_sd ~ dnExponential(10.0)
+speciation_sd ~ dnExponential(1.0)
 moves[++mvi] = mvScale(speciation_sd,weight=5.0)
-
-extinction_sd ~ dnExponential(10.0)
-moves[++mvi] = mvScale(extinction_sd,weight=5.0)
 
 
 
 # draw the mean from a uniform distribution
-speciation_prior_mean ~ dnUniform(-4.0,2.0)
+speciation_prior_mean ~ dnUniform(-10.0,10.0)
 moves[++mvi] = mvSlide(speciation_prior_mean,weight=5.0)
 
-extinction_prior_mean ~ dnUniform(-4.0,2.0)
-moves[++mvi] = mvSlide(extinction_prior_mean,weight=5.0)
+extinction ~ dnLognormal(speciation_prior_mean,sd=2*0.587405)
+moves[++mvi] = mvSlide(extinction,weight=5.0)
 
 
 
 # create a random variable at the present time
 log_speciation[1] ~ dnNormal( mean=speciation_prior_mean, sd=speciation_sd )
-log_extinction[1] ~ dnNormal( mean=extinction_prior_mean, sd=extinction_sd )
 
 
 moves[++mvi] = mvSlide(log_speciation[1], weight=2)
-moves[++mvi] = mvSlide(log_extinction[1], weight=2)
 
 
 speciation[1] := exp( log_speciation[1] )
-extinction[1] := exp( log_extinction[1] )
 
 
 for (i in 1:NUM_INTERVALS) {
     index = i+1
     
     log_speciation[index] ~ dnNormal( mean=log_speciation[i], sd=speciation_sd )
-    log_extinction[index] ~ dnNormal( mean=log_extinction[i], sd=extinction_sd )
 
 
     moves[++mvi] = mvSlide(log_speciation[index], weight=2)
-    moves[++mvi] = mvSlide(log_extinction[index], weight=2)
 
 
     speciation[index] := exp( log_speciation[index] )
-    extinction[index] := exp( log_extinction[index] )
 
 }
 
-moves[++mvi] = mvVectorSlide(log_speciation, weight=10)
-moves[++mvi] = mvVectorSlide(log_extinction, weight=10)
+moves[++mvi] = mvShrinkExpand( log_speciation, sd=speciation_sd, weight=10 )
 
+spec_slide_move = mvUpDownSlide(weight=10)
+spec_slide_move.addVariable( log_speciation, TRUE )
+spec_slide_move.addVariable( speciation_prior_mean, TRUE )
+moves[++mvi] = spec_slide_move
 
-interval_times = T.rootAge() * (1:NUM_INTERVALS) / (NUM_INTERVALS) * 0.8
+interval_times <- T.rootAge() * (1:NUM_INTERVALS) / (NUM_INTERVALS) * 0.8
 
 
 ### rho is the probability of sampling species at the present
-### fix this to 367/450, since there are ~450 described species of primates
+### fix this to 367/377, since there are ~377 described species of primates
 ### and we have sampled 367
-rho <- T.ntips()/450
+rho <- T.ntips()/377
 
-timetree ~ dnEpisodicBirthDeath(rootAge=T.rootAge(), lambdaRates=speciation, lambdaTimes=interval_times, muRates=extinction, muTimes=interval_times, rho=rho, taxa=taxa)
+timetree ~ dnEpisodicBirthDeath(rootAge=T.rootAge(), lambdaRates=speciation, lambdaTimes=interval_times, muRates=extinction, rho=rho, taxa=taxa)
 
 ### clamp the model with the "observed" tree
 timetree.clamp(T)
@@ -108,10 +103,12 @@ timetree.clamp(T)
 mymodel = model(rho)
 
 ### set up the monitors that will output parameter values to file and screen 
-monitors[1] = mnModel(filename="output/primates_EBD.log",printgen=10, separator = TAB)
-monitors[2] = mnFile(filename="output/primates_EBD_speciation.log",printgen=10, separator = TAB, speciation)
-monitors[3] = mnFile(filename="output/primates_EBD_extinction.log",printgen=10, separator = TAB, extinction)
-monitors[4] = mnScreen(printgen=1000, speciation_prior_mean, extinction_prior_mean)
+monitors[++mni] = mnModel(filename="output/primates_EBD.log",printgen=10, separator = TAB)
+monitors[++mni] = mnFile(filename="output/primates_EBD_speciation_rates.log",printgen=10, separator = TAB, speciation)
+monitors[++mni] = mnFile(filename="output/primates_EBD_speciation_times.log",printgen=10, separator = TAB, interval_times)#
+monitors[++mni] = mnFile(filename="output/primates_EBD_extinction_rates.log",printgen=10, separator = TAB, extinction)
+monitors[++mni] = mnFile(filename="output/primates_EBD_extinction_times.log",printgen=10, separator = TAB, interval_times)
+monitors[++mni] = mnScreen(printgen=1000, speciation_prior_mean, speciation_sd)
 
 
 
