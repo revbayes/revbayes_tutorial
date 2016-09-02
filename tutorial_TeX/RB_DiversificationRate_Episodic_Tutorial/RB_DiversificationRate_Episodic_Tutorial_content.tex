@@ -100,7 +100,7 @@ Using this variable we can easily change our script to break-up time into many o
 
 \subsection{Specifying the model}
 
-\subsubsection{Priors on rates}
+\subsubsection{Priors on amount of rate variation}
 We start by specifying prior distributions on the rates.
 Each interval-specific speciation and extinction rate will be drawn from a normal distribution.
 Thus, we need a parameter for the standard deviation of those normal distributions.
@@ -122,37 +122,23 @@ moves[++mvi] = mvScale(extinction_sd,weight=5.0)
 \end{lstlisting}
 \end{snugshade*}}
 
-The second prior parameter that we need to specify is mean of the speciation and extinction rate at present.
+
+
+\subsubsection{Specifying episodic rates}
+As we mentioned before, we will apply normal distributions as priors for each log-transformed rate.
+We begin with the rate at the present which is our initial rate parameter.
+The rates at the present will be specified slightly differently because they are not correlated to any previous rates.
 This is because we are actually modeling rate-changes backwards in time and there is no previous rate for the rate at the present.
 Thus we use a uniform distribution between -10 and 10 because of lack of prior knowledge.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-# draw the mean from a uniform distribution
-speciation_prior_mean ~ dnUniform(-10.0,10.0)
-extinction_prior_mean ~ dnUniform(-10.0,10.0)
+# draw the initial rate from a uniform distribution
+log_speciation[1] ~ dnUniform(-10.0,10.0)
+log_speciation[1] ~ dnUniform(-10.0,10.0)
 \end{lstlisting}
 \end{snugshade*}}
-This time we will apply a simple sliding window move because both parameters are location parameters instead of scale or variance parameters.
-{\tt \begin{snugshade*}
-\begin{lstlisting}
-moves[++mvi] = mvSlide(speciation_prior_mean,weight=5.0)
-moves[++mvi] = mvSlide(extinction_prior_mean,weight=5.0)
-\end{lstlisting}
-\end{snugshade*}}
-
-
-\subsubsection{Specifying episodic rates}
-As we mentioned before, we will apply normal distributions as priors for each rate.
-We begin with the rate at the present.
-The rates at the present will be specified slightly differently because they are not correlated to any previous rates.
 Note that we store the variables in vectors.
-{\tt \begin{snugshade*}
-\begin{lstlisting}
-log_speciation[1] ~ dnNormal( mean=speciation_prior_mean, sd=speciation_sd )
-log_extinction[1] ~ dnNormal( mean=extinction_prior_mean, sd=extinction_sd )
-\end{lstlisting}
-\end{snugshade*}}
-Again, we apply simple sliding window moves for the rates.
+We apply simple sliding window moves for the rates.
 Normally we would use scaling moves but in this case we work on the log-transformed parameters and thus sliding moves perform better.
 If you are keen you can test the differences.
 {\tt \begin{snugshade*}
@@ -169,7 +155,7 @@ extinction[1] := exp( log_extinction[1] )
 \end{lstlisting}
 \end{snugshade*}}
 
-Then we repeat the specification for the speciation and extinction rates for each time interval.
+Then we repeat the specification for the speciation and extinction rates for each time interval (\IE epoch).
 This can be done efficiently using a \cl{for}-loop.
 We will use a specific index variable so that we can easier refer to the rate at the previous interval.
 {\tt \begin{snugshade*}
@@ -189,20 +175,12 @@ for (i in 1:NUM_INTERVALS) {
 }
 \end{lstlisting}
 \end{snugshade*}}
-Finally, we apply moves that slide all values in the rate vectors, \IE all speciation or extinction rates, and the prior mean parameters by the same amount. 
-We will use an \cl{mvUpDownSlide} move.
-This move needs to be created in multiple steps because we have to add each variable that is perturbed independently using the member function \cl{.addVariable}.
+Finally, we apply moves that slide all values in the rate vectors, \IE all speciation or extinction rates. 
+We will use an \cl{mvVectorSlide} move.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-spec_slide_move = mvUpDownSlide(weight=10)
-spec_slide_move.addVariable( log_speciation, TRUE )
-spec_slide_move.addVariable( speciation_prior_mean, TRUE )
-moves[++mvi] = spec_slide_move
-
-ext_slide_move = mvUpDownSlide(weight=10)
-ext_slide_move.addVariable( log_extinction, TRUE )
-ext_slide_move.addVariable( extinction_prior_mean, TRUE )
-moves[++mvi] = ext_slide_move
+moves[++mvi] = mvVectorSlide(log_speciation, weight=10)
+moves[++mvi] = mvVectorSlide(log_extinction, weight=10)
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -229,7 +207,8 @@ interval_times <- T.rootAge() * (1:NUM_INTERVALS) / (NUM_INTERVALS) * 0.8
 \subsubsection{Incomplete Taxon Sampling}
 
 We know that we have sampled 367 out of 377 living primate species. 
-To account for this we can set the sampling parameter as a constant node with a value of 367/377
+To account for this we can set the sampling parameter as a constant node with a value of 367/377.
+For simplicity, and since almost all species have been sampled, we assume \emph{uniform} taxon sampling \citep{Hoehna2011,Hoehna2014a},
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 rho <- T.ntips()/377
@@ -300,7 +279,7 @@ monitors[++mni] = mnFile(filename="output/primates_EBD_extinction_times.log",pri
 Finally, create a screen monitor that will report the states of specified variables to the screen with \cl{mnScreen}:
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-monitors[++mni] = mnScreen(printgen=1000, speciation_prior_mean, extinction_prior_mean, speciation_sd, extinction_sd)
+monitors[++mni] = mnScreen(printgen=1000, extinction_sd, speciation_sd)
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -364,6 +343,7 @@ dev.off()
 \item Run an MCMC simulation to estimate the posterior distribution of the speciation rate and extinction rate.
 \item Visualize the rate through time using \R.
 \item Do you see evidence for rate decreases or increases? What is the general trend?
+\item Is there evidence for rate variation? Look at the estimates of \cl{speciation\_sd} and \cl{extinction\_sd}: Is there information in the data to change the estimates from the prior?
 \item Run the analysis using a different number of intervals, \EG 5 or 50. How do the rates change?
 \end{itemize}
 
@@ -374,7 +354,7 @@ dev.off()
 \item In our results we see that the extinction rate is fairly constant. Modify the model by using a constant-rate for the extinction rate parameter but still let the speciation rate vary through time. 
 \begin{itemize}
 \item Remove all previous occurrences of the extinction rates (\IE priors, parameters and moves).
-\item Specify a lognormal prior distribution on the constant extinction rate \\(\cl{extinction ~ dnLognormal(-5,sd=2*0.587405)})
+\item Specify a lognormal prior distribution on the constant extinction rate \\(\cl{extinction $\sim$ dnLognormal(-5,sd=2*0.587405)})
 \item Add a move for the new extinction rate parameter \\\cl{moves[++mvi] = mvScale(extinction,weight=5.0)}.
 \item Remove the argument \cl{muTimes=interval\_times} from the birth-death process.
 \end{itemize}

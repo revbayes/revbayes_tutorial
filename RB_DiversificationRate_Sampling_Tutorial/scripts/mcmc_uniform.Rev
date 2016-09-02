@@ -43,18 +43,10 @@ extinction_sd ~ dnExponential(1.0)
 moves[++mvi] = mvScale(extinction_sd,weight=5.0)
 
 
-# draw the mean from a uniform distribution
-speciation_prior_mean ~ dnUniform(-10.0,10.0)
-moves[++mvi] = mvSlide(speciation_prior_mean,weight=5.0)
-
-extinction_prior_mean ~ dnUniform(-10.0,10.0)
-moves[++mvi] = mvSlide(extinction_prior_mean,weight=5.0)
-
-
 
 # create a random variable at the present time
-log_speciation[1] ~ dnNormal( mean=speciation_prior_mean, sd=speciation_sd )
-log_extinction[1] ~ dnNormal( mean=extinction_prior_mean, sd=extinction_sd )
+log_speciation[1] ~ dnUniform(-10.0,10.0)
+log_extinction[1] ~ dnUniform(-10.0,10.0)
 
 
 # apply moves on the rates
@@ -83,18 +75,11 @@ for (i in 1:NUM_INTERVALS) {
 
 }
 
+moves[++mvi] = mvVectorSlide(log_speciation, weight=10)
+moves[++mvi] = mvVectorSlide(log_extinction, weight=10)
+
 moves[++mvi] = mvShrinkExpand( log_speciation, sd=speciation_sd, weight=10 )
 moves[++mvi] = mvShrinkExpand( log_extinction, sd=extinction_sd, weight=10 )
-
-spec_slide_move = mvUpDownSlide(weight=10)
-spec_slide_move.addVariable( log_speciation, TRUE )
-spec_slide_move.addVariable( speciation_prior_mean, TRUE )
-moves[++mvi] = spec_slide_move
-
-ext_slide_move = mvUpDownSlide(weight=10)
-ext_slide_move.addVariable( log_extinction, TRUE )
-ext_slide_move.addVariable( extinction_prior_mean, TRUE )
-moves[++mvi] = ext_slide_move
 
 
 interval_times <- T.rootAge() * (1:NUM_INTERVALS) / (NUM_INTERVALS) * 0.8
@@ -126,7 +111,7 @@ monitors[++mni] = mnFile(filename="output/primates_uniform_speciation_rates.log"
 monitors[++mni] = mnFile(filename="output/primates_uniform_speciation_times.log",printgen=10, separator = TAB, interval_times)#
 monitors[++mni] = mnFile(filename="output/primates_uniform_extinction_rates.log",printgen=10, separator = TAB, extinction)
 monitors[++mni] = mnFile(filename="output/primates_uniform_extinction_times.log",printgen=10, separator = TAB, interval_times)
-monitors[++mni] = mnScreen(printgen=1000, speciation_prior_mean, extinction_prior_mean, speciation_sd, extinction_sd)
+monitors[++mni] = mnScreen(printgen=1000, speciation_sd, extinction_sd)
 
 
 
