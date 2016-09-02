@@ -44,15 +44,21 @@ The basic idea behind the model is that speciation and extinction rates are piec
 Thus, we will divide time into equal time interval with the only exception that the first 20\% of the time do not have any rate changes.
 Our only reason to do so is because there are two few lineages in the reconstructed tree at that time to obtain reliable parameter estimates.
 An overview of the underlying theory of the specific model and implementation is given in \citep{Hoehna2015a}.
+\begin{figure}[h!]
+\centering
+\fbox{\includegraphics[width=\textwidth]{\ResourcePath figures/EBD_scenarios.pdf}}
+\caption{\small Four scenarios of birth-death models.}
+\label{fig:EBD}
+\end{figure}
 
 We assume that the log-transformed rates are drawn from a normal distribution.
 Furthermore, we will assume that rates are autocorrelated, that is, rates in the next time interval will be centered around the rates in the current time interval.
 The assumption of autocorrelated rates does not only makes sense biologically but also improves our ability to estimate parameters.
 \begin{figure}[h!]
 \centering
-\fbox{\includegraphics[width=\textwidth]{\ResourcePath figures/EBD_scenarios.pdf}}
-\caption{\small Four scenarios of birth-death models.}
-\label{fig:EBD}
+\fbox{\includegraphics[width=\textwidth]{\ResourcePath figures/Graphical_Model_EBD.pdf}}
+\caption{\small A graphical model with the outline of the \Rev code. On the left we see the graphical model describing the correlated (Brownian motion) model for rate-variation through time. On the right we show the correspond \Rev commands to instantiate this model in computer memory. This figure gives a complete overview of the model that we use here in this analysis.}
+\label{fig:EBD_GM}
 \end{figure}
 
 
