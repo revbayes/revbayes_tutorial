@@ -1,7 +1,7 @@
 ################################################################################
 #
 # RevBayes Example: Bayesian inference of diversification rates under a
-#                   episodic birth-death model
+#                   episodic birth-death model with uniform taxon sampling
 # 
 #
 # authors: Sebastian Hoehna
@@ -12,20 +12,16 @@
 # Reading in the Data #
 #######################
 
-###### This just defines a single model for all sites #######
-
-### Read in sequence data for both genes
-
+### Read in the "observed" tree
 T <- readTrees("data/primates.tre")[1]
 
 # Get some useful variables from the data. We need these later on.
 taxa <- T.taxa()
 
-# set my move and monitor index
+# set my move index
 mvi = 0
 mni = 0
 
-# specify how many intervals we are going to use
 NUM_INTERVALS = 20
 
 
@@ -35,13 +31,12 @@ NUM_INTERVALS = 20
 ####################
 
 # first we create the standard deviation of the rates between intervals
-# draw the sd from a lognormal distribution
+# draw the sd from an exponential distribution
 speciation_sd ~ dnExponential(1.0)
 moves[++mvi] = mvScale(speciation_sd,weight=5.0)
 
 extinction_sd ~ dnExponential(1.0)
 moves[++mvi] = mvScale(extinction_sd,weight=5.0)
-
 
 
 # create a random variable at the present time
@@ -111,7 +106,7 @@ monitors[++mni] = mnFile(filename="output/primates_uniform_speciation_rates.log"
 monitors[++mni] = mnFile(filename="output/primates_uniform_speciation_times.log",printgen=10, separator = TAB, interval_times)#
 monitors[++mni] = mnFile(filename="output/primates_uniform_extinction_rates.log",printgen=10, separator = TAB, extinction)
 monitors[++mni] = mnFile(filename="output/primates_uniform_extinction_times.log",printgen=10, separator = TAB, interval_times)
-monitors[++mni] = mnScreen(printgen=1000, speciation_sd, extinction_sd)
+monitors[++mni] = mnScreen(printgen=1000, extinction_sd, speciation_sd)
 
 
 
@@ -127,6 +122,8 @@ mymcmc.burnin(generations=10000,tuningInterval=200)
 
 ### run the MCMC ###
 mymcmc.run(generations=50000)
+
+
 
 ## quit ##
 q()
