@@ -1,11 +1,19 @@
+# Install RevGadget if you haven't done so already
+#library(devtools)
+#install_github("revbayes/RevGadgets")
+
 library(RevGadgets)
 
 tree <- read.tree("data/primates_Springer.tre")
-files <- c("output/primates_EBD_speciation_times.log", "output/primates_EBD_speciation_rates.log", "output/primates_EBD_extinction_times.log", "output/primates_EBD_extinction_rates.log")
 
-rev_out <- rev.process.output(files,tree,burnin=0.25,numIntervals=100)
+rev_out <- rev.process.div.rates(speciation_times_file = "output/primates_EBD_speciation_times.log",
+                                 speciation_rates_file = "output/primates_EBD_speciation_rates.log",
+                                 extinction_times_file = "output/primates_EBD_extinction_times.log",
+                                 extinction_rates_file = "output/primates_EBD_extinction_rates.log",
+                                 tree,
+                                 burnin=0.25,numIntervals=100)
 
 pdf("EBD.pdf")
 par(mfrow=c(2,2))
-rev.plot.output(rev_out)
+rev.plot.div.rates(rev_out)
 dev.off()

@@ -25,7 +25,7 @@ taxa <- T.taxa()
 mvi = 0
 mni = 0
 
-NUM_INTERVALS = 200
+NUM_INTERVALS = 10
 
 
 
@@ -89,7 +89,7 @@ interval_times <- T.rootAge() * (1:NUM_INTERVALS) / (NUM_INTERVALS) * 0.8
 ### and we have sampled 23
 rho <- T.ntips()/377
 
-timetree ~ dnEpisodicBirthDeath(rootAge=T.rootAge(), lambdaRates=speciation, lambdaTimes=interval_times, muRates=extinction, muTimes=interval_times, rho=rho, samplingStrategy="uniform", condition="time", taxa=taxa)
+timetree ~ dnEpisodicBirthDeath(rootAge=T.rootAge(), lambdaRates=speciation, lambdaTimes=interval_times, muRates=extinction, muTimes=interval_times, rho=rho, samplingStrategy="uniform", condition="survival", taxa=taxa)
 
 ### clamp the model with the "observed" tree
 timetree.clamp(T)
