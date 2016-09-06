@@ -74,12 +74,12 @@ root_time <- 90
 
 ### the birth rate is a stochastic random variable drawn from a lognormal prior
 ### MCMC samples this variable using a scale proposal
-diversification_mean <- ln( ln(450.0/2.0) / root_time )
+diversification_mean <- ln( ln(377.0/2.0) / root_time )
 diversification_sd <- 0.587405
 diversification ~ dnLognormal(mean=diversification_mean,sd=diversification_sd) 
 moves[++mvi] = mvScale(diversification,lambda=1.0,tune=true,weight=3.0)
 
-turnover_mean <- ln( ln(450.0/2.0) / root_time )
+turnover_mean <- ln( ln(377.0/2.0) / root_time )
 turnover_sd <- 0.587405*2
 turnover ~ dnLognormal(mean=turnover_mean,sd=turnover_sd) 
 moves[++mvi] = mvScale(turnover,lambda=1.0,tune=true,weight=3.0)
@@ -89,9 +89,9 @@ birth_rate := diversification + turnover
 death_rate := turnover
 
 ### rho is the probability of sampling species at the present
-### fix this to 23/450, since there are ~450 described species of primates
+### fix this to 23/377, since there are ~377 described species of primates
 ### and we have sampled 23
-rho <- n_species/450
+rho <- n_species/377
 
 ### the time tree is a stochastic node modeled by the constant rate birth-death process (dnBDP)
 psi ~ dnBDP(lambda=birth_rate, mu=death_rate, rho=rho, rootAge=root_time, samplingStrategy="uniform", condition="survival", taxa=taxa)
@@ -148,7 +148,7 @@ monitors[++mni] = mnModel(filename="output/primates_cytb_GTR_Gamma.log",printgen
 monitors[++mni] = mnFile(filename="output/primates_cytb_GTR_Gamma.trees",printgen=10, separator = TAB, psi)
 monitors[++mni] = mnScreen(printgen=1000, clock_rate, diversification, turnover)
 
-mymcmc = mcmc(mymodel, monitors, moves)
+mymcmc = mcmc(mymodel, monitors, moves, 4)
 
 mymcmc.burnin(generations=10000,tuningInterval=1000)
 mymcmc.run(generations=30000)
