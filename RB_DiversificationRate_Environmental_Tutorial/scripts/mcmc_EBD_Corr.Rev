@@ -1,7 +1,7 @@
 ################################################################################
 #
-# RevBayes Example: Bayesian inference of diversification rates under 
-#                   environmentally correlated rates birth-death model
+# RevBayes Example: Bayesian inference of diversification rates under a
+#                   episodic birth-death model
 # 
 #
 # authors: Sebastian Hoehna
@@ -34,7 +34,8 @@ var <- co2
 #var <- (co2 - mean(co2))
 #var <- (co2 - mean(co2))/(sqrt(sum((co2 - mean(co2))^2) / (co2.size() - 1)))
 
-NUM_INTERVALS = var.size()
+NUM_INTERVALS = var.size()-1
+
 
 
 ####################
@@ -44,64 +45,71 @@ NUM_INTERVALS = var.size()
 # first we create the standard deviation of the rates between intervals
 # draw the sd from an exponential distribution
 speciation_sd ~ dnExponential(1.0)
+speciation_sd.setValue( 0.001 )
 moves[++mvi] = mvScale(speciation_sd,weight=5.0)
 
 extinction_sd ~ dnExponential(1.0)
+extinction_sd.setValue( 0.001 )
 moves[++mvi] = mvScale(extinction_sd,weight=5.0)
 
 
-alpha_speciation ~ dnUniform(-100,100)
-alpha_extinction ~ dnUniform(-100,100)
+# create a random variable at the present time
+log_speciation[1] ~ dnUniform(-10.0,10.0)
+log_extinction[1] ~ dnUniform(-10.0,10.0)
+
+log_speciation[1].setValue( ln(0.5) )
+log_extinction[1].setValue( ln(0.4) )
+
+
+# apply moves on the rates
+moves[++mvi] = mvSlide(log_speciation[1], weight=2)
+moves[++mvi] = mvSlide(log_extinction[1], weight=2)
+
+
+speciation[1] := exp( log_speciation[1] )
+extinction[1] := exp( log_extinction[1] )
+
 beta_speciation ~ dnNormal(0,1.0)
 beta_extinction ~ dnNormal(0,1.0)
-
-alpha_speciation.setValue( 0.0 )
-alpha_extinction.setValue( 0.0 )
 beta_speciation.setValue( 0.0 )
 beta_extinction.setValue( 0.0 )
 
-moves[++mvi] = mvSlide(alpha_speciation,delta=1.0,weight=10.0)
-moves[++mvi] = mvSlide(alpha_extinction,delta=1.0,weight=10.0)
 moves[++mvi] = mvSlide(beta_speciation,delta=1.0,weight=10.0)
 moves[++mvi] = mvSlide(beta_extinction,delta=1.0,weight=10.0)
 
+speciation_corr_prob := ifelse(beta_speciation == 0.0, 0, 1)
+extinction_corr_prob := ifelse(beta_extinction == 0.0, 0, 1)
+
+
 for (i in 1:NUM_INTERVALS) {
-   
-   speciation_residual[i] ~ dnNormal(0.0, speciation_sd)
-   extinction_residual[i] ~ dnNormal(0.0, extinction_sd)
+    index = i+1
+    
+    # specify normal priors (= Brownian motion) on the log of the rates
+    mean_speciation[index] := log_speciation[i] + beta_speciation * ln( var[index] / var[i] )
+    mean_extinction[index] := log_extinction[i] + beta_extinction * ln( var[index] / var[i] )
+    
+    log_speciation[index] ~ dnNormal( mean=mean_speciation[index], sd=speciation_sd )
+    log_extinction[index] ~ dnNormal( mean=mean_extinction[index], sd=extinction_sd )
 
-   log_speciation[i] := alpha_speciation + beta_speciation * var[i] + speciation_residual[i]
-   log_extinction[i] := alpha_extinction + beta_extinction * var[i] + extinction_residual[i]
-   
-   speciation[i] := exp( log_speciation[i] )
-   extinction[i] := exp( log_extinction[i] )
+    # apply moves on the rates
+    moves[++mvi] = mvSlide(log_speciation[index], weight=2)
+    moves[++mvi] = mvSlide(log_extinction[index], weight=2)
 
-   moves[++mvi] = mvSlide(speciation_residual[i],delta=1.0,weight=2.0)
-   moves[++mvi] = mvSlide(extinction_residual[i],delta=1.0,weight=2.0)
-   
+    # transform the log-rate into actual rates
+    speciation[index] := exp( log_speciation[index] )
+    extinction[index] := exp( log_extinction[index] )
+
 }
+
+moves[++mvi] = mvVectorSlide(log_speciation, weight=10)
+moves[++mvi] = mvVectorSlide(log_extinction, weight=10)
+
+moves[++mvi] = mvShrinkExpand( log_speciation, sd=speciation_sd, weight=10 )
+moves[++mvi] = mvShrinkExpand( log_extinction, sd=extinction_sd, weight=10 )
+
 
 
 interval_times <- MAX_VAR_AGE * (1:(NUM_INTERVALS-1)) / (NUM_INTERVALS-1)
-
-
-moves[++mvi] = mvVectorSlide(speciation_residual, weight=10)
-moves[++mvi] = mvVectorSlide(extinction_residual, weight=10)
-
-moves[++mvi] = mvShrinkExpand( speciation_residual, sd=speciation_sd, weight=10 )
-moves[++mvi] = mvShrinkExpand( extinction_residual, sd=extinction_sd, weight=10 )
-
-
-#up_down_slide_speciation = mvUpDownSlide(weight=2)
-#up_down_slide_speciation.addVariable( speciation_residual, up=TRUE )
-#up_down_slide_speciation.addVariable( alpha_speciation, up=FALSE )
-#moves[++mvi] = up_down_slide_speciation
-#
-#up_down_slide_extinction = mvUpDownSlide(weight=2)
-#up_down_slide_extinction.addVariable( extinction_residual, up=TRUE )
-#up_down_slide_extinction.addVariable( alpha_extinction, up=FALSE )
-#moves[++mvi] = up_down_slide_extinction
-
 
 ### rho is the probability of sampling species at the present
 ### fix this to 23/377, since there are ~377 described species of primates
@@ -124,12 +132,12 @@ timetree.clamp(T)
 mymodel = model(rho)
 
 ### set up the monitors that will output parameter values to file and screen 
-monitors[++mni] = mnModel(filename="output/primates_co2.log",printgen=10, separator = TAB)
-monitors[++mni] = mnFile(filename="output/primates_co2_speciation_rates.log",printgen=10, separator = TAB, speciation)
-monitors[++mni] = mnFile(filename="output/primates_co2_speciation_times.log",printgen=10, separator = TAB, interval_times)#
-monitors[++mni] = mnFile(filename="output/primates_co2_extinction_rates.log",printgen=10, separator = TAB, extinction)
-monitors[++mni] = mnFile(filename="output/primates_co2_extinction_times.log",printgen=10, separator = TAB, interval_times)
-monitors[++mni] = mnScreen(printgen=1000, extinction_sd, speciation_sd)
+monitors[++mni] = mnModel(filename="output/primates_EBD_Corr.log",printgen=1, separator = TAB)
+monitors[++mni] = mnFile(filename="output/primates_EBD_Corr_speciation_rates.log",printgen=1, separator = TAB, speciation)
+monitors[++mni] = mnFile(filename="output/primates_EBD_Corr_speciation_times.log",printgen=1, separator = TAB, interval_times)#
+monitors[++mni] = mnFile(filename="output/primates_EBD_Corr_extinction_rates.log",printgen=1, separator = TAB, extinction)
+monitors[++mni] = mnFile(filename="output/primates_EBD_Corr_extinction_times.log",printgen=1, separator = TAB, interval_times)
+monitors[++mni] = mnScreen(printgen=1000, beta_speciation, beta_extinction)
 
 
 
@@ -141,12 +149,12 @@ monitors[++mni] = mnScreen(printgen=1000, extinction_sd, speciation_sd)
 mymcmc = mcmc(mymodel, monitors, moves)
 
 ### pre-burnin to tune the proposals ###
-mymcmc.burnin(generations=5000,tuningInterval=100)
+mymcmc.burnin(generations=1000,tuningInterval=100)
 
 ### run the MCMC ###
-mymcmc.run(generations=50000)
+mymcmc.run(generations=5000)
 
-mymcmc.operatorSummary()
+
 
 ## quit ##
 q()

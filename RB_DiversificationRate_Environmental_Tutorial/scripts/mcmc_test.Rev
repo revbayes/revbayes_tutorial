@@ -34,7 +34,8 @@ var <- co2
 #var <- (co2 - mean(co2))
 #var <- (co2 - mean(co2))/(sqrt(sum((co2 - mean(co2))^2) / (co2.size() - 1)))
 
-NUM_INTERVALS = var.size()
+#NUM_INTERVALS = var.size()
+NUM_INTERVALS = 20
 
 
 ####################
@@ -44,34 +45,30 @@ NUM_INTERVALS = var.size()
 # first we create the standard deviation of the rates between intervals
 # draw the sd from an exponential distribution
 speciation_sd ~ dnExponential(1.0)
+speciation_sd.setValue(1.0)
 moves[++mvi] = mvScale(speciation_sd,weight=5.0)
 
 extinction_sd ~ dnExponential(1.0)
+extinction_sd.setValue(1.0)
 moves[++mvi] = mvScale(extinction_sd,weight=5.0)
 
 
-alpha_speciation ~ dnUniform(-100,100)
-alpha_extinction ~ dnUniform(-100,100)
-beta_speciation ~ dnNormal(0,1.0)
-beta_extinction ~ dnNormal(0,1.0)
+alpha_speciation ~ dnUniform(-10,10)
+alpha_extinction ~ dnUniform(-10,10)
 
 alpha_speciation.setValue( 0.0 )
 alpha_extinction.setValue( 0.0 )
-beta_speciation.setValue( 0.0 )
-beta_extinction.setValue( 0.0 )
 
 moves[++mvi] = mvSlide(alpha_speciation,delta=1.0,weight=10.0)
 moves[++mvi] = mvSlide(alpha_extinction,delta=1.0,weight=10.0)
-moves[++mvi] = mvSlide(beta_speciation,delta=1.0,weight=10.0)
-moves[++mvi] = mvSlide(beta_extinction,delta=1.0,weight=10.0)
 
 for (i in 1:NUM_INTERVALS) {
    
    speciation_residual[i] ~ dnNormal(0.0, speciation_sd)
    extinction_residual[i] ~ dnNormal(0.0, extinction_sd)
 
-   log_speciation[i] := alpha_speciation + beta_speciation * var[i] + speciation_residual[i]
-   log_extinction[i] := alpha_extinction + beta_extinction * var[i] + extinction_residual[i]
+   log_speciation[i] := alpha_speciation + speciation_residual[i]
+   log_extinction[i] := alpha_extinction + extinction_residual[i]
    
    speciation[i] := exp( log_speciation[i] )
    extinction[i] := exp( log_extinction[i] )
@@ -82,25 +79,17 @@ for (i in 1:NUM_INTERVALS) {
 }
 
 
-interval_times <- MAX_VAR_AGE * (1:(NUM_INTERVALS-1)) / (NUM_INTERVALS-1)
-
+#interval_times <- MAX_VAR_AGE * (1:(NUM_INTERVALS-1)) / (NUM_INTERVALS-1)
+interval_times <- T.rootAge() * (1:(NUM_INTERVALS-1)) / (NUM_INTERVALS-1) * 0.8
+#interval_times <- T.rootAge() * (1:NUM_INTERVALS) / (NUM_INTERVALS) * 0.8
 
 moves[++mvi] = mvVectorSlide(speciation_residual, weight=10)
 moves[++mvi] = mvVectorSlide(extinction_residual, weight=10)
 
-moves[++mvi] = mvShrinkExpand( speciation_residual, sd=speciation_sd, weight=10 )
-moves[++mvi] = mvShrinkExpand( extinction_residual, sd=extinction_sd, weight=10 )
-
-
-#up_down_slide_speciation = mvUpDownSlide(weight=2)
-#up_down_slide_speciation.addVariable( speciation_residual, up=TRUE )
-#up_down_slide_speciation.addVariable( alpha_speciation, up=FALSE )
-#moves[++mvi] = up_down_slide_speciation
-#
-#up_down_slide_extinction = mvUpDownSlide(weight=2)
-#up_down_slide_extinction.addVariable( extinction_residual, up=TRUE )
-#up_down_slide_extinction.addVariable( alpha_extinction, up=FALSE )
-#moves[++mvi] = up_down_slide_extinction
+#moves[++mvi] = mvShrinkExpand( speciation_residual, sd=speciation_sd, weight=10 )
+#moves[++mvi] = mvShrinkExpand( extinction_residual, sd=extinction_sd, weight=10 )
+moves[++mvi] = mvShrinkExpand( speciation_residual, weight=10 )
+moves[++mvi] = mvShrinkExpand( extinction_residual, weight=10 )
 
 
 ### rho is the probability of sampling species at the present
@@ -124,12 +113,12 @@ timetree.clamp(T)
 mymodel = model(rho)
 
 ### set up the monitors that will output parameter values to file and screen 
-monitors[++mni] = mnModel(filename="output/primates_co2.log",printgen=10, separator = TAB)
-monitors[++mni] = mnFile(filename="output/primates_co2_speciation_rates.log",printgen=10, separator = TAB, speciation)
-monitors[++mni] = mnFile(filename="output/primates_co2_speciation_times.log",printgen=10, separator = TAB, interval_times)#
-monitors[++mni] = mnFile(filename="output/primates_co2_extinction_rates.log",printgen=10, separator = TAB, extinction)
-monitors[++mni] = mnFile(filename="output/primates_co2_extinction_times.log",printgen=10, separator = TAB, interval_times)
-monitors[++mni] = mnScreen(printgen=1000, extinction_sd, speciation_sd)
+monitors[++mni] = mnModel(filename="output/primates_co2_test.log",printgen=10, separator = TAB)
+monitors[++mni] = mnFile(filename="output/primates_co2_test_speciation_rates.log",printgen=10, separator = TAB, speciation)
+monitors[++mni] = mnFile(filename="output/primates_co2_test_speciation_times.log",printgen=10, separator = TAB, interval_times)#
+monitors[++mni] = mnFile(filename="output/primates_co2_test_extinction_rates.log",printgen=10, separator = TAB, extinction)
+monitors[++mni] = mnFile(filename="output/primates_co2_test_extinction_times.log",printgen=10, separator = TAB, interval_times)
+monitors[++mni] = mnScreen(printgen=1000, speciation_sd, extinction_sd)
 
 
 
