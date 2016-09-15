@@ -77,19 +77,21 @@ beta_extinction.setValue( 0.0 )
 moves[++mvi] = mvSlide(beta_speciation,delta=1.0,weight=10.0)
 moves[++mvi] = mvSlide(beta_extinction,delta=1.0,weight=10.0)
 
-speciation_corr_prob := ifelse(beta_speciation == 0.0, 0, 1)
-extinction_corr_prob := ifelse(beta_extinction == 0.0, 0, 1)
+speciation_corr_neg_prob := ifelse(beta_speciation < 0.0, 1, 0)
+extinction_corr_neg_prob := ifelse(beta_extinction < 0.0, 1, 0)
+speciation_corr_pos_prob := ifelse(beta_speciation > 0.0, 1, 0)
+extinction_corr_pos_prob := ifelse(beta_extinction > 0.0, 1, 0)
 
 
 for (i in 1:NUM_INTERVALS) {
     index = i+1
     
     # specify normal priors (= Brownian motion) on the log of the rates
-    mean_speciation[index] := log_speciation[i] + beta_speciation * ln( var[index] / var[i] )
-    mean_extinction[index] := log_extinction[i] + beta_extinction * ln( var[index] / var[i] )
+    expected_speciation[index] := log_speciation[i] + beta_speciation * ln( var[index] / var[i] )
+    expected_extinction[index] := log_extinction[i] + beta_extinction * ln( var[index] / var[i] )
     
-    log_speciation[index] ~ dnNormal( mean=mean_speciation[index], sd=speciation_sd )
-    log_extinction[index] ~ dnNormal( mean=mean_extinction[index], sd=extinction_sd )
+    log_speciation[index] ~ dnNormal( mean=expected_speciation[index], sd=speciation_sd )
+    log_extinction[index] ~ dnNormal( mean=expected_extinction[index], sd=extinction_sd )
 
     # apply moves on the rates
     moves[++mvi] = mvSlide(log_speciation[index], weight=2)
@@ -109,7 +111,7 @@ moves[++mvi] = mvShrinkExpand( log_extinction, sd=extinction_sd, weight=10 )
 
 
 
-interval_times <- MAX_VAR_AGE * (1:(NUM_INTERVALS-1)) / (NUM_INTERVALS-1)
+interval_times <- MAX_VAR_AGE * (1:NUM_INTERVALS) / NUM_INTERVALS
 
 ### rho is the probability of sampling species at the present
 ### fix this to 23/377, since there are ~377 described species of primates
@@ -132,11 +134,11 @@ timetree.clamp(T)
 mymodel = model(rho)
 
 ### set up the monitors that will output parameter values to file and screen 
-monitors[++mni] = mnModel(filename="output/primates_EBD_Corr.log",printgen=1, separator = TAB)
-monitors[++mni] = mnFile(filename="output/primates_EBD_Corr_speciation_rates.log",printgen=1, separator = TAB, speciation)
-monitors[++mni] = mnFile(filename="output/primates_EBD_Corr_speciation_times.log",printgen=1, separator = TAB, interval_times)#
-monitors[++mni] = mnFile(filename="output/primates_EBD_Corr_extinction_rates.log",printgen=1, separator = TAB, extinction)
-monitors[++mni] = mnFile(filename="output/primates_EBD_Corr_extinction_times.log",printgen=1, separator = TAB, interval_times)
+monitors[++mni] = mnModel(filename="output/primates_EBD_Corr.log",printgen=10, separator = TAB)
+monitors[++mni] = mnFile(filename="output/primates_EBD_Corr_speciation_rates.log",printgen=10, separator = TAB, speciation)
+monitors[++mni] = mnFile(filename="output/primates_EBD_Corr_speciation_times.log",printgen=10, separator = TAB, interval_times)#
+monitors[++mni] = mnFile(filename="output/primates_EBD_Corr_extinction_rates.log",printgen=10, separator = TAB, extinction)
+monitors[++mni] = mnFile(filename="output/primates_EBD_Corr_extinction_times.log",printgen=10, separator = TAB, interval_times)
 monitors[++mni] = mnScreen(printgen=1000, beta_speciation, beta_extinction)
 
 
@@ -149,10 +151,10 @@ monitors[++mni] = mnScreen(printgen=1000, beta_speciation, beta_extinction)
 mymcmc = mcmc(mymodel, monitors, moves)
 
 ### pre-burnin to tune the proposals ###
-mymcmc.burnin(generations=1000,tuningInterval=100)
+mymcmc.burnin(generations=10000,tuningInterval=100)
 
 ### run the MCMC ###
-mymcmc.run(generations=5000)
+mymcmc.run(generations=50000)
 
 
 
