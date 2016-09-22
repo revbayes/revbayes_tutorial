@@ -1,9 +1,8 @@
 ################################################################################
 #
-# RevBayes Example: Bayesian inference of phylogeny using a general time reversible model
-#                   with gamma distributed rate variation among sites
+# RevBayes Example: Bayesian inference of phylogeny using a Jukes-Cantor model
 # 
-# This file: Runs the full MCMC on a single gene under the general time reversible 
+# This file: Runs the full MCMC on a single gene under the Jukes-Cantor 
 #            substitution model using a rooted (birth-death) tree model.
 #
 # authors: Sebastian Hoehna, Tracy A. Heath, Michael Landis and Brian R. Moore
@@ -53,7 +52,7 @@ Q := fnGTR(er,pi)
 # Among Site Rate Variation #
 #############################
 
-alpha_prior_mean <- ln(2.0)
+alpha_prior_mean <- 5.0
 alpha_prior_sd <- 0.587405
 alpha ~ dnLognormal( alpha_prior_mean, alpha_prior_sd )
 gamma_rates := fnDiscretizeGamma( alpha, alpha, 4, false )
@@ -62,6 +61,8 @@ gamma_rates := fnDiscretizeGamma( alpha, alpha, 4, false )
 moves[++mvi] = mvScale(alpha,weight=2)
 
 
+pinvar ~ dnBeta(1,1)
+moves[++mvi] = mvSlide(pinvar)
 
 
 ##############
@@ -74,12 +75,12 @@ root_time <- 90
 
 ### the birth rate is a stochastic random variable drawn from a lognormal prior
 ### MCMC samples this variable using a scale proposal
-diversification_mean <- ln( ln(377.0/2.0) / root_time )
+diversification_mean <- ln( ln(450.0/2.0) / root_time )
 diversification_sd <- 0.587405
 diversification ~ dnLognormal(mean=diversification_mean,sd=diversification_sd) 
 moves[++mvi] = mvScale(diversification,lambda=1.0,tune=true,weight=3.0)
 
-turnover_mean <- ln( ln(377.0/2.0) / root_time )
+turnover_mean <- ln( ln(450.0/2.0) / root_time )
 turnover_sd <- 0.587405*2
 turnover ~ dnLognormal(mean=turnover_mean,sd=turnover_sd) 
 moves[++mvi] = mvScale(turnover,lambda=1.0,tune=true,weight=3.0)
@@ -89,13 +90,12 @@ birth_rate := diversification + turnover
 death_rate := turnover
 
 ### rho is the probability of sampling species at the present
-### fix this to 23/377, since there are ~377 described species of primates
+### fix this to 23/450, since there are ~450 described species of primates
 ### and we have sampled 23
-rho <- n_species/377
+rho <- n_species/450
 
 ### the time tree is a stochastic node modeled by the constant rate birth-death process (dnBDP)
 psi ~ dnBDP(lambda=birth_rate, mu=death_rate, rho=rho, rootAge=root_time, samplingStrategy="uniform", condition="survival", taxa=taxa)
-
 
 moves[++mvi] = mvNarrow(psi, weight=5.0)
 moves[++mvi] = mvNNI(psi, weight=1.0)
@@ -103,6 +103,7 @@ moves[++mvi] = mvFNPR(psi, weight=3.0)
 moves[++mvi] = mvGPR(psi, weight=3.0)
 moves[++mvi] = mvSubtreeScale(psi, weight=3.0)
 moves[++mvi] = mvNodeTimeSlideUniform(psi, weight=15.0)
+
 
 
 
@@ -118,12 +119,13 @@ moves[++mvi] = mvSlide(log_clock_rate, weight=2.0)
 clock_rate := 10^log_clock_rate
 
 
+
 ###################
 # PhyloCTMC Model #
 ###################
 
 # the sequence evolution model
-seq ~ dnPhyloCTMC(tree=psi, Q=Q, branchRates=clock_rate, siteRates=gamma_rates, type="DNA")
+seq ~ dnPhyloCTMC(tree=psi, Q=Q, branchRates=clock_rate, siteRates=gamma_rates, pInv=pinvar, type="DNA")
 
 # attach the data
 seq.clamp(data)
@@ -132,7 +134,7 @@ seq.clamp(data)
 
 
 #############
-# The Model #
+# THE Model #
 #############
 
 # We define our model.
@@ -144,23 +146,24 @@ mymodel = model(Q)
 
 
 
-monitors[++mni] = mnModel(filename="output/primates_cytb_GTR_Gamma.log",printgen=10, separator = TAB)
-monitors[++mni] = mnFile(filename="output/primates_cytb_GTR_Gamma.trees",printgen=10, separator = TAB, psi)
+monitors[++mni] = mnModel(filename="output/primates_cytb_GTR_Gamma_Inv.log",printgen=10, separator = TAB)
+monitors[++mni] = mnFile(filename="output/primates_cytb_GTR_Gamma_Inv.trees",printgen=10, separator = TAB, psi)
 monitors[++mni] = mnScreen(printgen=1000, clock_rate, diversification, turnover)
 
-mymcmc = mcmc(mymodel, monitors, moves, 4)
-
-mymcmc.burnin(generations=10000,tuningInterval=1000)
-mymcmc.run(generations=30000)
 
 
-# Now, we will analyze the tree output.
-# Let us start by reading in the tree trace
-treetrace = readTreeTrace("output/primates_cytb_GTR_Gamma.trees", treetype="clock")
-# and get the summary of the tree trace
-# treetrace.summarize()
+### Compute power posterior distributions
+pow_p = powerPosterior(mymodel, moves, monitors, "output/pow_p_GTR_Gamma_Inv.out", cats=127, sampleFreq=10) 
+pow_p.burnin(generations=10000,tuningInterval=250)
+pow_p.run(generations=1000)  
 
-map_tree = mapTree(treetrace,"output/primates_cytb_GTR_Gamma.tree")
+### Use stepping-stone sampling to calculate marginal likelihoods
+ss = steppingStoneSampler(file="output/pow_p_GTR_Gamma_Inv.out", powerColumnName="power", likelihoodColumnName="likelihood")
+ss.marginal() 
+
+### Use path-sampling to calculate marginal likelihoods
+ps = pathSampler(file="output/pow_p_GTR_Gamma_Inv.out", powerColumnName="power", likelihoodColumnName="likelihood")
+ps.marginal() 
 
 # you may want to quit RevBayes now
 q()
