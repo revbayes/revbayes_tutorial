@@ -60,7 +60,7 @@ for (t in 1:n_epochs) {
 for (t in 1:n_epochs) {
 	rates[t] ~ dnGamma(2,2)
 	mv[mvi++] = mvScale(rates[t], weight=2)	
-	q[t] := fnDECRateMatrix(d[t], e[t], rangeSize=simplex(0,1,1,0))
+	q[t] := fnDECRateMatrix(d[t], e[t], rangeSize=simplex(1,1,0))
 }
 
 # make epoch rate generator over all epochs
@@ -69,7 +69,7 @@ q_epoch := fnEpoch( Q=q, times=times, rates=rates )
 
 # create prior on event types
 clado_type              ~ dnDirichlet([1,1,1])
-mv[mvi++]               = mvSimplexElementScale(clado_type, alpha=10, weight=5)
+mv[mvi++]               = mvSimplexElementScale(clado_type, weight=5)
 
 # for easy monitoring
 widespread_sympatry    := clado_type[1]
@@ -80,7 +80,7 @@ allopatry              := clado_type[3]
 clado_prob := fnCladoProbs(clado_type, n_areas, 2)
 
 # root frequencies
-rf := fnDECRoot( rep(1,n_states), rangeSize=simplex(0,1,0,0) )
+rf := fnDECRoot( rep(1,n_states), rangeSize=simplex(1,1,0) )
 
 # build ctmc
 m ~ dnPhyloCTMCClado( tree=psi, Q=q_epoch, rootFrequencies=rf, cladoProbs=clado_prob, branchRates=clock_bg, nSites=1, type="NaturalNumbers" )
@@ -98,7 +98,7 @@ mn[mni++] = mnJointConditionalAncestralState(tree=psi, ctmc=m, filename="./outpu
 
 # mcmc
 ch = mcmc(mv,mn,mdl)
-ch.burnin(10000,200)
+#ch.burnin(10000,200)
 ch.run(30000)
 
 # 
