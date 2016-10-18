@@ -1,0 +1,29 @@
+\begin{tikzpicture}
+\node[obnode] (nx) at (1,1) {\LARGE $\Psi$};
+\node[snode] (lambda) at ($(nx)+(-2,2.5)$) {\LARGE $\lambda$};
+\node[snode] (mu) at ($(nx)+(2,2.5)$) {\LARGE $\mu$};
+\node[constnode] (md) at ($(lambda)+(-0.6,2)$) {\Large $m_d$};
+\node[constnode] (sdd) at ($(lambda)+(0.6,2)$) {\Large $sd_d$};
+\node[constnode] (mt) at ($(mu)+(-0.6,2)$) {\Large $m_r$};
+\node[constnode] (sdt) at ($(mu)+(0.6,2)$) {\Large $sd_r$};
+\draw [taro] (lambda) -- (nx);
+\draw [taro] (mu) -- (nx);
+\draw [taro] (md) -- (lambda);
+\draw [taro] (sdd) -- (lambda);
+\draw [taro] (mt) -- (mu);
+\draw [taro] (sdt) -- (mu);
+\node[constnode] (rho) at ($(nx)+(3,0)$) {\LARGE $\rho$};
+\node[constnode] (T) at ($(nx)+(-3,0)$) {\LARGE $T$};
+\draw[taro] (T) -- (nx) ;
+\draw[taro] (rho) -- (nx) ;
+\draw[taro] (rho) -- (nx) ;
+\node[white, fill=blue, shape=rectangle, rounded corners] at ($(md)+(-0.5,1)$) {prior mean};
+\node[white, fill=blue, shape=rectangle, rounded corners] at ($(sdd)+(0.2,1)$) {prior sd};
+\node[white, fill=blue, shape=rectangle, rounded corners] at ($(mt)+(-0.5,1)$) {prior mean};
+\node[white, fill=blue, shape=rectangle, rounded corners] at ($(sdt)+(0.2,1)$) {prior sd};
+\node[white, fill=blue, shape=rectangle, rounded corners] at ($(T)+(0,-1)$) {root age};
+\node[white, fill=blue, shape=rectangle, rounded corners] at ($(rho)+(0,-1)$) {sampling probability};
+\node[white, fill=blue, shape=rectangle, rounded corners] at ($(lambda)+(-0.75,0)$) [left]{speciation rate};
+\node[white, fill=blue, shape=rectangle, rounded corners] at ($(mu)+(0.75,0)$) [right]{extinction rate};
+%\node at ($(rho)+(-1.5,0)$) {Beta};
+\end{tikzpicture}

@@ -12,7 +12,7 @@ clock_rate ~ dnGamma(2.0,4.0)
 moves[mi++] = mvScale(clock_rate,lambda=0.5,tune=true,weight=5.0)
 
 ### set up the GTR model and instantaneous rate matrix from file
-source("RevBayes_scripts/m_GTR.Rev")
+source("scripts/m_GTR.Rev")
 
 ### the full phylogenetic CTMC
 phySeq ~ dnPhyloCTMC(tree=timetree, Q=Q, branchRates=clock_rate, nSites=n_sites, type="DNA")

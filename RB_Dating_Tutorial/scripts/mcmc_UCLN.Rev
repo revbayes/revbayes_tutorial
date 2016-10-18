@@ -12,10 +12,10 @@ n_sites <- D.nchar()
 mi = 1
 
 ### set up the birth-death model from file
-source("RevBayes_scripts/m_BDP_bears.Rev")
+source("scripts/m_BDP_bears.Rev")
 
 ### load the model from file 
-source("RevBayes_scripts/m_UCLN_bears.Rev")
+source("scripts/m_UCLN_bears.Rev")
 
 ### workspace model wrapper ###
 mymodel = model(er)

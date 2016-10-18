@@ -1,0 +1,94 @@
+################################################################################
+#
+# MCMC analysis example in primates
+# 
+# Model:
+# Ornstein-Uhlenbeck model
+#
+#
+# author: Sebastian Hoehna
+#
+################################################################################
+
+########
+# Data #
+########
+
+# read the data
+cont_data <- readContinuousCharacterData("data/primates_sim.nex")
+
+#cont_data.excludeAll()
+#cont_data.includeCharacter(1) 
+
+
+# get some useful variables from the data
+n_tips <- cont_data.ntaxa()
+n_nodes <- 2*n_tips - 1
+n_branches <- 2*n_tips - 2
+
+mvi = 0
+
+
+
+########
+# Tree #
+########
+
+# work under fixed topology
+treeArray <- readTrees("data/primates.tree")
+psi <- treeArray[1]
+
+
+
+######
+# OU #
+######
+
+
+log_optim ~ dnUniform(-10,10)
+moves[++mvi] = mvSlide(log_optim,delta=0.1,tune=true,weight=5)
+
+logAlpha ~ dnUniform(-10,10)
+logAlpha.setValue(0)
+alpha := 10^logAlpha
+#moves[++mvi] = mvSlide(logAlpha,delta=0.2,tune=true,weight=5)
+
+
+# sigma: variance per unit of time of the Brownian motion
+logSigma ~ dnUniform(-5,5)
+sigma := 10^logSigma
+moves[++mvi] = mvSlide(logSigma, delta=0.2, tune=true, weight=5)
+
+# use the optim as the root value
+#rootlogmass ~ dnNormal(log_optim,sigma)
+#moves[++mi] = mvSlide(rootlogmass,delta=10,tune=true,weight=2)
+rootlogmass <- 1.0
+
+# univariate Ornstein-Uhlenbeck process along the tree 
+# parameterized by sigma
+logmass ~ dnPhyloOrnsteinUhlenbeckMVN(psi, branchRates=1.0, siteRates=1.0, theta=log_optim, alpha=alpha, sigma=sigma, rootStates=rootlogmass, nSites=1)
+logmass.clamp( cont_data )
+
+
+
+
+########
+# MCMC #
+########
+
+mymodel = model(sigma)
+
+monitors[1] = mnScreen(printgen=100, log_optim, alpha, sigma)
+monitors[2] = mnModel(filename="output/OU.log",printgen=1, separator = TAB)
+monitors[3] = mnExtNewick(filename="output/primates_mass_OU_ext.trees", isNodeParameter=TRUE, printgen=10, separator = TAB, tree=psi, logmass)
+
+ 
+mymcmc = mcmc(mymodel, monitors, moves)
+mymcmc.burnin(generations=5000,tuningInterval=250)
+mymcmc.run(generations=10000)
+
+#treetrace = readTreeTrace("output/primates_mass_OU_ext.trees", treetype="clock")
+#map_tree = mapTree(treetrace,"output/primates_mass_OU_ext_MAP.tree")
+
+q()
+

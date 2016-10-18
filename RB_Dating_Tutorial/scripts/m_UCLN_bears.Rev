@@ -38,7 +38,7 @@ moves[mi++] = mvVectorSingleElementScale(branch_rates,lambda=30.0,tune=true,weig
 mean_rt := mean(branch_rates) 
 
 ### set up the GTR model and instantaneous rate matrix from file
-source("RevBayes_scripts/m_GTR.Rev")
+source("scripts/m_GTR.Rev")
 
 ### the full phylogenetic CTMC
 phySeq ~ dnPhyloCTMC(tree=timetree, Q=Q, branchRates=branch_rates, nSites=n_sites, type="DNA")

@@ -1,17 +1,21 @@
 \section{Overview: Diversification Rate Estimation}
 
-Models of speciation and extinction are fundamental to any phylogenetic analysis of macroevolutionary processes.
-A prior describing the distribution of speciation events over time is critical to estimating phylogenies with branch lengths proportional to time.
-Moreover, stochastic branching models allow for inference of speciation and extinction rates.
+Models of speciation and extinction are fundamental to any phylogenetic analysis of macroevolutionary processes (\EG divergence time estimation, diversification rate estimation, continuous and discrete trait evolution, and historical biogeography).
+First, a prior model describing the distribution of speciation events over time is critical to estimating phylogenies with branch lengths proportional to time.
+Second, stochastic branching models allow for inference of speciation and extinction rates.
 These inferences allow us to investigate key questions in evolutionary biology.
 
-Similarly, diversification-rate parameters are also included as nuisance parameters of other phylogenetic models---\IE where these diversification-rate parameters are not of direct interest.
-For example, many methods for estimating species divergence times---such as \BEAST \citep{Drummond2012}, \MrBayes \citep{Ronquist2012}, and \RevBayes \citep{Hoehna2015}---implement `relaxed-clock models' that include a constant-rate birth-death branching process as a prior model on the distribution of tree topologies and node ages.
+Diversification-rate parameters may be included as nuisance parameters of other phylogenetic models---\IE where these diversification-rate parameters are not of direct interest.
+For example, many methods for estimating species divergence times---such as \BEAST \citep{Drummond2012}, \MrBayes \citep{Ronquist2012}, and \RevBayes \citep{Hoehna2016b}---implement `relaxed-clock models' that include a constant-rate birth-death branching process as a prior model on the distribution of tree topologies and node ages.
 Although the parameters of these `tree priors' are not typically of direct interest, they are nevertheless estimated as part of the joint posterior probability distribution of the relaxed-clock model, and so can be estimated simply by querying the corresponding marginal posterior probability densities.
 In fact, this may provide more robust estimates of the diversification-rate parameters, as they accommodate uncertainty in the other phylogenetic-model parameters (including the tree topology, divergence-time estimates, and the other relaxed-clock model parameters).
+More recent work, \EG \cite{Heath2014}, uses macroevolutionary models (the fossilized birth-death process) to calibrate phylogenies and thus to infer dated trees.
+
+In these tutorials we focus on the different types of macroevolutionary models to study diversification processes and thus the diversification-rate parameters themselves.
+Nevertheless, these macroevolutionary models should be used for other evolutionary questions, when an appropriate prior distribution on the tree and divergence times is needed.
+
 
 \subsection{Types of Hypotheses for Estimating Diversification Rates}
-
 
 Many evolutionary phenomena entail differential rates of diversification (speciation -- extinction); \EG adaptive radiation, diversity-dependent diversification, key innovations, and mass extinction.
 The specific study questions regarding lineage diversification may be classified within three fundamental categories of inference problems.
@@ -24,28 +28,22 @@ Extensions to the (basic) constant-rate models include diversification-rate vari
 First, we might ask whether there is evidence of an episodic, tree-wide increase in diversification rates (associated with a sudden increase in speciation rate and/or decrease in extinction rate), as might occur during an episode of adaptive radiation.
 A second question asks whether there is evidence of a continuous/gradual decrease in diversification rates through time (associated with decreasing speciation rates and/or increasing extinction rates), as might occur because of diversity-dependent diversification (\IE where competitive ecological interactions among the species of a growing tree decrease the opportunities for speciation and/or increase the probability of extinction).
 A final question in this category asks whether our study tree was impacted by a mass-extinction event (where a large fraction of the standing species diversity is suddenly lost).
+The common theme of these studies is that the diversification process is tree-wide, that is, all lineages of the study group have the exact same rates at a given time.
 
 
 
 \paragraph{(2) Diversification-rate variation across branches estimation}\textit{Is there evidence that diversification rates have varied significantly across the branches of my study group?}
 Models have been developed to detect departures from rate constancy across lineages; these tests are analogous to methods that test for departures from a molecular clock---\IE to assess whether substitution rates vary significantly across lineages.
-These models are important for assessing whether a given tree violates the assumptions of other inference methods.
+These models are important for assessing whether a given tree violates the assumptions of rate homogeneity among lineages.
 Furthermore, these models are important to answer questions such as:
 \textit{What are the branch-specific diversification rates?}; and
-\textit{Have there been significant diversification-rate shifts along branches in my study group, and if so, how many shifts and along which branches?}
+\textit{Have there been significant diversification-rate shifts along branches in my study group, and if so, how many shifts, what magnitude of rate-shifts and along which branches?}
 
 
 \paragraph{(3) Character-dependent diversification-rate estimation}\textit{Are diversification rates correlated with some variable in my study group?}
 Character-dependent diversification-rate models aim to identify overall correlations between diversification rates and organismal features (binary and multi-state discrete morphological traits, continuous morphological traits, geographic range, etc.).
 For example, one can hypothesize that a binary character, say if an organism is herbivorous/carnivorous or self-compatible/self-incompatible, impact the diversification rates.
 Then, if the organism is in state 0 (\EG is herbivorous) it has a lower (or higher) diversification rate than if the organism is in state 1 (\EG carnivorous).
-
-
-%Questions regarding mass-extinction events can be inferred using \TESS by performing specific hypothesis tests (see Section~\ref{sec:mass-extinction}) or analyses under the CPP on Mass-Extinction Times (\CoMET) model \citep{May2015}.
-%These analyses can identify whether your study tree has been impacted by mass extinction, and if so, can identify the number and timing of these events.
-%Additionally, the \CoMET model can be used to explore events other than mass extinction---such as the number of tree-wide diversification-rate shifts, the timing of those events, and the rate parameters (\EG speciation and extinction rates) associated with those events.
-%However, the reliability to detect tree-wide diversification-rate shifts is currently being explored.
-%We describe how to use \TESS and \CoMET to explore mass-extinction events in Section \ref{sec:CoMET} of this guide.
 
 
 \section{Models}\label{sec:Models}
@@ -111,7 +109,7 @@ P(\Psi) = \; & \frac{2^{n-1}}{n!(n-1)!} \times \left( \frac{P(N(T) > 0 \mid N(0)
 		\label{eq:tree_probability_substitution}
 \end{align}
 For a detailed description of this substitution, see \cite{Hoehna2015a}.
-Additional information regarding the underlying birth-death process can be found in \cite[Equation 3.4.6]{Thompson1975} and \cite{Nee1994b} for constant rates and \cite{Lambert2010,Lambert2013,Hoehna2013,Hoehna2014a,Hoehna2015a} for arbitrary rate functions.
+Additional information regarding the underlying birth-death process can be found in \cite[Equation 3.4.6]{Thompson1975} and \cite{Nee1994b} for constant rates and \cite{Hoehna2013,Hoehna2014a,Hoehna2015a} for arbitrary rate functions.
 
 To compute the equation above we need to know the rate function, $r(t,s) = \int_t^s d(x)-b(x) dx$, and the probability of survival, $P(N(T)\!>\!0|N(t)\!=\!1)$.
 \cite{Yule1925} and later \cite{Kendall1948} derived the probability that a process survives ($N(T) > 0$) and the probability of obtaining exactly $n$ species at time $T$ ($N(T) = n$) when the process started at time $t$ with one species.
@@ -123,6 +121,21 @@ P(N(T)\!=\!n|N(t)\!=\!1) & = & (1-P(N(T)\!>\!0|N(t)\!=\!1)\exp(r(t,T)))^{n-1} \n
 %P(N(T)\!=\!1|N(t)\!=\!1) & = & P(N(T)\!>\!0|N(t)\!=\!1)^2 \exp(r(t,T)) \label{eq:1}
 \end{eqnarray}
 An overview for different diversification models is given in \cite{Hoehna2015a}.
+
+
+
+\begin{framed}
+\textbf{\textit{Sidebar: Phylogenetic trees as observations}}
+
+The branching processes used here describe probability distributions on phylogenetic trees. 
+This probability distribution can be used to infer diversification rates given an ``observed'' phylogenetic tree.
+In reality we never observe a phylogenetic tree itself.
+Instead, phylogenetic trees themselves are estimated from actual observations, such as DNA sequences.
+These phylogenetic tree estimates, especially the divergence times, can have considerable uncertainty associated with them.
+Thus, the correct approach for estimating diversification rates is to include the uncertainty in the phylogeny by, for example, jointly estimating the phylogeny and diversification rates.
+For the simplicity of the following tutorials, we take a shortcut and assume that we know the phylogeny without error.
+For publication quality analysis you should always estimate the diversification rates jointly with the phylogeny and divergence times.
+\end{framed}
 
 
 
