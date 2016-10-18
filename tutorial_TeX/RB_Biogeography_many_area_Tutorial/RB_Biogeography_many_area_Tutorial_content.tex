@@ -12,7 +12,7 @@ Unfortunately, computing the matrix exponential scales poorly as the state space
 
 Alternatively, the probability of beginning in state $i$ and ending in state $j$ can be computed easily when the explicit series of event types and times are known.
 While we will never know the exact history of events, we can use stochastic mapping in conjunction with Markov chain Monte Carlo (MCMC) to repeatedly sample range evolution histories that are consistent with the ranges observed in the study taxa at the tips of the phylogeny.
-This technique is called data augmentation. It was first applied in phylogenetics to tertiary structure-dependent evolution of protein-coding nucleotide sequences \citep{robinson03}, and later extended to range evolution in \citet{landis13}.
+This technique is called data augmentation. It was first applied in phylogenetics to tertiary structure-dependent evolution of protein-coding nucleotide sequences \citep{Robinson2003}, and later extended to range evolution in \citet{Landis2013a}.
 
 Using data augmentation, we will approximate {Prob$\left( \textbf{X}_{aug}, \theta \mid \textbf{X}_{obs}, T, M \right)$}, where $\textbf{X}_{obs}$ is the range data observed at the tips, $\textbf{X}_{aug}$ is the distribution of ancestral range reconstructions over the phylogeny, $T$, where $\textbf{X}_{aug}$ is inferred jointly with the parameters, $\theta$, assuming the range evolution model, $M$, that describes $\textbf{Q}$ above.
 From a Bayesian perspective, $\textbf{X}_{aug}$ is effectively treated as part of the parameter space in the posterior distribution.
@@ -58,7 +58,7 @@ For this tutorial, you can take $\eta(\cdot)$ to adjust the rate of range expans
 The $\beta$ parameter rescales the importance of geographic distance between two areas by a power law.
 Importantly, $\eta(\cdot) = 1$ when $\beta=0$, meaning geographic distance between areas is irrelevant.
 Moreover, when $\beta > 0$, $\eta(\cdot) < 1$ when area $a$ is relatively distant and $\eta(\cdot) > 1$ when area $a$ is relatively close.
-See \citet{landis13} for a full description of the model.
+See \citet{Landis2013a} for a full description of the model.
 
 {\bf \framebox{?}} Write down a rate function where the per-area rates of gain and loss depend on the number of currently occupied areas.
 
@@ -212,7 +212,7 @@ moves[++mvi] = mvSimplexElementScale(clado_prob, alpha=20.0, weight=5.0)
 \end{snugshade}
 
 Finally, the data evolve according to a phylogenetic CTMC process. Here, we decalre a stochastic node using {\tt dnPhyloDACTMC} where {\tt DA} indicates the distribution requires data augmentation to compute the likelihood rather than Felsenstein's pruning algorithm.
-To create the distribution, we must pass it our {\tt tree} and {\tt q\_range} objects, but additionally inform the distribution that it will be using a biogeographic model, that it will introduce the simple cladogenic range evolution events described in \citet{ree08} ({\tt useCladogenesis=true}), and that it will assign zero probability to a transition away from the null range state.
+To create the distribution, we must pass it our {\tt tree} and {\tt q\_range} objects, but additionally inform the distribution that it will be using a biogeographic model, that it will introduce the simple cladogenic range evolution events described in \citet{Ree2008} ({\tt useCladogenesis=true}), and that it will assign zero probability to a transition away from the null range state.
 
 \begin{snugshade}
 \begin{lstlisting}
@@ -234,7 +234,7 @@ m.lnProbability()
 
 To integrate over the space of possible range histories, we still need to add moves to propose new data augmented histories.
 The major challenge to sampling character histories is ensuring the character histories are consistent with the observations at the tips of the tree.
-The proposals in this tutorial use \citet{nielsen02}'s rejection sampling algorithm, with some modifications to account for cladogenic events and epoch-based rate maps.
+The proposals in this tutorial use \citet{Nielsen2002}'s rejection sampling algorithm, with some modifications to account for cladogenic events and epoch-based rate maps.
 
 The basic idea is simple.
 Each time a character history proposal is called, it selects a node at random from the tree.
