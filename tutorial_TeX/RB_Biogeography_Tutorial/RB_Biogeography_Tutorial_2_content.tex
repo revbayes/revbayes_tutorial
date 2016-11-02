@@ -226,7 +226,7 @@ Extant primate ranges do not appear capable of spanning all three areas simultan
 
 \begin{snugshade}
 \begin{lstlisting}
-rangeSize <- simplex(0,1,1,0)
+rangeSize <- simplex(1,1,0)
 \end{lstlisting}
 \end{snugshade}
 
@@ -235,7 +235,7 @@ By calling {\tt fnDECRoot} with the {\tt rangeSize} parameter, we can also force
 
 \begin{snugshade}
 \begin{lstlisting}
-rf := fnDECRoot( rep(1,n_states), rangeSize=simplex(0,1,0,0) )
+rf := fnDECRoot( rep(1,n_states), rangeSize=simplex(0,1,1,0) )
 \end{lstlisting}
 \end{snugshade}
 

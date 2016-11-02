@@ -22,7 +22,7 @@ Decimal representation is rarely used in discussion, but it is useful to keep in
 \subsection{Modeling anagenic range evolution}
 
 How might we model the dynamics of species range evolution?
-In this section, we'll cover the Dispersal-Extinction-Cladogenesis model proposed by \citet{ree05}.
+In this section, we'll cover the Dispersal-Extinction-Cladogenesis model proposed by \citet{Ree2005}.
 To begin, we'll focus on anagenesis: evolution that occurs between speciation events within lineages.
 Since we have discrete characters we'll use the continuous-time Markov chain, which allows us to compute transition probability of a character changing from $i$ to $j$ in time $t$ through matrix exponentiation
 \[
@@ -86,7 +86,7 @@ Under {\it subset sympatric cladogenesis}, one lineage identically inherits the 
 For {\it widspread sympatric cladogenesis}, both lineages inherit the ancestral range, $ABC$.
 Under {\it allopatric cladogenesis}, the ancestral range is split evenly among daughter lineages, e.g. one lineage may inherit $AB$ and the other inherits $C$.
 
-For an excellent overview of described state transitions for cladogenic events, see \citet{matzke13}.
+For an excellent overview of described state transitions for cladogenetic events, see \citet{Matzke2012}.
 
 {\bf \framebox{?} Given the state is $AB$ before cladogenesis, and allowing subset sympatry, widespread sympatry, and allopatry, what are the 7 possible states in the daughter lineages after cladogenesis?}
 
@@ -98,7 +98,7 @@ Like above, for three areas, there are 8 states, and $8 \times 8 \times 8 = 512$
 {\bf \framebox{?} For three areas, there are three narrow, four widespread, 18 subset sympatric events and 12 allopatric cladogenesis events. What proportion of terms in the cladogenesis matrix are zero?}
 
 The DEC model ignores speciation events hidden by extinction or incomplete taxon sampling.
-The probability of cladogenesis and local extinction events would ideally be linked to a birth-death process, as it is in the GeoSSE model \citep{goldberg11}.
+The probability of cladogenesis and local extinction events would ideally be linked to a birth-death process, as it is in the GeoSSE model \citep{Goldberg2011}.
 Unfortunately, since the numerical method for SSE models scale poorly, and DEC models remain the only option when the geography has more than two or three areas.
 For more than ten areas, data augmentation may be used to infer ancestral ranges, as described in Section \ref{sec:bayarea}.
 
@@ -474,7 +474,7 @@ moves[++mvi] = mvScale(speciation, lambda=1, tune=true, weight=3.0)
 moves[++mvi] = mvScale(extinction, lambda=1, tune=true, weight=3.0)
 \end{lstlisting}
 \end{snugshade*}}
-The phylogeny that we used are obviously not a complete sample of all the species and you should take the incomplete sampling into account. We will simply use an empirical estimate of the fraction of species which we included in this study. For more information about incomplete taxon sampling see \cite{Hohna2011} and \cite{Hohna2014a}. 
+The phylogeny that we used are obviously not a complete sample of all the species and you should take the incomplete sampling into account. We will simply use an empirical estimate of the fraction of species which we included in this study. For more information about incomplete taxon sampling see \cite{Hoehna2011} and \cite{Hoehna2014a}. 
 {\tt \small \begin{snugshade*}
 \begin{lstlisting}
 sampling_fraction <- 23 / 270     # 23 out of the ~ 270 primate species
@@ -496,7 +496,7 @@ moves[++mvi] = mvNodeTimeSlideUniform(psi, weight=10.0)
 \end{lstlisting}
 \end{snugshade*}}
 
-We also need moves on the tree topology to estimate the phylogeny. The two moves which you use are the nearest-neighbor interchange (NNI) and the fixed-nodeheight-prune-and-regraft (FNPR) \citep{Hohna2012}.
+We also need moves on the tree topology to estimate the phylogeny. The two moves which you use are the nearest-neighbor interchange (NNI) and the fixed-nodeheight-prune-and-regraft (FNPR) \citep{Hoehna2012}.
 {\tt \small \begin{snugshade*}
 \begin{lstlisting}
 moves[++mvi] = mvNNI(psi, weight=5.0)

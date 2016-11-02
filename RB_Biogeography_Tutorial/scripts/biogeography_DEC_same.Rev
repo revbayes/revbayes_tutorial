@@ -126,7 +126,7 @@ clado_prior            <- [ widespread_sympatry_wt, subset_sympatry_wt, allopatr
 # create prior on event types
 clado_type             ~ dnDirichlet(clado_prior)
 #mv[mvi++]              = mvSimplex(clado_type, alpha=50., numCats=3, offset=1.0)
-mv[mvi++]               = mvSimplexElementScale(clado_type, alpha=10, weight=5)
+mv[mvi++]               = mvSimplexElementScale(clado_type,  weight=5)
 #clado_type <- simplex( clado_prior )
 
 # for easy monitoring
