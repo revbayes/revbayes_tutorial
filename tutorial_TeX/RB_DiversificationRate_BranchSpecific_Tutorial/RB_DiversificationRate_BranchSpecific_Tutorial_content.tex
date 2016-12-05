@@ -404,31 +404,37 @@ Begin by reading in the observed tree.
 
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-T <- readTrees("data/primates_springer.tre")[1]
+tree <- readTrees("data/primates_springer.tre")[1]
 \end{lstlisting}
 \end{snugshade*}}
 
 From this tree, we can get some helpful variables:
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-taxa <- T.taxa()
+taxa <- tree.taxa()
+tree_length <- tree.treeLength()
+root_age <- tree.rootAge()
 \end{lstlisting}
 \end{snugshade*}}
 
 Additionally, we can initialize an iterator variable for our vector of moves:
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-mi = 0
+mvi = 0
+mni = 0
 \end{lstlisting}
 \end{snugshade*}}
 
-Finally, we create a helper variable that specifies the number of discrete rate categories.
+Finally, we create a helper variable that specifies the number of discrete rate categories, another helper variable for the expected number of rate-shift events, the total number of species, and the variation in rates..
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 NUM_RATE_CATEGORIES = 10
+EXPECTED_NUM_EVENTS = 2
+NUM_TOTAL_SPECIES = 450
+H = 0.587405
 \end{lstlisting}
 \end{snugshade*}}
-Using this variable we can easily change our script to use more or fewer categories and test the impact.
+Using these variables we can easily change our script, for example, to use more or fewer categories and test the impact.
 
 
 
@@ -439,30 +445,30 @@ Analogous to the previous section we will set up the rate categories using the e
 Thus, we create first our hyper-prior on the mean diversification rate, which is drawn from a lognormal distribution.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-diversification_prior_mean <- ln( ln(450.0/2.0) / T.rootAge() )
-diversification_mean ~ dnLognormal(mean=diversification_prior_mean, sd=0.587405)
+diversification_prior_mean <- ln( ln(NUM_TOTAL_SPECIES/2.0) / root_age )
+diversification_mean ~ dnLognormal(mean=diversification_prior_mean, sd=H)
 moves[++mvi] = mvScale(diversification_mean,lambda=1,tune=true,weight=5)
 \end{lstlisting}
 \end{snugshade*}}
-Additionally, we choose a fixed standard deviation of $0.587405*2$ for the speciation rates because it represents two orders of magnitude variance in the rate categories.
+Additionally, we choose a fixed standard deviation of $H*2$ for the speciation rates because it represents two orders of magnitude variance in the rate categories.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-diversification_sd <- 0.587405*2
+diversification_sd <- H*2
 diversification := fnDiscretizeDistribution( dnLognormal(ln(diversification_mean), diversification_sd), NUM_RATE_CATEGORIES )
 \end{lstlisting}
 \end{snugshade*}}
 We define the prior on the turnover rate in the same way as we did for the diversification rate, with the only difference that we allow for two orders of magnitude of uncertainty.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-turnover_prior_mean <- ln( ln(450.0/2.0) / T.rootAge() )
-turnover_mean ~ dnLognormal(mean=turnover_prior_mean,sd=0.587405*2) 
+turnover_prior_mean <- ln( ln(NUM_TOTAL_SPECIES/2.0) / root_age )
+turnover_mean ~ dnLognormal(mean=turnover_prior_mean,sd=H*2) 
 moves[++mvi] = mvScale(turnover_mean,lambda=1.0,tune=true,weight=3.0)
 \end{lstlisting}
 \end{snugshade*}}
 Then we multiply each speciation rate category by the relative extinction rate to obtain the extinction rates per rate category.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-turnover := fnDiscretizeDistribution( dnLognormal(ln(turnover_mean), 0.587405), NUM_RATE_CATEGORIES )
+turnover := fnDiscretizeDistribution( dnLognormal(ln(turnover_mean), H), NUM_RATE_CATEGORIES )
 \end{lstlisting}
 \end{snugshade*}}
 Finally, we transform the diversification and turnover rate into the speciation and extinction rate parameters, as required by the birth-death process.
@@ -473,12 +479,17 @@ extinction := turnover
 \end{lstlisting}
 \end{snugshade*}}
 
+
 Next, we need a rate parameter for the rate-shifts events.
-Again, there we do not have much prior information about this rate and choose an exponential distribution with rate 1.0.
+We do not have much prior information about this rate but we can provide some realistic ranges.
+For example, we can specify a mean rate so that the resulting number of expected rate-shift events is 2 (as specified in our global variable \cl{EXPECTED\_NUM\_EVENTS}).
+Furthermore, we can say that the 95\% prior ranges exactly one order of magnitude.
+We achieve all this by specifying a lognormal prior distribution with mean \cl{ln( EXPECTED\_NUM\_EVENTS/tree\_length )} and standard deviation of \cl{H}.
+Remember that this is only possible if the tree is known and not estimated simultaneously because only if the tree is known then we also the tree length. 
 As usual for rate parameter, we apply a scaling move to the \cl{event\_rate} variable.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-event_rate ~ dnExponential(1.0)
+event_rate ~ dnLognormal( ln( EXPECTED_NUM_EVENTS/tree_length ), H)
 moves[++mvi] = mvScale(event_rate,lambda=1,tune=true,weight=5)
 \end{lstlisting}
 \end{snugshade*}}
@@ -501,7 +512,7 @@ We know that we have sampled 367 out of 450 living primate species.
 To account for this we can set the sampling parameter as a constant node with a value of 369/450
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-rho <- T.ntips()/450
+rho <- tree.ntips()/NUM_TOTAL_SPECIES
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -513,7 +524,7 @@ In this exercise we use a fix tree and thus we know the age of the tree.
 Hence, we can get the value for the root from the \citet{Springer2012} tree.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-root_time <- T.rootAge()
+root_time <- tree.rootAge()
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -529,19 +540,18 @@ timetree ~ dnHBDP(lambda=speciation, mu=extinction, rootAge=root_time, rho=rho, 
 And then we attach data to it.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-timetree.clamp(T)
+timetree.clamp(tree)
 \end{lstlisting}
 \end{snugshade*}}
 
 This specific implementation of the branch-specific birth-death process augments the tree with rate-shift events.
 In order to sample the number, the location, and the types of the rate-shift events, we have to apply special moves to the tree.
 These moves will not change the tree but only the augmented rate-shift events.
-We use a \cl{mvBirthDeathEvent} to add and remove events, a \cl{mvEventTimeSlide} and \cl{mvEventTimeBeta} move to change the time and location of the events, 
-and a \cl{mvDiscreteEventCategoryRandomWalk} to change the new rate categories after an event occured.
+We use a \cl{mvBirthDeathEvent} to add and remove events, a \cl{mvEventTimeBeta} move to change the time and location of the events, 
+and a \cl{mvDiscreteEventCategoryRandomWalk} to change the new rate categories after an event occurred.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 moves[++mvi] = mvBirthDeathEvent(timetree,weight=2)
-moves[++mvi] = mvEventTimeSlide(timetree,weight=2)
 moves[++mvi] = mvEventTimeBeta(timetree,weight=2)
 moves[++mvi] = mvDiscreteEventCategoryRandomWalk(timetree,weight=2)
 \end{lstlisting}
@@ -580,7 +590,7 @@ For our MCMC analysis, we need to set up a vector of \textit{monitors} to record
 First, we will initialize the model monitor using the \cl{mnModel} function. This creates a new monitor variable that will output the states for all model parameters when passed into a MCMC function. 
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-monitors[1] = mnModel(filename="output/primates_BSBD.log",printgen=10, separator = TAB)
+monitors[++mni] = mnModel(filename="output/primates_BSBD.log",printgen=10, separator = TAB)
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -590,14 +600,14 @@ We can thus print the tree with the average speciation and extinction rates at t
 We will need this file later to estimate and visualize the posterior distribution of the rates at the branches.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-monitors[2] = mnExtNewick(filename="output/primates_BSBD.trees", isNodeParameter=FALSE, printgen=10, separator = TAB, tree=timetree, avg_lambda, avg_mu)
+monitors[++mni] = mnExtNewick(filename="output/primates_BSBD.trees", isNodeParameter=FALSE, printgen=10, separator = TAB, tree=timetree, avg_lambda, avg_mu)
 \end{lstlisting}
 \end{snugshade*}}
 
 Finally, create a screen monitor that will report the states of specified variables to the screen with \cl{mnScreen}:
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-monitors[3] = mnScreen(printgen=10, event_rate, mean_speciation, root_category, total_num_events)
+monitors[++mni] = mnScreen(printgen=10, event_rate, mean_speciation, root_category, total_num_events)
 \end{lstlisting}
 \end{snugshade*}}
 
