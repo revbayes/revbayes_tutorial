@@ -16,16 +16,22 @@
 
 ### Read in sequence data for both genes
 
-T <- readTrees("data/primates_Springer.tre")[1]
+tree <- readTrees("data/primates_Springer.tre")[1]
 
 # Get some useful variables from the data. We need these later on.
-taxa <- T.taxa()
+taxa <- tree.taxa()
+tree_length <- tree.treeLength()
+root_age <- tree.rootAge()
 
 # set my move index
 mvi = 0
+mni = 0
 
-
-NUM_RATE_CATEGORIES = 10
+# Global parameters for our analysis
+NUM_RATE_CATEGORIES = 4
+EXPECTED_NUM_EVENTS = 2
+NUM_TOTAL_SPECIES = 450
+H = 0.587405
 
 
 
@@ -36,25 +42,25 @@ NUM_RATE_CATEGORIES = 10
 ### Specify a prior on the diversification and turnover rate
 
 ### Create a lognormal distributed variable for the mean diversification rate
-diversification_prior_mean <- ln( ln(450.0/2.0) / T.rootAge() )
-diversification_mean ~ dnLognormal(mean=diversification_prior_mean, sd=0.587405)
+diversification_prior_mean <- ln( ln(NUM_TOTAL_SPECIES/2.0) / root_age )
+diversification_mean ~ dnLognormal(mean=diversification_prior_mean, sd=H)
 moves[++mvi] = mvScale(diversification_mean,lambda=1,tune=true,weight=5)
 
 
 ### Create a deterministic variable for the diversification rate categories
 ### using a discretized lognormal distribution (the N-quantiles of it)
-diversification_sd <- 0.587405*2
+diversification_sd <- 2*H
 diversification := fnDiscretizeDistribution( dnLognormal(ln(diversification_mean), diversification_sd), NUM_RATE_CATEGORIES )
 
 
 ### Create a lognormal distributed variable for the turnover rate
-turnover_prior_mean <- ln( ln(450.0/2.0) / T.rootAge() )
-turnover_mean ~ dnLognormal(mean=turnover_prior_mean,sd=0.587405*2) 
+turnover_prior_mean <- ln( ln(NUM_TOTAL_SPECIES/2.0) / root_age )
+turnover_mean ~ dnLognormal(mean=turnover_prior_mean,sd=2*H) 
 moves[++mvi] = mvScale(turnover_mean,lambda=1.0,tune=true,weight=3.0)
 
 ### Create a deterministic variable for the turnover rate categories
 ### using a discretized lognormal distribution (the N-quantiles of it)
-turnover := fnDiscretizeDistribution( dnLognormal(ln(turnover_mean), 0.587405), NUM_RATE_CATEGORIES )
+turnover := fnDiscretizeDistribution( dnLognormal(ln(turnover_mean), H), NUM_RATE_CATEGORIES )
 
 
 
@@ -64,18 +70,14 @@ extinction := turnover
 
 
 ### Create an exponential distributed variable for the rate of rate-shift events
-event_rate ~ dnExponential(1.0)
+event_rate ~ dnLognormal( ln( EXPECTED_NUM_EVENTS/tree_length ), H)
 moves[++mvi] = mvScale(event_rate,lambda=1,tune=true,weight=5)
-
-
-### Create the fix parameter for the age of the root set to the observed age
-root <- T.rootAge()
 
 
 ### rho is the probability of sampling species at the present
 ### fix this to 367/450, since there are ~450 described species of primates
 ### and we have sampled 367
-rho <- T.ntips()/450
+rho <- tree.ntips()/NUM_TOTAL_SPECIES
 
 
 ### Create a rate-matrix for the relative-rate of change between categories
@@ -87,10 +89,10 @@ rate_category_prior <- simplex( rep(1,NUM_RATE_CATEGORIES) )
 
 
 #### construct a variable for the tree drawn from a birth death process
-timetree ~ dnMRBDP(lambda=speciation, mu=extinction, rootAge=root, rho=rho, Q=rate_matrix, pi=rate_category_prior, delta=event_rate, taxa=taxa )
+timetree ~ dnMRBDP(lambda=speciation, mu=extinction, rootAge=root_age, rho=rho, Q=rate_matrix, pi=rate_category_prior, delta=event_rate, taxa=taxa )
 
 ### clamp the model with the "observed" tree
-timetree.clamp(T)
+timetree.clamp(tree)
 
 
 
@@ -104,8 +106,8 @@ timetree.clamp(T)
 mymodel = model(rho)
 
 ### set up the monitors that will output parameter values to file and screen 
-monitors[1] = mnModel(filename="output/primates_MRBD.log",printgen=10, separator = TAB)
-monitors[2] = mnScreen(printgen=10, diversification_mean, turnover)
+monitors[++mni] = mnModel(filename="output/primates_MRBD.log",printgen=10, separator = TAB)
+monitors[++mni] = mnScreen(printgen=10, diversification_mean, turnover)
 
 
 

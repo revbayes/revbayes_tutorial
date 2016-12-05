@@ -1,14 +1,14 @@
 mi = 0
 
 # read the data 
-contData <- readContinuousCharacterData("data/primates_lhtlog.nex")
+contData <- readContinuousCharacterData("data/primates_lht.nex")
 
 contData.excludeAll()
 contData.includeCharacter(1) 
 #contData.excludeCharacter(2:11)
 
 # work under fixed topology
-treeArray <- readTrees("data/primates.tree")
+treeArray <- readTrees("data/Primates_tree.nex")
 psi <- treeArray[1]
 
 # sigma: variance per unit of time of the Brownian motion

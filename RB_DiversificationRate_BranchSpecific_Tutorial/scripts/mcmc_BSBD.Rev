@@ -16,17 +16,22 @@
 
 ### Read in sequence data for both genes
 
-T <- readTrees("data/primates_Springer.tre")[1]
+tree <- readTrees("data/primates_Springer.tre")[1]
 
 # Get some useful variables from the data. We need these later on.
-taxa <- T.taxa()
+taxa <- tree.taxa()
+tree_length <- tree.treeLength()
+root_age <- tree.rootAge()
 
 # set my move index
 mvi = 0
+mni = 0
 
-
+# Global parameters for our analysis
 NUM_RATE_CATEGORIES = 10
-
+EXPECTED_NUM_EVENTS = 2
+NUM_TOTAL_SPECIES = 450
+H = 0.587405
 
 
 ####################
@@ -36,25 +41,25 @@ NUM_RATE_CATEGORIES = 10
 ### Specify a prior on the diversification and turnover rate
 
 ### Create a lognormal distributed variable for the mean diversification rate
-diversification_prior_mean <- ln( ln(450.0/2.0) / T.rootAge() )
-diversification_mean ~ dnLognormal(mean=diversification_prior_mean, sd=0.587405)
+diversification_prior_mean <- ln( ln(NUM_TOTAL_SPECIES/2.0) / root_age )
+diversification_mean ~ dnLognormal(mean=diversification_prior_mean, sd=H)
 moves[++mvi] = mvScale(diversification_mean,lambda=1,tune=true,weight=5)
 
 
 ### Create a deterministic variable for the diversification rate categories
 ### using a discretized lognormal distribution (the N-quantiles of it)
-diversification_sd <- 0.587405*2
+diversification_sd <- H*2
 diversification := fnDiscretizeDistribution( dnLognormal(ln(diversification_mean), diversification_sd), NUM_RATE_CATEGORIES )
 
 
 ### Create a lognormal distributed variable for the turnover rate
-turnover_prior_mean <- ln( ln(450.0/2.0) / T.rootAge() )
-turnover_mean ~ dnLognormal(mean=turnover_prior_mean,sd=0.587405*2) 
+turnover_prior_mean <- ln( ln(NUM_TOTAL_SPECIES/2.0) / root_age )
+turnover_mean ~ dnLognormal(mean=turnover_prior_mean,sd=H*2) 
 moves[++mvi] = mvScale(turnover_mean,lambda=1.0,tune=true,weight=3.0)
 
 ### Create a deterministic variable for the turnover rate categories
 ### using a discretized lognormal distribution (the N-quantiles of it)
-turnover := fnDiscretizeDistribution( dnLognormal(ln(turnover_mean), 0.587405), NUM_RATE_CATEGORIES )
+turnover := fnDiscretizeDistribution( dnLognormal(ln(turnover_mean), H), NUM_RATE_CATEGORIES )
 
 
 ### Transform the parameters
@@ -68,25 +73,21 @@ moves[++mvi] = mvRandomIntegerWalk(root_category,weight=1)
 
 
 ### Create a exponential distributed variable for the rate of rate-shift events
-event_rate ~ dnExponential(1.0)
+event_rate ~ dnLognormal( ln( EXPECTED_NUM_EVENTS/tree_length ), H)
 moves[++mvi] = mvScale(event_rate,lambda=1,tune=true,weight=5)
-
-
-### Create the fix parameter for the age of the root set to the observed age
-root <- T.rootAge()
 
 
 ### rho is the probability of sampling species at the present
 ### fix this to 367/450, since there are ~450 described species of primates
 ### and we have sampled 367
-rho <- T.ntips()/450
+rho <- tree.ntips()/NUM_TOTAL_SPECIES
 
 
 #### construct a variable for the tree drawn from a birth death process
-timetree ~ dnHBDP(lambda=speciation, mu=extinction, rootAge=root, rho=rho, rootState=root_category, delta=event_rate, taxa=taxa )
+timetree ~ dnHBDP(lambda=speciation, mu=extinction, rootAge=root_age, rho=rho, rootState=root_category, delta=event_rate, taxa=taxa )
 
 ### clamp the model with the "observed" tree
-timetree.clamp(T)
+timetree.clamp(tree)
 
 
 ### Create moves that change the augmented rate-shift events on the tree
@@ -127,14 +128,16 @@ monitors[3] = mnScreen(printgen=10, event_rate, diversification_mean, turnover_m
 mymcmc = mcmc(mymodel, monitors, moves)
 
 ### pre-burnin to tune the proposals
-mymcmc.burnin(generations=10000,tuningInterval=200)
+#mymcmc.burnin(generations=1000,tuningInterval=200)
 
 ### run the MCMC
-mymcmc.run(generations=50000)
+mymcmc.run(generations=5000)
+
+mymcmc.operatorSummary()
 
 ### read in the output and create a MAP tree with the rates per branch attached to it
-treetrace = readTreeTrace("output/primates_BSBD.trees", treetype="clock")
-map_tree = mapTree(treetrace,"output/primates_BSBD_MAP.tree")
+#treetrace = readTreeTrace("output/primates_BSBD.trees", treetype="clock")
+#map_tree = mapTree(treetrace,"output/primates_BSBD_MAP.tree")
 
 
 ## quit ##
