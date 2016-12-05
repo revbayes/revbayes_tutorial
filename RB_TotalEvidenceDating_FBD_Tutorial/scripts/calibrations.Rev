@@ -1,0 +1,59 @@
+function calibrate_fossil_uniform ( TimeTree tree , String calib_file )
+{ 
+	d = readDataDelimitedFile(file=calib_file, delimiter=TAB, header=true)
+
+	for(i in 1:d.size())
+	{
+		taxonA = d[i][1]
+		obs_min = d[i][2]
+		obs_max = d[i][3]
+		
+		t := tmrca(tree, clade(taxonA))
+		
+		half = (obs_max - obs_min)/2
+		obs_med = obs_min + half
+		
+		min := t - half
+		max := t + half
+		
+		fossil[i] ~ dnUniform(min, max)
+		
+		fossil[i].clamp(obs_med)
+	}
+}
+
+function calibrate_fossil_normal ( TimeTree tree , String calib_file )
+{ 
+	d = readDataDelimitedFile(file=calib_file, delimiter=TAB, header=true)
+	
+	for(i in 1:d.size())
+	{
+		taxonA = d[i][1]
+		obs_mean = d[i][2]
+		stdev = d[i][3]
+		
+		mean := tmrca(tree, clade(taxonA))
+		
+		fossil[i] ~ dnNormal(mean, stdev)
+		
+		fossil[i].clamp(obs_mean)
+	}
+}
+
+function calibrate_fossil_exponential ( TimeTree tree , String calib_file )
+{ 
+	d = readDataDelimitedFile(file=calib_file, delimiter=TAB, header=true)
+	
+	for(i in 1:d.size())
+	{
+		taxonA = d[i][1]
+		obs_min = d[i][2]
+		lambda = d[i][3]
+		
+		offset := tmrca(tree, clade(taxonA))
+		
+		fossil[i] ~ dnExp(lambda, offset)
+		
+		fossil[i].clamp(obs_min)
+	}
+}

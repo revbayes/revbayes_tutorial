@@ -148,6 +148,8 @@ monitors[++mni] = mnModel(filename="output/primates_cytb_GTR_Gamma.log",printgen
 monitors[++mni] = mnFile(filename="output/primates_cytb_GTR_Gamma.trees",printgen=10, separator = TAB, psi)
 monitors[++mni] = mnScreen(printgen=1000, clock_rate, diversification, turnover)
 
+
+
 mymcmc = mcmc(mymodel, monitors, moves)
 
 mymcmc.burnin(generations=10000,tuningInterval=100)
