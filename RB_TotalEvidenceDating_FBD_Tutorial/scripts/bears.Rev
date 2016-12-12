@@ -1,0 +1,166 @@
+taxa <- readTaxonData("data/taxa.tsv", delimiter=TAB)
+n_taxa <- taxa.size()
+
+cytb <- readDiscreteCharacterData("data/cytb.nex")
+morpho <- readDiscreteCharacterData("data/morpho.nex")
+
+morpho.addMissingTaxon( taxa )
+cytb.addMissingTaxon( taxa )
+
+
+clade_crownbears = clade("Ailuropoda_melanoleuca", "Tremarctos_ornatus", "Melursus_ursinus", 
+                         "Ursus_arctos", "Ursus_maritimus", "Helarctos_malayanus", 
+                         "Ursus_americanus", "Ursus_thibetanus", "Indarctos_vireti", 
+                         "Indarctos_arctoides", "Indarctos_punjabiensis", "Ailurarctos_lufengensis", 
+                         "Agriarctos_spp", "Kretzoiarctos_beatrix", "Ursus_abstrusus", "Ursus_spelaeus", 
+                         "Arctodus_simus")
+                         
+clade_pandas = clade("Ailuropoda_melanoleuca", "Indarctos_vireti", "Indarctos_arctoides", 
+                     "Indarctos_punjabiensis", "Ailurarctos_lufengensis", "Agriarctos_spp", 
+                     "Kretzoiarctos_beatrix")
+clade_tremarctinae = clade("Tremarctos_ornatus", "Arctodus_simus")
+clade_ursinae = clade("Melursus_ursinus", "Ursus_arctos", "Ursus_maritimus", 
+                      "Helarctos_malayanus", "Ursus_americanus", "Ursus_thibetanus", 
+                      "Ursus_abstrusus", "Ursus_spelaeus")
+clade_brownbears = clade("Ursus_arctos", "Ursus_maritimus", "Ursus_spelaeus")
+
+constraints = v(clade_crownbears, clade_pandas, clade_tremarctinae, clade_ursinae, clade_brownbears)
+
+clade_extant = clade("Ailuropoda_melanoleuca","Tremarctos_ornatus","Melursus_ursinus",
+					"Ursus_arctos","Ursus_maritimus","Helarctos_malayanus",
+					"Ursus_americanus","Ursus_thibetanus")
+
+#######
+
+birth_rate ~ dnExponential(10) 
+death_rate ~ dnExponential(10) 
+
+diversification := birth_rate - death_rate
+turnover := death_rate/birth_rate
+
+rho <- 1.0
+psi ~ dnExponential(10) 
+
+origin_time ~ dnUnif(37.0, 55.0)
+tree_prior = dnFBDP(startAge=origin_time, startCondition="origin", lambda=birth_rate, mu=death_rate, psi=psi, rho=rho, taxa=taxa)
+
+fbd_tree ~ dnConstrainedTopology(tree_prior, constraints)
+
+function Natural num_sa ( TimeTree t ) { t.nSampledAncestors() }
+
+sa := num_sa(fbd_tree)
+
+crown := tmrca(fbd_tree, clade_extant)
+
+source("scripts/calibrations.Rev")
+
+calibrate_fossil_uniform( fbd_tree, "data/fossil_intervals.tsv" )
+
+#########
+
+beta1 ~ dnExponential( 1.0 )
+
+beta2 ~ dnExponential( 1.0 )
+
+cats := fnDiscretizeBeta( beta1, beta2, 5)
+
+for(i in 1:cats.size())
+{
+Q_morpho[i] := fnFreeBinary(v(1-cats[i], cats[i]))
+}
+
+alpha_morpho ~ dnExponential( 1.0 )
+rates_morpho := fnDiscretizeGamma( alpha_morpho, alpha_morpho, 4, false )
+
+clock_morpho ~ dnExponential(1.0)
+
+phyMorph ~ dnPhyloCTMC(tree=fbd_tree, siteRates=rates_morpho, branchRates=clock_morpho, Q=Q_morpho, type="Standard", coding="variable", siteMatrices=true)
+phyMorph.clamp(morpho)
+
+#########
+
+clock_mol ~ dnExponential(1.0)
+
+sf_hp <- v(1,1,1,1)
+sf ~ dnDirichlet(sf_hp)
+er_hp <- v(1,1,1,1,1,1)
+er ~ dnDirichlet(er_hp)
+
+Q_mol := fnGTR(er,sf)
+
+alpha_mol ~ dnExponential( 1.0 )
+rates_mol := fnDiscretizeGamma( alpha_mol, alpha_mol, 4, false )
+
+phySeq ~ dnPhyloCTMC(tree=fbd_tree, Q=Q_mol, siteRates=rates_mol, branchRates=clock_mol, type="DNA")
+phySeq.clamp(cytb)
+
+#########
+
+mvi = 1
+mni = 1
+
+moves[mvi++] = mvScale(beta1, lambda=1 )
+moves[mvi++] = mvScale(beta1, lambda=0.1 )
+moves[mvi++] = mvScale(beta1, lambda=0.01 )
+
+moves[mvi++] = mvScale(beta2, lambda=1 )
+moves[mvi++] = mvScale(beta2, lambda=0.1 )
+moves[mvi++] = mvScale(beta2, lambda=0.01 )
+
+moves[mvi++] = mvScale(alpha_mol, lambda=0.01, weight=1.0)
+moves[mvi++] = mvScale(alpha_mol, lambda=0.1, weight=1.0)
+moves[mvi++] = mvScale(alpha_mol, lambda=1, weight=1.0)
+
+moves[mvi++] = mvScale(alpha_morpho, lambda=0.01, weight=1.0)
+moves[mvi++] = mvScale(alpha_morpho, lambda=0.1, weight=1.0)
+moves[mvi++] = mvScale(alpha_morpho, lambda=1, weight=1.0)
+
+moves[mvi++] = mvScale(clock_mol, lambda=0.01, weight=3.0)
+moves[mvi++] = mvScale(clock_mol, lambda=0.1, weight=3.0)
+moves[mvi++] = mvScale(clock_mol, lambda=1, weight=3.0)
+
+moves[mvi++] = mvScale(clock_morpho, lambda=0.01, weight=1.0)
+moves[mvi++] = mvScale(clock_morpho, lambda=0.1, weight=1.0)
+moves[mvi++] = mvScale(clock_morpho, lambda=1, weight=1.0)
+
+moves[mvi++] = mvSimplexElementScale(er, alpha=10.0, tune=false, weight=2.0)
+moves[mvi++] = mvSimplexElementScale(sf, alpha=10.0, tune=false, weight=2.0)
+
+moves[mvi++] = mvScale(birth_rate, lambda=0.01, weight=3.0)
+moves[mvi++] = mvScale(birth_rate, lambda=0.1, weight=3.0)
+moves[mvi++] = mvScale(birth_rate, lambda=1.0, weight=3.0)
+
+moves[mvi++] = mvSlide(death_rate, delta=0.01, weight=3.0)
+moves[mvi++] = mvSlide(death_rate, delta=0.1, weight=3.0)
+moves[mvi++] = mvSlide(death_rate, delta=1, weight=3.0)
+
+moves[mvi++] = mvSlide(psi, delta=0.01, weight=3.0)
+moves[mvi++] = mvSlide(psi, delta=0.1, weight=3.0)
+moves[mvi++] = mvSlide(psi, delta=1, weight=3.0)
+
+moves[mvi++] = mvSlide(origin_time, delta=0.01, weight=10.0)
+moves[mvi++] = mvSlide(origin_time, delta=0.1, weight=10.0)
+moves[mvi++] = mvSlide(origin_time, delta=1, weight=10.0)
+
+moves[mvi++] = mvNarrow(fbd_tree, weight=10.0)
+moves[mvi++] = mvNNI(fbd_tree, weight=1.0)
+moves[mvi++] = mvFNPR(fbd_tree, weight=5.0)
+moves[mvi++] = mvSubtreeScale(fbd_tree, weight=1.0)
+
+moves[mvi++] = mvNodeTimeSlideUniform(fbd_tree, weight=15.0)
+moves[mvi++] = mvFossilTimeSlideUniform(fbd_tree, origin_time, weight=3.0)
+moves[mvi++] = mvRootTimeSlideUniform(fbd_tree, origin_time, weight=3.0)
+moves[mvi++] = mvCollapseExpandFossilBranch(fbd_tree, origin_time, weight=1.0)
+
+
+######
+
+mymodel = model(sf)
+
+monitors[mni++] = mnModel(filename="output/bears.log", printgen=1000, separator = TAB)
+monitors[mni++] = mnFile(filename="output/bears.trees", printgen=100, separator = TAB, fbd_tree)
+monitors[mni++] = mnScreen(printgen=1000, crown, origin_time, sa, diversification, turnover, psi)
+
+mymcmc = mcmc(mymodel, monitors, moves, moveschedule="single")
+
+mymcmc.run(generations=500000,underPrior=false)
