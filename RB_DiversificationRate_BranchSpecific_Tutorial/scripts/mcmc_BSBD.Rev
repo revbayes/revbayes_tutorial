@@ -92,7 +92,6 @@ timetree.clamp(tree)
 
 ### Create moves that change the augmented rate-shift events on the tree
 moves[++mvi] = mvBirthDeathEvent(timetree,weight=2)
-moves[++mvi] = mvEventTimeSlide(timetree,weight=2)
 moves[++mvi] = mvEventTimeBeta(timetree,weight=2)
 moves[++mvi] = mvDiscreteEventCategoryRandomWalk(timetree,weight=2)
 
@@ -115,9 +114,9 @@ total_num_events := sum( num_events )
 mymodel = model(rho)
 
 ### set up the monitors that will output parameter values to file and screen 
-monitors[1] = mnModel(filename="output/primates_BSBD.log",printgen=10, separator = TAB)
-monitors[2] = mnExtNewick(filename="output/primates_BSBD.trees", isNodeParameter=FALSE, printgen=10, separator = TAB, tree=timetree, avg_lambda, avg_mu)
-monitors[3] = mnScreen(printgen=10, event_rate, diversification_mean, turnover_mean, root_category, total_num_events)
+monitors[++mni] = mnModel(filename="output/primates_BSBD.log",printgen=10, separator = TAB)
+monitors[++mni] = mnExtNewick(filename="output/primates_BSBD.trees", isNodeParameter=FALSE, printgen=10, separator = TAB, tree=timetree, avg_lambda, avg_mu)
+monitors[++mni] = mnScreen(printgen=10, event_rate, diversification_mean, turnover_mean, root_category, total_num_events)
 
 
 ################
@@ -128,7 +127,7 @@ monitors[3] = mnScreen(printgen=10, event_rate, diversification_mean, turnover_m
 mymcmc = mcmc(mymodel, monitors, moves)
 
 ### pre-burnin to tune the proposals
-#mymcmc.burnin(generations=1000,tuningInterval=200)
+mymcmc.burnin(generations=1000,tuningInterval=200)
 
 ### run the MCMC
 mymcmc.run(generations=5000)
@@ -136,8 +135,8 @@ mymcmc.run(generations=5000)
 mymcmc.operatorSummary()
 
 ### read in the output and create a MAP tree with the rates per branch attached to it
-#treetrace = readTreeTrace("output/primates_BSBD.trees", treetype="clock")
-#map_tree = mapTree(treetrace,"output/primates_BSBD_MAP.tree")
+treetrace = readTreeTrace("output/primates_BSBD.trees", treetype="clock")
+map_tree = mapTree(treetrace,"output/primates_BSBD_MAP.tree")
 
 
 ## quit ##

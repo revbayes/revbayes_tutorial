@@ -153,7 +153,7 @@ monitors[++mni] = mnScreen(printgen=1000, clock_rate, diversification, turnover)
 
 
 ### Compute power posterior distributions
-pow_p = powerPosterior(mymodel, moves, monitors, "output/pow_p_GTR_Gamma_Inv.out", cats=127, sampleFreq=10) 
+pow_p = powerPosterior(mymodel, moves, monitors, "output/pow_p_JC.out", cats=127, sampleFreq=10) 
 pow_p.burnin(generations=10000,tuningInterval=250)
 pow_p.run(generations=1000)  
 

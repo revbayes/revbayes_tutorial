@@ -1,0 +1,9 @@
+################################################################################
+#
+# RevBayes file to set the seed. This file is used for testing the tutorials.
+#
+# authors: Sebastian Hoehna
+#
+################################################################################
+
+seed(1234)
