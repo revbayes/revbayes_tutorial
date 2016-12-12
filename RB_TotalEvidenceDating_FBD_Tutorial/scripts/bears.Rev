@@ -27,8 +27,8 @@ clade_brownbears = clade("Ursus_arctos", "Ursus_maritimus", "Ursus_spelaeus")
 constraints = v(clade_crownbears, clade_pandas, clade_tremarctinae, clade_ursinae, clade_brownbears)
 
 clade_extant = clade("Ailuropoda_melanoleuca","Tremarctos_ornatus","Melursus_ursinus",
-					"Ursus_arctos","Ursus_maritimus","Helarctos_malayanus",
-					"Ursus_americanus","Ursus_thibetanus")
+                    "Ursus_arctos","Ursus_maritimus","Helarctos_malayanus",
+                    "Ursus_americanus","Ursus_thibetanus")
 
 #######
 
