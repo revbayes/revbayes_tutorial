@@ -1,7 +1,29 @@
-\section{Overview}
 
+\section{Introduction}
 
-Background
+This tutorial...
+
+\subsection{Models}
+
+\subsubsection{Sequence Evolution}
+
+Point to other tutorials (e.g., GTR stuff)
+
+\subsubsection{Morphological Character Change}
+
+Mk models and ascertainment bias
+
+\subsubsection{Lineage-Specific Substitution Rates}
+
+Clocks \citep{Zuckerkandl1962} and relaxing them 
+
+\subsubsection{Lineage Diversification and Sampling}
+
+Birth-death processes and FBD
+
+\section{Prerequisites}
+
+What do you need to know before doing this?
 
 \subsection{Requirements}
 We assume that you have read and hopefully completed the following tutorials:
@@ -47,7 +69,7 @@ In the \cl{data} folder, you will find the following files
 First load in the sequences using the \cl{readDiscreteCharacterData()} function. 
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-data <- readDiscreteCharacterData("data/bears_cytb.nex")
+data <- readDiscreteCharacterData("data/bears_cytb.nex") 
 \end{lstlisting}
 \end{snugshade*}}
 Executing these lines initializes the data matrix as the respective \Rev variables. 
@@ -58,21 +80,21 @@ data
 |*   DNA character matrix with 23 taxa and 1141 characters
 |*   =====================================================
 |*   Origination:                      bears_cytb.nex
-|*   Number of taxa:                   23
-|*   Number of included taxa:          23
-|*   Number of characters:             1141
-|*   Number of included characters: 1141
+|*   Number of taxa:                   10
+|*   Number of included taxa:          10
+|*   Number of characters:             1000
+|*   Number of included characters: 1000
 |*   Datatype:                         DNA
 \end{lstlisting}
 \end{snugshade*}}
 %% This is what output looks like
 
-\begin{figure}[htbp!]
-\centering
-\fbox{\includegraphics[width=0.8\textwidth]{\ResourcePath figures/figure.pdf}}
-\caption{\small example figure.}
-\label{fig:example}
-\end{figure}
+%\begin{figure}[htbp!]
+%\centering
+%\fbox{\includegraphics[width=0.8\textwidth]{\ResourcePath figures/figure.pdf}}
+%\caption{\small example figure.}
+%\label{fig:example}
+%\end{figure}
 
 \bibliographystyle{sysbio}
 \bibliography{\GlobalResourcePath refs}
