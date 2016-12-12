@@ -164,3 +164,6 @@ monitors[mni++] = mnScreen(printgen=1000, crown, origin_time, sa, diversificatio
 mymcmc = mcmc(mymodel, monitors, moves, moveschedule="single")
 
 mymcmc.run(generations=500000,underPrior=false)
+
+tr = readTreeTrace( "output/bears.trees" )
+mccTree(tr, "fbd.mcc.tre" )
