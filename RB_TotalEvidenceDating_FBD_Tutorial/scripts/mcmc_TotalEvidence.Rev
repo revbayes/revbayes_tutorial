@@ -260,16 +260,17 @@ phyMorpho.clamp(morpho)
 ######
 
 mymodel = model(sf)
+mymodel.graph("model.dot")
 
 mni = 1
 
-monitors[mni++] = mnModel(filename="output/bears.log", printgen=1000, separator = TAB)
-monitors[mni++] = mnFile(filename="output/bears.trees", printgen=100, separator = TAB, fbd_tree)
-monitors[mni++] = mnScreen(printgen=1000, crown, origin_time, sa, mean_rt)
+monitors[mni++] = mnModel(filename="output/bears.log", printgen=10, separator = TAB)
+monitors[mni++] = mnFile(filename="output/bears.trees", printgen=10, separator = TAB, fbd_tree)
+monitors[mni++] = mnScreen(printgen=10, crown, origin_time, sa, mean_rt)
 
-mymcmc = mcmc(mymodel, monitors, moves, moveschedule="single")
+mymcmc = mcmc(mymodel, monitors, moves)
 
-mymcmc.run(generations=500000,underPrior=false)
+mymcmc.run(generations=50000,underPrior=false)
 mymcmc.operatorSummary()
 
 tr = readTreeTrace( "output/bears.trees" )
