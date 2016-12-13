@@ -1,8 +1,8 @@
-taxa <- readTaxonData("data/taxa.tsv", delimiter=TAB)
+taxa <- readTaxonData("data/bears_taxa.tsv", delimiter=TAB)
 n_taxa <- taxa.size()
 
-cytb <- readDiscreteCharacterData("data/cytb.nex")
-morpho <- readDiscreteCharacterData("data/morpho.nex")
+cytb <- readDiscreteCharacterData("data/bears_extant_cytb.nex")
+morpho <- readDiscreteCharacterData("data/bears_morphology.nex")
 
 morpho.addMissingTaxon( taxa )
 cytb.addMissingTaxon( taxa )
@@ -54,7 +54,7 @@ crown := tmrca(fbd_tree, clade_extant)
 
 source("scripts/calibrations.Rev")
 
-calibrate_fossil_uniform( fbd_tree, "data/fossil_intervals.tsv" )
+calibrate_fossil_uniform( fbd_tree, "data/bears_fossil_intervals.tsv" )
 
 #########
 
