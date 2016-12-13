@@ -4,8 +4,8 @@ n_taxa <- taxa.size()
 cytb <- readDiscreteCharacterData("data/cytb.nex")
 morpho <- readDiscreteCharacterData("data/morpho.nex")
 
-morpho.addMissingTaxon( taxa )
-cytb.addMissingTaxon( taxa )
+morpho.addMissingTaxa( taxa )
+cytb.addMissingTaxa( taxa )
 
 
 clade_crownbears = clade("Ailuropoda_melanoleuca", "Tremarctos_ornatus", "Melursus_ursinus", 
@@ -42,7 +42,7 @@ rho <- 1.0
 psi ~ dnExponential(10) 
 
 origin_time ~ dnUnif(37.0, 55.0)
-tree_prior = dnFBDP(startAge=origin_time, startCondition="origin", lambda=birth_rate, mu=death_rate, psi=psi, rho=rho, taxa=taxa)
+tree_prior = dnFBDP(origin=origin_time, lambda=birth_rate, mu=death_rate, psi=psi, rho=rho, taxa=taxa)
 
 fbd_tree ~ dnConstrainedTopology(tree_prior, constraints)
 
@@ -166,4 +166,6 @@ mymcmc = mcmc(mymodel, monitors, moves, moveschedule="single")
 mymcmc.run(generations=500000,underPrior=false)
 
 tr = readTreeTrace( "output/bears.trees" )
-mccTree(tr, "fbd.mcc.tre" )
+mccTree(tr, "output/bears.mcc.tre" )
+
+q()
