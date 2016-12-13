@@ -3,7 +3,7 @@
 
 BEGIN DATA;
 	DIMENSIONS  NTAX=18 NCHAR=81;
-	Format datatype=binary gap=- missing=?;
+	Format datatype=Standard gap=- missing=?;
 
 MATRIX
 Ailuropoda_melanoleuca    101111111101110100110000011111010111101010101011111110000111101100101101001100010
