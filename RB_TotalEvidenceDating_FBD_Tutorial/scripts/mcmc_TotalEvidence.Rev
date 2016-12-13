@@ -52,9 +52,9 @@ sa := num_sa(fbd_tree)
 
 crown := tmrca(fbd_tree, clade_extant)
 
-source("scripts/calibrations.Rev")
+source("scripts/sample_fossil_age_functions.Rev")
 
-calibrate_fossil_uniform( fbd_tree, "data/bears_fossil_intervals.tsv" )
+sample_fossil_age_uniform( fbd_tree, "data/bears_fossil_intervals.tsv" )
 
 #########
 

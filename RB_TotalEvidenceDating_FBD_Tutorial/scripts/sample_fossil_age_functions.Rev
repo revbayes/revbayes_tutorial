@@ -1,4 +1,4 @@
-function calibrate_fossil_uniform ( TimeTree tree , String calib_file )
+function sample_fossil_age_uniform ( TimeTree tree , String calib_file )
 { 
 	d = readDataDelimitedFile(file=calib_file, delimiter=TAB, header=true)
 	
@@ -21,7 +21,7 @@ function calibrate_fossil_uniform ( TimeTree tree , String calib_file )
 	}
 }
 
-function calibrate_fossil_normal ( TimeTree tree , String calib_file )
+function sample_fossil_age_normal ( TimeTree tree , String calib_file )
 { 
 	d = readDataDelimitedFile(file=calib_file, delimiter=TAB, header=true)
 	
@@ -39,7 +39,7 @@ function calibrate_fossil_normal ( TimeTree tree , String calib_file )
 	}
 }
 
-function calibrate_fossil_exponential ( TimeTree tree , String calib_file )
+function sample_fossil_age_exponential ( TimeTree tree , String calib_file )
 { 
 	d = readDataDelimitedFile(file=calib_file, delimiter=TAB, header=true)
 	
