@@ -1,0 +1,696 @@
+/* Graphical model description in DOT language                                    */
+/*    To view graph:                                                              */
+/*       open this file in the program Graphviz: http://www.graphviz.org          */
+/*       or paste contents into an online viewer: http://stamm-wilbrandt.de/GraphvizFiddle */
+
+digraph REVDAG {
+   n_sf [shape=oval, style=filled, fillcolor=white, label="sf"]
+   n_sf_hp [shape=record, style=filled, fillcolor=white, label="{sf_hp|[ 1.000, 1.000, 1.000, 1.000]}"]
+   n_Q_cytb [shape=oval, style="dashed,filled", fillcolor=white, label="Q_cytb\n[ fnGTR(Simplex<any>) ]"]
+   n_er [shape=oval, style=filled, fillcolor=white, label="er"]
+   n_er_hp [shape=record, style=filled, fillcolor=white, label="{er_hp|[ 1.000, 1.000, 1.000, 1.000, 1.000, 1.000]}"]
+   n_phySeq [shape=oval, style=filled, fillcolor=gray, label="phySeq"]
+   n_fbd_tree [shape=oval, style=filled, fillcolor=white, label="fbd_tree"]
+   n_origin_time [shape=oval, style=filled, fillcolor=white, label="origin_time"]
+   n_0x7ff091c25d70 [shape=box, style=filled, fillcolor=white, label="37"]
+   n_0x7ff091c25f90 [shape=box, style=filled, fillcolor=white, label="55"]
+   n_birth_rate [shape=oval, style=filled, fillcolor=white, label="birth_rate"]
+   n_0x7ff091c26990 [shape=box, style=filled, fillcolor=white, label="10"]
+   n_diversification [shape=oval, style="dashed,filled", fillcolor=white, label="diversification\n[ sub(Real<any>) ]"]
+   n_death_rate [shape=oval, style=filled, fillcolor=white, label="death_rate"]
+   n_0x7ff091c276e0 [shape=box, style=filled, fillcolor=white, label="10"]
+   n_turnover [shape=oval, style="dashed,filled", fillcolor=white, label="turnover\n[ div(RealPos<any>) ]"]
+   n_psi [shape=oval, style=filled, fillcolor=white, label="psi"]
+   n_0x7ff091c2c2c0 [shape=box, style=filled, fillcolor=white, label="10"]
+   n_rho [shape=record, style=filled, fillcolor=white, label="{rho|1}"]
+   n_sa [shape=oval, style="dashed,filled", fillcolor=white, label="sa\n[ num_sa(TimeTree<any>) ]"]
+   n_crown [shape=oval, style="dashed,filled", fillcolor=white, label="crown\n[ tmrca(TimeTree<any>) ]"]
+   n_t_1 [shape=oval, style="dashed,filled", fillcolor=white, label="t[1]\n[ tmrca(TimeTree<any>) ]"]
+   n_0x7ff091c2e800 [shape=oval, style="dashed,filled", fillcolor=white, label="function\n[ sub(Real<any>) ]"]
+   n_0x7ff091c2ea50 [shape=box, style=filled, fillcolor=white, label="1.65"]
+   n_0x7ff091c2eb80 [shape=oval, style="dashed,filled", fillcolor=white, label="function\n[ v(Real<any>) ]"]
+   n_0x7ff091c2ee40 [shape=box, style=filled, fillcolor=white, label="0"]
+   n_min_1 [shape=oval, style="dashed,filled", fillcolor=white, label="min[1]\n[ max(Real[]<any>) ]"]
+   n_fossil_1 [shape=oval, style=filled, fillcolor=gray, label="fossil[1]"]
+   n_max_1 [shape=oval, style="dashed,filled", fillcolor=white, label="max[1]\n[ add(RealPos<any>) ]"]
+   n_0x7ff091c2fe60 [shape=box, style=filled, fillcolor=white, label="1.65"]
+   n_max [shape=oval, style="dashed,filled", fillcolor=white, label="max\n[ v(RealPos<any>) ]"]
+   n_max_2 [shape=oval, style="dashed,filled", fillcolor=white, label="max[2]\n[ add(RealPos<any>) ]"]
+   n_t_2 [shape=oval, style="dashed,filled", fillcolor=white, label="t[2]\n[ tmrca(TimeTree<any>) ]"]
+   n_0x7ff091c2c0f0 [shape=oval, style="dashed,filled", fillcolor=white, label="function\n[ sub(Real<any>) ]"]
+   n_0x7ff091c31220 [shape=box, style=filled, fillcolor=white, label="1.4"]
+   n_0x7ff091c31330 [shape=oval, style="dashed,filled", fillcolor=white, label="function\n[ v(Real<any>) ]"]
+   n_0x7ff091c315f0 [shape=box, style=filled, fillcolor=white, label="0"]
+   n_min_2 [shape=oval, style="dashed,filled", fillcolor=white, label="min[2]\n[ max(Real[]<any>) ]"]
+   n_fossil_2 [shape=oval, style=filled, fillcolor=gray, label="fossil[2]"]
+   n_fossil [shape=oval, style="dashed,filled", fillcolor=white, label="fossil\n[ v(Real<any>) ]"]
+   n_fossil_3 [shape=oval, style=filled, fillcolor=gray, label="fossil[3]"]
+   n_min_3 [shape=oval, style="dashed,filled", fillcolor=white, label="min[3]\n[ max(Real[]<any>) ]"]
+   n_0x7ff091c33710 [shape=oval, style="dashed,filled", fillcolor=white, label="function\n[ v(Real<any>) ]"]
+   n_0x7ff091c339c0 [shape=oval, style="dashed,filled", fillcolor=white, label="function\n[ sub(Real<any>) ]"]
+   n_t_3 [shape=oval, style="dashed,filled", fillcolor=white, label="t[3]\n[ tmrca(TimeTree<any>) ]"]
+   n_max_3 [shape=oval, style="dashed,filled", fillcolor=white, label="max[3]\n[ add(RealPos<any>) ]"]
+   n_0x7ff091c34270 [shape=box, style=filled, fillcolor=white, label="4.55"]
+   n_t [shape=oval, style="dashed,filled", fillcolor=white, label="t\n[ v(RealPos<any>) ]"]
+   n_t_4 [shape=oval, style="dashed,filled", fillcolor=white, label="t[4]\n[ tmrca(TimeTree<any>) ]"]
+   n_0x7ff091c34e00 [shape=oval, style="dashed,filled", fillcolor=white, label="function\n[ sub(Real<any>) ]"]
+   n_0x7ff091c35050 [shape=box, style=filled, fillcolor=white, label="1.16"]
+   n_0x7ff091c35180 [shape=oval, style="dashed,filled", fillcolor=white, label="function\n[ v(Real<any>) ]"]
+   n_0x7ff091c35440 [shape=box, style=filled, fillcolor=white, label="0"]
+   n_min_4 [shape=oval, style="dashed,filled", fillcolor=white, label="min[4]\n[ max(Real[]<any>) ]"]
+   n_fossil_4 [shape=oval, style=filled, fillcolor=gray, label="fossil[4]"]
+   n_max_4 [shape=oval, style="dashed,filled", fillcolor=white, label="max[4]\n[ add(RealPos<any>) ]"]
+   n_0x7ff091c36440 [shape=box, style=filled, fillcolor=white, label="1.16"]
+   n_min [shape=oval, style="dashed,filled", fillcolor=white, label="min\n[ v(Real<any>) ]"]
+   n_min_5 [shape=oval, style="dashed,filled", fillcolor=white, label="min[5]\n[ max(Real[]<any>) ]"]
+   n_0x7ff091c36f60 [shape=oval, style="dashed,filled", fillcolor=white, label="function\n[ v(Real<any>) ]"]
+   n_0x7ff091c37210 [shape=oval, style="dashed,filled", fillcolor=white, label="function\n[ sub(Real<any>) ]"]
+   n_t_5 [shape=oval, style="dashed,filled", fillcolor=white, label="t[5]\n[ tmrca(TimeTree<any>) ]"]
+   n_max_5 [shape=oval, style="dashed,filled", fillcolor=white, label="max[5]\n[ add(RealPos<any>) ]"]
+   n_0x7ff091c37aa0 [shape=box, style=filled, fillcolor=white, label="0.465"]
+   n_fossil_5 [shape=oval, style=filled, fillcolor=gray, label="fossil[5]"]
+   n_0x7ff091c30da0 [shape=box, style=filled, fillcolor=white, label="0.465"]
+   n_0x7ff091c30ea0 [shape=box, style=filled, fillcolor=white, label="0"]
+   n_min_6 [shape=oval, style="dashed,filled", fillcolor=white, label="min[6]\n[ max(Real[]<any>) ]"]
+   n_0x7ff091c385a0 [shape=oval, style="dashed,filled", fillcolor=white, label="function\n[ v(Real<any>) ]"]
+   n_0x7ff091c38850 [shape=oval, style="dashed,filled", fillcolor=white, label="function\n[ sub(Real<any>) ]"]
+   n_t_6 [shape=oval, style="dashed,filled", fillcolor=white, label="t[6]\n[ tmrca(TimeTree<any>) ]"]
+   n_max_6 [shape=oval, style="dashed,filled", fillcolor=white, label="max[6]\n[ add(RealPos<any>) ]"]
+   n_0x7ff091c390e0 [shape=box, style=filled, fillcolor=white, label="0.475"]
+   n_fossil_6 [shape=oval, style=filled, fillcolor=gray, label="fossil[6]"]
+   n_0x7ff091c39bc0 [shape=box, style=filled, fillcolor=white, label="0.475"]
+   n_0x7ff091c39cc0 [shape=box, style=filled, fillcolor=white, label="0"]
+   n_min_7 [shape=oval, style="dashed,filled", fillcolor=white, label="min[7]\n[ max(Real[]<any>) ]"]
+   n_0x7ff091c39fe0 [shape=oval, style="dashed,filled", fillcolor=white, label="function\n[ v(Real<any>) ]"]
+   n_0x7ff091c3a290 [shape=oval, style="dashed,filled", fillcolor=white, label="function\n[ sub(Real<any>) ]"]
+   n_t_7 [shape=oval, style="dashed,filled", fillcolor=white, label="t[7]\n[ tmrca(TimeTree<any>) ]"]
+   n_max_7 [shape=oval, style="dashed,filled", fillcolor=white, label="max[7]\n[ add(RealPos<any>) ]"]
+   n_0x7ff091c3ab60 [shape=box, style=filled, fillcolor=white, label="2.4"]
+   n_fossil_7 [shape=oval, style=filled, fillcolor=gray, label="fossil[7]"]
+   n_0x7ff091c3b640 [shape=box, style=filled, fillcolor=white, label="2.4"]
+   n_0x7ff091c3b740 [shape=box, style=filled, fillcolor=white, label="0"]
+   n_min_8 [shape=oval, style="dashed,filled", fillcolor=white, label="min[8]\n[ max(Real[]<any>) ]"]
+   n_0x7ff091c3ba60 [shape=oval, style="dashed,filled", fillcolor=white, label="function\n[ v(Real<any>) ]"]
+   n_0x7ff091c3bd10 [shape=oval, style="dashed,filled", fillcolor=white, label="function\n[ sub(Real<any>) ]"]
+   n_t_8 [shape=oval, style="dashed,filled", fillcolor=white, label="t[8]\n[ tmrca(TimeTree<any>) ]"]
+   n_max_8 [shape=oval, style="dashed,filled", fillcolor=white, label="max[8]\n[ add(RealPos<any>) ]"]
+   n_0x7ff091c3c5a0 [shape=box, style=filled, fillcolor=white, label="2.4"]
+   n_fossil_8 [shape=oval, style=filled, fillcolor=gray, label="fossil[8]"]
+   n_0x7ff091c3d080 [shape=box, style=filled, fillcolor=white, label="2.4"]
+   n_0x7ff091c3d180 [shape=box, style=filled, fillcolor=white, label="0"]
+   n_min_9 [shape=oval, style="dashed,filled", fillcolor=white, label="min[9]\n[ max(Real[]<any>) ]"]
+   n_0x7ff091c3d4a0 [shape=oval, style="dashed,filled", fillcolor=white, label="function\n[ v(Real<any>) ]"]
+   n_0x7ff091c3d750 [shape=oval, style="dashed,filled", fillcolor=white, label="function\n[ sub(Real<any>) ]"]
+   n_t_9 [shape=oval, style="dashed,filled", fillcolor=white, label="t[9]\n[ tmrca(TimeTree<any>) ]"]
+   n_max_9 [shape=oval, style="dashed,filled", fillcolor=white, label="max[9]\n[ add(RealPos<any>) ]"]
+   n_0x7ff091c3e020 [shape=box, style=filled, fillcolor=white, label="1.2"]
+   n_fossil_9 [shape=oval, style=filled, fillcolor=gray, label="fossil[9]"]
+   n_0x7ff091c3eb00 [shape=box, style=filled, fillcolor=white, label="1.2"]
+   n_0x7ff091c3ec00 [shape=box, style=filled, fillcolor=white, label="0"]
+   n_min_10 [shape=oval, style="dashed,filled", fillcolor=white, label="min[10]\n[ max(Real[]<any>) ]"]
+   n_0x7ff091c3ef20 [shape=oval, style="dashed,filled", fillcolor=white, label="function\n[ v(Real<any>) ]"]
+   n_0x7ff091c3f1d0 [shape=oval, style="dashed,filled", fillcolor=white, label="function\n[ sub(Real<any>) ]"]
+   n_t_10 [shape=oval, style="dashed,filled", fillcolor=white, label="t[10]\n[ tmrca(TimeTree<any>) ]"]
+   n_max_10 [shape=oval, style="dashed,filled", fillcolor=white, label="max[10]\n[ add(RealPos<any>) ]"]
+   n_0x7ff091c3fa60 [shape=box, style=filled, fillcolor=white, label="1.425"]
+   n_fossil_10 [shape=oval, style=filled, fillcolor=gray, label="fossil[10]"]
+   n_0x7ff091c40540 [shape=box, style=filled, fillcolor=white, label="1.425"]
+   n_0x7ff091c40640 [shape=box, style=filled, fillcolor=white, label="0"]
+   n_min_11 [shape=oval, style="dashed,filled", fillcolor=white, label="min[11]\n[ max(Real[]<any>) ]"]
+   n_0x7ff091c40960 [shape=oval, style="dashed,filled", fillcolor=white, label="function\n[ v(Real<any>) ]"]
+   n_0x7ff091c40c10 [shape=oval, style="dashed,filled", fillcolor=white, label="function\n[ sub(Real<any>) ]"]
+   n_t_11 [shape=oval, style="dashed,filled", fillcolor=white, label="t[11]\n[ tmrca(TimeTree<any>) ]"]
+   n_max_11 [shape=oval, style="dashed,filled", fillcolor=white, label="max[11]\n[ add(RealPos<any>) ]"]
+   n_0x7ff091c414a0 [shape=box, style=filled, fillcolor=white, label="0.3"]
+   n_fossil_11 [shape=oval, style=filled, fillcolor=gray, label="fossil[11]"]
+   n_0x7ff091c41f80 [shape=box, style=filled, fillcolor=white, label="0.3"]
+   n_0x7ff091c42080 [shape=box, style=filled, fillcolor=white, label="0"]
+   n_min_12 [shape=oval, style="dashed,filled", fillcolor=white, label="min[12]\n[ max(Real[]<any>) ]"]
+   n_0x7ff091c423a0 [shape=oval, style="dashed,filled", fillcolor=white, label="function\n[ v(Real<any>) ]"]
+   n_0x7ff091c42650 [shape=oval, style="dashed,filled", fillcolor=white, label="function\n[ sub(Real<any>) ]"]
+   n_t_12 [shape=oval, style="dashed,filled", fillcolor=white, label="t[12]\n[ tmrca(TimeTree<any>) ]"]
+   n_max_12 [shape=oval, style="dashed,filled", fillcolor=white, label="max[12]\n[ add(RealPos<any>) ]"]
+   n_0x7ff091c42ee0 [shape=box, style=filled, fillcolor=white, label="1.75"]
+   n_fossil_12 [shape=oval, style=filled, fillcolor=gray, label="fossil[12]"]
+   n_0x7ff091c439c0 [shape=box, style=filled, fillcolor=white, label="1.75"]
+   n_0x7ff091c43ac0 [shape=box, style=filled, fillcolor=white, label="0"]
+   n_min_13 [shape=oval, style="dashed,filled", fillcolor=white, label="min[13]\n[ max(Real[]<any>) ]"]
+   n_0x7ff091c43de0 [shape=oval, style="dashed,filled", fillcolor=white, label="function\n[ v(Real<any>) ]"]
+   n_0x7ff091c44090 [shape=oval, style="dashed,filled", fillcolor=white, label="function\n[ sub(Real<any>) ]"]
+   n_t_13 [shape=oval, style="dashed,filled", fillcolor=white, label="t[13]\n[ tmrca(TimeTree<any>) ]"]
+   n_max_13 [shape=oval, style="dashed,filled", fillcolor=white, label="max[13]\n[ add(RealPos<any>) ]"]
+   n_0x7ff091c44920 [shape=box, style=filled, fillcolor=white, label="0.1115"]
+   n_fossil_13 [shape=oval, style=filled, fillcolor=gray, label="fossil[13]"]
+   n_0x7ff091c45400 [shape=box, style=filled, fillcolor=white, label="0.1115"]
+   n_0x7ff091c45500 [shape=box, style=filled, fillcolor=white, label="0"]
+   n_min_14 [shape=oval, style="dashed,filled", fillcolor=white, label="min[14]\n[ max(Real[]<any>) ]"]
+   n_0x7ff091c45820 [shape=oval, style="dashed,filled", fillcolor=white, label="function\n[ v(Real<any>) ]"]
+   n_0x7ff091c45ad0 [shape=oval, style="dashed,filled", fillcolor=white, label="function\n[ sub(Real<any>) ]"]
+   n_t_14 [shape=oval, style="dashed,filled", fillcolor=white, label="t[14]\n[ tmrca(TimeTree<any>) ]"]
+   n_max_14 [shape=oval, style="dashed,filled", fillcolor=white, label="max[14]\n[ add(RealPos<any>) ]"]
+   n_0x7ff091c46360 [shape=box, style=filled, fillcolor=white, label="1.288"]
+   n_fossil_14 [shape=oval, style=filled, fillcolor=gray, label="fossil[14]"]
+   n_0x7ff091c46e40 [shape=box, style=filled, fillcolor=white, label="1.288"]
+   n_0x7ff091c46f40 [shape=box, style=filled, fillcolor=white, label="0"]
+   n_0x7ff091c47100 [shape=box, style=filled, fillcolor=white, label="4.55"]
+   n_0x7ff091c47200 [shape=box, style=filled, fillcolor=white, label="0"]
+   n_0x7ff091c47300 [shape=box, style=filled, fillcolor=white, label="1.4"]
+   n_phyMorpho [shape=oval, style=filled, fillcolor=gray, label="phyMorpho"]
+   n_phyMorpho_pInv [shape=record, style=filled, fillcolor=white, label="{phyMorpho.pInv|0}"]
+   n_clock_morpho [shape=oval, style=filled, fillcolor=white, label="clock_morpho"]
+   n_0x7ff091c5e370 [shape=box, style=filled, fillcolor=white, label="1"]
+   n_Q_morpho [shape=oval, style="dashed,filled", fillcolor=white, label="Q_morpho\n[ v(RateGenerator<any>) ]"]
+   n_Q_morpho_1 [shape=oval, style="dashed,filled", fillcolor=white, label="Q_morpho[1]\n[ fnFreeBinary(Real[]<any>) ]"]
+   n_0x7ff091c5f410 [shape=oval, style="dashed,filled", fillcolor=white, label="function\n[ v(Real<any>) ]"]
+   n_0x7ff091c5f680 [shape=oval, style="dashed,filled", fillcolor=white, label="function\n[ sub(Real<any>) ]"]
+   n_0x7ff091c5f8e0 [shape=box, style=filled, fillcolor=white, label="1"]
+   n_cats_1 [shape=oval, style="dashed,filled", fillcolor=white, label="cats[1]\n[ [](Probability[]<any>) ]"]
+   n_cats [shape=oval, style="dashed,filled", fillcolor=white, label="cats\n[ fnDiscretizeBeta(RealPos<any>) ]"]
+   n_beta1 [shape=oval, style=filled, fillcolor=white, label="beta1"]
+   n_0x7ff091c609b0 [shape=box, style=filled, fillcolor=white, label="1"]
+   n_beta2 [shape=oval, style=filled, fillcolor=white, label="beta2"]
+   n_0x7ff091c61450 [shape=box, style=filled, fillcolor=white, label="1"]
+   n_numCats [shape=record, style=filled, fillcolor=white, label="{numCats|5}"]
+   n_cats_1 [shape=oval, style="dashed,filled", fillcolor=white, label="cats[1]\n[ [](Probability[]<any>) ]"]
+   n_0x7ff091c61980 [shape=box, style=filled, fillcolor=white, label="1"]
+   n_cats_2 [shape=oval, style="dashed,filled", fillcolor=white, label="cats[2]\n[ [](Probability[]<any>) ]"]
+   n_0x7ff091c61d30 [shape=box, style=filled, fillcolor=white, label="2"]
+   n_0x7ff091c61e50 [shape=oval, style="dashed,filled", fillcolor=white, label="function\n[ sub(Real<any>) ]"]
+   n_0x7ff091c620b0 [shape=box, style=filled, fillcolor=white, label="1"]
+   n_0x7ff091c621f0 [shape=oval, style="dashed,filled", fillcolor=white, label="function\n[ v(Real<any>) ]"]
+   n_cats_2 [shape=oval, style="dashed,filled", fillcolor=white, label="cats[2]\n[ [](Probability[]<any>) ]"]
+   n_0x7ff091c62720 [shape=box, style=filled, fillcolor=white, label="2"]
+   n_Q_morpho_2 [shape=oval, style="dashed,filled", fillcolor=white, label="Q_morpho[2]\n[ fnFreeBinary(Real[]<any>) ]"]
+   n_cats_3 [shape=oval, style="dashed,filled", fillcolor=white, label="cats[3]\n[ [](Probability[]<any>) ]"]
+   n_0x7ff091c62e90 [shape=box, style=filled, fillcolor=white, label="3"]
+   n_0x7ff091c62f90 [shape=oval, style="dashed,filled", fillcolor=white, label="function\n[ sub(Real<any>) ]"]
+   n_0x7ff091c631e0 [shape=box, style=filled, fillcolor=white, label="1"]
+   n_0x7ff091c63320 [shape=oval, style="dashed,filled", fillcolor=white, label="function\n[ v(Real<any>) ]"]
+   n_cats_3 [shape=oval, style="dashed,filled", fillcolor=white, label="cats[3]\n[ [](Probability[]<any>) ]"]
+   n_0x7ff091c63870 [shape=box, style=filled, fillcolor=white, label="3"]
+   n_Q_morpho_3 [shape=oval, style="dashed,filled", fillcolor=white, label="Q_morpho[3]\n[ fnFreeBinary(Real[]<any>) ]"]
+   n_cats_4 [shape=oval, style="dashed,filled", fillcolor=white, label="cats[4]\n[ [](Probability[]<any>) ]"]
+   n_0x7ff091c63fd0 [shape=box, style=filled, fillcolor=white, label="4"]
+   n_0x7ff091c640d0 [shape=oval, style="dashed,filled", fillcolor=white, label="function\n[ sub(Real<any>) ]"]
+   n_0x7ff091c64320 [shape=box, style=filled, fillcolor=white, label="1"]
+   n_0x7ff091c64460 [shape=oval, style="dashed,filled", fillcolor=white, label="function\n[ v(Real<any>) ]"]
+   n_cats_4 [shape=oval, style="dashed,filled", fillcolor=white, label="cats[4]\n[ [](Probability[]<any>) ]"]
+   n_0x7ff091c64970 [shape=box, style=filled, fillcolor=white, label="4"]
+   n_Q_morpho_4 [shape=oval, style="dashed,filled", fillcolor=white, label="Q_morpho[4]\n[ fnFreeBinary(Real[]<any>) ]"]
+   n_cats_5 [shape=oval, style="dashed,filled", fillcolor=white, label="cats[5]\n[ [](Probability[]<any>) ]"]
+   n_0x7ff091c650f0 [shape=box, style=filled, fillcolor=white, label="5"]
+   n_0x7ff091c651f0 [shape=oval, style="dashed,filled", fillcolor=white, label="function\n[ sub(Real<any>) ]"]
+   n_0x7ff091c65440 [shape=box, style=filled, fillcolor=white, label="1"]
+   n_0x7ff091c65580 [shape=oval, style="dashed,filled", fillcolor=white, label="function\n[ v(Real<any>) ]"]
+   n_cats_5 [shape=oval, style="dashed,filled", fillcolor=white, label="cats[5]\n[ [](Probability[]<any>) ]"]
+   n_0x7ff091c65b10 [shape=box, style=filled, fillcolor=white, label="5"]
+   n_Q_morpho_5 [shape=oval, style="dashed,filled", fillcolor=white, label="Q_morpho[5]\n[ fnFreeBinary(Real[]<any>) ]"]
+   n_0x7ff091c66040 [shape=box, style=filled, fillcolor=white, label="1"]
+   n_rates_morpho [shape=oval, style="dashed,filled", fillcolor=white, label="rates_morpho\n[ fnDiscretizeGamma(RealPos<any>) ]"]
+   n_alpha_morpho [shape=oval, style=filled, fillcolor=white, label="alpha_morpho"]
+   n_0x7ff091c66d30 [shape=box, style=filled, fillcolor=white, label="1"]
+   n_numCats [shape=record, style=filled, fillcolor=white, label="{numCats|4}"]
+   n_phySeq_pInv [shape=record, style=filled, fillcolor=white, label="{phySeq.pInv|0}"]
+   n_branch_rates [shape=oval, style="dashed,filled", fillcolor=white, label="branch_rates\n[ v(RealPos<any>) ]"]
+   n_branch_rates_1 [shape=oval, style=filled, fillcolor=white, label="branch_rates[1]"]
+   n_ucln_mu [shape=oval, style="dashed,filled", fillcolor=white, label="ucln_mu\n[ sub(Real<any>) ]"]
+   n_0x7ff091c686d0 [shape=oval, style="dashed,filled", fillcolor=white, label="function\n[ ln(RealPos<any>) ]"]
+   n_ucln_mean [shape=oval, style=filled, fillcolor=white, label="ucln_mean"]
+   n_0x7ff091c69270 [shape=box, style=filled, fillcolor=white, label="10"]
+   n_0x7ff091c693a0 [shape=oval, style="dashed,filled", fillcolor=white, label="function\n[ mul(RealPos<any>) ]"]
+   n_ucln_var [shape=oval, style="dashed,filled", fillcolor=white, label="ucln_var\n[ mul(RealPos<any>) ]"]
+   n_ucln_sigma [shape=oval, style=filled, fillcolor=white, label="ucln_sigma"]
+   n_0x7ff091c6a1f0 [shape=box, style=filled, fillcolor=white, label="3"]
+   n_branch_rates_2 [shape=oval, style=filled, fillcolor=white, label="branch_rates[2]"]
+   n_branch_rates_3 [shape=oval, style=filled, fillcolor=white, label="branch_rates[3]"]
+   n_branch_rates_4 [shape=oval, style=filled, fillcolor=white, label="branch_rates[4]"]
+   n_branch_rates_5 [shape=oval, style=filled, fillcolor=white, label="branch_rates[5]"]
+   n_branch_rates_6 [shape=oval, style=filled, fillcolor=white, label="branch_rates[6]"]
+   n_branch_rates_7 [shape=oval, style=filled, fillcolor=white, label="branch_rates[7]"]
+   n_branch_rates_8 [shape=oval, style=filled, fillcolor=white, label="branch_rates[8]"]
+   n_branch_rates_9 [shape=oval, style=filled, fillcolor=white, label="branch_rates[9]"]
+   n_branch_rates_10 [shape=oval, style=filled, fillcolor=white, label="branch_rates[10]"]
+   n_branch_rates_11 [shape=oval, style=filled, fillcolor=white, label="branch_rates[11]"]
+   n_branch_rates_12 [shape=oval, style=filled, fillcolor=white, label="branch_rates[12]"]
+   n_branch_rates_13 [shape=oval, style=filled, fillcolor=white, label="branch_rates[13]"]
+   n_branch_rates_14 [shape=oval, style=filled, fillcolor=white, label="branch_rates[14]"]
+   n_branch_rates_15 [shape=oval, style=filled, fillcolor=white, label="branch_rates[15]"]
+   n_branch_rates_16 [shape=oval, style=filled, fillcolor=white, label="branch_rates[16]"]
+   n_branch_rates_17 [shape=oval, style=filled, fillcolor=white, label="branch_rates[17]"]
+   n_branch_rates_18 [shape=oval, style=filled, fillcolor=white, label="branch_rates[18]"]
+   n_branch_rates_19 [shape=oval, style=filled, fillcolor=white, label="branch_rates[19]"]
+   n_branch_rates_20 [shape=oval, style=filled, fillcolor=white, label="branch_rates[20]"]
+   n_branch_rates_21 [shape=oval, style=filled, fillcolor=white, label="branch_rates[21]"]
+   n_branch_rates_22 [shape=oval, style=filled, fillcolor=white, label="branch_rates[22]"]
+   n_branch_rates_23 [shape=oval, style=filled, fillcolor=white, label="branch_rates[23]"]
+   n_branch_rates_24 [shape=oval, style=filled, fillcolor=white, label="branch_rates[24]"]
+   n_branch_rates_25 [shape=oval, style=filled, fillcolor=white, label="branch_rates[25]"]
+   n_branch_rates_26 [shape=oval, style=filled, fillcolor=white, label="branch_rates[26]"]
+   n_branch_rates_27 [shape=oval, style=filled, fillcolor=white, label="branch_rates[27]"]
+   n_branch_rates_28 [shape=oval, style=filled, fillcolor=white, label="branch_rates[28]"]
+   n_branch_rates_29 [shape=oval, style=filled, fillcolor=white, label="branch_rates[29]"]
+   n_branch_rates_30 [shape=oval, style=filled, fillcolor=white, label="branch_rates[30]"]
+   n_branch_rates_31 [shape=oval, style=filled, fillcolor=white, label="branch_rates[31]"]
+   n_branch_rates_32 [shape=oval, style=filled, fillcolor=white, label="branch_rates[32]"]
+   n_branch_rates_33 [shape=oval, style=filled, fillcolor=white, label="branch_rates[33]"]
+   n_branch_rates_34 [shape=oval, style=filled, fillcolor=white, label="branch_rates[34]"]
+   n_branch_rates_35 [shape=oval, style=filled, fillcolor=white, label="branch_rates[35]"]
+   n_branch_rates_36 [shape=oval, style=filled, fillcolor=white, label="branch_rates[36]"]
+   n_branch_rates_37 [shape=oval, style=filled, fillcolor=white, label="branch_rates[37]"]
+   n_branch_rates_38 [shape=oval, style=filled, fillcolor=white, label="branch_rates[38]"]
+   n_branch_rates_39 [shape=oval, style=filled, fillcolor=white, label="branch_rates[39]"]
+   n_branch_rates_40 [shape=oval, style=filled, fillcolor=white, label="branch_rates[40]"]
+   n_branch_rates_41 [shape=oval, style=filled, fillcolor=white, label="branch_rates[41]"]
+   n_branch_rates_42 [shape=oval, style=filled, fillcolor=white, label="branch_rates[42]"]
+   n_0x7ff091c6a310 [shape=box, style=filled, fillcolor=white, label="0.5"]
+   n_mean_rt [shape=oval, style="dashed,filled", fillcolor=white, label="mean_rt\n[ mean(Real[]<any>) ]"]
+   n_rates_cytb [shape=oval, style="dashed,filled", fillcolor=white, label="rates_cytb\n[ fnDiscretizeGamma(RealPos<any>) ]"]
+   n_alpha_cytb [shape=oval, style=filled, fillcolor=white, label="alpha_cytb"]
+   n_0x7ff091c83fc0 [shape=box, style=filled, fillcolor=white, label="1"]
+   n_numCats [shape=record, style=filled, fillcolor=white, label="{numCats|4}"]
+   n_sf -> n_Q_cytb[style=dashed]
+   n_sf_hp -> n_sf
+   n_Q_cytb -> n_phySeq
+   n_er -> n_Q_cytb[style=dashed]
+   n_er_hp -> n_er
+   n_fbd_tree -> n_sa[style=dashed]
+   n_fbd_tree -> n_crown[style=dashed]
+   n_fbd_tree -> n_t_1[style=dashed]
+   n_fbd_tree -> n_t_2[style=dashed]
+   n_fbd_tree -> n_t_3[style=dashed]
+   n_fbd_tree -> n_t_4[style=dashed]
+   n_fbd_tree -> n_t_5[style=dashed]
+   n_fbd_tree -> n_t_6[style=dashed]
+   n_fbd_tree -> n_t_7[style=dashed]
+   n_fbd_tree -> n_t_8[style=dashed]
+   n_fbd_tree -> n_t_9[style=dashed]
+   n_fbd_tree -> n_t_10[style=dashed]
+   n_fbd_tree -> n_t_11[style=dashed]
+   n_fbd_tree -> n_t_12[style=dashed]
+   n_fbd_tree -> n_t_13[style=dashed]
+   n_fbd_tree -> n_t_14[style=dashed]
+   n_fbd_tree -> n_phyMorpho
+   n_fbd_tree -> n_phySeq
+   n_origin_time -> n_fbd_tree
+   n_0x7ff091c25d70 -> n_origin_time
+   n_0x7ff091c25f90 -> n_origin_time
+   n_birth_rate -> n_diversification[style=dashed]
+   n_birth_rate -> n_turnover[style=dashed]
+   n_birth_rate -> n_fbd_tree
+   n_0x7ff091c26990 -> n_birth_rate
+   n_death_rate -> n_turnover[style=dashed]
+   n_death_rate -> n_diversification[style=dashed]
+   n_death_rate -> n_fbd_tree
+   n_0x7ff091c276e0 -> n_death_rate
+   n_psi -> n_fbd_tree
+   n_0x7ff091c2c2c0 -> n_psi
+   n_rho -> n_fbd_tree
+   n_t_1 -> n_0x7ff091c2e800[style=dashed]
+   n_t_1 -> n_max_1[style=dashed]
+   n_t_1 -> n_t[style=dashed]
+   n_0x7ff091c2e800 -> n_0x7ff091c2eb80[style=dashed]
+   n_0x7ff091c2ea50 -> n_0x7ff091c2e800[style=dashed]
+   n_0x7ff091c2eb80 -> n_min_1[style=dashed]
+   n_0x7ff091c2ee40 -> n_0x7ff091c2eb80[style=dashed]
+   n_min_1 -> n_fossil_1
+   n_min_1 -> n_min[style=dashed]
+   n_fossil_1 -> n_fossil[style=dashed]
+   n_max_1 -> n_max[style=dashed]
+   n_max_1 -> n_fossil_1
+   n_0x7ff091c2fe60 -> n_max_1[style=dashed]
+   n_max_2 -> n_fossil_2
+   n_max_2 -> n_max[style=dashed]
+   n_t_2 -> n_0x7ff091c2c0f0[style=dashed]
+   n_t_2 -> n_t[style=dashed]
+   n_t_2 -> n_max_2[style=dashed]
+   n_0x7ff091c2c0f0 -> n_0x7ff091c31330[style=dashed]
+   n_0x7ff091c31220 -> n_0x7ff091c2c0f0[style=dashed]
+   n_0x7ff091c31330 -> n_min_2[style=dashed]
+   n_0x7ff091c315f0 -> n_0x7ff091c31330[style=dashed]
+   n_min_2 -> n_fossil_2
+   n_min_2 -> n_min[style=dashed]
+   n_fossil_2 -> n_fossil[style=dashed]
+   n_fossil_3 -> n_fossil[style=dashed]
+   n_min_3 -> n_min[style=dashed]
+   n_min_3 -> n_fossil_3
+   n_0x7ff091c33710 -> n_min_3[style=dashed]
+   n_0x7ff091c339c0 -> n_0x7ff091c33710[style=dashed]
+   n_t_3 -> n_max_3[style=dashed]
+   n_t_3 -> n_t[style=dashed]
+   n_t_3 -> n_0x7ff091c339c0[style=dashed]
+   n_max_3 -> n_fossil_3
+   n_max_3 -> n_max[style=dashed]
+   n_0x7ff091c34270 -> n_max_3[style=dashed]
+   n_t_4 -> n_0x7ff091c34e00[style=dashed]
+   n_t_4 -> n_max_4[style=dashed]
+   n_t_4 -> n_t[style=dashed]
+   n_0x7ff091c34e00 -> n_0x7ff091c35180[style=dashed]
+   n_0x7ff091c35050 -> n_0x7ff091c34e00[style=dashed]
+   n_0x7ff091c35180 -> n_min_4[style=dashed]
+   n_0x7ff091c35440 -> n_0x7ff091c35180[style=dashed]
+   n_min_4 -> n_fossil_4
+   n_min_4 -> n_min[style=dashed]
+   n_fossil_4 -> n_fossil[style=dashed]
+   n_max_4 -> n_fossil_4
+   n_max_4 -> n_max[style=dashed]
+   n_0x7ff091c36440 -> n_max_4[style=dashed]
+   n_min_5 -> n_fossil_5
+   n_min_5 -> n_min[style=dashed]
+   n_0x7ff091c36f60 -> n_min_5[style=dashed]
+   n_0x7ff091c37210 -> n_0x7ff091c36f60[style=dashed]
+   n_t_5 -> n_max_5[style=dashed]
+   n_t_5 -> n_0x7ff091c37210[style=dashed]
+   n_t_5 -> n_t[style=dashed]
+   n_max_5 -> n_fossil_5
+   n_max_5 -> n_max[style=dashed]
+   n_0x7ff091c37aa0 -> n_max_5[style=dashed]
+   n_fossil_5 -> n_fossil[style=dashed]
+   n_0x7ff091c30da0 -> n_0x7ff091c37210[style=dashed]
+   n_0x7ff091c30ea0 -> n_0x7ff091c36f60[style=dashed]
+   n_min_6 -> n_fossil_6
+   n_min_6 -> n_min[style=dashed]
+   n_0x7ff091c385a0 -> n_min_6[style=dashed]
+   n_0x7ff091c38850 -> n_0x7ff091c385a0[style=dashed]
+   n_t_6 -> n_max_6[style=dashed]
+   n_t_6 -> n_0x7ff091c38850[style=dashed]
+   n_t_6 -> n_t[style=dashed]
+   n_max_6 -> n_fossil_6
+   n_max_6 -> n_max[style=dashed]
+   n_0x7ff091c390e0 -> n_max_6[style=dashed]
+   n_fossil_6 -> n_fossil[style=dashed]
+   n_0x7ff091c39bc0 -> n_0x7ff091c38850[style=dashed]
+   n_0x7ff091c39cc0 -> n_0x7ff091c385a0[style=dashed]
+   n_min_7 -> n_fossil_7
+   n_min_7 -> n_min[style=dashed]
+   n_0x7ff091c39fe0 -> n_min_7[style=dashed]
+   n_0x7ff091c3a290 -> n_0x7ff091c39fe0[style=dashed]
+   n_t_7 -> n_max_7[style=dashed]
+   n_t_7 -> n_0x7ff091c3a290[style=dashed]
+   n_t_7 -> n_t[style=dashed]
+   n_max_7 -> n_fossil_7
+   n_max_7 -> n_max[style=dashed]
+   n_0x7ff091c3ab60 -> n_max_7[style=dashed]
+   n_fossil_7 -> n_fossil[style=dashed]
+   n_0x7ff091c3b640 -> n_0x7ff091c3a290[style=dashed]
+   n_0x7ff091c3b740 -> n_0x7ff091c39fe0[style=dashed]
+   n_min_8 -> n_fossil_8
+   n_min_8 -> n_min[style=dashed]
+   n_0x7ff091c3ba60 -> n_min_8[style=dashed]
+   n_0x7ff091c3bd10 -> n_0x7ff091c3ba60[style=dashed]
+   n_t_8 -> n_max_8[style=dashed]
+   n_t_8 -> n_0x7ff091c3bd10[style=dashed]
+   n_t_8 -> n_t[style=dashed]
+   n_max_8 -> n_fossil_8
+   n_max_8 -> n_max[style=dashed]
+   n_0x7ff091c3c5a0 -> n_max_8[style=dashed]
+   n_fossil_8 -> n_fossil[style=dashed]
+   n_0x7ff091c3d080 -> n_0x7ff091c3bd10[style=dashed]
+   n_0x7ff091c3d180 -> n_0x7ff091c3ba60[style=dashed]
+   n_min_9 -> n_fossil_9
+   n_min_9 -> n_min[style=dashed]
+   n_0x7ff091c3d4a0 -> n_min_9[style=dashed]
+   n_0x7ff091c3d750 -> n_0x7ff091c3d4a0[style=dashed]
+   n_t_9 -> n_max_9[style=dashed]
+   n_t_9 -> n_0x7ff091c3d750[style=dashed]
+   n_t_9 -> n_t[style=dashed]
+   n_max_9 -> n_fossil_9
+   n_max_9 -> n_max[style=dashed]
+   n_0x7ff091c3e020 -> n_max_9[style=dashed]
+   n_fossil_9 -> n_fossil[style=dashed]
+   n_0x7ff091c3eb00 -> n_0x7ff091c3d750[style=dashed]
+   n_0x7ff091c3ec00 -> n_0x7ff091c3d4a0[style=dashed]
+   n_min_10 -> n_fossil_10
+   n_min_10 -> n_min[style=dashed]
+   n_0x7ff091c3ef20 -> n_min_10[style=dashed]
+   n_0x7ff091c3f1d0 -> n_0x7ff091c3ef20[style=dashed]
+   n_t_10 -> n_max_10[style=dashed]
+   n_t_10 -> n_0x7ff091c3f1d0[style=dashed]
+   n_t_10 -> n_t[style=dashed]
+   n_max_10 -> n_fossil_10
+   n_max_10 -> n_max[style=dashed]
+   n_0x7ff091c3fa60 -> n_max_10[style=dashed]
+   n_fossil_10 -> n_fossil[style=dashed]
+   n_0x7ff091c40540 -> n_0x7ff091c3f1d0[style=dashed]
+   n_0x7ff091c40640 -> n_0x7ff091c3ef20[style=dashed]
+   n_min_11 -> n_fossil_11
+   n_min_11 -> n_min[style=dashed]
+   n_0x7ff091c40960 -> n_min_11[style=dashed]
+   n_0x7ff091c40c10 -> n_0x7ff091c40960[style=dashed]
+   n_t_11 -> n_max_11[style=dashed]
+   n_t_11 -> n_0x7ff091c40c10[style=dashed]
+   n_t_11 -> n_t[style=dashed]
+   n_max_11 -> n_fossil_11
+   n_max_11 -> n_max[style=dashed]
+   n_0x7ff091c414a0 -> n_max_11[style=dashed]
+   n_fossil_11 -> n_fossil[style=dashed]
+   n_0x7ff091c41f80 -> n_0x7ff091c40c10[style=dashed]
+   n_0x7ff091c42080 -> n_0x7ff091c40960[style=dashed]
+   n_min_12 -> n_fossil_12
+   n_min_12 -> n_min[style=dashed]
+   n_0x7ff091c423a0 -> n_min_12[style=dashed]
+   n_0x7ff091c42650 -> n_0x7ff091c423a0[style=dashed]
+   n_t_12 -> n_max_12[style=dashed]
+   n_t_12 -> n_0x7ff091c42650[style=dashed]
+   n_t_12 -> n_t[style=dashed]
+   n_max_12 -> n_fossil_12
+   n_max_12 -> n_max[style=dashed]
+   n_0x7ff091c42ee0 -> n_max_12[style=dashed]
+   n_fossil_12 -> n_fossil[style=dashed]
+   n_0x7ff091c439c0 -> n_0x7ff091c42650[style=dashed]
+   n_0x7ff091c43ac0 -> n_0x7ff091c423a0[style=dashed]
+   n_min_13 -> n_fossil_13
+   n_min_13 -> n_min[style=dashed]
+   n_0x7ff091c43de0 -> n_min_13[style=dashed]
+   n_0x7ff091c44090 -> n_0x7ff091c43de0[style=dashed]
+   n_t_13 -> n_max_13[style=dashed]
+   n_t_13 -> n_0x7ff091c44090[style=dashed]
+   n_t_13 -> n_t[style=dashed]
+   n_max_13 -> n_fossil_13
+   n_max_13 -> n_max[style=dashed]
+   n_0x7ff091c44920 -> n_max_13[style=dashed]
+   n_fossil_13 -> n_fossil[style=dashed]
+   n_0x7ff091c45400 -> n_0x7ff091c44090[style=dashed]
+   n_0x7ff091c45500 -> n_0x7ff091c43de0[style=dashed]
+   n_min_14 -> n_fossil_14
+   n_min_14 -> n_min[style=dashed]
+   n_0x7ff091c45820 -> n_min_14[style=dashed]
+   n_0x7ff091c45ad0 -> n_0x7ff091c45820[style=dashed]
+   n_t_14 -> n_max_14[style=dashed]
+   n_t_14 -> n_0x7ff091c45ad0[style=dashed]
+   n_t_14 -> n_t[style=dashed]
+   n_max_14 -> n_fossil_14
+   n_max_14 -> n_max[style=dashed]
+   n_0x7ff091c46360 -> n_max_14[style=dashed]
+   n_fossil_14 -> n_fossil[style=dashed]
+   n_0x7ff091c46e40 -> n_0x7ff091c45ad0[style=dashed]
+   n_0x7ff091c46f40 -> n_0x7ff091c45820[style=dashed]
+   n_0x7ff091c47100 -> n_0x7ff091c339c0[style=dashed]
+   n_0x7ff091c47200 -> n_0x7ff091c33710[style=dashed]
+   n_0x7ff091c47300 -> n_max_2[style=dashed]
+   n_phyMorpho_pInv -> n_phyMorpho
+   n_clock_morpho -> n_phyMorpho
+   n_0x7ff091c5e370 -> n_clock_morpho
+   n_Q_morpho -> n_phyMorpho
+   n_Q_morpho_1 -> n_Q_morpho[style=dashed]
+   n_0x7ff091c5f410 -> n_Q_morpho_1[style=dashed]
+   n_0x7ff091c5f680 -> n_0x7ff091c5f410[style=dashed]
+   n_0x7ff091c5f8e0 -> n_0x7ff091c5f680[style=dashed]
+   n_cats_1 -> n_0x7ff091c5f680[style=dashed]
+   n_cats -> n_cats_1[style=dashed]
+   n_cats -> n_cats_2[style=dashed]
+   n_cats -> n_cats_2[style=dashed]
+   n_cats -> n_cats_3[style=dashed]
+   n_cats -> n_cats_3[style=dashed]
+   n_cats -> n_cats_4[style=dashed]
+   n_cats -> n_cats_4[style=dashed]
+   n_cats -> n_cats_5[style=dashed]
+   n_cats -> n_cats_5[style=dashed]
+   n_cats -> n_cats_1[style=dashed]
+   n_beta1 -> n_cats[style=dashed]
+   n_0x7ff091c609b0 -> n_beta1
+   n_beta2 -> n_cats[style=dashed]
+   n_0x7ff091c61450 -> n_beta2
+   n_numCats -> n_cats[style=dashed]
+   n_cats_1 -> n_0x7ff091c5f410[style=dashed]
+   n_0x7ff091c61980 -> n_cats_1[style=dashed]
+   n_cats_2 -> n_0x7ff091c61e50[style=dashed]
+   n_0x7ff091c61d30 -> n_cats_2[style=dashed]
+   n_0x7ff091c61e50 -> n_0x7ff091c621f0[style=dashed]
+   n_0x7ff091c620b0 -> n_0x7ff091c61e50[style=dashed]
+   n_0x7ff091c621f0 -> n_Q_morpho_2[style=dashed]
+   n_cats_2 -> n_0x7ff091c621f0[style=dashed]
+   n_0x7ff091c62720 -> n_cats_2[style=dashed]
+   n_Q_morpho_2 -> n_Q_morpho[style=dashed]
+   n_cats_3 -> n_0x7ff091c62f90[style=dashed]
+   n_0x7ff091c62e90 -> n_cats_3[style=dashed]
+   n_0x7ff091c62f90 -> n_0x7ff091c63320[style=dashed]
+   n_0x7ff091c631e0 -> n_0x7ff091c62f90[style=dashed]
+   n_0x7ff091c63320 -> n_Q_morpho_3[style=dashed]
+   n_cats_3 -> n_0x7ff091c63320[style=dashed]
+   n_0x7ff091c63870 -> n_cats_3[style=dashed]
+   n_Q_morpho_3 -> n_Q_morpho[style=dashed]
+   n_cats_4 -> n_0x7ff091c640d0[style=dashed]
+   n_0x7ff091c63fd0 -> n_cats_4[style=dashed]
+   n_0x7ff091c640d0 -> n_0x7ff091c64460[style=dashed]
+   n_0x7ff091c64320 -> n_0x7ff091c640d0[style=dashed]
+   n_0x7ff091c64460 -> n_Q_morpho_4[style=dashed]
+   n_cats_4 -> n_0x7ff091c64460[style=dashed]
+   n_0x7ff091c64970 -> n_cats_4[style=dashed]
+   n_Q_morpho_4 -> n_Q_morpho[style=dashed]
+   n_cats_5 -> n_0x7ff091c651f0[style=dashed]
+   n_0x7ff091c650f0 -> n_cats_5[style=dashed]
+   n_0x7ff091c651f0 -> n_0x7ff091c65580[style=dashed]
+   n_0x7ff091c65440 -> n_0x7ff091c651f0[style=dashed]
+   n_0x7ff091c65580 -> n_Q_morpho_5[style=dashed]
+   n_cats_5 -> n_0x7ff091c65580[style=dashed]
+   n_0x7ff091c65b10 -> n_cats_5[style=dashed]
+   n_Q_morpho_5 -> n_Q_morpho[style=dashed]
+   n_0x7ff091c66040 -> n_cats_1[style=dashed]
+   n_rates_morpho -> n_phyMorpho
+   n_alpha_morpho -> n_rates_morpho[style=dashed]
+   n_0x7ff091c66d30 -> n_alpha_morpho
+   n_numCats -> n_rates_morpho[style=dashed]
+   n_phySeq_pInv -> n_phySeq
+   n_branch_rates -> n_mean_rt[style=dashed]
+   n_branch_rates -> n_phySeq
+   n_branch_rates_1 -> n_branch_rates[style=dashed]
+   n_ucln_mu -> n_branch_rates_2
+   n_ucln_mu -> n_branch_rates_3
+   n_ucln_mu -> n_branch_rates_4
+   n_ucln_mu -> n_branch_rates_5
+   n_ucln_mu -> n_branch_rates_6
+   n_ucln_mu -> n_branch_rates_7
+   n_ucln_mu -> n_branch_rates_8
+   n_ucln_mu -> n_branch_rates_9
+   n_ucln_mu -> n_branch_rates_10
+   n_ucln_mu -> n_branch_rates_11
+   n_ucln_mu -> n_branch_rates_12
+   n_ucln_mu -> n_branch_rates_13
+   n_ucln_mu -> n_branch_rates_14
+   n_ucln_mu -> n_branch_rates_15
+   n_ucln_mu -> n_branch_rates_16
+   n_ucln_mu -> n_branch_rates_17
+   n_ucln_mu -> n_branch_rates_18
+   n_ucln_mu -> n_branch_rates_19
+   n_ucln_mu -> n_branch_rates_20
+   n_ucln_mu -> n_branch_rates_21
+   n_ucln_mu -> n_branch_rates_22
+   n_ucln_mu -> n_branch_rates_23
+   n_ucln_mu -> n_branch_rates_24
+   n_ucln_mu -> n_branch_rates_25
+   n_ucln_mu -> n_branch_rates_26
+   n_ucln_mu -> n_branch_rates_27
+   n_ucln_mu -> n_branch_rates_28
+   n_ucln_mu -> n_branch_rates_29
+   n_ucln_mu -> n_branch_rates_30
+   n_ucln_mu -> n_branch_rates_31
+   n_ucln_mu -> n_branch_rates_32
+   n_ucln_mu -> n_branch_rates_33
+   n_ucln_mu -> n_branch_rates_34
+   n_ucln_mu -> n_branch_rates_35
+   n_ucln_mu -> n_branch_rates_36
+   n_ucln_mu -> n_branch_rates_37
+   n_ucln_mu -> n_branch_rates_38
+   n_ucln_mu -> n_branch_rates_39
+   n_ucln_mu -> n_branch_rates_40
+   n_ucln_mu -> n_branch_rates_41
+   n_ucln_mu -> n_branch_rates_42
+   n_ucln_mu -> n_branch_rates_1
+   n_0x7ff091c686d0 -> n_ucln_mu[style=dashed]
+   n_ucln_mean -> n_0x7ff091c686d0[style=dashed]
+   n_0x7ff091c69270 -> n_ucln_mean
+   n_0x7ff091c693a0 -> n_ucln_mu[style=dashed]
+   n_ucln_var -> n_0x7ff091c693a0[style=dashed]
+   n_ucln_sigma -> n_branch_rates_2
+   n_ucln_sigma -> n_branch_rates_3
+   n_ucln_sigma -> n_branch_rates_4
+   n_ucln_sigma -> n_branch_rates_5
+   n_ucln_sigma -> n_branch_rates_6
+   n_ucln_sigma -> n_branch_rates_7
+   n_ucln_sigma -> n_branch_rates_8
+   n_ucln_sigma -> n_branch_rates_9
+   n_ucln_sigma -> n_branch_rates_10
+   n_ucln_sigma -> n_branch_rates_11
+   n_ucln_sigma -> n_branch_rates_12
+   n_ucln_sigma -> n_branch_rates_13
+   n_ucln_sigma -> n_branch_rates_14
+   n_ucln_sigma -> n_branch_rates_15
+   n_ucln_sigma -> n_branch_rates_16
+   n_ucln_sigma -> n_branch_rates_17
+   n_ucln_sigma -> n_branch_rates_18
+   n_ucln_sigma -> n_branch_rates_19
+   n_ucln_sigma -> n_branch_rates_20
+   n_ucln_sigma -> n_branch_rates_21
+   n_ucln_sigma -> n_branch_rates_22
+   n_ucln_sigma -> n_branch_rates_23
+   n_ucln_sigma -> n_branch_rates_24
+   n_ucln_sigma -> n_branch_rates_25
+   n_ucln_sigma -> n_branch_rates_26
+   n_ucln_sigma -> n_branch_rates_27
+   n_ucln_sigma -> n_branch_rates_28
+   n_ucln_sigma -> n_branch_rates_29
+   n_ucln_sigma -> n_branch_rates_30
+   n_ucln_sigma -> n_branch_rates_31
+   n_ucln_sigma -> n_branch_rates_32
+   n_ucln_sigma -> n_branch_rates_33
+   n_ucln_sigma -> n_branch_rates_34
+   n_ucln_sigma -> n_branch_rates_35
+   n_ucln_sigma -> n_branch_rates_36
+   n_ucln_sigma -> n_branch_rates_37
+   n_ucln_sigma -> n_branch_rates_38
+   n_ucln_sigma -> n_branch_rates_39
+   n_ucln_sigma -> n_branch_rates_40
+   n_ucln_sigma -> n_branch_rates_41
+   n_ucln_sigma -> n_branch_rates_42
+   n_ucln_sigma -> n_ucln_var[style=dashed]
+   n_ucln_sigma -> n_branch_rates_1
+   n_0x7ff091c6a1f0 -> n_ucln_sigma
+   n_branch_rates_2 -> n_branch_rates[style=dashed]
+   n_branch_rates_3 -> n_branch_rates[style=dashed]
+   n_branch_rates_4 -> n_branch_rates[style=dashed]
+   n_branch_rates_5 -> n_branch_rates[style=dashed]
+   n_branch_rates_6 -> n_branch_rates[style=dashed]
+   n_branch_rates_7 -> n_branch_rates[style=dashed]
+   n_branch_rates_8 -> n_branch_rates[style=dashed]
+   n_branch_rates_9 -> n_branch_rates[style=dashed]
+   n_branch_rates_10 -> n_branch_rates[style=dashed]
+   n_branch_rates_11 -> n_branch_rates[style=dashed]
+   n_branch_rates_12 -> n_branch_rates[style=dashed]
+   n_branch_rates_13 -> n_branch_rates[style=dashed]
+   n_branch_rates_14 -> n_branch_rates[style=dashed]
+   n_branch_rates_15 -> n_branch_rates[style=dashed]
+   n_branch_rates_16 -> n_branch_rates[style=dashed]
+   n_branch_rates_17 -> n_branch_rates[style=dashed]
+   n_branch_rates_18 -> n_branch_rates[style=dashed]
+   n_branch_rates_19 -> n_branch_rates[style=dashed]
+   n_branch_rates_20 -> n_branch_rates[style=dashed]
+   n_branch_rates_21 -> n_branch_rates[style=dashed]
+   n_branch_rates_22 -> n_branch_rates[style=dashed]
+   n_branch_rates_23 -> n_branch_rates[style=dashed]
+   n_branch_rates_24 -> n_branch_rates[style=dashed]
+   n_branch_rates_25 -> n_branch_rates[style=dashed]
+   n_branch_rates_26 -> n_branch_rates[style=dashed]
+   n_branch_rates_27 -> n_branch_rates[style=dashed]
+   n_branch_rates_28 -> n_branch_rates[style=dashed]
+   n_branch_rates_29 -> n_branch_rates[style=dashed]
+   n_branch_rates_30 -> n_branch_rates[style=dashed]
+   n_branch_rates_31 -> n_branch_rates[style=dashed]
+   n_branch_rates_32 -> n_branch_rates[style=dashed]
+   n_branch_rates_33 -> n_branch_rates[style=dashed]
+   n_branch_rates_34 -> n_branch_rates[style=dashed]
+   n_branch_rates_35 -> n_branch_rates[style=dashed]
+   n_branch_rates_36 -> n_branch_rates[style=dashed]
+   n_branch_rates_37 -> n_branch_rates[style=dashed]
+   n_branch_rates_38 -> n_branch_rates[style=dashed]
+   n_branch_rates_39 -> n_branch_rates[style=dashed]
+   n_branch_rates_40 -> n_branch_rates[style=dashed]
+   n_branch_rates_41 -> n_branch_rates[style=dashed]
+   n_branch_rates_42 -> n_branch_rates[style=dashed]
+   n_0x7ff091c6a310 -> n_0x7ff091c693a0[style=dashed]
+   n_rates_cytb -> n_phySeq
+   n_alpha_cytb -> n_rates_cytb[style=dashed]
+   n_0x7ff091c83fc0 -> n_alpha_cytb
+   n_numCats -> n_rates_cytb[style=dashed]
+   {rank=same; n_phySeq; n_fossil_1; n_fossil_2; n_fossil_3; n_fossil_4; n_fossil_5; n_fossil_6; n_fossil_7; n_fossil_8; n_fossil_9; n_fossil_10; n_fossil_11; n_fossil_12; n_fossil_13; n_fossil_14; n_phyMorpho;}
+   graph [bgcolor=lavenderblush2, pad=0.25]
+}
