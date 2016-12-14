@@ -41,7 +41,7 @@ fossil_rate ~ dnUniform(0,10)
 sampling_prob <- 23 / 450 # 23 out of the ~ 450 extant primate species
 
 ## the Birth-death distribution ##
-tree_prior = dnFBDP(startAge=root_time, startCondition="root", lambda=speciation, mu=extinction, psi=fossil_rate, rho=sampling_prob, condition="survival", taxa=taxa)
+tree_prior = dnFBDP(rootAge=root_time, lambda=speciation, mu=extinction, psi=fossil_rate, rho=sampling_prob, condition="survival", taxa=taxa)
 
 clade_platyrrhini   = clade("Alouatta_palliata", "Aotus_trivirgatus", "Callicebus_donacophilus", "Cebus_albifrons", "Saimiri_sciureus")
 clade_catarrhini    = clade("Chlorocebus_aethiops", "Colobus_guereza", "Hylobates_lar", "Macaca_mulatta", "Pan_paniscus")
@@ -158,7 +158,7 @@ mymcmc.run(generations=25000)
 # and get the summary of the tree trace
 #treetrace.summarize()
 
-#map_tree = mapTree(treetrace,"output/FBDP.tree")
+#msacc_tree = mccTree(treetrace,"output/FBDP.tree")
 
 # you may want to quit RevBayes now
 q()
