@@ -121,21 +121,32 @@ fbd_tree ~ dnConstrainedTopology(tree_prior, constraints)
 
 # Create a user-defined function that returns the number of sampled ancestors in the FBD-tree #
 # this function definition is required so that a deterministic node can be created and monitored #
-function Natural num_sa ( TimeTree t ) { t.nSampledAncestors() }
-
-# Instantiate the deterministic node for the number of sampled ancestors using your user-defined function #
-sa := num_sa(fbd_tree)
+sa := fbd_tree.numSampledAncestors();
 
 # Create another deterministic node to monitor the age of the extant bears #
 crown := tmrca(fbd_tree, clade_extant)
 
 ### Specify sampling of fossil occurrence times ###
+fossil_intervals = readDataDelimitedFile(file="data/bears_fossil_intervals.tsv", delimiter=TAB, header=true)
 
-# Import user-defined functions for sampling fossil occurrence dates from a given distribution #
-source("scripts/sample_fossil_age_functions.Rev")
-
-# Set the sampling of the fossils with the intervals given in the file data/bears_fossil_intervals.tsv #
-sample_fossil_age_uniform( fbd_tree, "data/bears_fossil_intervals.tsv" )
+# Setup the tip-sampling
+for(i in 1:fossil_intervals.size())
+{
+	taxonA = fossil_intervals[i][1]
+	obs_min = fossil_intervals[i][2]
+	obs_max = fossil_intervals[i][3]
+	
+	t[i] := tmrca(fbd_tree, clade(taxonA))
+	
+	half = (obs_max - obs_min)/2
+	obs_med = obs_min + half
+	
+	min[i] := t[i] - half
+	max[i] := t[i] + half
+	
+	fossil[i] ~ dnUniform(min[i], max[i])
+	fossil[i].clamp(obs_med)
+}
 
 ### Specify moves on the tree and node times ###
 # These moves update the tree topology 
