@@ -75,15 +75,15 @@ death_rate ~ dnExponential(10)
 
 # Specify a scale move on the birth_rate parameter #
 # This move will be applied with 3 different tuning values (lambda) to help improve mixing # 
-moves[mvi++] = mvScale(birth_rate, lambda=0.01, weight=3.0)
-moves[mvi++] = mvScale(birth_rate, lambda=0.1, weight=3.0)
-moves[mvi++] = mvScale(birth_rate, lambda=1.0, weight=3.0)
+moves[mvi++] = mvScale(birth_rate, lambda=0.01, weight=2.0)
+moves[mvi++] = mvScale(birth_rate, lambda=0.1, weight=2.0)
+moves[mvi++] = mvScale(birth_rate, lambda=1.0, weight=2.0)
 
 # Specify a sliding-window move on the death_rate parameter #
 # This move will be applied with 3 different window widths (delta) to help improve mixing # 
-moves[mvi++] = mvSlide(death_rate, delta=0.01, weight=3.0)
-moves[mvi++] = mvSlide(death_rate, delta=0.1, weight=3.0)
-moves[mvi++] = mvSlide(death_rate, delta=1, weight=3.0)
+moves[mvi++] = mvSlide(death_rate, delta=0.01, weight=2.0)
+moves[mvi++] = mvSlide(death_rate, delta=0.1, weight=2.0)
+moves[mvi++] = mvSlide(death_rate, delta=1, weight=2.0)
 
 # Create deterministic nodes for the diversification and turnover rates so that they can be monitored #
 diversification := birth_rate - death_rate
@@ -98,9 +98,9 @@ psi ~ dnExponential(10)
 
 # Specify a scale move on the psi parameter #
 # This move will be applied with 3 different tuning values (lambda) to help improve mixing # 
-moves[mvi++] = mvSlide(psi, delta=0.01, weight=3.0)
-moves[mvi++] = mvSlide(psi, delta=0.1, weight=3.0)
-moves[mvi++] = mvSlide(psi, delta=1, weight=3.0)
+moves[mvi++] = mvSlide(psi, delta=0.01, weight=2.0)
+moves[mvi++] = mvSlide(psi, delta=0.1, weight=2.0)
+moves[mvi++] = mvSlide(psi, delta=1, weight=2.0)
 
 # The FBD is conditioned on a starting time for the process, which is the origin time #
 # Specify a uniform prior on the origin #
@@ -108,9 +108,9 @@ origin_time ~ dnUnif(37.0, 55.0)
 
 # Specify a sliding-window move on the origin_time parameter #
 # This move will be applied with 3 different window widths (delta) to help improve mixing # 
-moves[mvi++] = mvSlide(origin_time, delta=0.01, weight=10.0)
-moves[mvi++] = mvSlide(origin_time, delta=0.1, weight=10.0)
-moves[mvi++] = mvSlide(origin_time, delta=1, weight=10.0)
+moves[mvi++] = mvSlide(origin_time, delta=0.01, weight=5.0)
+moves[mvi++] = mvSlide(origin_time, delta=0.1, weight=5.0)
+moves[mvi++] = mvSlide(origin_time, delta=1, weight=5.0)
 
 # Define the tree-prior distribution as the fossilized birth-death process #
 tree_prior = dnFBDP(origin=origin_time, lambda=birth_rate, mu=death_rate, psi=psi, rho=rho, taxa=taxa)
@@ -132,20 +132,20 @@ fossil_intervals = readDataDelimitedFile(file="data/bears_fossil_intervals.tsv",
 # Setup the tip-sampling
 for(i in 1:fossil_intervals.size())
 {
-	taxonA = fossil_intervals[i][1]
-	obs_min = fossil_intervals[i][2]
-	obs_max = fossil_intervals[i][3]
-	
-	t[i] := tmrca(fbd_tree, clade(taxonA))
-	
-	half = (obs_max - obs_min)/2
-	obs_med = obs_min + half
-	
-	min[i] := max(v(t[i] - half, 0.0))
-	max[i] := t[i] + half
-	
-	fossil[i] ~ dnUniform(min[i], max[i])
-	fossil[i].clamp(obs_med)
+    taxonA = fossil_intervals[i][1]
+    obs_min = fossil_intervals[i][2]
+    obs_max = fossil_intervals[i][3]
+    
+    t[i] := tmrca(fbd_tree, clade(taxonA))
+    
+    half = (obs_max - obs_min)/2
+    obs_med = obs_min + half
+    
+    min[i] := max(v(t[i] - half, 0.0))
+    max[i] := t[i] + half
+    
+    fossil[i] ~ dnUniform(min[i], max[i])
+    fossil[i].clamp(obs_med)
 }
 
 ### Specify moves on the tree and node times ###
@@ -182,12 +182,12 @@ ucln_sigma ~ dnExponential(3.0)
 ucln_var := ucln_sigma * ucln_sigma
 ucln_mu := ln(ucln_mean) - (ucln_var * 0.5)
 ### both the ucln_mean and ucln_sigma will be operated on by scale moves
-moves[mvi++] = mvScale(ucln_mean, lambda=0.01, weight=3.0)
-moves[mvi++] = mvScale(ucln_mean, lambda=0.1, weight=3.0)
-moves[mvi++] = mvScale(ucln_mean, lambda=1.0, weight=3.0)
-moves[mvi++] = mvScale(ucln_sigma, lambda=0.01, weight=3.0)
-moves[mvi++] = mvScale(ucln_sigma, lambda=0.1, weight=3.0)
-moves[mvi++] = mvScale(ucln_sigma, lambda=1.0, weight=3.0)
+moves[mvi++] = mvScale(ucln_mean, lambda=0.01, weight=2.0)
+moves[mvi++] = mvScale(ucln_mean, lambda=0.1, weight=2.0)
+moves[mvi++] = mvScale(ucln_mean, lambda=1.0, weight=2.0)
+moves[mvi++] = mvScale(ucln_sigma, lambda=0.01, weight=2.0)
+moves[mvi++] = mvScale(ucln_sigma, lambda=0.1, weight=2.0)
+moves[mvi++] = mvScale(ucln_sigma, lambda=1.0, weight=2.0)
 
 ### now we will create a vector of stochastic nodes 
 ### each element in the vector represents a branch rate
@@ -244,7 +244,7 @@ moves[mvi++] = mvScale(beta2, lambda=1 )
 moves[mvi++] = mvScale(beta2, lambda=0.1 )
 moves[mvi++] = mvScale(beta2, lambda=0.01 )
 
-cats := fnDiscretizeBeta( beta1, beta2, 5)
+cats := fnDiscretizeBeta( beta1, beta2, 3)
 
 for(i in 1:cats.size())
 {
@@ -271,7 +271,7 @@ phyMorpho.clamp(morpho)
 ######
 
 mymodel = model(sf)
-#mymodel.graph("model.dot")
+mymodel.graph("model.dot")
 
 mni = 1
 
@@ -281,7 +281,7 @@ monitors[mni++] = mnScreen(printgen=10, crown, origin_time, sa, mean_rt)
 
 mymcmc = mcmc(mymodel, monitors, moves)
 
-mymcmc.run(generations=50000,underPrior=false)
+mymcmc.run(generations=10000,underPrior=false)
 mymcmc.operatorSummary()
 
 tr = readTreeTrace( "output/bears.trees" )
