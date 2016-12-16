@@ -271,7 +271,7 @@ phyMorpho.clamp(morpho)
 ######
 
 mymodel = model(sf)
-mymodel.graph("model.dot")
+#mymodel.graph("model.dot")
 
 mni = 1
 
