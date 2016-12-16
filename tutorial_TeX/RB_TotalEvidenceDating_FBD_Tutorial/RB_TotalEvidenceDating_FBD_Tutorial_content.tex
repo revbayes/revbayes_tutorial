@@ -153,6 +153,25 @@ In order for all the taxa to appear on the same tree, they all need to be part o
 
 \subsection{Specify monophyletic clade constraints}
 
+RevBayes allows researchers to use clade constraints to put a zero probability on trees not containing certain clades. In our case, Ursinae (brown bears, black bears and sloth bears) and Ailuropodinae (pandas and their close relatives) are both very well supported subfamilies. We will add constraints for these two groups.
+
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+clade_ursinae = clade("Melursus_ursinus", "Ursus_arctos", "Ursus_maritimus", 
+                      "Helarctos_malayanus", "Ursus_americanus", "Ursus_thibetanus", 
+                      "Ursus_abstrusus", "Ursus_spelaeus")
+clade_pandas = clade("Ailuropoda_melanoleuca", "Indarctos_vireti", "Indarctos_arctoides", 
+                     "Indarctos_punjabiensis", "Ailurarctos_lufengensis", "Agriarctos_spp", 
+                     "Kretzoiarctos_beatrix")
+constraints = v(clade_pandas, clade_ursinae)
+\end{lstlisting}
+\end{snugshade*}}
+
+\bigskip
+
+\subsection{Specify monophyletic clade constraints}
+
+Now that our data are loaded and prepared, we can specify the Fossilized Birth-Death model, and the MCMC moves associated with it. As we work, we will be creating moves to sample different values for our various priors and parameters. 
 
 %% This is what output looks like
 
