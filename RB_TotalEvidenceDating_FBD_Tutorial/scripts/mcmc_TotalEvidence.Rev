@@ -141,7 +141,7 @@ for(i in 1:fossil_intervals.size())
 	half = (obs_max - obs_min)/2
 	obs_med = obs_min + half
 	
-	min[i] := t[i] - half
+	min[i] := max(v(t[i] - half, 0.0))
 	max[i] := t[i] + half
 	
 	fossil[i] ~ dnUniform(min[i], max[i])
