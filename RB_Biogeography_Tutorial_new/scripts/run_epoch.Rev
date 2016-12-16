@@ -1,0 +1,170 @@
+#!/usr/bin/rb
+
+# filenames
+range_fn = "data/n4/silversword.n4.range.nex"
+phy_fn   = "data/n4/silversword.tre"
+out_fn   = "output/epoch"
+geo_fn   = "data/n4/hawaii.n4"
+times_fn = geo_fn + ".times.txt"
+dist_fn  = geo_fn + ".distances.txt"
+
+# move/monitor index
+mvi = 1
+mni = 1
+n_gen = 1e4
+
+
+########
+# data #
+########
+
+# read binary (01) presence-absence range data
+dat_range_01 = readDiscreteCharacterData(range_fn)
+n_areas <- dat_range_01.nchar()
+
+# determine the number of states
+max_areas <- 2
+n_states <- 0
+for (k in 0:max_areas) n_states += choose(n_areas, k)
+
+# convert binary ranges into NaturalNumbers
+dat_range_n = formatDiscreteCharacterData(dat_range_01, "DEC", n_states)
+
+# epoch times
+time_bounds <- readDataDelimitedFile(file=times_fn, delimiter=" ")
+n_epochs <- time_bounds.size()
+
+# epoch connectivity
+for (i in 1:n_epochs) {
+    epoch_fn = geo_fn + "." + i + ".txt"
+    connectivity[i] <- readDataDelimitedFile(file=epoch_fn, delimiter=" ")
+}
+
+# area distances
+distances <- readDataDelimitedFile(file=dist_fn, delimiter=" ")
+
+
+###############
+# Tree models #
+###############
+
+# read tree
+phy <- readTrees(phy_fn)[1]
+
+#######################
+# Biogeography models #
+#######################
+
+# first, the distance function
+
+dispersal_rate ~ dnExp(1)
+moves[mvi++] = mvScale(dispersal_rate)
+
+distance_scale ~ dnExp(1)
+moves[mvi++] = mvScale(distance_scale)
+
+# then, the dispersal rate matrix
+for (i in 1:n_epochs) {
+    for (j in 1:n_areas) {
+        for (k in 1:n_areas) {
+            dr[i][j][k] := abs(0.0)
+            if (connectivity[i][j][k] > 0) {
+                dr[i][j][k] := dispersal_rate * exp( -(distance_scale * distances[j][k]) )
+            }
+        }
+    }
+}
+
+
+# then extirpation rates (or per-area extinction rates)
+extirpation_rate ~ dnExp(1)
+moves[mvi++] = mvScale(extirpation_rate)
+
+for (i in 1:n_epochs) {
+    for (j in 1:n_areas) {
+        for (k in 1:n_areas) {
+            er[i][j][k] <- abs(0.0) 
+            if (j == k) { er[i][k][k] := extirpation_rate }
+        }
+    }
+}
+
+# build DEC rate matrices
+for (i in 1:n_epochs) {
+    Q_DEC[i] := fnDECRateMatrix(dispersalRates=dr[i],
+                                extirpationRates=er[i],
+                                maxRangeSize=max_areas)
+}
+
+# build the times
+for (i in 1:n_epochs) {
+    time_max[i] <- time_bounds[i][1]
+    time_min[i] <- time_bounds[i][2]
+
+    if (i == n_epochs) {
+        epoch_times[i] <- abs(0)
+    } else {
+        epoch_times[i] ~ dnUniform(time_min[i], time_max[i])
+        moves[mvi++] = mvSlide(epoch_times[i], delta=0.2)
+    }
+}
+
+# combine the epoch rate matrices and times
+Q_DEC_epoch := fnEpoch(Q=Q_DEC, times=epoch_times, rates=rep(1, n_epochs))
+
+# biogeographic clock rate is 1
+rate_bg <- 1
+    
+# build clado probs
+clado_event_types <- [ "s", "a" ]
+clado_type_probs ~ dnDirichlet( [1, 1] )
+moves[mvi++] = mvSimplexElementScale(clado_type_probs, alpha=10)
+P_DEC := fnDECCladoProbs(eventProbs=clado_type_probs,
+                         eventTypes=clado_event_types,
+                         numCharacters=n_areas,
+                         maxRangeSize=max_areas)
+
+
+
+# root frequencies
+rf_DEC    <- rep(0, n_states)
+rf_DEC[2] <- 1  # Kauai is the only possible starting state
+rf_DEC    <- simplex(rf_DEC)
+
+ctmc_bg ~ dnPhyloCTMCClado(tree=phy,
+                           Q=Q_DEC_epoch,
+                           cladoProbs=P_DEC,
+                           branchRates=rate_bg,
+                           rootFrequencies=rf_DEC,
+                           type="NaturalNumbers",
+                           nSites=1)
+    
+ctmc_bg.clamp(dat_range_n)
+
+############
+# Monitors #
+############
+
+
+monitors[mni++] = mnScreen(printgen=100, dispersal_rate, extirpation_rate, distance_scale)
+monitors[mni++] = mnModel(file=out_fn+".model.log", printgen=10)
+monitors[mni++] = mnFile(phy, filename=out_fn+".tre", printgen=10)
+monitors[mni++] = mnJointConditionalAncestralState(tree=phy,
+                                                       ctmc=ctmc_bg,
+                                                       type="NaturalNumbers",
+                                                       withTips=true,
+                                                       withStartStates=true,
+                                                       filename=out_fn+".states.log",
+                                                       printgen=10)
+
+############
+# Analysis #
+############
+
+mdl = model(ctmc_bg)
+ch = mcmc(mdl, monitors, moves)
+
+ch.run(n_gen)
+
+
+quit()

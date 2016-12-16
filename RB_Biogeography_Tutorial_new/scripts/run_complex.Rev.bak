@@ -1,0 +1,156 @@
+#!/usr/bin/rb
+
+fp = "/Users/mlandis/projects/bg_ssb/"
+code_fp = fp + "code/"
+data_fp = fp + "data/"
+out_fp  = fp + "output/"
+out_str = out_fp + "complex"
+
+# analysis variables
+mvi = 1
+mni = 1
+n_gens = 1e5
+under_prior = false
+
+n_areas      <- 6 # dat_geo_raw[1].nchar()
+max_areas    <- 2
+n_states     <- 0
+for (k in 0:max_areas)
+    n_states += choose(n_areas, k)
+
+
+# file names
+tree_fn      = data_fp + "multi/silversword.init.tre"
+geo_fn       = data_fp + "multi/silversword.bg.nex"
+times_fn     = data_fp + "multi/hawaii_n6.times.txt"
+distances_fn = data_fp + "multi/hawaii_n6.distance.txt"
+epoch_fn     = data_fp + "multi/hawaii_n6"
+
+# data structures
+dat_geo_raw = readDiscreteCharacterData(geo_fn)
+dat_geo     = formatDiscreteCharacterData(dat_geo_raw, "DEC", n_states)
+
+# taxa
+taxa       = dat_geo.taxa()
+n_taxa     = taxa.size()
+n_branches <- 2 * n_taxa - 2
+
+
+########################
+# Paleogeography model #
+########################
+
+# read event times
+time_bounds <- readDataDelimitedFile(file=times_fn, header=false, delimiter=" ")
+n_epochs    <- time_bounds.size()
+
+# build event times
+for (i in 1:n_epochs) {
+    time_max[i] <- time_bounds[i][1]
+    time_min[i] <- time_bounds[i][2]
+    if (i != n_epochs) {
+        time_diff[i] <- time_max[i] - time_min[i]
+        epoch_times[i] ~ dnUniform(time_min[i], time_max[i])
+        epoch_times[i].setValue(time_max[i])
+        moves[mvi++] = mvSlide(epoch_times[i], delta=time_diff[i]/2)
+    } else {
+        epoch_times[i] <- 0.0
+    }
+
+}
+
+# read distances between areas (in km)
+# assumed to be relatively constant over time although this is not strictly true!
+distances <- readDataDelimitedFile(file=distances_fn, header=false, delimiter=" ")
+
+# read connectivity between areas per epoch
+for (i in 1:n_epochs) {
+    layer[i] <- readDataDelimitedFile(file=epoch_fn + "." + i + ".txt", header=false, delimiter= " ")
+}
+
+###############
+# Tree models #
+###############
+
+# assume an errorless phylogeny
+tree  <- readTrees(tree_fn)[1]
+
+
+#######################
+# Biogeography models #
+#######################
+
+# anagenesis rate parameters
+e ~ dnGamma(2,2)
+moves[mvi++] = mvScale(e, weight=1, lambda=0.5)
+
+log10_clock_bg  ~ dnUniform(-5,2)
+log10_clock_bg.setValue(-1)
+moves[mvi++] = mvSlide(log10_clock_bg, weight=1, delta=0.5)
+
+for (k in 1:n_epochs) {
+
+    # build rate matrix elements
+    for (i in 1:n_areas) {
+        for (j in 1:n_areas) {
+            dr[i][j] <- abs(1.0)
+            er[i][j] <- abs(0.0)
+        }
+        er[i][i] := e
+    }
+
+    # build DEC rate matrices
+    Q := fnDECRateMatrix(dispersalRates=dr,
+                         extirpationRates=er)
+
+}
+    
+# build clado probs
+clado_event_types <- [ "s", "a" ]
+clado_type_probs <- simplex(1,1)
+P_clado := fnDECCladoProbs(eventProbs=clado_type_probs,
+                           eventTypes=clado_event_types,
+                           numCharacters=n_areas)
+
+# event rate
+rate_bg := 10^log10_clock_bg
+
+rf <- simplex( rep(1,n_states) )
+ctmc_bg ~ dnPhyloCTMCClado(tree=tree,
+                           Q=Q,
+                           cladoProbs=P_clado,
+                           branchRates=rate_bg,
+                           rootFrequencies=rf,
+                           type="NaturalNumbers",
+                           nSites=1)
+    
+ctmc_bg.clamp(dat_geo)
+
+############
+# Monitors #
+############
+
+if (under_prior) out_str += ".prior"
+
+monitors[mni++] = mnScreen(printgen=10, rate_bg)
+monitors[mni++] = mnModel(file=out_str+".model.log", printgen=10)
+monitors[mni++] = mnFile(tree, filename=out_str+".tre", printgen=10)
+monitors[mni++] = mnJointConditionalAncestralState(tree=tree,
+                                                       ctmc=ctmc_bg,
+                                                       type="NaturalNumbers",
+                                                       withTips=true,
+                                                       withStartStates=true,
+                                                       filename=out_str+".states.log",
+                                                       printgen=10)
+
+############
+# Analysis #
+############
+
+mdl = model(tree)
+ch = mcmc(mdl, monitors, moves)
+
+ch.run(n_gens, underPrior=under_prior)
+
+
+quit()
