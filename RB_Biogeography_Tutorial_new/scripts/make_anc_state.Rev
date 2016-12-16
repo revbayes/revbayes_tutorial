@@ -1,4 +1,8 @@
-out_str = "output/simple_phy"
+# This script may be run from the command line by typing
+# rb make_anc_state.Rev
+
+# NOTE: modify out_str to use with other analyses!
+out_str = "output/simple"
 
 out_state_fn = out_str + ".states.log"
 out_phy_fn   = out_str + ".tre"
@@ -24,7 +28,6 @@ anc_tree = ancestralStateTree(tree=mcc_tree,
                               summary_statistic="MAP",
                               site=0)
 
+# exit RevBayes
 quit()
                              
-
-
