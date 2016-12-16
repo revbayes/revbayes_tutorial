@@ -12,10 +12,6 @@
 # Reading in the Data #
 #######################
 
-# Create the full list of taxa (including all fossils and extant species #
-taxa <- readTaxonData("data/bears_taxa.tsv", delimiter=TAB)
-n_taxa <- taxa.size() # the number of taxa
-
 # Import the molecular sequences #
 # this file contains only the taxa for which sequence data are available #
 cytb <- readDiscreteCharacterData("data/bears_cytb.nex")
@@ -23,6 +19,10 @@ cytb <- readDiscreteCharacterData("data/bears_cytb.nex")
 # Import the morphological character matrix #
 # this file contains only the taxa for which morphological characters are available #
 morpho <- readDiscreteCharacterData("data/bears_morphology.nex")
+
+# Create the full list of taxa (including all fossils and extant species #
+taxa <- readTaxonData("data/bears_taxa.tsv", delimiter=TAB)
+n_taxa <- taxa.size() # the number of taxa
 
 # Add the missing taxa to each data partition #
 cytb.addMissingTaxa( taxa )

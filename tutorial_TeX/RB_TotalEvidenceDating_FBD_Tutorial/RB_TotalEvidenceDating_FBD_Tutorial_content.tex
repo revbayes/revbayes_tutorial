@@ -63,21 +63,37 @@ We will complete this analysis in \RevBayes by entering the \Rev code interactiv
 
 \subsection{Loading the Data}
 
-\noindent \\ \impmark Download data and output files (if you don't have them already) from: \\ \href{http://revbayes.github.io/tutorials.html}{http://revbayes.github.io/tutorials.html}
+\noindent \\ \impmark Download data and output files (if you don't have them already) from: \\ \href{http://revbayes.github.io/tutorials.html}{http://revbayes.github.io/tutorials.html} \par
 
-
-First load in the sequences using the \cl{readDiscreteCharacterData()} function. 
+Start up RevBayes at the command line. You should do this from within the \cl{RB\_TotalEvidenceDating\_FBD\_Tutorial} directory.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-data <- readDiscreteCharacterData("data/bears_cytb.nex") 
+./rb
+\end{lstlisting}
+\end{snugshade*}}
+
+If you've done this correctly, you should see the prompt shown below
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+>
+\end{lstlisting}
+\end{snugshade*}}
+
+If you do not see this, please ask for help.
+
+First load in the sequences using the \cl{readDiscreteCharacterData()} function. Note that copying and pasting instructions can lead to extraneous characters being copied. This can cause commands to fail. For learning, it's often better to 'live code' and type the commands in manually, rather than copying and pasting. \cl{Ctrl+A} allows you to jump to the start of the command, if you need to delete extra characters from the front of a line. \cl{Ctrl+E} allows you to jump to the end of a command. Pressing the up key will pull up previous commands, and allow you to edit them. If you do choose to copy and paste in commands, doing that from the tutorial script file will cause fewer errors. 
+
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+cytb <- readDiscreteCharacterData("data/bears_cytb.nex") 
 \end{lstlisting}
 \end{snugshade*}}
 Executing these lines initializes the data matrix as the respective \Rev variables. 
 To report the current value of any variable, simply type the variable name and press enter. For the \cl{data} matrix, this provides information about the alignment:
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-data
-|*   DNA character matrix with 23 taxa and 1141 characters
+cytb
+|*      DNA character matrix with 10 taxa and 1000 characters
 |*   =====================================================
 |*   Origination:                      bears_cytb.nex
 |*   Number of taxa:                   10
@@ -87,6 +103,57 @@ data
 |*   Datatype:                         DNA
 \end{lstlisting}
 \end{snugshade*}}
+
+Next, we import the morphological character matrix. 
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+morpho <- readDiscreteCharacterData("data/bears_morphology.nex")
+\end{lstlisting}
+\end{snugshade*}}
+
+The information about the morphological character matrix should look like this:
+
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+morpho
+|*    Standard character matrix with 18 taxa and 81 characters
+|*    ========================================================
+|*    Origination:                   bears_morphology.nex
+|*    Number of taxa:                18
+|*    Number of included taxa:       18
+|*    Number of characters:          81
+|*    Number of included characters: 81
+|*    Datatype:                      Standard
+\end{lstlisting}
+\end{snugshade*}}
+
+Now we read in the full list of taxa and create a workspace object with the total number of taxa. 
+
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+taxa <- readTaxonData("data/bears_taxa.tsv", delimiter=TAB)
+n_taxa <- taxa.size() # the number of taxa
+\end{lstlisting}
+\end{snugshade*}}
+
+If you open the bears taxa file, you'll notice that this is a tab-separated file of all of the taxon names, with the age in millions of years ago (mya) in the second column. An age of 0.0 indicates an extant bear. We will use this information to allow fossils to be incorporated as tips in the analysis. \par
+
+The last bit of data preparation we will do is to add any taxa that are not found in the molecular partition (i.e. are only found in the fossil data) to the molecular partition as missing data, and vice versa.
+
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+cytb.addMissingTaxa( taxa )
+morpho.addMissingTaxa( taxa )
+\end{lstlisting}
+\end{snugshade*}}
+
+In order for all the taxa to appear on the same tree, they all need to be part of the same dataset, as opposed to present in separate datasets. This ensures that there is a unified taxon set that contains all of our tips.
+
+\bigskip
+
+\subsection{Specify monophyletic clade constraints}
+
+
 %% This is what output looks like
 
 %\begin{figure}[htbp!]
@@ -96,5 +163,6 @@ data
 %\label{fig:example}
 %\end{figure}
 
-\bibliographystyle{sysbio}
-\bibliography{\GlobalResourcePath refs}
+
+%\bibliographystyle{sysbio}
+%\bibliography{\GlobalResourcePath refs}
