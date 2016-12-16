@@ -152,6 +152,64 @@ In order for all the taxa to appear on the same tree, they all need to be part o
 
 \subsection{Specify monophyletic clade constraints}
 
+RevBayes allows researchers to use clade constraints to put a zero probability on trees not containing certain clades. In our case, Ursinae (brown bears, black bears and sloth bears) and Ailuropodinae (pandas and their close relatives) are both very well supported subfamilies. We will add constraints for these two groups.
+
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+clade_ursinae = clade("Melursus_ursinus", "Ursus_arctos", "Ursus_maritimus", 
+                      "Helarctos_malayanus", "Ursus_americanus", "Ursus_thibetanus", 
+                      "Ursus_abstrusus", "Ursus_spelaeus")
+clade_pandas = clade("Ailuropoda_melanoleuca", "Indarctos_vireti", "Indarctos_arctoides", 
+                     "Indarctos_punjabiensis", "Ailurarctos_lufengensis", "Agriarctos_spp", 
+                     "Kretzoiarctos_beatrix")
+constraints = v(clade_pandas, clade_ursinae)
+\end{lstlisting}
+\end{snugshade*}}
+
+\bigskip
+
+\subsection{Specify monophyletic clade constraints}
+
+Now that our data are loaded and prepared, we can specify the Fossilized Birth-Death model, and the MCMC moves associated with it. As we work, we will be creating moves to govern how values are sampled for our various priors and parameters. We'll first create an iterator to hold all of our moves.
+
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+mvi = 1
+\end{lstlisting}
+\end{snugshade*}}
+
+Two key parameters of the FBD process are the birth rate (the rate at which lineages are added to the tree) and the death rate (the rate at which lineages are removed from the tree). We'll place exponential priors on both of these values. An exponential prior with a $\lambda$ =  10 places a higher probability on values less than 0.4 for these parameters. 
+
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+birth_rate ~ dnExponential(10)
+death_rate ~ dnExponential(10)
+\end{lstlisting}
+\end{snugshade*}}
+
+Now that the priors have been specified, we give RevBayes some information on how to sample values for our parameters. We'll use a scaling move, which changes the value sampled multiplicatively with the tuning parameter. We will use three different tuning parameters, which govern the size of the move. Including multiple tuning parameters improves mixing. 
+
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+moves[mvi++] = mvScale(birth_rate, lambda=0.01, weight=3.0)
+moves[mvi++] = mvScale(birth_rate, lambda=0.1, weight=3.0)
+moves[mvi++] = mvScale(birth_rate, lambda=1.0, weight=3.0)
+moves[mvi++] = mvScale(death_rate, delta=0.01, weight=3.0)
+moves[mvi++] = mvScale(death_rate, delta=0.1, weight=3.0)
+moves[mvi++] = mvScale(death_rate, delta=1, weight=3.0)
+\end{lstlisting}
+\end{snugshade*}}
+
+In order to print nodes in our graph to output (also called \cl{monitoring}), we need to create deterministic nodes for birth and death. Deterministic nodes are often value transformations between existing stochastic nodes. So we will define diversification and turnover as deterministic nodes.
+
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+diversification := birth_rate - death_rate
+turnover := death_rate/birth_rate
+\end{lstlisting}
+\end{snugshade*}}
+
+
 
 %% This is what output looks like
 
