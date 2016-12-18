@@ -28,15 +28,9 @@ n_taxa <- taxa.size() # the number of taxa
 cytb.addMissingTaxa( taxa )
 morpho.addMissingTaxa( taxa )
 
-############################
-# Create Helper Variables #
-############################
-
-
-
 
 ##############################################
-# Specify monophyletic clade constraints #
+# Monophyletic clade constraints #
 ##############################################
 
 clade_crownbears = clade("Ailuropoda_melanoleuca", "Tremarctos_ornatus", "Melursus_ursinus", 
@@ -62,9 +56,10 @@ clade_extant = clade("Ailuropoda_melanoleuca","Tremarctos_ornatus","Melursus_urs
                     "Ursus_arctos","Ursus_maritimus","Helarctos_malayanus",
                     "Ursus_americanus","Ursus_thibetanus")
 
-##############################################
-# Specify the Fossilized Birth-Death Process #
-##############################################
+
+##########################################################################################
+# Joint Fossilized Birth-Death Process prior on the topology and fossil occurrence times #
+##########################################################################################
 
 # Create an iterator for the MCMC moves vector #
 mvi = 1
@@ -75,15 +70,15 @@ death_rate ~ dnExponential(10)
 
 # Specify a scale move on the birth_rate parameter #
 # This move will be applied with 3 different tuning values (lambda) to help improve mixing # 
-moves[mvi++] = mvScale(birth_rate, lambda=0.01, weight=2.0)
-moves[mvi++] = mvScale(birth_rate, lambda=0.1, weight=2.0)
-moves[mvi++] = mvScale(birth_rate, lambda=1.0, weight=2.0)
+moves[mvi++] = mvScale(birth_rate, lambda=0.01, weight=1/3)
+moves[mvi++] = mvScale(birth_rate, lambda=0.1,  weight=1/3)
+moves[mvi++] = mvScale(birth_rate, lambda=1.0,  weight=1/3)
 
 # Specify a sliding-window move on the death_rate parameter #
 # This move will be applied with 3 different window widths (delta) to help improve mixing # 
-moves[mvi++] = mvSlide(death_rate, delta=0.01, weight=2.0)
-moves[mvi++] = mvSlide(death_rate, delta=0.1, weight=2.0)
-moves[mvi++] = mvSlide(death_rate, delta=1, weight=2.0)
+moves[mvi++] = mvScale(death_rate, lambda=0.01, weight=1/3)
+moves[mvi++] = mvScale(death_rate, lambda=0.1,  weight=1/3)
+moves[mvi++] = mvScale(death_rate, lambda=1,    weight=1/3)
 
 # Create deterministic nodes for the diversification and turnover rates so that they can be monitored #
 diversification := birth_rate - death_rate
@@ -93,14 +88,14 @@ turnover := death_rate/birth_rate
 # because all extant bears are represented in this analysis #
 rho <- 1.0
 
-# Assume an exponential prior on the rate of sampling fossils (psi)#
+# Assume an exponential prior on the rate of sampling fossils (psi) #
 psi ~ dnExponential(10) 
 
 # Specify a scale move on the psi parameter #
 # This move will be applied with 3 different tuning values (lambda) to help improve mixing # 
-moves[mvi++] = mvSlide(psi, delta=0.01, weight=2.0)
-moves[mvi++] = mvSlide(psi, delta=0.1, weight=2.0)
-moves[mvi++] = mvSlide(psi, delta=1, weight=2.0)
+moves[mvi++] = mvScale(psi, lambda=0.01, weight=1/3)
+moves[mvi++] = mvScale(psi, lambda=0.1,  weight=1/3)
+moves[mvi++] = mvScale(psi, lambda=1,    weight=1/3)
 
 # The FBD is conditioned on a starting time for the process, which is the origin time #
 # Specify a uniform prior on the origin #
@@ -109,182 +104,224 @@ origin_time ~ dnUnif(37.0, 55.0)
 # Specify a sliding-window move on the origin_time parameter #
 # This move will be applied with 3 different window widths (delta) to help improve mixing # 
 moves[mvi++] = mvSlide(origin_time, delta=0.01, weight=5.0)
-moves[mvi++] = mvSlide(origin_time, delta=0.1, weight=5.0)
-moves[mvi++] = mvSlide(origin_time, delta=1, weight=5.0)
+moves[mvi++] = mvSlide(origin_time, delta=0.1,  weight=5.0)
+moves[mvi++] = mvSlide(origin_time, delta=1,    weight=5.0)
 
-# Define the tree-prior distribution as the fossilized birth-death process #
+
+### Define the tree-prior distribution as the fossilized birth-death process ###
 tree_prior = dnFBDP(origin=origin_time, lambda=birth_rate, mu=death_rate, psi=psi, rho=rho, taxa=taxa)
 
 # The will be a random variable of a constrained topology distribution that is governed by the FBD #
 # this distribution will generate FBD trees that match the monophyly constraints defined above #
 fbd_tree ~ dnConstrainedTopology(tree_prior, constraints)
 
-# Create a user-defined function that returns the number of sampled ancestors in the FBD-tree #
-# this function definition is required so that a deterministic node can be created and monitored #
-sa := fbd_tree.numSampledAncestors();
+# Specify moves on the tree and node times #
+# These moves update the tree topology 
+moves[mvi++] = mvFNPR(fbd_tree, weight=15.0)
+moves[mvi++] = mvCollapseExpandFossilBranch(fbd_tree, origin_time, weight=6.0)
 
-# Create another deterministic node to monitor the age of the extant bears #
-crown := tmrca(fbd_tree, clade_extant)
+# These moves update the node ages #
+# Because we are conditioning on the origin time, we must also sample the root node age #
+moves[mvi++] = mvNodeTimeSlideUniform(fbd_tree, weight=40.0)
+moves[mvi++] = mvRootTimeSlideUniform(fbd_tree, origin_time, weight=5.0)
 
-### Specify sampling of fossil occurrence times ###
-fossil_intervals = readDataDelimitedFile(file="data/bears_fossil_intervals.tsv", delimiter=TAB, header=true)
 
-# Setup the tip-sampling
+### Use stratigraphic range data to explicitly sample the fossil occurence times ###
+# Read in the stratigraphic range data file #
+fossil_intervals = readDataDelimitedFile(file="data/bears_fossil_intervals.tsv", header=true)
+
+# Setup the fossil tip sampling #
+# Use a for loop to create a uniform distribution on the occurence time for each fossil #
+# The boundaries of the uniform distribution are specified in the tsv file #
 for(i in 1:fossil_intervals.size())
 {
-    taxonA = fossil_intervals[i][1]
+    taxon  = fossil_intervals[i][1]
     obs_min = fossil_intervals[i][2]
     obs_max = fossil_intervals[i][3]
     
-    t[i] := tmrca(fbd_tree, clade(taxonA))
+    t[i] := tmrca(fbd_tree, clade(taxon))
     
-    half = (obs_max - obs_min)/2
-    obs_med = obs_min + half
+    half    = (obs_max - obs_min)/2
+    umin[i] := max(v(t[i] - half, 0.0))
+    umax[i] := t[i] + half
     
-    min[i] := max(v(t[i] - half, 0.0))
-    max[i] := t[i] + half
-    
-    fossil[i] ~ dnUniform(min[i], max[i])
-    fossil[i].clamp(obs_med)
+    fossil[i] ~ dnUniform(umin[i], umax[i])
+    fossil[i].clamp( obs_min + half )
 }
 
-### Specify moves on the tree and node times ###
-# These moves update the tree topology 
-moves[mvi++] = mvNarrow(fbd_tree, weight=10.0)
-moves[mvi++] = mvNNI(fbd_tree, weight=1.0)
-moves[mvi++] = mvFNPR(fbd_tree, weight=5.0)
-moves[mvi++] = mvCollapseExpandFossilBranch(fbd_tree, origin_time, weight=1.0)
-
-# These moves update the node ages and fossil occurrence times #
-moves[mvi++] = mvSubtreeScale(fbd_tree, weight=1.0)
-moves[mvi++] = mvNodeTimeSlideUniform(fbd_tree, weight=15.0)
-moves[mvi++] = mvRootTimeSlideUniform(fbd_tree, origin_time, weight=3.0)
-moves[mvi++] = mvFossilTimeSlideUniform(fbd_tree, origin_time, weight=3.0)
-
-#########
-
-#clock_mol ~ dnExponential(1.0)
-
-##############################################################
-############ UCLN model on molecular branch rates ###########
-##############################################################
+# Add a move to sample the fossil times #
+moves[mvi++] = mvFossilTimeSlideUniform(fbd_tree, origin_time, weight=5.0)
 
 
-### get the number of branches in the tree
+### Create deterministic nodes to monitor various tree statistics ###
+# Monitor the number of sampled ancestors in the FBD-tree #
+num_samp_anc := fbd_tree.numSampledAncestors();
+
+# Monitor the age of the extant bears #
+age_extant := tmrca(fbd_tree, clade_extant)
+
+# Monitor all the fossil ages #
+age_Agriarctos_spp          := tmrca(fbd_tree, clade("Agriarctos_spp"))
+age_Ailurarctos_lufengensis := tmrca(fbd_tree, clade("Ailurarctos_lufengensis"))
+age_Arctodus_simus          := tmrca(fbd_tree, clade("Arctodus_simus"))
+age_Ballusia_elmensis       := tmrca(fbd_tree, clade("Ballusia_elmensis"))
+age_Indarctos_arctoides     := tmrca(fbd_tree, clade("Indarctos_arctoides"))
+age_Indarctos_punjabiensis  := tmrca(fbd_tree, clade("Indarctos_punjabiensis"))
+age_Indarctos_vireti        := tmrca(fbd_tree, clade("Indarctos_vireti"))
+age_Kretzoiarctos_beatrix   := tmrca(fbd_tree, clade("Kretzoiarctos_beatrix"))
+age_Parictis_montanus       := tmrca(fbd_tree, clade("Parictis_montanus"))
+age_Ursavus_brevirhinus     := tmrca(fbd_tree, clade("Ursavus_brevirhinus"))
+age_Ursavus_primaevus       := tmrca(fbd_tree, clade("Ursavus_primaevus"))
+age_Ursus_abstrusus         := tmrca(fbd_tree, clade("Ursus_abstrusus"))
+age_Ursus_spelaeus          := tmrca(fbd_tree, clade("Ursus_spelaeus"))
+age_Zaragocyon_daamsi       := tmrca(fbd_tree, clade("Zaragocyon_daamsi"))
+
+
+############################################################
+# Uncorrelated exponential model on molecular branch rates #
+############################################################
+
+# Get the number of branches in the tree
 n_branches <- 2 * n_taxa - 2
 
-### the rate along each branch is assigned a lognormal prior
-### the expectation of the lognormal is the ucln_mean, and will be given an exponential hyperprior
-ucln_mean ~ dnExponential(10.0)
-### we will also estimate the standard deviation of the lognormal (ucln_sigma) with an exponential hyperprior
-ucln_sigma ~ dnExponential(3.0)
-### we can create deterministic nodes for the variance and mu of the lognormal
-ucln_var := ucln_sigma * ucln_sigma
-ucln_mu := ln(ucln_mean) - (ucln_var * 0.5)
-### both the ucln_mean and ucln_sigma will be operated on by scale moves
-moves[mvi++] = mvScale(ucln_mean, lambda=0.01, weight=2.0)
-moves[mvi++] = mvScale(ucln_mean, lambda=0.1, weight=2.0)
-moves[mvi++] = mvScale(ucln_mean, lambda=1.0, weight=2.0)
-moves[mvi++] = mvScale(ucln_sigma, lambda=0.01, weight=2.0)
-moves[mvi++] = mvScale(ucln_sigma, lambda=0.1, weight=2.0)
-moves[mvi++] = mvScale(ucln_sigma, lambda=1.0, weight=2.0)
+# The rate along each branch is drawn from an exponential prior
+branch_rates_mean ~ dnExponential(10.0)
 
-### now we will create a vector of stochastic nodes 
-### each element in the vector represents a branch rate
-### the indices of the vector correspond to branch indices in the tree
-### using a for-lop initialize the branch rates and assign a move to each one
+# The mean will be operated on by scale moves
+moves[mvi++] = mvScale(branch_rates_mean, lambda=0.01, weight=1.0)
+moves[mvi++] = mvScale(branch_rates_mean, lambda=0.1,  weight=1.0)
+moves[mvi++] = mvScale(branch_rates_mean, lambda=1.0,  weight=1.0)
+
+# Now we will create a vector of stochastic nodes #
+# Each element in the vector represents a branch rate #
+# The indices of the vector correspond to branch indices in the tree #
+# Using a for-loop, initialize the branch rates and assign a move to each one #
 for(i in 1:n_branches){
-    branch_rates[i] ~ dnLnorm(ucln_mu, ucln_sigma)
-    moves[mvi++] = mvScale(branch_rates[i],lambda=1.0,weight=2.0)
-    moves[mvi++] = mvScale(branch_rates[i],lambda=0.01,weight=2.0)
+    branch_rates[i] ~ dnExp(1/branch_rates_mean)
+    moves[mvi++] = mvScale(branch_rates[i], lambda=1.0,  weight=1.0)
+    moves[mvi++] = mvScale(branch_rates[i], lambda=0.1,  weight=1.0)
+    moves[mvi++] = mvScale(branch_rates[i], lambda=0.01, weight=1.0)
 }
-### add 2 more moves on the branch rate vector
-moves[mvi++] = mvVectorScale(branch_rates,lambda=0.1,weight=2.0) 
-moves[mvi++] = mvVectorScale(branch_rates,lambda=0.5,weight=2.0) 
-moves[mvi++] = mvVectorScale(branch_rates,lambda=1.0,weight=2.0) 
-moves[mvi++] = mvVectorSingleElementScale(branch_rates,lambda=10.0,weight=1.0) 
-moves[mvi++] = mvVectorSingleElementScale(branch_rates,lambda=30.0,weight=1.0) 
-moves[mvi++] = mvVectorSingleElementScale(branch_rates,lambda=3.0,weight=1.0) 
+# add a move on the branch rate vector
+moves[mvi++] = mvVectorScale(branch_rates, lambda=0.01, weight=4.0) 
+moves[mvi++] = mvVectorScale(branch_rates, lambda=0.1,  weight=4.0) 
+moves[mvi++] = mvVectorScale(branch_rates, lambda=1.0,  weight=4.0)
 
-### a helpful parameter to monitor
-mean_rt := mean(branch_rates) 
 
+#####################################
+# GTR nucleotide substitution model #
+#####################################
+
+# Initialize the parameters of substitution matrix #
+# Both the stationary frequencies and exchangeability rates #
+# are drawn from uniform Dirichlet distributions #
+
+# First the stationary frequencies #
 sf_hp <- v(1,1,1,1)
 sf ~ dnDirichlet(sf_hp)
 
+# Then the exchangeability rates #
 er_hp <- v(1,1,1,1,1,1)
 er ~ dnDirichlet(er_hp)
 
-moves[mvi++] = mvSimplexElementScale(er, alpha=10.0, tune=false, weight=2.0)
-moves[mvi++] = mvSimplexElementScale(sf, alpha=10.0, tune=false, weight=2.0)
+moves[mvi++] = mvSimplexElementScale(er, alpha=10.0, weight=5.0)
+moves[mvi++] = mvSimplexElementScale(sf, alpha=10.0, weight=5.0)
 
+# Create the matrix #
 Q_cytb := fnGTR(er,sf)
 
+# Create a discretized gamma distribution of rate categories  #
+# the shape parameter is drawn from an exponential prior #
 alpha_cytb ~ dnExponential( 1.0 )
+
+moves[mvi++] = mvScale(alpha_cytb, lambda=0.01, weight=1.0)
+moves[mvi++] = mvScale(alpha_cytb, lambda=0.1,  weight=1.0)
+moves[mvi++] = mvScale(alpha_cytb, lambda=1,    weight=1.0)
+
 rates_cytb := fnDiscretizeGamma( alpha_cytb, alpha_cytb, 4, false )
 
+### Create the substitution model and clamp with our observed DNA data ###
 phySeq ~ dnPhyloCTMC(tree=fbd_tree, Q=Q_cytb, siteRates=rates_cytb, branchRates=branch_rates, type="DNA")
 phySeq.clamp(cytb)
 
-moves[mvi++] = mvScale(alpha_cytb, lambda=0.01, weight=1.0)
-moves[mvi++] = mvScale(alpha_cytb, lambda=0.1, weight=1.0)
-moves[mvi++] = mvScale(alpha_cytb, lambda=1, weight=1.0)
 
-#########
+###########################################
+# Binary morphological substitution model #
+###########################################
 
-beta1 ~ dnExponential( 1.0 )
+# The binary rate matrix at each site is assumed to have its own stationary frequency #
+# drawn from a discretized Beta distribution #
 
-beta2 ~ dnExponential( 1.0 )
+# Initialize the hyperparameter of the beta distribution #
+beta_hp ~ dnExponential( 1.0 )
 
-moves[mvi++] = mvScale(beta1, lambda=1 )
-moves[mvi++] = mvScale(beta1, lambda=0.1 )
-moves[mvi++] = mvScale(beta1, lambda=0.01 )
+moves[mvi++] = mvScale(beta_hp, lambda=1,    weight=1.0 )
+moves[mvi++] = mvScale(beta_hp, lambda=0.1,  weight=1.0 )
+moves[mvi++] = mvScale(beta_hp, lambda=0.01, weight=1.0 )
 
-moves[mvi++] = mvScale(beta2, lambda=1 )
-moves[mvi++] = mvScale(beta2, lambda=0.1 )
-moves[mvi++] = mvScale(beta2, lambda=0.01 )
+# Create the discretized vector of site-specific stationary frequency categories #
+beta_cats := fnDiscretizeBeta( beta_hp, beta_hp, 4)
 
-cats := fnDiscretizeBeta( beta1, beta2, 3)
-
-for(i in 1:cats.size())
+# Construct a separate binary rate matrix for each frequency category #
+for(i in 1:beta_cats.size())
 {
-    Q_morpho[i] := fnFreeBinary(v(1-cats[i], cats[i]))
+    Q_morpho[i] := fnFreeBinary(v(1-beta_cats[i], beta_cats[i]))
 }
 
+# We also use a discretized gamma distribution of rate categories #
+# again, the shape parameter is drawn from an exponential prior #
 alpha_morpho ~ dnExponential( 1.0 )
 rates_morpho := fnDiscretizeGamma( alpha_morpho, alpha_morpho, 4, false )
 
 moves[mvi++] = mvScale(alpha_morpho, lambda=0.01, weight=1.0)
-moves[mvi++] = mvScale(alpha_morpho, lambda=0.1, weight=1.0)
-moves[mvi++] = mvScale(alpha_morpho, lambda=1, weight=1.0)
+moves[mvi++] = mvScale(alpha_morpho, lambda=0.1,  weight=1.0)
+moves[mvi++] = mvScale(alpha_morpho, lambda=1,    weight=1.0)
 
+# We assume a strict morphological clock rate, drawn from an exponential prior #
 clock_morpho ~ dnExponential(1.0)
 
-moves[mvi++] = mvScale(clock_morpho, lambda=0.01, weight=1.0)
-moves[mvi++] = mvScale(clock_morpho, lambda=0.1, weight=1.0)
-moves[mvi++] = mvScale(clock_morpho, lambda=1, weight=1.0)
+moves[mvi++] = mvScale(clock_morpho, lambda=0.01, weight=4.0)
+moves[mvi++] = mvScale(clock_morpho, lambda=0.1,  weight=4.0)
+moves[mvi++] = mvScale(clock_morpho, lambda=1,    weight=4.0)
 
+### Create the substitution model and clamp with our observed Standard data ###
+# Here we use the option siteMatrices=true specify that the vector Q #
+# represents a site-specific mixture of rate matrices #
+# We also condition on observing only variable characters using coding="variable" #
 phyMorpho ~ dnPhyloCTMC(tree=fbd_tree, siteRates=rates_morpho, branchRates=clock_morpho, Q=Q_morpho, type="Standard", coding="variable", siteMatrices=true)
 phyMorpho.clamp(morpho)
 
 
-######
+###################################
+# MCMC and summarizing the output #
+###################################
 
+# initialize the model object #
 mymodel = model(sf)
-mymodel.graph("model.dot")
+#mymodel.graph("model.dot")
 
 mni = 1
 
-monitors[mni++] = mnModel(filename="output/bears.log", printgen=10, separator = TAB)
-monitors[mni++] = mnFile(filename="output/bears.trees", printgen=10, separator = TAB, fbd_tree)
-monitors[mni++] = mnScreen(printgen=10, crown, origin_time, sa, mean_rt)
+# Create a vector of monitors #
+# 1. for the full model #
+monitors[mni++] = mnModel(filename="output/bears.log", printgen=10)
+# 2. the tree #
+monitors[mni++] = mnFile(filename="output/bears.trees", printgen=10, fbd_tree)
+# 3. and a few select parameters to be printed to the screen #
+monitors[mni++] = mnScreen(printgen=10, age_extant, num_samp_anc, origin_time)
 
+# Initialize the MCMC object #
 mymcmc = mcmc(mymodel, monitors, moves)
 
-mymcmc.run(generations=10000,underPrior=false)
+# Run the MCMC #
+mymcmc.run(generations=10000)
+
+# Summarize the acceptance rates of the various moves #
 mymcmc.operatorSummary()
 
-tr = readTreeTrace( "output/bears.trees" )
-mccTree(tr, "output/bears.mcc.tre" )
+# Read in the tree trace and construct the maximum clade credibility (MCC) tree #
+trace = readTreeTrace( "output/bears.trees" )
+mccTree(trace, "output/bears.mcc.tre" )
 
+# Quit RevBayes #
 q()
