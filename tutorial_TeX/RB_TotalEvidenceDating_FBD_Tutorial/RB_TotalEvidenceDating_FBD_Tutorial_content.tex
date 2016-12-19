@@ -269,7 +269,7 @@ moves[mvi++] = mvSlide(origin_time, delta=1, weight=10.0)
 \end{lstlisting}
 \end{snugshade*}}
 
-All the components of the FBD process are now defined. The next step is to combine these parameters to define the tree prior as the FBD.
+All the parameters of the FBD process are now defined. The next step is to combine these parameters to define the tree prior as the FBD.
 
 {\tt \begin{snugshade*}
 \begin{lstlisting}
@@ -277,7 +277,7 @@ tree_prior = dnFBDP(origin=origin_time, lambda=birth_rate, mu=death_rate, psi=ps
 \end{lstlisting}
 \end{snugshade*}}
 
-Next, we will define the fbd\_tree variable as a random variable. It will be used to generate trees under the FBD process that conform to our clade constraints. 
+Next, we will define the \cl{fbd\_tree} variable as a random variable. It will be used to generate trees under the FBD process that conform to our clade constraints. 
 
 {\tt \begin{snugshade*}
 \begin{lstlisting}
@@ -285,7 +285,7 @@ fbd_tree ~ dnConstrainedTopology(tree_prior, constraints)
 \end{lstlisting}
 \end{snugshade*}}
 
-Finally, we can also add monitors for other quantities we might be interested in estimating. Below, we will define a monitor that prints the number of fossils that are inferred to be 'sampled ancestors' - lineages that are present in the phylogeny, and have descendents present on the tree. We will also define a monitor that prints the age of the crown group of bears, using the previously-defined extant bear constraint.
+Finally, we can also create deterministic nodes for other quantities we might be interested in monitoring. Below, we will define a monitor that prints the number of fossils that are inferred to be `sampled ancestors' - lineages that are present in the phylogeny, and have descendants present on the tree. We will also define a deterministic node for the age of the crown group of bears, using the previously-defined extant bear constraint (Section \ref{}).
 
 {\tt \begin{snugshade*}
 \begin{lstlisting}
