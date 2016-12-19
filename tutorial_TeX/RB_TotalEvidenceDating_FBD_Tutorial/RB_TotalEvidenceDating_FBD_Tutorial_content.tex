@@ -46,7 +46,7 @@ We provide the data file(s) which we will use in this tutorial.
 You may want to use your own data instead.
 In the \cl{data} folder, you will find the following files
 \begin{itemize}
-\item \cl{bears\_extant\_cytb.nex}: description of file/data (we also need more descriptive file names).
+\item \cl{bears\_cytb.nex}: description of file/data (we also need more descriptive file names).
 \end{itemize}
 
 
@@ -56,21 +56,23 @@ In the \cl{data} folder, you will find the following files
 \bigskip
 \subsection{Getting Started}\label{subsect:RB-GetStart}
 
-We will complete this analysis in \RevBayes by entering the \Rev code interactively. 
+%TODO Stuff about how to start or Rev basics?
 
-Note that some PDF viewers render some characters differently and if you copy/paste directly from this document, you may introduce erroneous characters. 
-This can cause commands to fail. 
-For learning, it's often better to `live code' and type the commands in manually, rather than copying and pasting. 
-
-Hints for navigating in the \RevBayes console:
-\begin{itemize}[noitemsep,topsep=0pt]
-    \item \cl{Ctrl+A} -- jump to the beginning of the line
-    \item \cl{Ctrl+E} -- jump to the end of the line
-    \item Pressing the up key will pull up previous commands, and allow you to edit them
-    \item If you enter the first few letters of a \RevBayes keyword and then the \textsc{Tab} key, this will `autocomplete' the remaining letters.
-    \item Help -- if you type \cl{?} followed immediately by a \RevBayes keyword, this will print the help pages for that keyword to the screen. (Example \cl{?dnBDP})
-\end{itemize}
-%In \RevBayes, \cl{Ctrl+A} allows you to jump to the start of the command, if you need to delete extra characters from the front of a line. \cl{Ctrl+E} allows you to jump to the end of a command. Pressing the up key will pull up previous commands, and allow you to edit them. If you do choose to copy and paste in commands, doing that from the tutorial script file will cause fewer errors. 
+%We will complete this analysis in \RevBayes by entering the \Rev code interactively. 
+%
+%Note that some PDF viewers render some characters differently and if you copy/paste directly from this document, you may introduce erroneous characters. 
+%This can cause commands to fail. 
+%For learning, it's often better to `live code' and type the commands in manually, rather than copying and pasting. 
+%
+%Hints for navigating in the \RevBayes console:
+%\begin{itemize}[noitemsep,topsep=0pt]
+%    \item \cl{Ctrl+A} -- jump to the beginning of the line
+%    \item \cl{Ctrl+E} -- jump to the end of the line
+%    \item Pressing the up key will pull up previous commands, and allow you to edit them
+%    \item If you enter the first few letters of a \RevBayes keyword and then the \textsc{Tab} key, this will `autocomplete' the remaining letters.
+%    \item Help -- if you type \cl{?} followed immediately by a \RevBayes keyword, this will print the help pages for that keyword to the screen. (Example \cl{?dnBDP})
+%\end{itemize}
+%%In \RevBayes, \cl{Ctrl+A} allows you to jump to the start of the command, if you need to delete extra characters from the front of a line. \cl{Ctrl+E} allows you to jump to the end of a command. Pressing the up key will pull up previous commands, and allow you to edit them. If you do choose to copy and paste in commands, doing that from the tutorial script file will cause fewer errors. 
 
 \bigskip
 
@@ -350,13 +352,13 @@ Enter the \Rev code provided in this section in the new model file.
 \subsection{Complete MCMC File}\label{subsect:RB-CompleteMCMC}
 
 {\begin{framed}
-Return to the master \Rev file you created in Section \ref{sect:StartMasterRev} called {\textcolor{red}{\cl{mcmc\_TEFBD.Rev}}} in the \cl{scripts} directory.
+Return to the master \Rev file you created in Section \ref{subsect:RB-StartMasterRev} called {\textcolor{red}{\cl{mcmc\_TEFBD.Rev}}} in the \cl{scripts} directory.
 
 Enter the \Rev code provided in this section in this file.
 \end{framed}}
 
 \medskip
-\subsubsection{Source Model Scripts}
+\subsubsection{Source Model Scripts}\label{subsub:RB-SourceMods}
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 source("scripts/model_FBDP_TEFBD.Rev")
@@ -372,7 +374,7 @@ source("scripts/model_Morph_TEFBD.Rev")
 
 
 \medskip
-\subsubsection{Create Model Object}
+\subsubsection{Create Model Object}\label{subsub:RB-ModObj}
 
 
 {\tt \begin{snugshade*}
@@ -382,7 +384,7 @@ mymodel = model(sf)
 \end{snugshade*}}
 
 \medskip
-\subsubsection{Specify Monitors and Output Filenames}
+\subsubsection{Specify Monitors and Output Filenames}\label{subsub:RB-Monitors}
 
 
 {\tt \begin{snugshade*}
@@ -458,16 +460,16 @@ source("scripts/mcmc_TEFBD.Rev")
 \end{snugshade*}}}
 
 \bigskip
-\subsection{Summarize Your Results}\label{subsect:SummarizeResults}
+\subsection{Summarize Your Results}\label{subsect:RB-SummarizeResults}
 
 \medskip
-\subsubsection{Evaluate MCMC}\label{subsub:EvalMCMC}
+\subsubsection{Evaluate MCMC}\label{subsub:RB-EvalMCMC}
 
 %TODO this is tracer stuff
 
 
 \medskip
-\subsubsection{Summarize Tree}\label{subsub:SummarizeTree}
+\subsubsection{Summarize Tree}\label{subsub:RB-SummarizeTree}
 
 %TODO this they can do interactively in rb
 
@@ -492,5 +494,15 @@ trace_pruned = treeTrace(trees)
 mccTree(trace_pruned, "output/bears.mcc.tre" )
 \end{lstlisting}
 \end{snugshade*}}
+
+See Fig.\ \ref{fig:IcyTreeSumm}
+
+\begin{figure}[h!]
+\centering
+\fbox{\includegraphics[width=\textwidth,angle=0]{\ResourcePath figures/summary_tree.pdf}}
+\caption{\small This is a place-holder figure.}
+\label{fig:IcyTreeSumm}
+\end{figure}
+
 
 %TODO IcyTree
