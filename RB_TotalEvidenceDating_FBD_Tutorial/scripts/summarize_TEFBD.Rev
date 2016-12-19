@@ -1,0 +1,12 @@
+
+# Read in the tree trace and construct the maximum clade credibility (MCC) tree #
+# First, prune the fossil taxa for which we do not morphological or molecular data #
+trace = readTreeTrace("output/bears.trees")
+
+for(i in 1:trace.size())
+{
+    trees[i] = fnPruneTree(trace.getTree(i), pruneTaxa=v(taxa[17],taxa[20]))
+}
+
+trace_pruned = treeTrace(trees)
+mccTree(trace_pruned, "output/bears.mcc.tre" )
