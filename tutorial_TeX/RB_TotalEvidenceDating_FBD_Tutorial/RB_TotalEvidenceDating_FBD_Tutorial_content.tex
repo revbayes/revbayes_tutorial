@@ -356,6 +356,22 @@ Enter the \Rev code provided in this section in this file.
 \end{framed}}
 
 \medskip
+\subsubsection{Source Model Scripts}
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+source("scripts/model_FBDP_TEFBD.Rev")
+
+source("scripts/model_UCExp_TEFBD.Rev")
+
+source("scripts/model_GTRG_TEFBD.Rev")
+
+source("scripts/model_Morph_TEFBD.Rev")
+\end{lstlisting}
+\end{snugshade*}}
+
+
+
+\medskip
 \subsubsection{Create Model Object}
 
 
@@ -387,6 +403,27 @@ monitors[mni++] = mnScreen(printgen=10, age_extant, num_samp_anc, origin_time)
 mymcmc = mcmc(mymodel, monitors, moves)
 
 mymcmc.run(generations=10000)
+\end{lstlisting}
+\end{snugshade*}}
+
+{\begin{framed}
+Save and close all files.
+\end{framed}}
+
+\bigskip
+\subsection{Run it}
+
+
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+./rb
+\end{lstlisting}
+\end{snugshade*}}
+
+Execute the MCMC analysis:
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+source("scripts/mcmc_TEFBD.Rev")
 \end{lstlisting}
 \end{snugshade*}}
 
