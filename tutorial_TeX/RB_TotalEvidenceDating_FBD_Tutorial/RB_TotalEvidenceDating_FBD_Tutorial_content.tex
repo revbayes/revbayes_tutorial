@@ -58,6 +58,19 @@ In the \cl{data} folder, you will find the following files
 
 We will complete this analysis in \RevBayes by entering the \Rev code interactively. 
 
+Note that some PDF viewers render some characters differently and if you copy/paste directly from this document, you may introduce erroneous characters. 
+This can cause commands to fail. 
+For learning, it's often better to `live code' and type the commands in manually, rather than copying and pasting. 
+
+Hints for navigating in the \RevBayes console:
+\begin{itemize}[noitemsep,topsep=0pt]
+    \item \cl{Ctrl+A} -- jump to the beginning of the line
+    \item \cl{Ctrl+E} -- jump to the end of the line
+    \item Pressing the up key will pull up previous commands, and allow you to edit them
+    \item If you enter the first few letters of a \RevBayes keyword and then the \textsc{Tab} key, this will `autocomplete' the remaining letters.
+    \item Help -- if you type \cl{?} followed immediately by a \RevBayes keyword, this will print the help pages for that keyword to the screen. (Example \cl{?dnBDP})
+\end{itemize}
+%In \RevBayes, \cl{Ctrl+A} allows you to jump to the start of the command, if you need to delete extra characters from the front of a line. \cl{Ctrl+E} allows you to jump to the end of a command. Pressing the up key will pull up previous commands, and allow you to edit them. If you do choose to copy and paste in commands, doing that from the tutorial script file will cause fewer errors. 
 
 \bigskip
 
@@ -80,7 +93,7 @@ If you've done this correctly, you should see the prompt shown below
 \end{snugshade*}}
 
 
-First load in the sequences using the \cl{readDiscreteCharacterData()} function. Note that copying and pasting instructions can lead to extraneous characters being copied. This can cause commands to fail. For learning, it's often better to 'live code' and type the commands in manually, rather than copying and pasting. \cl{Ctrl+A} allows you to jump to the start of the command, if you need to delete extra characters from the front of a line. \cl{Ctrl+E} allows you to jump to the end of a command. Pressing the up key will pull up previous commands, and allow you to edit them. If you do choose to copy and paste in commands, doing that from the tutorial script file will cause fewer errors. 
+First load in the sequences using the \cl{readDiscreteCharacterData()} function and assign it to a variable called \cl{cytb}. 
 
 {\tt \begin{snugshade*}
 \begin{lstlisting}
@@ -88,7 +101,7 @@ cytb <- readDiscreteCharacterData("data/bears_cytb.nex")
 \end{lstlisting}
 \end{snugshade*}}
 Executing these lines initializes the data matrix as the respective \Rev variables. 
-To report the current value of any variable, simply type the variable name and press enter. For the \cl{data} matrix, this provides information about the alignment:
+To report the current value of any variable, simply type the variable name and press enter. For the \cl{cytb} data matrix, this provides information about the alignment:
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 cytb
@@ -103,7 +116,7 @@ cytb
 \end{lstlisting}
 \end{snugshade*}}
 
-Next, we import the morphological character matrix. 
+Next, import the morphological character matrix and assign it to the variable \cl{morpho}. 
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 morpho <- readDiscreteCharacterData("data/bears_morphology.nex")
@@ -135,9 +148,13 @@ n_taxa <- taxa.size() # the number of taxa
 \end{lstlisting}
 \end{snugshade*}}
 
-If you open the bears taxa file, you'll notice that this is a tab-separated file of all of the taxon names, with the age in millions of years ago (mya) in the second column. An age of 0.0 indicates an extant bear. We will use this information to allow fossils to be incorporated as tips in the analysis. \par
+If you open the bears taxa file (\cl{bears\_taxa.tsv}), you'll notice that this is a tab-separated file of all of the taxon names, with the age in millions of years ago (mya) in the second column. 
+An age of 0.0 indicates an extant bear species. 
+We will use this information to allow fossils to be incorporated as tips in the analysis. 
 
-The last bit of data preparation we will do is to add any taxa that are not found in the molecular partition (i.e. are only found in the fossil data) to the molecular partition as missing data, and vice versa.
+Notice that the two data matrices have different numbers of taxa. The last bit of data preparation we will do is to add any taxa that are not found in the molecular partition (i.e. are only found in the fossil data) to the molecular partition as missing data, and vice versa.
+In order for all the taxa to appear on the same tree, they all need to be part of the same dataset, as opposed to present in separate datasets. 
+This ensures that there is a unified taxon set that contains all of our tips.
 
 {\tt \begin{snugshade*}
 \begin{lstlisting}
@@ -146,34 +163,40 @@ morpho.addMissingTaxa( taxa )
 \end{lstlisting}
 \end{snugshade*}}
 
-In order for all the taxa to appear on the same tree, they all need to be part of the same dataset, as opposed to present in separate datasets. This ensures that there is a unified taxon set that contains all of our tips.
 
 \bigskip
 
-\subsection{Specify monophyletic clade constraints}
+\subsection{Specify Clades}
 
-RevBayes allows researchers to use clade constraints to put a zero probability on trees not containing certain clades. In our case, Ursinae (brown bears, black bears and sloth bears) and Ailuropodinae (pandas and their close relatives) are both very well supported subfamilies. We will add constraints for these two groups. We will also define a constraint for the extant bears, though we will not use it until section 4.5.
+RevBayes allows researchers to use clade constraints to put a zero probability on trees not containing certain clades. In our case, Ursinae (brown bears, black bears and sloth bears) and Ailuropodinae (pandas and their close relatives) are both very well supported subfamilies. We will add constraints for these two groups. 
 
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-clade_ursinae = clade("Melursus_ursinus", "Ursus_arctos", "Ursus_maritimus", 
-                      "Helarctos_malayanus", "Ursus_americanus", "Ursus_thibetanus", 
-                      "Ursus_abstrusus", "Ursus_spelaeus")
-clade_pandas = clade("Ailuropoda_melanoleuca", "Indarctos_vireti", "Indarctos_arctoides", 
-                     "Indarctos_punjabiensis", "Ailurarctos_lufengensis", "Agriarctos_spp", 
-                     "Kretzoiarctos_beatrix")
-clade_extant = clade("Ailuropoda_melanoleuca","Tremarctos_ornatus","Melursus_ursinus",
-                    "Ursus_arctos","Ursus_maritimus","Helarctos_malayanus",
-                    "Ursus_americanus","Ursus_thibetanus")
+clade_ursinae = clade("Melursus_ursinus","Ursus_arctos","Ursus_maritimus", 
+                         "Helarctos_malayanus","Ursus_americanus","Ursus_thibetanus", 
+                         "Ursus_abstrusus","Ursus_spelaeus")
+clade_pandas = clade("Ailuropoda_melanoleuca","Indarctos_vireti",
+                        "Indarctos_arctoides","Indarctos_punjabiensis", 
+                        "Ailurarctos_lufengensis","Agriarctos_spp",
+                        "Kretzoiarctos_beatrix")
 constraints = v(clade_pandas, clade_ursinae)
+\end{lstlisting}
+\end{snugshade*}}
+
+We will also define a clade for the extant bears that will not be constrained. This will allow us to monitor the age of this node in our log file (in Section \ref{?}).
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+clade_extant = clade("Ailuropoda_melanoleuca","Tremarctos_ornatus","Melursus_ursinus",
+                       "Ursus_arctos","Ursus_maritimus","Helarctos_malayanus",
+                       "Ursus_americanus","Ursus_thibetanus")
 \end{lstlisting}
 \end{snugshade*}}
 
 \bigskip
 
-\subsection{Specify monophyletic clade constraints}
+\subsection{Create a Helper Variable}
 
-Now that our data are loaded and prepared, we can specify the Fossilized Birth-Death model, and the MCMC moves associated with it. As we work, we will be creating moves to govern how values are sampled for our various priors and parameters. We'll first create an iterator to hold all of our moves.
+Now that our data are loaded and prepared, we can specify the fossilized birth-death model, and the MCMC moves associated with it. As we work, we will be creating moves to govern how values are sampled for our various priors and parameters. We'll first create an iterator to hold all of our moves.
 
 {\tt \begin{snugshade*}
 \begin{lstlisting}
