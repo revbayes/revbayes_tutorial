@@ -61,7 +61,7 @@ clade_tremarctinae = clade("Tremarctos_ornatus", "Arctodus_simus")
 clade_brownbears = clade("Ursus_arctos", "Ursus_maritimus", "Ursus_spelaeus")
 
 #constraints = v(clade_crownbears, clade_pandas, clade_tremarctinae, clade_ursinae, clade_brownbears)
-constraints = v(clade_pandas, clade_ursinae)
+#constraints = v(clade_pandas, clade_ursinae)
 
 ##########################################################################################
 # Joint Fossilized Birth-Death Process prior on the topology and fossil occurrence times #
@@ -119,6 +119,7 @@ tree_prior = dnFBDP(origin=origin_time, lambda=birth_rate, mu=death_rate, psi=ps
 
 # The will be a random variable of a constrained topology distribution that is governed by the FBD #
 # this distribution will generate FBD trees that match the monophyly constraints defined above #
+constraints = v(clade_pandas, clade_ursinae)
 fbd_tree ~ dnConstrainedTopology(tree_prior, constraints=constraints)
 
 #print(fbd_tree)
