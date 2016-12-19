@@ -9,15 +9,15 @@ death_rate ~ dnExponential(10)
 
 # Specify a scale move on the birth_rate parameter #
 # This move will be applied with 3 different tuning values (lambda) to help improve mixing # 
-moves[mvi++] = mvScale(birth_rate, lambda=0.01, weight=1/3)
-moves[mvi++] = mvScale(birth_rate, lambda=0.1,  weight=1/3)
-moves[mvi++] = mvScale(birth_rate, lambda=1.0,  weight=1/3)
+moves[mvi++] = mvScale(birth_rate, lambda=0.01, weight=1)
+moves[mvi++] = mvScale(birth_rate, lambda=0.1,  weight=1)
+moves[mvi++] = mvScale(birth_rate, lambda=1.0,  weight=1)
 
 # Specify a sliding-window move on the death_rate parameter #
 # This move will be applied with 3 different window widths (delta) to help improve mixing # 
-moves[mvi++] = mvScale(death_rate, lambda=0.01, weight=1/3)
-moves[mvi++] = mvScale(death_rate, lambda=0.1,  weight=1/3)
-moves[mvi++] = mvScale(death_rate, lambda=1,    weight=1/3)
+moves[mvi++] = mvScale(death_rate, lambda=0.01, weight=1)
+moves[mvi++] = mvScale(death_rate, lambda=0.1,  weight=1)
+moves[mvi++] = mvScale(death_rate, lambda=1,    weight=1)
 
 # Create deterministic nodes for the diversification and turnover rates so that they can be monitored #
 diversification := birth_rate - death_rate
