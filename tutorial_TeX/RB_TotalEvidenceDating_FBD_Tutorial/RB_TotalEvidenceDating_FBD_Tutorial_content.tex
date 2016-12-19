@@ -58,26 +58,54 @@ In the \cl{data} folder, you will find the following files
 
 We will complete this analysis in \RevBayes by entering the \Rev code interactively. 
 
+Note that some PDF viewers render some characters differently and if you copy/paste directly from this document, you may introduce erroneous characters. 
+This can cause commands to fail. 
+For learning, it's often better to `live code' and type the commands in manually, rather than copying and pasting. 
+
+Hints for navigating in the \RevBayes console:
+\begin{itemize}[noitemsep,topsep=0pt]
+    \item \cl{Ctrl+A} -- jump to the beginning of the line
+    \item \cl{Ctrl+E} -- jump to the end of the line
+    \item Pressing the up key will pull up previous commands, and allow you to edit them
+    \item If you enter the first few letters of a \RevBayes keyword and then the \textsc{Tab} key, this will `autocomplete' the remaining letters.
+    \item Help -- if you type \cl{?} followed immediately by a \RevBayes keyword, this will print the help pages for that keyword to the screen. (Example \cl{?dnBDP})
+\end{itemize}
+%In \RevBayes, \cl{Ctrl+A} allows you to jump to the start of the command, if you need to delete extra characters from the front of a line. \cl{Ctrl+E} allows you to jump to the end of a command. Pressing the up key will pull up previous commands, and allow you to edit them. If you do choose to copy and paste in commands, doing that from the tutorial script file will cause fewer errors. 
 
 \bigskip
 
 \subsection{Loading the Data}
 
-\noindent \\ \impmark Download data and output files (if you don't have them already) from: \\ \href{http://revbayes.github.io/tutorials.html}{http://revbayes.github.io/tutorials.html}
+\noindent \\ \impmark Download data and output files (if you don't have them already) from: \\ \href{http://revbayes.github.io/tutorials.html}{http://revbayes.github.io/tutorials.html} \par
 
-
-First load in the sequences using the \cl{readDiscreteCharacterData()} function. 
+Start up RevBayes at the command line. You should do this from within the \cl{RB\_TotalEvidenceDating\_FBD\_Tutorial} directory.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-data <- readDiscreteCharacterData("data/bears_cytb.nex") 
+./rb
+\end{lstlisting}
+\end{snugshade*}}
+
+If you've done this correctly, you should see the prompt shown below
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+>
+\end{lstlisting}
+\end{snugshade*}}
+
+
+First load in the sequences using the \cl{readDiscreteCharacterData()} function and assign it to a variable called \cl{cytb}. 
+
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+cytb <- readDiscreteCharacterData("data/bears_cytb.nex") 
 \end{lstlisting}
 \end{snugshade*}}
 Executing these lines initializes the data matrix as the respective \Rev variables. 
-To report the current value of any variable, simply type the variable name and press enter. For the \cl{data} matrix, this provides information about the alignment:
+To report the current value of any variable, simply type the variable name and press enter. For the \cl{cytb} data matrix, this provides information about the alignment:
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-data
-|*   DNA character matrix with 23 taxa and 1141 characters
+cytb
+|*      DNA character matrix with 10 taxa and 1000 characters
 |*   =====================================================
 |*   Origination:                      bears_cytb.nex
 |*   Number of taxa:                   10
@@ -87,6 +115,189 @@ data
 |*   Datatype:                         DNA
 \end{lstlisting}
 \end{snugshade*}}
+
+Next, import the morphological character matrix and assign it to the variable \cl{morpho}. 
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+morpho <- readDiscreteCharacterData("data/bears_morphology.nex")
+\end{lstlisting}
+\end{snugshade*}}
+
+The information about the morphological character matrix should look like this:
+
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+morpho
+|*    Standard character matrix with 18 taxa and 81 characters
+|*    ========================================================
+|*    Origination:                   bears_morphology.nex
+|*    Number of taxa:                18
+|*    Number of included taxa:       18
+|*    Number of characters:          81
+|*    Number of included characters: 81
+|*    Datatype:                      Standard
+\end{lstlisting}
+\end{snugshade*}}
+
+Now we read in the full list of taxa and create a workspace object with the total number of taxa. 
+
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+taxa <- readTaxonData("data/bears_taxa.tsv", delimiter=TAB)
+n_taxa <- taxa.size() # the number of taxa
+\end{lstlisting}
+\end{snugshade*}}
+
+If you open the bears taxa file (\cl{bears\_taxa.tsv}), you'll notice that this is a tab-separated file of all of the taxon names, with the age in millions of years ago (mya) in the second column. 
+An age of 0.0 indicates an extant bear species. 
+We will use this information to allow fossils to be incorporated as tips in the analysis. 
+
+Notice that the two data matrices have different numbers of taxa. The last bit of data preparation we will do is to add any taxa that are not found in the molecular partition (i.e. are only found in the fossil data) to the molecular partition as missing data, and vice versa.
+In order for all the taxa to appear on the same tree, they all need to be part of the same dataset, as opposed to present in separate datasets. 
+This ensures that there is a unified taxon set that contains all of our tips.
+
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+cytb.addMissingTaxa( taxa )
+morpho.addMissingTaxa( taxa )
+\end{lstlisting}
+\end{snugshade*}}
+
+
+\bigskip
+
+\subsection{Specify Clades}
+
+RevBayes allows researchers to use clade constraints to put a zero probability on trees not containing certain clades. In our case, Ursinae (brown bears, black bears and sloth bears) and Ailuropodinae (pandas and their close relatives) are both very well supported subfamilies. We will add constraints for these two groups. 
+
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+clade_ursinae = clade("Melursus_ursinus","Ursus_arctos","Ursus_maritimus", 
+                         "Helarctos_malayanus","Ursus_americanus","Ursus_thibetanus", 
+                         "Ursus_abstrusus","Ursus_spelaeus")
+clade_pandas = clade("Ailuropoda_melanoleuca","Indarctos_vireti",
+                        "Indarctos_arctoides","Indarctos_punjabiensis", 
+                        "Ailurarctos_lufengensis","Agriarctos_spp",
+                        "Kretzoiarctos_beatrix")
+constraints = v(clade_pandas, clade_ursinae)
+\end{lstlisting}
+\end{snugshade*}}
+
+We will also define a clade for the extant bears that will not be constrained. This will allow us to monitor the age of this node in our log file (in Section \ref{?}).
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+clade_extant = clade("Ailuropoda_melanoleuca","Tremarctos_ornatus","Melursus_ursinus",
+                       "Ursus_arctos","Ursus_maritimus","Helarctos_malayanus",
+                       "Ursus_americanus","Ursus_thibetanus")
+\end{lstlisting}
+\end{snugshade*}}
+
+\bigskip
+
+\subsection{Create a Helper Variable}
+
+Now that our data are loaded and prepared, we can specify the fossilized birth-death model, and the MCMC moves associated with it. As we work, we will be creating moves to govern how values are sampled for our various priors and parameters. We'll first create an iterator to hold all of our moves.
+
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+mvi = 1
+\end{lstlisting}
+\end{snugshade*}}
+
+\bigskip
+
+\subsection{Specify the fossilized birth-death process}
+
+Two key parameters of the FBD process are the birth rate (the rate at which lineages are added to the tree) and the death rate (the rate at which lineages are removed from the tree). We'll place exponential priors on both of these values. An exponential prior with a $\lambda$ =  10 places a higher probability on values less than 0.4 for these parameters. 
+
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+birth_rate ~ dnExponential(10)
+death_rate ~ dnExponential(10)
+\end{lstlisting}
+\end{snugshade*}}
+
+Now that the priors have been specified, we give RevBayes some information on how to sample values for our parameters. We'll use a scaling move, which changes the value sampled multiplicatively with the tuning parameter. We will use three different tuning parameters, which govern the size of the move. Including multiple tuning parameters improves mixing. 
+
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+moves[mvi++] = mvScale(birth_rate, lambda=0.01, weight=3.0)
+moves[mvi++] = mvScale(birth_rate, lambda=0.1, weight=3.0)
+moves[mvi++] = mvScale(birth_rate, lambda=1.0, weight=3.0)
+moves[mvi++] = mvScale(death_rate, delta=0.01, weight=3.0)
+moves[mvi++] = mvScale(death_rate, delta=0.1, weight=3.0)
+moves[mvi++] = mvScale(death_rate, delta=1, weight=3.0)
+\end{lstlisting}
+\end{snugshade*}}
+
+In order to print nodes in our graph to output (also called \textit{monitoring}), we need to create deterministic nodes for the diversification and turnover. Deterministic nodes are value transformations between existing stochastic nodes. So we will define diversification and turnover as deterministic nodes.
+
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+diversification := birth_rate - death_rate
+turnover := death_rate/birth_rate
+\end{lstlisting}
+\end{snugshade*}}
+
+All extant bears are represented in this dataset. Therefore, we can fix the sampling probability of extant lineages to 1.
+
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+rho <- 1.0
+\end{lstlisting}
+\end{snugshade*}}
+
+The rate of sampling fossils ($\psi$), on the other hand is not known. We will use an exponential prior on this parameter as well, and use a slide move to sample values from our distribution.
+
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+psi ~ dnExponential(10) 
+moves[mvi++] = mvScale(birth_rate, lambda=0.01, weight=3.0)
+moves[mvi++] = mvScale(birth_rate, lambda=0.1, weight=3.0)
+moves[mvi++] = mvScale(birth_rate, lambda=1.0, weight=3.0)
+\end{lstlisting}
+\end{snugshade*}}
+
+Under the FBD model, the process is conditioned on the age of the origin, or the start of the process. 
+We will specify a uniform distribution on the age of the origin. If you looked in the bears taxa file, you might notice that the age of the oldest fossil is slightly younger than the upper bound of the uniform distribution on the origin age. 
+For this parameter, we will use a sliding window move. A sliding window move samples within an interval (defined by \cl{delta}) . Sliding window moves can be tricky for small values, as the window may overlap zero. However, for parameters such as the origin, there is little risk of this being an issue.
+
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+origin_time ~ dnUnif(37.0, 55.0)
+moves[mvi++] = mvSlide(origin_time, delta=0.01, weight=10.0)
+moves[mvi++] = mvSlide(origin_time, delta=0.1, weight=10.0)
+moves[mvi++] = mvSlide(origin_time, delta=1, weight=10.0)
+\end{lstlisting}
+\end{snugshade*}}
+
+All the parameters of the FBD process are now defined. The next step is to combine these parameters to define the tree prior as the FBD.
+
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+tree_prior = dnFBDP(origin=origin_time, lambda=birth_rate, mu=death_rate, psi=psi, rho=rho, taxa=taxa)
+\end{lstlisting}
+\end{snugshade*}}
+
+Next, we will define the \cl{fbd\_tree} variable as a random variable. It will be used to generate trees under the FBD process that conform to our clade constraints. 
+
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+fbd_tree ~ dnConstrainedTopology(tree_prior, constraints) 
+\end{lstlisting}
+\end{snugshade*}}
+
+Finally, we can also create deterministic nodes for other quantities we might be interested in monitoring. Below, we will define a monitor that prints the number of fossils that are inferred to be `sampled ancestors' - lineages that are present in the phylogeny, and have descendants present on the tree. We will also define a deterministic node for the age of the crown group of bears, using the previously-defined extant bear constraint (Section \ref{}).
+
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+sa := fbd_tree.numSampledAncestors();
+crown := tmrca(fbd_tree, clade_extant)
+\end{lstlisting}
+\end{snugshade*}}
+
+
+
 %% This is what output looks like
 
 %\begin{figure}[htbp!]
@@ -96,5 +307,6 @@ data
 %\label{fig:example}
 %\end{figure}
 
-\bibliographystyle{sysbio}
-\bibliography{\GlobalResourcePath refs}
+
+%\bibliographystyle{sysbio}
+%\bibliography{\GlobalResourcePath refs}

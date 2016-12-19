@@ -1,0 +1,84 @@
+################################################################################
+#
+# RevBayes Example: Total-evidence dating under the fossilized birth-death model
+# 
+# This file: Runs the full MCMC ...
+#
+# authors: Tracy A. Heath, Walker C. Pett, April M. Wright
+#
+################################################################################
+
+#######################
+# Reading in the Data #
+#######################
+
+# Import the molecular sequences #
+# this file contains only the taxa for which sequence data are available #
+cytb <- readDiscreteCharacterData("data/bears_cytb.nex")
+
+# Import the morphological character matrix #
+# this file contains only the taxa for which morphological characters are available #
+morpho <- readDiscreteCharacterData("data/bears_morphology.nex")
+
+# Create the full list of taxa (including all fossils and extant species #
+taxa <- readTaxonData("data/bears_taxa.tsv", delimiter=TAB)
+
+# Add the missing taxa to each data partition #
+cytb.addMissingTaxa( taxa )
+morpho.addMissingTaxa( taxa )
+
+## helpers
+n_taxa <- taxa.size() # the number of taxa
+mvi = 1
+
+
+source("scripts/model_FBDP_TEFBD.Rev")
+
+source("scripts/model_UCExp_TEFBD.Rev")
+
+source("scripts/model_GTRG_TEFBD.Rev")
+
+source("scripts/model_Mkv_TEFBD.Rev")
+
+
+###################################
+# MCMC and summarizing the output #
+###################################
+
+# initialize the model object #
+mymodel = model(sf)
+#mymodel.graph("model.dot")
+
+mni = 1
+
+# Create a vector of monitors #
+# 1. for the full model #
+monitors[mni++] = mnModel(filename="output/bears.log", printgen=10)
+# 2. the tree #
+monitors[mni++] = mnFile(filename="output/bears.trees", printgen=10, fbd_tree)
+# 3. and a few select parameters to be printed to the screen #
+monitors[mni++] = mnScreen(printgen=10, age_extant, num_samp_anc, origin_time)
+
+# Initialize the MCMC object #
+mymcmc = mcmc(mymodel, monitors, moves)
+
+# Run the MCMC #
+mymcmc.run(generations=10000)
+
+# Summarize the acceptance rates of the various moves #
+#mymcmc.operatorSummary()
+
+# Read in the tree trace and construct the maximum clade credibility (MCC) tree #
+# First, prune the fossil taxa for which we do not morphological or molecular data #
+trace = readTreeTrace("output/bears.trees")
+
+for(i in 1:trace.getNumberSamples())
+{
+    trees[i] = fnPruneTree(trace.getTree(i), pruneTaxa=v(taxa[17],taxa[20]))
+}
+
+trace_pruned = treeTrace(trees)
+mccTree(trace_pruned, "output/bears.mcc.tre" )
+
+# Quit RevBayes #
+q()
