@@ -33,6 +33,18 @@ morpho.addMissingTaxa( taxa )
 # Monophyletic clade constraints #
 ##############################################
 
+# We don't have morphological or molecular data for Ursus_abstrusus #
+# So define a clade for Ursinae including it #
+# We will use this as a constraint on the topology #
+clade_ursinae = clade("Melursus_ursinus", "Ursus_arctos", "Ursus_maritimus", 
+                      "Helarctos_malayanus", "Ursus_americanus", "Ursus_thibetanus", 
+                      "Ursus_abstrusus", "Ursus_spelaeus")
+                      
+# Note: We also do not have morphological or molecular data for Parictis_montanus #
+# but this fossil is constrained only to be a member of the bears total group #
+# so we don't need to define a clade constraint #
+
+# Define other constraints #
 clade_crownbears = clade("Ailuropoda_melanoleuca", "Tremarctos_ornatus", "Melursus_ursinus", 
                          "Ursus_arctos", "Ursus_maritimus", "Helarctos_malayanus", 
                          "Ursus_americanus", "Ursus_thibetanus", "Indarctos_vireti", 
@@ -43,19 +55,13 @@ clade_crownbears = clade("Ailuropoda_melanoleuca", "Tremarctos_ornatus", "Melurs
 clade_pandas = clade("Ailuropoda_melanoleuca", "Indarctos_vireti", "Indarctos_arctoides", 
                      "Indarctos_punjabiensis", "Ailurarctos_lufengensis", "Agriarctos_spp", 
                      "Kretzoiarctos_beatrix")
+                     
 clade_tremarctinae = clade("Tremarctos_ornatus", "Arctodus_simus")
-clade_ursinae = clade("Melursus_ursinus", "Ursus_arctos", "Ursus_maritimus", 
-                      "Helarctos_malayanus", "Ursus_americanus", "Ursus_thibetanus", 
-                      "Ursus_abstrusus", "Ursus_spelaeus")
+
 clade_brownbears = clade("Ursus_arctos", "Ursus_maritimus", "Ursus_spelaeus")
 
-#constraints = v(clade_crownbears, clade_pandas, clade_tremarctinae, clade_ursinae, clade_brownbears)
-constraints = v(clade_pandas, clade_ursinae)
-
-clade_extant = clade("Ailuropoda_melanoleuca","Tremarctos_ornatus","Melursus_ursinus",
-                    "Ursus_arctos","Ursus_maritimus","Helarctos_malayanus",
-                    "Ursus_americanus","Ursus_thibetanus")
-
+constraints = v(clade_crownbears, clade_pandas, clade_tremarctinae, clade_ursinae, clade_brownbears)
+#constraints = v(clade_pandas, clade_ursinae)
 
 ##########################################################################################
 # Joint Fossilized Birth-Death Process prior on the topology and fossil occurrence times #
@@ -113,8 +119,9 @@ tree_prior = dnFBDP(origin=origin_time, lambda=birth_rate, mu=death_rate, psi=ps
 
 # The will be a random variable of a constrained topology distribution that is governed by the FBD #
 # this distribution will generate FBD trees that match the monophyly constraints defined above #
-fbd_tree ~ dnConstrainedTopology(tree_prior, constraints)
+fbd_tree ~ dnConstrainedTopology(tree_prior, constraints=constraints)
 
+#print(fbd_tree)
 # Specify moves on the tree and node times #
 # These moves update the tree topology 
 moves[mvi++] = mvFNPR(fbd_tree, weight=15.0)
@@ -157,6 +164,11 @@ moves[mvi++] = mvFossilTimeSlideUniform(fbd_tree, origin_time, weight=5.0)
 # Monitor the number of sampled ancestors in the FBD-tree #
 num_samp_anc := fbd_tree.numSampledAncestors();
 
+# Create a clade of extant bears so we can monitor its age #
+clade_extant = clade("Ailuropoda_melanoleuca","Tremarctos_ornatus","Melursus_ursinus",
+                    "Ursus_arctos","Ursus_maritimus","Helarctos_malayanus",
+                    "Ursus_americanus","Ursus_thibetanus")
+                    
 # Monitor the age of the extant bears #
 age_extant := tmrca(fbd_tree, clade_extant)
 
@@ -314,10 +326,10 @@ monitors[mni++] = mnScreen(printgen=10, age_extant, num_samp_anc, origin_time)
 mymcmc = mcmc(mymodel, monitors, moves)
 
 # Run the MCMC #
-mymcmc.run(generations=10000)
+mymcmc.run(generations=500)
 
 # Summarize the acceptance rates of the various moves #
-mymcmc.operatorSummary()
+#mymcmc.operatorSummary()
 
 # Read in the tree trace and construct the maximum clade credibility (MCC) tree #
 trace = readTreeTrace( "output/bears.trees" )
