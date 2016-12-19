@@ -326,7 +326,7 @@ monitors[mni++] = mnScreen(printgen=10, age_extant, num_samp_anc, origin_time)
 mymcmc = mcmc(mymodel, monitors, moves)
 
 # Run the MCMC #
-mymcmc.run(generations=500)
+mymcmc.run(generations=10000)
 
 # Summarize the acceptance rates of the various moves #
 #mymcmc.operatorSummary()
