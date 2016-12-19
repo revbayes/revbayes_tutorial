@@ -21,7 +21,7 @@ cytb <- readDiscreteCharacterData("data/bears_cytb.nex")
 morpho <- readDiscreteCharacterData("data/bears_morphology.nex")
 
 # Create the full list of taxa (including all fossils and extant species #
-taxa <- readTaxonData("data/bears_taxa.tsv", delimiter=TAB)
+taxa <- readTaxonData("data/bears_taxa.tsv")
 n_taxa <- taxa.size() # the number of taxa
 
 # Add the missing taxa to each data partition #
@@ -332,8 +332,16 @@ mymcmc.run(generations=10000)
 #mymcmc.operatorSummary()
 
 # Read in the tree trace and construct the maximum clade credibility (MCC) tree #
-trace = readTreeTrace( "output/bears.trees" )
-mccTree(trace, "output/bears.mcc.tre" )
+# First, prune the fossil taxa for which we do not morphological or molecular data #
+trees = readTrees("output/bears.trees")
+
+for(i in 1:trace.size())
+{
+    trees[i] = fnPruneTree(trees[i], pruneTaxa=v(taxa[17],taxa[20]))
+}
+
+trace_pruned = treeTrace(trees)
+mccTree(trace_pruned, "output/bears.mcc.tre" )
 
 # Quit RevBayes #
 q()
