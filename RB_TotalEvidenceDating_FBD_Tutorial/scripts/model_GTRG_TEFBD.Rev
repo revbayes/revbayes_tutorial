@@ -1,5 +1,5 @@
 #####################################
-# GTR nucleotide substitution model #
+# GTR+G nucleotide substitution model #
 #####################################
 
 # Initialize the parameters of substitution matrix #
