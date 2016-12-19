@@ -82,8 +82,13 @@ In this exercise, you will work primarily in your text editor and create a set o
 \bigskip
 \subsection{Start the Master \Rev File and Import Data}
 
+{\begin{framed}
+Open your text editor and create the master \Rev file called {\textcolor{red}{\cl{mcmc\_TEFBD.Rev}}} in the \cl{scripts} directory.
 
-\noindent \\ \impmark Download data and output files (if you don't have them already) from: \\ \href{http://revbayes.github.io/tutorials.html}{http://revbayes.github.io/tutorials.html}
+Enter the \Rev code provided in this section in the new model file.
+\end{framed}}
+
+%\noindent Download data and output files (if you don't have them already) from: \\ \href{http://revbayes.github.io/tutorials.html}{http://revbayes.github.io/tutorials.html}
 
 %Start up RevBayes at the command line. You should do this from within the \cl{RB\_TotalEvidenceDating\_FBD\_Tutorial} directory.
 %{\tt \begin{snugshade*}
@@ -309,7 +314,36 @@ crown := tmrca(fbd_tree, clade_extant)
 \end{lstlisting}
 \end{snugshade*}}
 
+\bigskip
 
+\subsection{The Uncorrelated Exponential Relaxed-Clock Model}
+
+{\begin{framed}
+Open your text editor and create the lineage-specific branch-rate model file called {\textcolor{red}{\cl{model\_UCExp\_TEFBD.Rev}}} in the \cl{scripts} directory.
+
+Enter the \Rev code provided in this section in the new model file.
+\end{framed}}
+
+
+\bigskip
+
+\subsection{The General-Time Reversible Gamma-Rates Model of Sequence Evolution}
+
+{\begin{framed}
+Open your text editor and create the molecular substitution model file called {\textcolor{red}{\cl{model\_GTRG\_TEFBD.Rev}}} in the \cl{scripts} directory.
+
+Enter the \Rev code provided in this section in the new model file.
+\end{framed}}
+
+\bigskip
+
+\subsection{Modeling the Evolution of Binary Morphological Characters}
+
+{\begin{framed}
+Open your text editor and create the morphological character model file called {\textcolor{red}{\cl{model\_Morph\_TEFBD.Rev}}} in the \cl{scripts} directory.
+
+Enter the \Rev code provided in this section in the new model file.
+\end{framed}}
 
 %% This is what output looks like
 
