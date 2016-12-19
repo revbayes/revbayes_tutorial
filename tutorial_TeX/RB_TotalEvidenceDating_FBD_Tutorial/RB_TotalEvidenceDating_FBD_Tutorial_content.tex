@@ -74,47 +74,54 @@ Hints for navigating in the \RevBayes console:
 
 \bigskip
 
-\subsection{Loading the Data}
+\subsection{Creating \Rev Files}
 
-\noindent \\ \impmark Download data and output files (if you don't have them already) from: \\ \href{http://revbayes.github.io/tutorials.html}{http://revbayes.github.io/tutorials.html} \par
+For complex models and analyses, it is best to create \Rev script files that will contain all of the model parameters, moves, and functions. 
+In this exercise, you will work primarily in your text editor and create a set of modular files that will be easily managed and interchanged.
 
-Start up RevBayes at the command line. You should do this from within the \cl{RB\_TotalEvidenceDating\_FBD\_Tutorial} directory.
-{\tt \begin{snugshade*}
-\begin{lstlisting}
-./rb
-\end{lstlisting}
-\end{snugshade*}}
-
-If you've done this correctly, you should see the prompt shown below
-{\tt \begin{snugshade*}
-\begin{lstlisting}
->
-\end{lstlisting}
-\end{snugshade*}}
+\bigskip
+\subsection{Start the Master \Rev File and Import Data}
 
 
-First load in the sequences using the \cl{readDiscreteCharacterData()} function and assign it to a variable called \cl{cytb}. 
+\noindent \\ \impmark Download data and output files (if you don't have them already) from: \\ \href{http://revbayes.github.io/tutorials.html}{http://revbayes.github.io/tutorials.html}
+
+%Start up RevBayes at the command line. You should do this from within the \cl{RB\_TotalEvidenceDating\_FBD\_Tutorial} directory.
+%{\tt \begin{snugshade*}
+%\begin{lstlisting}
+%./rb
+%\end{lstlisting}
+%\end{snugshade*}}
+%
+%If you've done this correctly, you should see the prompt shown below
+%{\tt \begin{snugshade*}
+%\begin{lstlisting}
+%>
+%\end{lstlisting}
+%\end{snugshade*}}
+
+
+The first command will load in the sequences using the \cl{readDiscreteCharacterData()} function and assign it to a variable called \cl{cytb}. 
 
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 cytb <- readDiscreteCharacterData("data/bears_cytb.nex") 
 \end{lstlisting}
 \end{snugshade*}}
-Executing these lines initializes the data matrix as the respective \Rev variables. 
-To report the current value of any variable, simply type the variable name and press enter. For the \cl{cytb} data matrix, this provides information about the alignment:
-{\tt \begin{snugshade*}
-\begin{lstlisting}
-cytb
-|*      DNA character matrix with 10 taxa and 1000 characters
-|*   =====================================================
-|*   Origination:                      bears_cytb.nex
-|*   Number of taxa:                   10
-|*   Number of included taxa:          10
-|*   Number of characters:             1000
-|*   Number of included characters: 1000
-|*   Datatype:                         DNA
-\end{lstlisting}
-\end{snugshade*}}
+%Executing these lines initializes the data matrix as the respective \Rev variables. 
+%To report the current value of any variable, simply type the variable name and press enter. For the \cl{cytb} data matrix, this provides information about the alignment:
+%{\tt \begin{snugshade*}
+%\begin{lstlisting}
+%cytb
+%|*      DNA character matrix with 10 taxa and 1000 characters
+%|*   =====================================================
+%|*   Origination:                      bears_cytb.nex
+%|*   Number of taxa:                   10
+%|*   Number of included taxa:          10
+%|*   Number of characters:             1000
+%|*   Number of included characters: 1000
+%|*   Datatype:                         DNA
+%\end{lstlisting}
+%\end{snugshade*}}
 
 Next, import the morphological character matrix and assign it to the variable \cl{morpho}. 
 {\tt \begin{snugshade*}
@@ -123,21 +130,21 @@ morpho <- readDiscreteCharacterData("data/bears_morphology.nex")
 \end{lstlisting}
 \end{snugshade*}}
 
-The information about the morphological character matrix should look like this:
-
-{\tt \begin{snugshade*}
-\begin{lstlisting}
-morpho
-|*    Standard character matrix with 18 taxa and 81 characters
-|*    ========================================================
-|*    Origination:                   bears_morphology.nex
-|*    Number of taxa:                18
-|*    Number of included taxa:       18
-|*    Number of characters:          81
-|*    Number of included characters: 81
-|*    Datatype:                      Standard
-\end{lstlisting}
-\end{snugshade*}}
+%The information about the morphological character matrix should look like this:
+%
+%{\tt \begin{snugshade*}
+%\begin{lstlisting}
+%morpho
+%|*    Standard character matrix with 18 taxa and 81 characters
+%|*    ========================================================
+%|*    Origination:                   bears_morphology.nex
+%|*    Number of taxa:                18
+%|*    Number of included taxa:       18
+%|*    Number of characters:          81
+%|*    Number of included characters: 81
+%|*    Datatype:                      Standard
+%\end{lstlisting}
+%\end{snugshade*}}
 
 Now we read in the full list of taxa and create a workspace object with the total number of taxa. 
 
@@ -163,38 +170,38 @@ morpho.addMissingTaxa( taxa )
 \end{lstlisting}
 \end{snugshade*}}
 
-
-\bigskip
-
-\subsection{Specify Clades}
-
-RevBayes allows researchers to use clade constraints to put a zero probability on trees not containing certain clades. In our case, Ursinae (brown bears, black bears and sloth bears) and Ailuropodinae (pandas and their close relatives) are both very well supported subfamilies. We will add constraints for these two groups. 
-
-{\tt \begin{snugshade*}
-\begin{lstlisting}
-clade_ursinae = clade("Melursus_ursinus","Ursus_arctos","Ursus_maritimus", 
-                         "Helarctos_malayanus","Ursus_americanus","Ursus_thibetanus", 
-                         "Ursus_abstrusus","Ursus_spelaeus")
-clade_pandas = clade("Ailuropoda_melanoleuca","Indarctos_vireti",
-                        "Indarctos_arctoides","Indarctos_punjabiensis", 
-                        "Ailurarctos_lufengensis","Agriarctos_spp",
-                        "Kretzoiarctos_beatrix")
-constraints = v(clade_pandas, clade_ursinae)
-\end{lstlisting}
-\end{snugshade*}}
-
-We will also define a clade for the extant bears that will not be constrained. This will allow us to monitor the age of this node in our log file (in Section \ref{?}).
-{\tt \begin{snugshade*}
-\begin{lstlisting}
-clade_extant = clade("Ailuropoda_melanoleuca","Tremarctos_ornatus","Melursus_ursinus",
-                       "Ursus_arctos","Ursus_maritimus","Helarctos_malayanus",
-                       "Ursus_americanus","Ursus_thibetanus")
-\end{lstlisting}
-\end{snugshade*}}
-
-\bigskip
-
-\subsection{Create a Helper Variable}
+%
+%\bigskip
+%
+%\subsection{Specify Clades}
+%
+%RevBayes allows researchers to use clade constraints to put a zero probability on trees not containing certain clades. In our case, Ursinae (brown bears, black bears and sloth bears) and Ailuropodinae (pandas and their close relatives) are both very well supported subfamilies. We will add constraints for these two groups. 
+%
+%{\tt \begin{snugshade*}
+%\begin{lstlisting}
+%clade_ursinae = clade("Melursus_ursinus","Ursus_arctos","Ursus_maritimus", 
+%                         "Helarctos_malayanus","Ursus_americanus","Ursus_thibetanus", 
+%                         "Ursus_abstrusus","Ursus_spelaeus")
+%clade_pandas = clade("Ailuropoda_melanoleuca","Indarctos_vireti",
+%                        "Indarctos_arctoides","Indarctos_punjabiensis", 
+%                        "Ailurarctos_lufengensis","Agriarctos_spp",
+%                        "Kretzoiarctos_beatrix")
+%constraints = v(clade_pandas, clade_ursinae)
+%\end{lstlisting}
+%\end{snugshade*}}
+%
+%We will also define a clade for the extant bears that will not be constrained. This will allow us to monitor the age of this node in our log file (in Section \ref{?}).
+%{\tt \begin{snugshade*}
+%\begin{lstlisting}
+%clade_extant = clade("Ailuropoda_melanoleuca","Tremarctos_ornatus","Melursus_ursinus",
+%                       "Ursus_arctos","Ursus_maritimus","Helarctos_malayanus",
+%                       "Ursus_americanus","Ursus_thibetanus")
+%\end{lstlisting}
+%\end{snugshade*}}
+%
+%\bigskip
+%
+%\subsection{Create a Helper Variable}
 
 Now that our data are loaded and prepared, we can specify the fossilized birth-death model, and the MCMC moves associated with it. As we work, we will be creating moves to govern how values are sampled for our various priors and parameters. We'll first create an iterator to hold all of our moves.
 
@@ -206,7 +213,7 @@ mvi = 1
 
 \bigskip
 
-\subsection{Specify the fossilized birth-death process}
+\subsection{The Fossilized Birth-Death Process}
 
 Two key parameters of the FBD process are the birth rate (the rate at which lineages are added to the tree) and the death rate (the rate at which lineages are removed from the tree). We'll place exponential priors on both of these values. An exponential prior with a $\lambda$ =  10 places a higher probability on values less than 0.4 for these parameters. 
 
