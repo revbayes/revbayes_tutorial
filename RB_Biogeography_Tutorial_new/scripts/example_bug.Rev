@@ -1,6 +1,6 @@
 fp = "data/n4/"
 
-hide_bug = false
+hide_bug = !false
 for (i in 1:4) {
     adj_raw[i] <- readDataDelimitedFile(file=fp + "hawaii.n4."+i+".txt", delimiter=" ")    
 }
@@ -11,16 +11,16 @@ n_areas = adj_raw[1].size()
 
 if (hide_bug) {
     "Hiding bug..."
-	for (i in 1:n_epochs) {
-		for (j in 1:n_areas) {
-			for (k in 1:n_areas) {
-				adj[i][j][k] <- adj_raw[i][j][k]
-			}
-		}
-	}
+    for (i in 1:n_epochs) {
+        for (j in 1:n_areas) {
+            for (k in 1:n_areas) {
+                adj[i][j][k] <- adj_raw[i][j][k]
+            }
+        }
+    }
 } else {
     "Showing bug..."
-	adj <- adj_raw
+    adj <- adj_raw
 }
 dispersal_rate ~ dnExp(1)
 distance_scale ~ dnExp(1)
@@ -30,7 +30,7 @@ for (i in 1:n_epochs) {
     for (j in 1:n_areas) {
         for (k in 1:n_areas) {
 	        r[i][j][k] := dispersal_rate * adj[i][j][k] / exp( -distance_scale * dist[j][k] ) 
-	    }
+        }
     }
 }
 
