@@ -38,7 +38,7 @@ source("scripts/model_UCExp_TEFBD.Rev")
 
 source("scripts/model_GTRG_TEFBD.Rev")
 
-source("scripts/model_Mkv_TEFBD.Rev")
+source("scripts/model_Morph_TEFBD.Rev")
 
 
 ###################################
