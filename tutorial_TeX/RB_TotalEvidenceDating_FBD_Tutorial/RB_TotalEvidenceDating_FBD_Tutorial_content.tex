@@ -358,16 +358,40 @@ Enter the \Rev code provided in this section in this file.
 \medskip
 \subsubsection{Create Model Object}
 
+
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+mymodel = model(sf)
+\end{lstlisting}
+\end{snugshade*}}
+
 \medskip
 \subsubsection{Specify Monitors and Output Filenames}
+
+
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+mni = 1
+monitors[mni++] = mnModel(filename="output/bears.log", printgen=10)
+monitors[mni++] = mnFile(filename="output/bears.trees", printgen=10, fbd_tree)
+monitors[mni++] = mnScreen(printgen=10, age_extant, num_samp_anc, origin_time)
+\end{lstlisting}
+\end{snugshade*}}
 
 \medskip
 \subsubsection{Set up the MCMC}
 
-\medskip
-\subsubsection{Create Model Object}
+
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+mymcmc = mcmc(mymodel, monitors, moves)
+
+mymcmc.run(generations=10000)
+\end{lstlisting}
+\end{snugshade*}}
 
 
+\bigskip
 \subsection{Summarize Your Results}
 
 \medskip
