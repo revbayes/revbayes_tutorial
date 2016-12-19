@@ -427,6 +427,35 @@ source("scripts/mcmc_TEFBD.Rev")
 \end{lstlisting}
 \end{snugshade*}}
 
+{\tiny{\tt \begin{snugshade*}
+\begin{lstlisting}
+|*   Processing file "scripts/mcmc_TEFBD.Rev"
+|*   Successfully read one character matrix from file 'data/bears_cytb.nex'
+|*   Successfully read one character matrix from file 'data/bears_morphology.nex'
+|*   Processing file "scripts/model_FBDP_TEFBD.Rev"
+|*   Processing of file "scripts/model_FBDP_TEFBD.Rev" completed
+|*   Processing file "scripts/model_UCExp_TEFBD.Rev"
+|*   Processing of file "scripts/model_UCExp_TEFBD.Rev" completed
+|*   Processing file "scripts/model_GTRG_TEFBD.Rev"
+|*   Processing of file "scripts/model_GTRG_TEFBD.Rev" completed
+|*   Processing file "scripts/model_Morph_TEFBD.Rev"
+|*   WARNING: There are 19 characters incompatible with the specified coding bias. These characters
+|*   will be excluded.
+|*   Processing of file "scripts/model_Morph_TEFBD.Rev" completed
+|*
+|*   Running MCMC simulation
+|*   This simulation runs 1 independent replicate.
+|*   The simulator uses 163 different moves in a random move schedule with 267 moves per iteration
+|*
+|*Iter        |      Posterior   |     Likelihood   |          Prior   |     age_extant   |   num_samp_anc   |    origin_time   |    elapsed   |        ETA   |
+|*---------------------------------------------------------------------------------------------------------------------------------------------
+|*0           |       -8174.01   |        -8053.8   |       -120.209   |        34.8641   |              0   |        44.4332   |   00:00:00   |   --:--:--   |
+|*10          |       -4654.95   |        -4611.2   |       -43.7495   |        4.32618   |              7   |        45.4494   |   00:00:01   |   --:--:--   |
+|*20          |       -4294.05   |       -4266.91   |       -27.1443   |        4.58804   |              7   |        46.5636   |   00:00:01   |   00:08:19   |
+|*30          |       -4267.35   |       -4233.41   |         -33.94   |         6.8467   |              6   |        45.9177   |   00:00:02   |   00:11:04   |
+|*40          |       -4226.63   |       -4188.32   |       -38.3037   |        6.40484   |              8   |        44.3696   |   00:00:02   |   00:08:18   |
+\end{lstlisting}
+\end{snugshade*}}}
 
 \bigskip
 \subsection{Summarize Your Results}
