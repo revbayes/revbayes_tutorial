@@ -1,0 +1,30 @@
+############################################################
+# Uncorrelated exponential model on molecular branch rates #
+############################################################
+
+# Get the number of branches in the tree
+n_branches <- 2 * n_taxa - 2
+
+# The rate along each branch is drawn from an exponential prior
+branch_rates_mean ~ dnExponential(10.0)
+
+# The mean will be operated on by scale moves
+moves[mvi++] = mvScale(branch_rates_mean, lambda=0.01, weight=1.0)
+moves[mvi++] = mvScale(branch_rates_mean, lambda=0.1,  weight=1.0)
+moves[mvi++] = mvScale(branch_rates_mean, lambda=1.0,  weight=1.0)
+
+# Now we will create a vector of stochastic nodes #
+# Each element in the vector represents a branch rate #
+# The indices of the vector correspond to branch indices in the tree #
+# Using a for-loop, initialize the branch rates and assign a move to each one #
+for(i in 1:n_branches){
+    branch_rates[i] ~ dnExp(1/branch_rates_mean)
+    moves[mvi++] = mvScale(branch_rates[i], lambda=1.0,  weight=1.0)
+    moves[mvi++] = mvScale(branch_rates[i], lambda=0.1,  weight=1.0)
+    moves[mvi++] = mvScale(branch_rates[i], lambda=0.01, weight=1.0)
+}
+# add a move on the branch rate vector
+moves[mvi++] = mvVectorScale(branch_rates, lambda=0.01, weight=4.0) 
+moves[mvi++] = mvVectorScale(branch_rates, lambda=0.1,  weight=4.0) 
+moves[mvi++] = mvVectorScale(branch_rates, lambda=1.0,  weight=4.0)
+

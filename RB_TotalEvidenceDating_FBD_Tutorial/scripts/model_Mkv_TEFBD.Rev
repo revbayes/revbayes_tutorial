@@ -1,0 +1,46 @@
+###########################################
+# Binary morphological substitution model #
+###########################################
+
+# The binary rate matrix at each site is assumed to have its own stationary frequency #
+# drawn from a discretized Beta distribution #
+
+# Initialize the hyperparameter of the beta distribution #
+beta_hp ~ dnExponential( 1.0 )
+
+moves[mvi++] = mvScale(beta_hp, lambda=1,    weight=1.0 )
+moves[mvi++] = mvScale(beta_hp, lambda=0.1,  weight=1.0 )
+moves[mvi++] = mvScale(beta_hp, lambda=0.01, weight=1.0 )
+
+# Create the discretized vector of site-specific stationary frequency categories #
+beta_cats := fnDiscretizeBeta( beta_hp, beta_hp, 4)
+
+# Construct a separate binary rate matrix for each frequency category #
+for(i in 1:beta_cats.size())
+{
+    Q_morpho[i] := fnFreeBinary(v(1-beta_cats[i], beta_cats[i]))
+}
+
+# We also use a discretized gamma distribution of rate categories #
+# again, the shape parameter is drawn from an exponential prior #
+alpha_morpho ~ dnExponential( 1.0 )
+rates_morpho := fnDiscretizeGamma( alpha_morpho, alpha_morpho, 4, false )
+
+moves[mvi++] = mvScale(alpha_morpho, lambda=0.01, weight=1.0)
+moves[mvi++] = mvScale(alpha_morpho, lambda=0.1,  weight=1.0)
+moves[mvi++] = mvScale(alpha_morpho, lambda=1,    weight=1.0)
+
+# We assume a strict morphological clock rate, drawn from an exponential prior #
+clock_morpho ~ dnExponential(1.0)
+
+moves[mvi++] = mvScale(clock_morpho, lambda=0.01, weight=4.0)
+moves[mvi++] = mvScale(clock_morpho, lambda=0.1,  weight=4.0)
+moves[mvi++] = mvScale(clock_morpho, lambda=1,    weight=4.0)
+
+### Create the substitution model and clamp with our observed Standard data ###
+# Here we use the option siteMatrices=true specify that the vector Q #
+# represents a site-specific mixture of rate matrices #
+# We also condition on observing only variable characters using coding="variable" #
+phyMorpho ~ dnPhyloCTMC(tree=fbd_tree, siteRates=rates_morpho, branchRates=clock_morpho, Q=Q_morpho, type="Standard", coding="variable", siteMatrices=true)
+phyMorpho.clamp(morpho)
+
