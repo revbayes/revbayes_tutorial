@@ -345,15 +345,62 @@ Open your text editor and create the morphological character model file called {
 Enter the \Rev code provided in this section in the new model file.
 \end{framed}}
 
-%% This is what output looks like
+\bigskip
 
-%\begin{figure}[htbp!]
-%\centering
-%\fbox{\includegraphics[width=0.8\textwidth]{\ResourcePath figures/figure.pdf}}
-%\caption{\small example figure.}
-%\label{fig:example}
-%\end{figure}
+\subsection{Complete MCMC File}
+
+{\begin{framed}
+Return to the master \Rev file you created in Section \ref{} called {\textcolor{red}{\cl{mcmc\_TEFBD.Rev}}} in the \cl{scripts} directory.
+
+Enter the \Rev code provided in this section in this file.
+\end{framed}}
+
+\medskip
+\subsubsection{Create Model Object}
+
+\medskip
+\subsubsection{Specify Monitors and Output Filenames}
+
+\medskip
+\subsubsection{Set up the MCMC}
+
+\medskip
+\subsubsection{Create Model Object}
 
 
-%\bibliographystyle{sysbio}
-%\bibliography{\GlobalResourcePath refs}
+\subsection{Summarize Your Results}
+
+\medskip
+\subsubsection{Evaluate MCMC}
+
+%TODO this is tracer stuff
+
+
+\medskip
+\subsubsection{Summarize Tree}
+
+%TODO this they can do interactively in rb
+
+Start up RevBayes at the command line. You should do this from within the \cl{RB\_TotalEvidenceDating\_FBD\_Tutorial} directory.
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+./rb
+\end{lstlisting}
+\end{snugshade*}}
+
+Read in the MCMC sample of trees from file.
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+trace = readTreeTrace("output/bears.trees")
+
+for(i in 1:trace.size())
+{
+    trees[i] = fnPruneTree(trace.getTree(i), pruneTaxa=v(taxa[17],taxa[20]))
+}
+
+trace_pruned = treeTrace(trees)
+mccTree(trace_pruned, "output/bears.mcc.tre" )
+\end{lstlisting}
+\end{snugshade*}}
+
+%TODO IcyTree
