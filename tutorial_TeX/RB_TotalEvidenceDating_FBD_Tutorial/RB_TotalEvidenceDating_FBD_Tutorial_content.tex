@@ -258,7 +258,9 @@ moves[mvi++] = mvScale(birth_rate, lambda=1.0, weight=3.0)
 \end{lstlisting}
 \end{snugshade*}}
 
-Under the FBD model, the process is conditioned on the age of the origin, or the start of the process. We will specify a uniform distribution on the age of the origin. If you looked in the bears taxa file, you might notice that the age of the oldest fossil is slightly younger than the upper bound of the uniform distribution on the origin age. For this parameter, we will use a sliding window move. A sliding window move samples within an interval (defined by delta) . Sliding window moves can be tricky for small values, as the window may overlap zero. However, for parameters such as the origin, there is little risk of this being an issue.
+Under the FBD model, the process is conditioned on the age of the origin, or the start of the process. 
+We will specify a uniform distribution on the age of the origin. If you looked in the bears taxa file, you might notice that the age of the oldest fossil is slightly younger than the upper bound of the uniform distribution on the origin age. 
+For this parameter, we will use a sliding window move. A sliding window move samples within an interval (defined by \cl{delta}) . Sliding window moves can be tricky for small values, as the window may overlap zero. However, for parameters such as the origin, there is little risk of this being an issue.
 
 {\tt \begin{snugshade*}
 \begin{lstlisting}
