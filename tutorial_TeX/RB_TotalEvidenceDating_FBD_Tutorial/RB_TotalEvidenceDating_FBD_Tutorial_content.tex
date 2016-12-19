@@ -51,10 +51,10 @@ In the \cl{data} folder, you will find the following files
 
 
 
-\section{Exercise: Title}
+\section{Exercise: Title}\label{sect:RB-ExerciseMain}
 
 \bigskip
-\subsection{Getting Started}
+\subsection{Getting Started}\label{subsect:RB-GetStart}
 
 We will complete this analysis in \RevBayes by entering the \Rev code interactively. 
 
@@ -74,13 +74,13 @@ Hints for navigating in the \RevBayes console:
 
 \bigskip
 
-\subsection{Creating \Rev Files}
+\subsection{Creating \Rev Files}\label{subsect:RB-CreateingFiles}
 
 For complex models and analyses, it is best to create \Rev script files that will contain all of the model parameters, moves, and functions. 
 In this exercise, you will work primarily in your text editor and create a set of modular files that will be easily managed and interchanged.
 
 \bigskip
-\subsection{Start the Master \Rev File and Import Data}\label{sect:StartMasterRev}
+\subsection{Start the Master \Rev File and Import Data}\label{subsect:RB-StartMasterRev}
 
 {\begin{framed}
 Open your text editor and create the master \Rev file called {\textcolor{red}{\cl{mcmc\_TEFBD.Rev}}} in the \cl{scripts} directory.
@@ -218,7 +218,7 @@ mvi = 1
 
 \bigskip
 
-\subsection{The Fossilized Birth-Death Process}\label{sect:ModelFBD}
+\subsection{The Fossilized Birth-Death Process}\label{subsect:RB-ModelFBD}
 
 {\begin{framed}
 Open your text editor and create the fossilized birth-death model file called {\textcolor{red}{\cl{model\_FBDP\_TEFBD.Rev}}} in the \cl{scripts} directory.
@@ -316,7 +316,7 @@ crown := tmrca(fbd_tree, clade_extant)
 
 \bigskip
 
-\subsection{The Uncorrelated Exponential Relaxed-Clock Model}
+\subsection{The Uncorrelated Exponential Relaxed-Clock Model}\label{subsect:RB-ModelUCExp}
 
 {\begin{framed}
 Open your text editor and create the lineage-specific branch-rate model file called {\textcolor{red}{\cl{model\_UCExp\_TEFBD.Rev}}} in the \cl{scripts} directory.
@@ -327,7 +327,7 @@ Enter the \Rev code provided in this section in the new model file.
 
 \bigskip
 
-\subsection{The General-Time Reversible Gamma-Rates Model of Sequence Evolution}
+\subsection{The General-Time Reversible Gamma-Rates Model of Sequence Evolution}\label{subsect:RB-ModelGTRG}
 
 {\begin{framed}
 Open your text editor and create the molecular substitution model file called {\textcolor{red}{\cl{model\_GTRG\_TEFBD.Rev}}} in the \cl{scripts} directory.
@@ -337,7 +337,7 @@ Enter the \Rev code provided in this section in the new model file.
 
 \bigskip
 
-\subsection{Modeling the Evolution of Binary Morphological Characters}
+\subsection{Modeling the Evolution of Binary Morphological Characters}\label{subsect:RB-ModelMorph}
 
 {\begin{framed}
 Open your text editor and create the morphological character model file called {\textcolor{red}{\cl{model\_Morph\_TEFBD.Rev}}} in the \cl{scripts} directory.
@@ -347,7 +347,7 @@ Enter the \Rev code provided in this section in the new model file.
 
 \bigskip
 
-\subsection{Complete MCMC File}
+\subsection{Complete MCMC File}\label{subsect:RB-CompleteMCMC}
 
 {\begin{framed}
 Return to the master \Rev file you created in Section \ref{sect:StartMasterRev} called {\textcolor{red}{\cl{mcmc\_TEFBD.Rev}}} in the \cl{scripts} directory.
@@ -411,7 +411,7 @@ Save and close all files.
 \end{framed}}
 
 \bigskip
-\subsection{Run it}
+\subsection{Run it}\label{subsect:RB-RunMCMC}
 
 
 {\tt \begin{snugshade*}
@@ -458,16 +458,16 @@ source("scripts/mcmc_TEFBD.Rev")
 \end{snugshade*}}}
 
 \bigskip
-\subsection{Summarize Your Results}
+\subsection{Summarize Your Results}\label{subsect:SummarizeResults}
 
 \medskip
-\subsubsection{Evaluate MCMC}
+\subsubsection{Evaluate MCMC}\label{subsub:EvalMCMC}
 
 %TODO this is tracer stuff
 
 
 \medskip
-\subsubsection{Summarize Tree}
+\subsubsection{Summarize Tree}\label{subsub:SummarizeTree}
 
 %TODO this they can do interactively in rb
 
