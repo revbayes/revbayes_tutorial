@@ -22,13 +22,13 @@ morpho <- readDiscreteCharacterData("data/bears_morphology.nex")
 
 # Create the full list of taxa (including all fossils and extant species #
 taxa <- readTaxonData("data/bears_taxa.tsv", delimiter=TAB)
-n_taxa <- taxa.size() # the number of taxa
 
 # Add the missing taxa to each data partition #
 cytb.addMissingTaxa( taxa )
 morpho.addMissingTaxa( taxa )
 
 ## helpers
+n_taxa <- taxa.size() # the number of taxa
 mvi = 1
 
 
