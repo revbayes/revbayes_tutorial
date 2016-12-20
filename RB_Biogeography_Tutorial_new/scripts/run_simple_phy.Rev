@@ -143,30 +143,31 @@ seq_mol.clamp(dat_mol)
 
 # first, the distance function
 
-dispersal_rate ~ dnExp(1)
-dispersal_rate.setValue(0.1)
-moves[mvi++] = mvScale(dispersal_rate)
+#dispersal_rate ~ dnExp(1)
+#dispersal_rate.setValue(0.1)
+#moves[mvi++] = mvScale(dispersal_rate)
 
-distance_scale ~ dnExp(1)
-distance_scale.setValue(0.01)
-moves[mvi++] = mvScale(distance_scale)
+#distance_scale ~ dnExp(1)
+#distance_scale.setValue(0.01)
+#moves[mvi++] = mvScale(distance_scale)
 
 # then, the dispersal rate matrix
 for (j in 1:n_areas) {
     for (k in 1:n_areas) {
-        dr[j][k] := dispersal_rate * exp( -(distance_scale * distances[j][k]) )
+        #dr[j][k] := dispersal_rate * exp( -(distance_scale * distances[j][k]) )
+        dr[j][k] <- abs(1)
     }
 }
 
 
 # then extirpation rates (or per-area extinction rates)
-extirpation_rate ~ dnExp(1)
-moves[mvi++] = mvScale(extirpation_rate)
+#extirpation_rate ~ dnExp(1)
+#moves[mvi++] = mvScale(extirpation_rate)
 
 for (j in 1:n_areas) {
     for (k in 1:n_areas) {
         er[j][k] <- abs(0.0) 
-        if (j == k) { er[k][k] := extirpation_rate }
+        if (j == k) { er[k][k] <- abs(1) }
     }
 }
 
@@ -180,9 +181,10 @@ rate_bg <- 1
     
 # build clado probs
 clado_event_types <- [ "s", "a" ]
-clado_type_probs ~ dnDirichlet( [1, 1] )
-moves[mvi++] = mvSimplexElementScale(clado_type_probs, alpha=10)
-P_DEC := fnDECCladoProbs(eventProbs=clado_type_probs,
+clado_event_probs <- simplex(1,1)
+#clado_type_probs ~ dnDirichlet( [1, 1] )
+#moves[mvi++] = mvSimplexElementScale(clado_type_probs, alpha=10)
+P_DEC := fnDECCladoProbs(eventProbs=clado_event_probs,
                          eventTypes=clado_event_types,
                          numCharacters=n_areas,
                          maxRangeSize=max_areas)
@@ -234,7 +236,7 @@ for (i in 1:n_epochs) {
 }
 
 
-monitors[mni++] = mnScreen(printgen=100, dispersal_rate, extirpation_rate, distance_scale, ingroup_age)
+monitors[mni++] = mnScreen(printgen=100, ingroup_age)
 monitors[mni++] = mnModel(file=out_fn+".model.log", printgen=100)
 monitors[mni++] = mnFile(phy, filename=out_fn+".tre", printgen=100)
 monitors[mni++] = mnJointConditionalAncestralState(tree=phy,

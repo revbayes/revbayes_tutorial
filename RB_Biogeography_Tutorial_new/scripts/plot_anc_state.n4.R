@@ -7,7 +7,7 @@ if (stable) {
 library(ggtree)
 
 out_str = "output/simple"
-out_str = "output/complex"
+#out_str = "output/complex"
 tree_fn = paste(out_str, ".ase.tre", sep="")
 
 st_lbl = c("K","O","M","H",

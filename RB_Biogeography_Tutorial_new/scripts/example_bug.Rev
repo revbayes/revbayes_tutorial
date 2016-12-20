@@ -1,6 +1,6 @@
 fp = "data/n4/"
 
-hide_bug = !false
+hide_bug = false
 for (i in 1:4) {
     adj_raw[i] <- readDataDelimitedFile(file=fp + "hawaii.n4."+i+".txt", delimiter=" ")    
 }
@@ -27,10 +27,19 @@ distance_scale ~ dnExp(1)
 distance_scale.setValue(0.001)
 
 for (i in 1:n_epochs) {
+    "Buiding " + i
     for (j in 1:n_areas) {
         for (k in 1:n_areas) {
-	        r[i][j][k] := dispersal_rate * adj[i][j][k] / exp( -distance_scale * dist[j][k] ) 
+	        r[i][j][k] := dispersal_rate * adj[i][j][k] # / exp( -distance_scale * dist[j][k] ) 
+	        r[i][j][k] <- adj[i][j][k] # / exp( -distance_scale * dist[j][k] ) 
         }
+    }
+
+    
+    for (j in 1:i) {
+        "\tshowing " + j
+        r[j]
+        "\n"
     }
 }
 
@@ -42,4 +51,6 @@ r[4]
 "Only the dispersal rates from/to fourth area should equal zero"
 r[3]
 
-quit()
+
+r.size()
+#quit()
