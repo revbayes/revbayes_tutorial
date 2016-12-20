@@ -64,23 +64,37 @@ You may only need the RB\_Basics\_Tutorial for a more in-depth discussion of con
 
 \section{Exercise: Estimating the Phylogeny and Divergence Times of Fossil and Extant Bears}\label{sect:RB-ExerciseMain}
 
+Information about the exercise, citations for the data, questions. 
+
 %TODO Background
 %%%%%%%%
 %%   Data   %%
 %%%%%%%%
-\subsection{Data and files}\label{subsect:RB-DataFiles}
+\subsection{Data files}\label{subsect:RB-DataFiles}
 
-We provide the data file(s) which we will use in this tutorial.
+We provide the data files which we will use in this tutorial.
 You may want to use your own data instead.
 In the \cl{data} folder, you will find the following files
-\begin{itemize}
-\item \cl{bears\_cytb.nex}: description of file/data (we also need more descriptive file names).
+\begin{itemize}[noitemsep,topsep=0pt]
+\item \cl{bears\_taxa.tsv}: a list of every taxon in this analysis
+\item \cl{bears\_cytb.nex}: an alignment in NEXUS format of 1,000 bp of cytochrome-b sequences for 10 bear species. This alignment includes 8 living bears and 2 extinct sub-fossil bears.
+\item \cl{bears\_morphology.nex}: 
+\item \cl{bears\_fossil\_intervals.tsv}:
 \end{itemize}
 
 
 \bigskip
 \subsection{Getting Started}\label{subsect:RB-GetStart}
 
+{\begin{framed}
+On your own computer, create a directory called {\textcolor{red}{\cl{RB\_TotalEvidenceDating\_FBD\_Tutorial}}} (or any name you like). 
+
+In this directory download and unzip the archive containing the data files: \href{www.revbayes.com}{\cl{data.zip}}.
+
+Additionally, create a new directory (in \cl{RB\_TotalEvidenceDating\_FBD\_Tutorial}) called {\textcolor{red}{\cl{scripts}}}
+\end{framed}}
+
+When you execute \RevBayes in this exercise, you will do so within the main directory you created (\cl{RB\_TotalEvidenceDating\_FBD\_Tutorial}).
 
 %TODO Stuff about how to start or Rev basics?
 
@@ -111,7 +125,7 @@ You will write the following files from scratch and save them in the \cl{scripts
 \item \cl{mcmc\_TEFBD.Rev}: the master \Rev file that loads the data, the separate model files, and specifies the monitors and MCMC sampler.
 \item \cl{model\_FBDP\_TEFBD.Rev}: specifies the model parameters and moves required for the fossilized birth-death prior on the tree topology, divergence times, fossil occurrence times, and diversification dynamics.
 \item \cl{model\_UCExp\_TEFBD.Rev}: specifies the components of the uncorrelated exponential model of lineage-specific substitution rate variation.
-\item \cl{model\_GTRG\_TEFBD.Rev}: specifies the parameters and moves for the general-time reversible model of sequence evolution with gamma-distributed rates across sites (GTR+$\Gamma$)
+\item \cl{model\_GTRG\_TEFBD.Rev}: specifies the parameters and moves for the general-time reversible model of sequence evolution with gamma-distributed rates across sites (GTR+$\Gamma$).
 \item \cl{model\_Morph\_TEFBD.Rev}: specifies the model describing discrete morphological character change (binary characters) under a strict morphological clock. 
 \end{itemize}
 
@@ -570,8 +584,6 @@ source("scripts/mcmc_TEFBD.Rev")
 |*   Processing file "scripts/model_GTRG_TEFBD.Rev"
 |*   Processing of file "scripts/model_GTRG_TEFBD.Rev" completed
 |*   Processing file "scripts/model_Morph_TEFBD.Rev"
-|*   WARNING: There are 19 characters incompatible with the specified coding bias. These characters
-|*   will be excluded.
 |*   Processing of file "scripts/model_Morph_TEFBD.Rev" completed
 |*
 |*   Running MCMC simulation
