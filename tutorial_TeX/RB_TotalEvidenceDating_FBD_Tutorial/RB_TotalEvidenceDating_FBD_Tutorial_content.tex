@@ -143,13 +143,6 @@ taxa <- readTaxonData("data/bears_taxa.tsv", delimiter=TAB)
 This function reads the tab-delimited file and creates a variable called \cl{taxa} that is a list of all of the taxon names relevant to this analysis. 
 This list includes all of the fossil and extant bears.
 
-Next, create a new variable called \cl{n\_taxa} which is a constant node that is equal to the number of species in our analysis (22). 
-This variable will be useful for downstream components of the model specification, thus it is best to instantiate it here. 
-{\tt \begin{snugshade*}
-\begin{lstlisting}
-n_taxa <- taxa.size() 
-\end{lstlisting}
-\end{snugshade*}}
 
 
 \medskip
@@ -164,21 +157,6 @@ Load the cytochrome-b sequences from file and assign the data matrix to a variab
 cytb <- readDiscreteCharacterData("data/bears_cytb.nex") 
 \end{lstlisting}
 \end{snugshade*}}
-%Executing these lines initializes the data matrix as the respective \Rev variables. 
-%To report the current value of any variable, simply type the variable name and press enter. For the \cl{cytb} data matrix, this provides information about the alignment:
-%{\tt \begin{snugshade*}
-%\begin{lstlisting}
-%cytb
-%|*      DNA character matrix with 10 taxa and 1000 characters
-%|*   =====================================================
-%|*   Origination:                      bears_cytb.nex
-%|*   Number of taxa:                   10
-%|*   Number of included taxa:          10
-%|*   Number of characters:             1000
-%|*   Number of included characters: 1000
-%|*   Datatype:                         DNA
-%\end{lstlisting}
-%\end{snugshade*}}
 
 Next, import the morphological character matrix and assign it to the variable \cl{morpho}. 
 {\tt \begin{snugshade*}
@@ -187,34 +165,15 @@ morpho <- readDiscreteCharacterData("data/bears_morphology.nex")
 \end{lstlisting}
 \end{snugshade*}}
 
-%The information about the morphological character matrix should look like this:
-%
-%{\tt \begin{snugshade*}
-%\begin{lstlisting}
-%morpho
-%|*    Standard character matrix with 18 taxa and 81 characters
-%|*    ========================================================
-%|*    Origination:                   bears_morphology.nex
-%|*    Number of taxa:                18
-%|*    Number of included taxa:       18
-%|*    Number of characters:          81
-%|*    Number of included characters: 81
-%|*    Datatype:                      Standard
-%\end{lstlisting}
-%\end{snugshade*}}
-
-
-If you open the bears taxa file (\cl{bears\_taxa.tsv}), you'll notice that this is a tab-separated file of all of the taxon names, with the age in millions of years ago (mya) in the second column. 
-An age of 0.0 indicates an extant bear species. 
-We will use this information to allow fossils to be incorporated as tips in the analysis. 
+ 
 
 \medskip
 \subsubsection{Add Missing Taxa}\label{subsub:RB-AddMissing}
 
-Notice that the two data matrices have different numbers of taxa. The last bit of data preparation we will do is to add any taxa that are not found in the molecular partition (i.e. are only found in the fossil data) to the molecular partition as missing data, and vice versa.
+In the descriptions of the files in Section \ref{subsect:RB-DataFiles}, we mentioned that the two data matrices have different numbers of taxa. 
+Thus, we must add any taxa that are not found in the molecular (\cl{cytb}) partition (\IE are only found in the fossil data) to that data matrix as missing data, and do the same with the morphological data partition (\cl{morpho}).
 In order for all the taxa to appear on the same tree, they all need to be part of the same dataset, as opposed to present in separate datasets. 
 This ensures that there is a unified taxon set that contains all of our tips.
-
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 cytb.addMissingTaxa( taxa )
@@ -222,55 +181,39 @@ morpho.addMissingTaxa( taxa )
 \end{lstlisting}
 \end{snugshade*}}
 
-%
-%\bigskip
-%
-%\subsection{Specify Clades}
-%
-%RevBayes allows researchers to use clade constraints to put a zero probability on trees not containing certain clades. In our case, Ursinae (brown bears, black bears and sloth bears) and Ailuropodinae (pandas and their close relatives) are both very well supported subfamilies. We will add constraints for these two groups. 
-%
-%{\tt \begin{snugshade*}
-%\begin{lstlisting}
-%clade_ursinae = clade("Melursus_ursinus","Ursus_arctos","Ursus_maritimus", 
-%                         "Helarctos_malayanus","Ursus_americanus","Ursus_thibetanus", 
-%                         "Ursus_abstrusus","Ursus_spelaeus")
-%clade_pandas = clade("Ailuropoda_melanoleuca","Indarctos_vireti",
-%                        "Indarctos_arctoides","Indarctos_punjabiensis", 
-%                        "Ailurarctos_lufengensis","Agriarctos_spp",
-%                        "Kretzoiarctos_beatrix")
-%constraints = v(clade_pandas, clade_ursinae)
-%\end{lstlisting}
-%\end{snugshade*}}
-%
-%We will also define a clade for the extant bears that will not be constrained. This will allow us to monitor the age of this node in our log file (in Section \ref{?}).
-%{\tt \begin{snugshade*}
-%\begin{lstlisting}
-%clade_extant = clade("Ailuropoda_melanoleuca","Tremarctos_ornatus","Melursus_ursinus",
-%                       "Ursus_arctos","Ursus_maritimus","Helarctos_malayanus",
-%                       "Ursus_americanus","Ursus_thibetanus")
-%\end{lstlisting}
-%\end{snugshade*}}
-%
-%\bigskip
-%
-%\subsection{Create a Helper Variable}
 
 \medskip
-\subsubsection{The Move-List Iterator Variable}\label{subsub:RB-mviVar}
+\subsubsection{Create Helper Variables}\label{subsub:RB-mviVar}
 
+Before we begin writing the \Rev scripts for each of the model components, we need to instantiate a couple ``helper variables'' that will be used by downstream parts of our model specification files. 
+These variables will be used in more than one of the module files so it's best to initialize them in the master file.
 
+Create a new constant node called \cl{n\_taxa} that is equal to the number of species in our analysis (22). 
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+n_taxa <- taxa.size() 
+\end{lstlisting}
+\end{snugshade*}}
 
-%Now that our data are loaded and prepared, we can specify the fossilized birth-death model, and the MCMC moves associated with it. 
-%As we work, we will be creating moves to govern how values are sampled for our various priors and parameters. We'll first create an iterator to hold all of our moves.
-
+Next, create a \textit{workspace variable} called \cl{mvi}. 
+This variable is an iterator that will build a vector containing all of the MCMC moves used to propose new states for every stochastic node in the model graph. 
+After each time a new move is added to the vector, \cl{mvi} will be incremented by a value of \cl{1}.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 mvi = 1
 \end{lstlisting}
 \end{snugshade*}}
+One important distinction here is that \cl{mvi} is part of the \RevBayes workspace and not the hierarchical model. 
+Thus, we use the \cl{=} operator instead of the \cl{<-} operator. 
+
+{\begin{framed}
+Save your current working of \cl{model\_FBDP\_TEFBD.Rev} in the \cl{scripts} directory.
+
+We will now move on to the next \Rev file and will complete \cl{model\_FBDP\_TEFBD.Rev} in Section \ref{subsect:RB-CompleteMCMC}.
+\end{framed}}
+
 
 \bigskip
-
 \subsection{The Fossilized Birth-Death Process}\label{subsect:RB-ModelFBD}
 
 {\begin{framed}
