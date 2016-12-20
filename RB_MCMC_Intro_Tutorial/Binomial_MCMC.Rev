@@ -1,0 +1,31 @@
+# Make up some coin flips!
+# Feel free to change these numbers
+n <- 100 # the number of flips
+x <- 63	# the number of heads
+
+# Specify the prior distribution
+alpha <- 1
+beta  <- 1
+p ~ dnBeta(alpha,beta)
+
+# Define a move for our parameter, p
+moves[1] = mvSlide(p,delta=0.1)
+
+# Specify the likelihood model
+k ~ dnBinomial(p, n)
+k.clamp(x)
+
+# Construct the full model
+my_model = model(p)
+
+# Make the monitors to keep track of the MCMC
+monitors[1] = mnModel(filename="binomial_MCMC.log", printgen=10, separator = TAB)
+monitors[2] = mnScreen(printgen=100, p)
+
+# Make the analysis object
+analysis = mcmc(my_model, monitors, moves)
+
+# Run the MCMC
+analysis.run(100000)
+
+q()

@@ -1,0 +1,54 @@
+# Make up some coin flips!
+# Feel free to change these numbers
+n <- 100 # the number of flips
+x <- 63	 # the number of heads
+
+# Initialize the chain with starting values
+alpha = 1
+beta  = 1
+p <- rbeta(1,alpha,beta)[1]
+
+# Compute the initial likelihood and prior probabilities
+likelihood := p^x * (1-p)^(n-x)
+prior      := p^(alpha-1) * (1-p)^(beta-1)
+
+# Prepare a file to log our samples
+write("iteration","p","\n",file="binomial_MH.log")
+write(0,p,"\n",file="binomial_MH.log",append=TRUE)
+
+# Prepare the proposed values
+p_prime <- p
+likelihood_prime := p_prime^x * (1-p_prime)^(n-x)
+prior_prime      := p_prime^(alpha-1) * (1-p_prime)^(beta-1)
+
+# Write the MH algorithm
+reps = 10000
+for(rep in 1:reps){
+
+	# Propose a new value of p
+	p_prime <- p + runif(1,-0.1,0.1)[1]
+	if (p_prime < 0) {
+		p_prime <- abs(p_prime)
+	} else if (p_prime > 1) {
+		p_prime <- 2 - p_prime
+	}
+
+	# Compute the acceptance probability
+	R <- (likelihood_prime/likelihood) * (prior_prime/prior)
+	
+	# Accept or reject the proposal
+	u <- runif(1,0,1)[1]
+	if(u < R){
+		# Accept the proposal
+		p <- p_prime
+	} else {
+		# Reject the proposal
+		# (we don't have to do anything here)
+	}
+	
+	# Write the samples to a file
+	write(rep,p,"\n",file="binomial_MH.log",append=TRUE)
+
+} # end MCMC
+
+q()
