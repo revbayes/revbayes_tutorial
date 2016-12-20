@@ -84,28 +84,28 @@ In this exercise, you will work primarily in your text editor and create a set o
 \bigskip
 \subsection{Start the Master \Rev File and Import Data}\label{subsect:RB-StartMasterRev}
 
+
+
 {\begin{framed}
 Open your text editor and create the master \Rev file called {\textcolor{red}{\cl{mcmc\_TEFBD.Rev}}} in the \cl{scripts} directory.
 
 Enter the \Rev code provided in this section in the new model file.
 \end{framed}}
 
-%\noindent Download data and output files (if you don't have them already) from: \\ \href{http://revbayes.github.io/tutorials.html}{http://revbayes.github.io/tutorials.html}
+\medskip
+\subsubsection{Load Taxon List}\label{subsub:RB-TaxList}
 
-%Start up RevBayes at the command line. You should do this from within the \cl{RB\_TotalEvidenceDating\_FBD\_Tutorial} directory.
-%{\tt \begin{snugshade*}
-%\begin{lstlisting}
-%./rb
-%\end{lstlisting}
-%\end{snugshade*}}
-%
-%If you've done this correctly, you should see the prompt shown below
-%{\tt \begin{snugshade*}
-%\begin{lstlisting}
-%>
-%\end{lstlisting}
-%\end{snugshade*}}
+Now we read in the full list of taxa and create a workspace object with the total number of taxa. 
 
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+taxa <- readTaxonData("data/bears_taxa.tsv", delimiter=TAB)
+n_taxa <- taxa.size() # the number of taxa
+\end{lstlisting}
+\end{snugshade*}}
+
+\medskip
+\subsubsection{Load Data Matrices}\label{subsub:RB-LoadData}
 
 The first command will load in the sequences using the \cl{readDiscreteCharacterData()} function and assign it to a variable called \cl{cytb}. 
 
@@ -153,18 +153,13 @@ morpho <- readDiscreteCharacterData("data/bears_morphology.nex")
 %\end{lstlisting}
 %\end{snugshade*}}
 
-Now we read in the full list of taxa and create a workspace object with the total number of taxa. 
-
-{\tt \begin{snugshade*}
-\begin{lstlisting}
-taxa <- readTaxonData("data/bears_taxa.tsv", delimiter=TAB)
-n_taxa <- taxa.size() # the number of taxa
-\end{lstlisting}
-\end{snugshade*}}
 
 If you open the bears taxa file (\cl{bears\_taxa.tsv}), you'll notice that this is a tab-separated file of all of the taxon names, with the age in millions of years ago (mya) in the second column. 
 An age of 0.0 indicates an extant bear species. 
 We will use this information to allow fossils to be incorporated as tips in the analysis. 
+
+\medskip
+\subsubsection{Add Missing Taxa}\label{subsub:RB-AddMissing}
 
 Notice that the two data matrices have different numbers of taxa. The last bit of data preparation we will do is to add any taxa that are not found in the molecular partition (i.e. are only found in the fossil data) to the molecular partition as missing data, and vice versa.
 In order for all the taxa to appear on the same tree, they all need to be part of the same dataset, as opposed to present in separate datasets. 
@@ -210,7 +205,13 @@ morpho.addMissingTaxa( taxa )
 %
 %\subsection{Create a Helper Variable}
 
-Now that our data are loaded and prepared, we can specify the fossilized birth-death model, and the MCMC moves associated with it. As we work, we will be creating moves to govern how values are sampled for our various priors and parameters. We'll first create an iterator to hold all of our moves.
+\medskip
+\subsubsection{The Move-List Iterator Variable}\label{subsub:RB-mviVar}
+
+
+
+%Now that our data are loaded and prepared, we can specify the fossilized birth-death model, and the MCMC moves associated with it. 
+%As we work, we will be creating moves to govern how values are sampled for our various priors and parameters. We'll first create an iterator to hold all of our moves.
 
 {\tt \begin{snugshade*}
 \begin{lstlisting}
@@ -456,6 +457,7 @@ source("scripts/mcmc_TEFBD.Rev")
 |*20          |       -4294.05   |       -4266.91   |       -27.1443   |        4.58804   |              7   |        46.5636   |   00:00:01   |   00:08:19   |
 |*30          |       -4267.35   |       -4233.41   |         -33.94   |         6.8467   |              6   |        45.9177   |   00:00:02   |   00:11:04   |
 |*40          |       -4226.63   |       -4188.32   |       -38.3037   |        6.40484   |              8   |        44.3696   |   00:00:02   |   00:08:18   |
+|*...
 \end{lstlisting}
 \end{snugshade*}}}
 
