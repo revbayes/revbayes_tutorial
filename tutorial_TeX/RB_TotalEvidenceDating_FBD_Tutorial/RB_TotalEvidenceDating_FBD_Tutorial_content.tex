@@ -13,7 +13,28 @@ Point to other tutorials (e.g., GTR stuff)
 
 \subsubsection{Morphological Character Change}
 
-Mk models and ascertainment bias
+The incorporation of morphological data from fossils into phylogenetic analyses allows us to directly observe organisms that existed in the past.
+In 2001, Paul Lewis described a model, the Mk model, to allow for the incorporation of morphology into likelihood and Bayesian analyses.
+The Mk model uses a generalized Jukes-Cantor matrix.
+This introduces a number of assumptions. 
+One key assumption is that characters exhibit symmetrical change - that a given character is as likely to transition from a one state to another as it is to reverse.
+For example, this assumption applied to a binary character would mean that a change from a 0 state to a 1 state is as likely as a change from a 1 state to a 0 state. \par
+In the tutorial, we will relax this assumption through the use of a prior on stationary state frequencies. 
+All of the morphological data we are working with in this tutorial are binary.  
+Therefore, we can draw the stationary state frequencies of our 0 and 1 characters from a Beta distribution. 
+Using the stationary state frequencies drawn from the Beta distribution, we can then create new Q-matrices that allow for asymmetrical change in characters states (i.e., for changing from state 0 to state 1 to be more likely than changing from state 1 to state 0, or vice versa). 
+We can do multiple draws from the Beta distribution, creating multiple different Q-matrices per datset.
+This allows for heterogeneity in character change asymmetry across the dataset. 
+Likewise, we will use the Gamma distributed rate heterogeneity described in (other tutorial) to allow for different characters to evolve at different rates.\par
+
+Because of the way morphological data are collected, we need to exercise caution in how we model the data. 
+Traditionally, phylogenetic trees were built from morphological data using parsimony. 
+Therefore, characters were collected to be parsimony informative - that is, to be useful for discriminating between phylogenetic hypotheses under the maximum parsimony criterion.
+This means that many morphological datasets do not contain invariant characters or autapomorphies, as these cannot be used to discriminate among hypotheses under parsimony. 
+By excluding these low rate of evolution characters, the estimated branch lengths can be inflated.
+Therefore, it is important to use models that can condition on the coding bias. 
+RevBayes has two ways of doing this: one is used for datasets in which only parsimony informative characters are observed; the other is for datasets in which parsimony informative characters and non-parsimony informative variable characters (such as autapomorphies) are observed. \par
+
 
 \subsubsection{Lineage-Specific Substitution Rates}
 
@@ -356,8 +377,7 @@ Open your text editor and create the morphological character model file called {
 Enter the \Rev code provided in this section in the new model file.
 \end{framed}}
 
-Morphology has traditionally been assumed to evolve according to a generalized Jukes-Cantor matrix in which all characters have the same transition rates, and all characters have an equal probability of making forwards or backwards transitions (i.e., the same probability of going from 0 to 1 as 1 to 0). 
-This model is called the Mk model. We will use a hyperprior on state frequencies to relax these two assumptions. 
+As stated in the introduction, we will use a prior on state frequencies to relax the key assumption of the Mk model. 
 Because we are working with binary data, we can use a discrete Beta distribution to describe the variation in stationary state frequencies across characters. 
 The Beta distribution has two parameters, $\alpha$ and $\beta$ which describe its shape. 
 For simplicity, we will assume that $\alpha$ = $\beta$. 
@@ -414,13 +434,7 @@ moves[mvi++] = mvScale(clock_morpho, lambda=1,    weight=4.0)
 
 As in our molecular data partition, we now combine our data and our model. There are some unique aspects to doing this for morphology. \par
 You will notice that we have a variable called `coding'. This variable allows us to condition on biases in the way the morphological data were collected.
-Morphology is often collected to maximize the amount of variation present in the dataset. 
-This has traditionally been accomplished by collecting characters that exhibit parsimony informativity (i.e., those that can be used under the parsimony optimality criterion to discriminate among tree hypotheses) in the group of interest, or those that exhibit any variation in the group of interest. 
-This means few datasets contain invariant characters. 
-The lack of invariant characters can bias estimates of branch lengths towards unrealistically long lengths.
-Therefore, we specify a correction to account for the fact that invariant sites have no been observed.
-In the case of this dataset, parsimony non-informative variable characters, such as autapomorphies, have been collected. 
-We will, therefore, use the `variable' correction to account for this. \par
+This specifies the ascertainment bias correction discussed in \ref{subsubsection{Morphological Character Change}}. \par
 
 We use the flag `siteMatrices=true' to indicate that we are providing multiple Q matrices generated as a function of our state frequency variation model. \par
 
