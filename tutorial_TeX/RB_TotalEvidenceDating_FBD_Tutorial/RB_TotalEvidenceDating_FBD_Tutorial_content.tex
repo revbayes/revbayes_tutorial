@@ -20,6 +20,13 @@ This introduces a number of assumptions.
 One key assumption is that characters exhibit symmetrical change - that a given character is as likely to transition from a one state to another as it is to reverse.
 For example, this assumption applied to a binary character would mean that a change from a 0 state to a 1 state is as likely as a change from a 1 state to a 0 state. \par
 In the tutorial, we will relax this assumption through the use of a prior on stationary state frequencies. 
+This prior is visualized in Fig. 1. 
+\begin{figure}[h!]
+\centering
+\fbox{\includegraphics[width=\textwidth,angle=0]{\ResourcePath figures/tikz/morpho_gm}}
+\caption{\small A graphical model of the Beta-distributed frequencies across sites model. In this model, stationary state frequencies are drawn from a discrete Beta distribution and used to generate Q-matrices that allow character change asymmetry.}
+\label{fig:morpho_gm}
+\end{figure}
 All of the morphological data we are working with in this tutorial are binary.  
 Therefore, we can draw the stationary state frequencies of our 0 and 1 characters from a Beta distribution. 
 Using the stationary state frequencies drawn from the Beta distribution, we can then create new Q-matrices that allow for asymmetrical change in characters states (i.e., for changing from state 0 to state 1 to be more likely than changing from state 1 to state 0, or vice versa). 
