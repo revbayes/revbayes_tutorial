@@ -46,98 +46,54 @@ We provide the data file(s) which we will use in this tutorial.
 You may want to use your own data instead.
 In the \cl{data} folder, you will find the following files
 \begin{itemize}
-\item \cl{bears\_extant\_cytb.nex}: description of file/data (we also need more descriptive file names).
+\item \cl{bears\_cytb.nex}: description of file/data (we also need more descriptive file names).
 \end{itemize}
 
 
 
-\section{Exercise: Title}
+\section{Exercise: Title}\label{sect:RB-ExerciseMain}
 
 \bigskip
-\subsection{Getting Started}
+\subsection{Getting Started}\label{subsect:RB-GetStart}
 
-We will complete this analysis in \RevBayes by entering the \Rev code interactively. 
+%TODO Stuff about how to start or Rev basics?
 
-Note that some PDF viewers render some characters differently and if you copy/paste directly from this document, you may introduce erroneous characters. 
-This can cause commands to fail. 
-For learning, it's often better to `live code' and type the commands in manually, rather than copying and pasting. 
-
-Hints for navigating in the \RevBayes console:
-\begin{itemize}[noitemsep,topsep=0pt]
-    \item \cl{Ctrl+A} -- jump to the beginning of the line
-    \item \cl{Ctrl+E} -- jump to the end of the line
-    \item Pressing the up key will pull up previous commands, and allow you to edit them
-    \item If you enter the first few letters of a \RevBayes keyword and then the \textsc{Tab} key, this will `autocomplete' the remaining letters.
-    \item Help -- if you type \cl{?} followed immediately by a \RevBayes keyword, this will print the help pages for that keyword to the screen. (Example \cl{?dnBDP})
-\end{itemize}
-%In \RevBayes, \cl{Ctrl+A} allows you to jump to the start of the command, if you need to delete extra characters from the front of a line. \cl{Ctrl+E} allows you to jump to the end of a command. Pressing the up key will pull up previous commands, and allow you to edit them. If you do choose to copy and paste in commands, doing that from the tutorial script file will cause fewer errors. 
+%We will complete this analysis in \RevBayes by entering the \Rev code interactively. 
+%
+%Note that some PDF viewers render some characters differently and if you copy/paste directly from this document, you may introduce erroneous characters. 
+%This can cause commands to fail. 
+%For learning, it's often better to `live code' and type the commands in manually, rather than copying and pasting. 
+%
+%Hints for navigating in the \RevBayes console:
+%\begin{itemize}[noitemsep,topsep=0pt]
+%    \item \cl{Ctrl+A} -- jump to the beginning of the line
+%    \item \cl{Ctrl+E} -- jump to the end of the line
+%    \item Pressing the up key will pull up previous commands, and allow you to edit them
+%    \item If you enter the first few letters of a \RevBayes keyword and then the \textsc{Tab} key, this will `autocomplete' the remaining letters.
+%    \item Help -- if you type \cl{?} followed immediately by a \RevBayes keyword, this will print the help pages for that keyword to the screen. (Example \cl{?dnBDP})
+%\end{itemize}
+%%In \RevBayes, \cl{Ctrl+A} allows you to jump to the start of the command, if you need to delete extra characters from the front of a line. \cl{Ctrl+E} allows you to jump to the end of a command. Pressing the up key will pull up previous commands, and allow you to edit them. If you do choose to copy and paste in commands, doing that from the tutorial script file will cause fewer errors. 
 
 \bigskip
 
-\subsection{Loading the Data}
+\subsection{Creating \Rev Files}\label{subsect:RB-CreateingFiles}
 
-\noindent \\ \impmark Download data and output files (if you don't have them already) from: \\ \href{http://revbayes.github.io/tutorials.html}{http://revbayes.github.io/tutorials.html} \par
+For complex models and analyses, it is best to create \Rev script files that will contain all of the model parameters, moves, and functions. 
+In this exercise, you will work primarily in your text editor and create a set of modular files that will be easily managed and interchanged.
 
-Start up RevBayes at the command line. You should do this from within the \cl{RB\_TotalEvidenceDating\_FBD\_Tutorial} directory.
-{\tt \begin{snugshade*}
-\begin{lstlisting}
-./rb
-\end{lstlisting}
-\end{snugshade*}}
-
-If you've done this correctly, you should see the prompt shown below
-{\tt \begin{snugshade*}
-\begin{lstlisting}
->
-\end{lstlisting}
-\end{snugshade*}}
+\bigskip
+\subsection{Start the Master \Rev File and Import Data}\label{subsect:RB-StartMasterRev}
 
 
-First load in the sequences using the \cl{readDiscreteCharacterData()} function and assign it to a variable called \cl{cytb}. 
 
-{\tt \begin{snugshade*}
-\begin{lstlisting}
-cytb <- readDiscreteCharacterData("data/bears_cytb.nex") 
-\end{lstlisting}
-\end{snugshade*}}
-Executing these lines initializes the data matrix as the respective \Rev variables. 
-To report the current value of any variable, simply type the variable name and press enter. For the \cl{cytb} data matrix, this provides information about the alignment:
-{\tt \begin{snugshade*}
-\begin{lstlisting}
-cytb
-|*      DNA character matrix with 10 taxa and 1000 characters
-|*   =====================================================
-|*   Origination:                      bears_cytb.nex
-|*   Number of taxa:                   10
-|*   Number of included taxa:          10
-|*   Number of characters:             1000
-|*   Number of included characters: 1000
-|*   Datatype:                         DNA
-\end{lstlisting}
-\end{snugshade*}}
+{\begin{framed}
+Open your text editor and create the master \Rev file called {\textcolor{red}{\cl{mcmc\_TEFBD.Rev}}} in the \cl{scripts} directory.
 
-Next, import the morphological character matrix and assign it to the variable \cl{morpho}. 
-{\tt \begin{snugshade*}
-\begin{lstlisting}
-morpho <- readDiscreteCharacterData("data/bears_morphology.nex")
-\end{lstlisting}
-\end{snugshade*}}
+Enter the \Rev code provided in this section in the new model file.
+\end{framed}}
 
-The information about the morphological character matrix should look like this:
-
-{\tt \begin{snugshade*}
-\begin{lstlisting}
-morpho
-|*    Standard character matrix with 18 taxa and 81 characters
-|*    ========================================================
-|*    Origination:                   bears_morphology.nex
-|*    Number of taxa:                18
-|*    Number of included taxa:       18
-|*    Number of characters:          81
-|*    Number of included characters: 81
-|*    Datatype:                      Standard
-\end{lstlisting}
-\end{snugshade*}}
+\medskip
+\subsubsection{Load Taxon List}\label{subsub:RB-TaxList}
 
 Now we read in the full list of taxa and create a workspace object with the total number of taxa. 
 
@@ -148,9 +104,62 @@ n_taxa <- taxa.size() # the number of taxa
 \end{lstlisting}
 \end{snugshade*}}
 
+\medskip
+\subsubsection{Load Data Matrices}\label{subsub:RB-LoadData}
+
+The first command will load in the sequences using the \cl{readDiscreteCharacterData()} function and assign it to a variable called \cl{cytb}. 
+
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+cytb <- readDiscreteCharacterData("data/bears_cytb.nex") 
+\end{lstlisting}
+\end{snugshade*}}
+%Executing these lines initializes the data matrix as the respective \Rev variables. 
+%To report the current value of any variable, simply type the variable name and press enter. For the \cl{cytb} data matrix, this provides information about the alignment:
+%{\tt \begin{snugshade*}
+%\begin{lstlisting}
+%cytb
+%|*      DNA character matrix with 10 taxa and 1000 characters
+%|*   =====================================================
+%|*   Origination:                      bears_cytb.nex
+%|*   Number of taxa:                   10
+%|*   Number of included taxa:          10
+%|*   Number of characters:             1000
+%|*   Number of included characters: 1000
+%|*   Datatype:                         DNA
+%\end{lstlisting}
+%\end{snugshade*}}
+
+Next, import the morphological character matrix and assign it to the variable \cl{morpho}. 
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+morpho <- readDiscreteCharacterData("data/bears_morphology.nex")
+\end{lstlisting}
+\end{snugshade*}}
+
+%The information about the morphological character matrix should look like this:
+%
+%{\tt \begin{snugshade*}
+%\begin{lstlisting}
+%morpho
+%|*    Standard character matrix with 18 taxa and 81 characters
+%|*    ========================================================
+%|*    Origination:                   bears_morphology.nex
+%|*    Number of taxa:                18
+%|*    Number of included taxa:       18
+%|*    Number of characters:          81
+%|*    Number of included characters: 81
+%|*    Datatype:                      Standard
+%\end{lstlisting}
+%\end{snugshade*}}
+
+
 If you open the bears taxa file (\cl{bears\_taxa.tsv}), you'll notice that this is a tab-separated file of all of the taxon names, with the age in millions of years ago (mya) in the second column. 
 An age of 0.0 indicates an extant bear species. 
 We will use this information to allow fossils to be incorporated as tips in the analysis. 
+
+\medskip
+\subsubsection{Add Missing Taxa}\label{subsub:RB-AddMissing}
 
 Notice that the two data matrices have different numbers of taxa. The last bit of data preparation we will do is to add any taxa that are not found in the molecular partition (i.e. are only found in the fossil data) to the molecular partition as missing data, and vice versa.
 In order for all the taxa to appear on the same tree, they all need to be part of the same dataset, as opposed to present in separate datasets. 
@@ -163,40 +172,46 @@ morpho.addMissingTaxa( taxa )
 \end{lstlisting}
 \end{snugshade*}}
 
+%
+%\bigskip
+%
+%\subsection{Specify Clades}
+%
+%RevBayes allows researchers to use clade constraints to put a zero probability on trees not containing certain clades. In our case, Ursinae (brown bears, black bears and sloth bears) and Ailuropodinae (pandas and their close relatives) are both very well supported subfamilies. We will add constraints for these two groups. 
+%
+%{\tt \begin{snugshade*}
+%\begin{lstlisting}
+%clade_ursinae = clade("Melursus_ursinus","Ursus_arctos","Ursus_maritimus", 
+%                         "Helarctos_malayanus","Ursus_americanus","Ursus_thibetanus", 
+%                         "Ursus_abstrusus","Ursus_spelaeus")
+%clade_pandas = clade("Ailuropoda_melanoleuca","Indarctos_vireti",
+%                        "Indarctos_arctoides","Indarctos_punjabiensis", 
+%                        "Ailurarctos_lufengensis","Agriarctos_spp",
+%                        "Kretzoiarctos_beatrix")
+%constraints = v(clade_pandas, clade_ursinae)
+%\end{lstlisting}
+%\end{snugshade*}}
+%
+%We will also define a clade for the extant bears that will not be constrained. This will allow us to monitor the age of this node in our log file (in Section \ref{?}).
+%{\tt \begin{snugshade*}
+%\begin{lstlisting}
+%clade_extant = clade("Ailuropoda_melanoleuca","Tremarctos_ornatus","Melursus_ursinus",
+%                       "Ursus_arctos","Ursus_maritimus","Helarctos_malayanus",
+%                       "Ursus_americanus","Ursus_thibetanus")
+%\end{lstlisting}
+%\end{snugshade*}}
+%
+%\bigskip
+%
+%\subsection{Create a Helper Variable}
 
-\bigskip
+\medskip
+\subsubsection{The Move-List Iterator Variable}\label{subsub:RB-mviVar}
 
-\subsection{Specify Clades}
 
-RevBayes allows researchers to use clade constraints to put a zero probability on trees not containing certain clades. In our case, Ursinae (brown bears, black bears and sloth bears) and Ailuropodinae (pandas and their close relatives) are both very well supported subfamilies. We will add constraints for these two groups. 
 
-{\tt \begin{snugshade*}
-\begin{lstlisting}
-clade_ursinae = clade("Melursus_ursinus","Ursus_arctos","Ursus_maritimus", 
-                         "Helarctos_malayanus","Ursus_americanus","Ursus_thibetanus", 
-                         "Ursus_abstrusus","Ursus_spelaeus")
-clade_pandas = clade("Ailuropoda_melanoleuca","Indarctos_vireti",
-                        "Indarctos_arctoides","Indarctos_punjabiensis", 
-                        "Ailurarctos_lufengensis","Agriarctos_spp",
-                        "Kretzoiarctos_beatrix")
-constraints = v(clade_pandas, clade_ursinae)
-\end{lstlisting}
-\end{snugshade*}}
-
-We will also define a clade for the extant bears that will not be constrained. This will allow us to monitor the age of this node in our log file (in Section \ref{?}).
-{\tt \begin{snugshade*}
-\begin{lstlisting}
-clade_extant = clade("Ailuropoda_melanoleuca","Tremarctos_ornatus","Melursus_ursinus",
-                       "Ursus_arctos","Ursus_maritimus","Helarctos_malayanus",
-                       "Ursus_americanus","Ursus_thibetanus")
-\end{lstlisting}
-\end{snugshade*}}
-
-\bigskip
-
-\subsection{Create a Helper Variable}
-
-Now that our data are loaded and prepared, we can specify the fossilized birth-death model, and the MCMC moves associated with it. As we work, we will be creating moves to govern how values are sampled for our various priors and parameters. We'll first create an iterator to hold all of our moves.
+%Now that our data are loaded and prepared, we can specify the fossilized birth-death model, and the MCMC moves associated with it. 
+%As we work, we will be creating moves to govern how values are sampled for our various priors and parameters. We'll first create an iterator to hold all of our moves.
 
 {\tt \begin{snugshade*}
 \begin{lstlisting}
@@ -206,7 +221,13 @@ mvi = 1
 
 \bigskip
 
-\subsection{Specify the fossilized birth-death process}
+\subsection{The Fossilized Birth-Death Process}\label{subsect:RB-ModelFBD}
+
+{\begin{framed}
+Open your text editor and create the fossilized birth-death model file called {\textcolor{red}{\cl{model\_FBDP\_TEFBD.Rev}}} in the \cl{scripts} directory.
+
+Enter the \Rev code provided in this section in the new model file.
+\end{framed}}
 
 Two key parameters of the FBD process are the birth rate (the rate at which lineages are added to the tree) and the death rate (the rate at which lineages are removed from the tree). We'll place exponential priors on both of these values. An exponential prior with a $\lambda$ =  10 places a higher probability on values less than 0.4 for these parameters. 
 
@@ -296,17 +317,197 @@ crown := tmrca(fbd_tree, clade_extant)
 \end{lstlisting}
 \end{snugshade*}}
 
+\bigskip
+
+\subsection{The Uncorrelated Exponential Relaxed-Clock Model}\label{subsect:RB-ModelUCExp}
+
+{\begin{framed}
+Open your text editor and create the lineage-specific branch-rate model file called {\textcolor{red}{\cl{model\_UCExp\_TEFBD.Rev}}} in the \cl{scripts} directory.
+
+Enter the \Rev code provided in this section in the new model file.
+\end{framed}}
 
 
-%% This is what output looks like
+\bigskip
 
-%\begin{figure}[htbp!]
-%\centering
-%\fbox{\includegraphics[width=0.8\textwidth]{\ResourcePath figures/figure.pdf}}
-%\caption{\small example figure.}
-%\label{fig:example}
-%\end{figure}
+\subsection{The General-Time Reversible Gamma-Rates Model of Sequence Evolution}\label{subsect:RB-ModelGTRG}
+
+{\begin{framed}
+Open your text editor and create the molecular substitution model file called {\textcolor{red}{\cl{model\_GTRG\_TEFBD.Rev}}} in the \cl{scripts} directory.
+
+Enter the \Rev code provided in this section in the new model file.
+\end{framed}}
+
+\bigskip
+
+\subsection{Modeling the Evolution of Binary Morphological Characters}\label{subsect:RB-ModelMorph}
+
+{\begin{framed}
+Open your text editor and create the morphological character model file called {\textcolor{red}{\cl{model\_Morph\_TEFBD.Rev}}} in the \cl{scripts} directory.
+
+Enter the \Rev code provided in this section in the new model file.
+\end{framed}}
+
+\bigskip
+
+\subsection{Complete MCMC File}\label{subsect:RB-CompleteMCMC}
+
+{\begin{framed}
+Return to the master \Rev file you created in Section \ref{subsect:RB-StartMasterRev} called {\textcolor{red}{\cl{mcmc\_TEFBD.Rev}}} in the \cl{scripts} directory.
+
+Enter the \Rev code provided in this section in this file.
+\end{framed}}
+
+\medskip
+\subsubsection{Source Model Scripts}\label{subsub:RB-SourceMods}
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+source("scripts/model_FBDP_TEFBD.Rev")
+
+source("scripts/model_UCExp_TEFBD.Rev")
+
+source("scripts/model_GTRG_TEFBD.Rev")
+
+source("scripts/model_Morph_TEFBD.Rev")
+\end{lstlisting}
+\end{snugshade*}}
 
 
-%\bibliographystyle{sysbio}
-%\bibliography{\GlobalResourcePath refs}
+
+\medskip
+\subsubsection{Create Model Object}\label{subsub:RB-ModObj}
+
+
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+mymodel = model(sf)
+\end{lstlisting}
+\end{snugshade*}}
+
+\medskip
+\subsubsection{Specify Monitors and Output Filenames}\label{subsub:RB-Monitors}
+
+
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+mni = 1
+monitors[mni++] = mnModel(filename="output/bears.log", printgen=10)
+monitors[mni++] = mnFile(filename="output/bears.trees", printgen=10, fbd_tree)
+monitors[mni++] = mnScreen(printgen=10, age_extant, num_samp_anc, origin_time)
+\end{lstlisting}
+\end{snugshade*}}
+
+\medskip
+\subsubsection{Set up the MCMC}
+
+
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+mymcmc = mcmc(mymodel, monitors, moves)
+
+mymcmc.run(generations=10000)
+\end{lstlisting}
+\end{snugshade*}}
+
+{\begin{framed}
+Save and close all files.
+\end{framed}}
+
+\bigskip
+\subsection{Run it}\label{subsect:RB-RunMCMC}
+
+
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+./rb
+\end{lstlisting}
+\end{snugshade*}}
+
+Execute the MCMC analysis:
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+source("scripts/mcmc_TEFBD.Rev")
+\end{lstlisting}
+\end{snugshade*}}
+
+{\tiny{\tt \begin{snugshade*}
+\begin{lstlisting}
+|*   Processing file "scripts/mcmc_TEFBD.Rev"
+|*   Successfully read one character matrix from file 'data/bears_cytb.nex'
+|*   Successfully read one character matrix from file 'data/bears_morphology.nex'
+|*   Processing file "scripts/model_FBDP_TEFBD.Rev"
+|*   Processing of file "scripts/model_FBDP_TEFBD.Rev" completed
+|*   Processing file "scripts/model_UCExp_TEFBD.Rev"
+|*   Processing of file "scripts/model_UCExp_TEFBD.Rev" completed
+|*   Processing file "scripts/model_GTRG_TEFBD.Rev"
+|*   Processing of file "scripts/model_GTRG_TEFBD.Rev" completed
+|*   Processing file "scripts/model_Morph_TEFBD.Rev"
+|*   WARNING: There are 19 characters incompatible with the specified coding bias. These characters
+|*   will be excluded.
+|*   Processing of file "scripts/model_Morph_TEFBD.Rev" completed
+|*
+|*   Running MCMC simulation
+|*   This simulation runs 1 independent replicate.
+|*   The simulator uses 163 different moves in a random move schedule with 267 moves per iteration
+|*
+|*Iter        |      Posterior   |     Likelihood   |          Prior   |     age_extant   |   num_samp_anc   |    origin_time   |    elapsed   |        ETA   |
+|*---------------------------------------------------------------------------------------------------------------------------------------------
+|*0           |       -8174.01   |        -8053.8   |       -120.209   |        34.8641   |              0   |        44.4332   |   00:00:00   |   --:--:--   |
+|*10          |       -4654.95   |        -4611.2   |       -43.7495   |        4.32618   |              7   |        45.4494   |   00:00:01   |   --:--:--   |
+|*20          |       -4294.05   |       -4266.91   |       -27.1443   |        4.58804   |              7   |        46.5636   |   00:00:01   |   00:08:19   |
+|*30          |       -4267.35   |       -4233.41   |         -33.94   |         6.8467   |              6   |        45.9177   |   00:00:02   |   00:11:04   |
+|*40          |       -4226.63   |       -4188.32   |       -38.3037   |        6.40484   |              8   |        44.3696   |   00:00:02   |   00:08:18   |
+|*...
+\end{lstlisting}
+\end{snugshade*}}}
+
+\bigskip
+\subsection{Summarize Your Results}\label{subsect:RB-SummarizeResults}
+
+\medskip
+\subsubsection{Evaluate MCMC}\label{subsub:RB-EvalMCMC}
+
+%TODO this is tracer stuff
+
+
+\medskip
+\subsubsection{Summarize Tree}\label{subsub:RB-SummarizeTree}
+
+%TODO this they can do interactively in rb
+
+Start up RevBayes at the command line. You should do this from within the \cl{RB\_TotalEvidenceDating\_FBD\_Tutorial} directory.
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+./rb
+\end{lstlisting}
+\end{snugshade*}}
+
+Read in the MCMC sample of trees from file.
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+trace = readTreeTrace("output/bears.trees")
+
+for(i in 1:trace.size())
+{
+    trees[i] = fnPruneTree(trace.getTree(i), pruneTaxa=v(taxa[17],taxa[20]))
+}
+
+trace_pruned = treeTrace(trees)
+mccTree(trace_pruned, "output/bears.mcc.tre" )
+\end{lstlisting}
+\end{snugshade*}}
+
+See Fig.\ \ref{fig:IcyTreeSumm}
+
+\begin{figure}[h!]
+\centering
+\fbox{\includegraphics[width=\textwidth,angle=0]{\ResourcePath figures/summary_tree.pdf}}
+\caption{\small This is a place-holder figure.}
+\label{fig:IcyTreeSumm}
+\end{figure}
+
+
+%TODO IcyTree
+
+\bibliographystyle{sysbio}
+\bibliography{\GlobalResourcePath refs}
