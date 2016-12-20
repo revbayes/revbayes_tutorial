@@ -38,10 +38,22 @@ n_epochs <- time_bounds.size()
 for (i in 1:n_epochs) {
     epoch_fn = geo_fn + "." + i + ".txt"
     connectivity[i] <- readDataDelimitedFile(file=epoch_fn, delimiter=" ")
+    #connectivity2[i] <- readDataDelimitedFile(file=epoch_fn, delimiter=" ")
+    #for (j in 1:n_areas) {
+    #    for (k in 1:n_areas) {
+    #        connectivity[i][j][k] <- connectivity2[i][j][k]
+    #    }
+    #}
 }
 
 # area distances
 distances <- readDataDelimitedFile(file=dist_fn, delimiter=" ")
+#distances_raw <- readDataDelimitedFile(file=dist_fn, delimiter=" ")
+#for (i in 1:n_areas) {
+#for (j in 1:n_areas) {
+#    distances[i][j] <- distances_raw[i][j]
+#}
+#}
 
 
 ###############
@@ -58,19 +70,19 @@ phy <- readTrees(phy_fn)[1]
 # first, the distance function
 
 dispersal_rate ~ dnExp(1)
+dispersal_rate.setValue(1)
 moves[mvi++] = mvScale(dispersal_rate)
 
 distance_scale ~ dnExp(1)
+distance_scale.setValue(0.01)
 moves[mvi++] = mvScale(distance_scale)
 
 # then, the dispersal rate matrix
 for (i in 1:n_epochs) {
     for (j in 1:n_areas) {
         for (k in 1:n_areas) {
-            dr[i][j][k] := abs(0.0)
-            if (connectivity[i][j][k] > 0) {
-                dr[i][j][k] := dispersal_rate * exp( -(distance_scale * distances[j][k]) )
-            }
+            dist_cost[i][j][k] := -distance_scale * distances[j][k]
+            dr[i][j][k]  := dispersal_rate * connectivity[i][j][k] * exp(dist_cost[i][j][k])
         }
     }
 }
@@ -90,7 +102,8 @@ for (i in 1:n_epochs) {
 }
 
 # build DEC rate matrices
-for (i in 1:n_epochs) {
+#for (i in 1:n_epochs) {
+for (i in n_epochs:1) {
     Q_DEC[i] := fnDECRateMatrix(dispersalRates=dr[i],
                                 extirpationRates=er[i],
                                 maxRangeSize=max_areas)
