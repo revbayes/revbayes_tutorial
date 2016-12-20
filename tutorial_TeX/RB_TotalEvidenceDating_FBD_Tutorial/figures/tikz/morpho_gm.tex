@@ -1,0 +1,19 @@
+\definecolor{shc}{RGB}{238,224,229}
+\begin{tikzpicture}
+\node[constnode] (lambda) at (1,1) {\large $\delta_{\beta}$};
+\node[snode] (beta) at ($(lambda)+(1.5,0)$) {\Large $\beta$};
+\node[detnode] (pi) at ($(beta)+(2,0)$) {\LARGE $\pi_i$};
+\node[detnode] (Q) at ($(pi)+(0,-1.5)$) {\large $Q_i$};
+\node (ddd) at ($(Q)+(0,-2)$) {\scriptsize to the phyloCTMC};
+\node (ex) at ($(pi)+(0,0.7)$) [centered]{\scriptsize discrete beta};
+\node (eb) at ($(beta)+(0,0.7)$) [centered]{\scriptsize exponential};
+\node[white, fill=brnt, shape=rectangle, rounded corners] at ($(Q)+(1.2,0)$) [right]{site matrices};
+\node[white, fill=brnt, shape=rectangle, rounded corners] at ($(pi)+(1.2,0)$) [right]{site frequencies};
+\draw [dtaro] (beta) -- (pi) ;
+\draw [taro] (lambda) -- (beta) ;
+\draw [dtaro] (pi) -- (Q) ;
+\draw[dtaro] (Q) -- (ddd) ;
+\node[rectangle,dashed, very thick, inner sep=6mm, draw=black!100, fit = (pi)(Q)] (siteplate) {};
+\node[anchor=south east,inner sep=7pt] at (siteplate.south east) {\tiny $i \in N$};
+\end{tikzpicture}
+
