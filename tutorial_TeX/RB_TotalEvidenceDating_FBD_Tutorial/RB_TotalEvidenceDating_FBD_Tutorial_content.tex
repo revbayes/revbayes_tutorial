@@ -348,6 +348,82 @@ Open your text editor and create the morphological character model file called {
 Enter the \Rev code provided in this section in the new model file.
 \end{framed}}
 
+Morphology has traditionally been assumed to evolve according to a generalized Jukes-Cantor matrix in which all characters have the same transition rates, and all characters have an equal probability of making forwards or backwards transitions (i.e., the same probability of going from 0 to 1 as 1 to 0). 
+This model is called the Mk model. We will use a hyperprior on state frequencies to relax these two assumptions. Because we are working with binary data, we can use a discrete Beta distribution to describe the variation in stationary state frequencies across characters. 
+The Beta distribution has two parameters, $\alpha$ and $\beta$ which describe its shape. 
+For simplicity, we will assume that $\alpha$ = $\beta$. 
+The below code draws a value for $\beta$ from an exponential distribution and places a move on it.
+
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+beta_hp ~ dnExponential( 1.0 )
+
+moves[mvi++] = mvScale(beta_hp, lambda=1,    weight=1.0 )
+moves[mvi++] = mvScale(beta_hp, lambda=0.1,  weight=1.0 )
+moves[mvi++] = mvScale(beta_hp, lambda=0.01, weight=1.0 )
+\end{lstlisting}
+\end{snugshade*}}
+
+Next, we'll create a vector containing four different site stationary state frequencies. 
+This is similar to allowing gamma-distributed rate variation across sites. 
+We will then use these stationary frequencies to generate a set of new Q-matrices which do not enforce the assumptions of the same transition rates at every site and equal forward and backwards transition rates.
+
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+beta_cats := fnDiscretizeBeta( beta_hp, beta_hp, 4)
+for(i in 1:beta_cats.size())
+{
+    Q_morpho[i] := fnFreeBinary(v(1-beta_cats[i], beta_cats[i]))
+}
+\end{lstlisting}
+\end{snugshade*}}
+
+
+As in the molecular data partition, we will allow gamma-dstributed rate heterogeneity among sites.
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+alpha_morpho ~ dnExponential( 1.0 )
+rates_morpho := fnDiscretizeGamma( alpha_morpho, alpha_morpho, 4, false )
+
+moves[mvi++] = mvScale(alpha_morpho, lambda=0.01, weight=1.0)
+moves[mvi++] = mvScale(alpha_morpho, lambda=0.1,  weight=1.0)
+moves[mvi++] = mvScale(alpha_morpho, lambda=1,    weight=1.0)
+\end{lstlisting}
+\end{snugshade*}}
+
+Each data partition has to have a clock rate. For simplicity, we will assume a strict clock rate drawn from an exponential distribution.
+
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+clock_morpho ~ dnExponential(1.0)
+
+moves[mvi++] = mvScale(clock_morpho, lambda=0.01, weight=4.0)
+moves[mvi++] = mvScale(clock_morpho, lambda=0.1,  weight=4.0)
+moves[mvi++] = mvScale(clock_morpho, lambda=1,    weight=4.0)
+\end{lstlisting}
+\end{snugshade*}}
+
+As in our molecular data partition, we now combine our data and our model. There are some unique aspects to doing this for morphology. \par
+You will notice that we have a variable called `coding'. This variable allows us to condition on biases in the way the morphological data were collected.
+Morphology is often collected to maximize the amount of variation present in the dataset. 
+This has traditionally been accomplished by collecting characters that exhibit parsimony informativity (i.e., those that can be used under the parsimony optimality criterion to discriminate among tree hypotheses) in the group of interest, or those that exhibit any variation in the group of interest. 
+This means few datasets contain invariant characters. 
+The lack of invariant characters can bias estimates of branch lengths towards unrealistically long lengths.
+Therefore, we specify a correction to account for the fact that invariant sites have no been observed.
+In the case of this dataset, parsimony non-informative variable characters, such as autapomorphies, have been collected. 
+We will, therefore, use the `variable' correction to account for this. \par
+
+We use the flag `siteMatrices=true' to indicate that we are providing multiple Q matrices generated as a function of our state frequency variation model. \par
+
+
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+phyMorpho ~ dnPhyloCTMC(tree=fbd_tree, siteRates=rates_morpho, branchRates=clock_morpho, Q=Q_morpho, type="Standard", coding="variable", siteMatrices=true)
+phyMorpho.clamp(morpho)
+\end{lstlisting}
+\end{snugshade*}}
+
+
 \bigskip
 
 \subsection{Complete MCMC File}\label{subsect:RB-CompleteMCMC}
