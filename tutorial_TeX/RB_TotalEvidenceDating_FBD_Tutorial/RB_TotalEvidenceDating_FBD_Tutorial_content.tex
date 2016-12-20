@@ -76,10 +76,10 @@ We provide the data files which we will use in this tutorial.
 You may want to use your own data instead.
 In the \cl{data} folder, you will find the following files
 \begin{itemize}[noitemsep,topsep=0pt]
-\item \cl{bears\_taxa.tsv}: a list of every taxon in this analysis
+\item \cl{bears\_taxa.tsv}: a tab-separated table listing every bear species (both fossil and extant) and their occurrence dates. For extant taxa, the occurrence date is \cl{0.0} (\IE the present) and for fossil species, the occurrence date is equal to the mean of the age range (the ranges are defined in a separate file).
 \item \cl{bears\_cytb.nex}: an alignment in NEXUS format of 1,000 bp of cytochrome-b sequences for 10 bear species. This alignment includes 8 living bears and 2 extinct sub-fossil bears.
-\item \cl{bears\_morphology.nex}: 
-\item \cl{bears\_fossil\_intervals.tsv}:
+\item \cl{bears\_morphology.nex}: a matrix of 62 discrete, binary (coded \cl{0} or \cl{1}) morphological characters for 18 species of fossil and extant bears.
+\item \cl{bears\_fossil\_intervals.tsv}: a tab-separated table containing the age ranges (minimum and maximum in millions of years) for 14 fossil bears.
 \end{itemize}
 
 
@@ -120,7 +120,7 @@ When you execute \RevBayes in this exercise, you will do so within the main dire
 
 For complex models and analyses, it is best to create \Rev script files that will contain all of the model parameters, moves, and functions. 
 In this exercise, you will work primarily in your text editor and create a set of modular files that will be easily managed and interchanged.
-You will write the following files from scratch and save them in the \cl{scripts} directory:
+You will write the following files from scratch in a text editor$^*$ and save them in the \cl{scripts} directory:
 \begin{itemize}[noitemsep,topsep=0pt]
 \item \cl{mcmc\_TEFBD.Rev}: the master \Rev file that loads the data, the separate model files, and specifies the monitors and MCMC sampler.
 \item \cl{model\_FBDP\_TEFBD.Rev}: specifies the model parameters and moves required for the fossilized birth-death prior on the tree topology, divergence times, fossil occurrence times, and diversification dynamics.
@@ -128,10 +128,13 @@ You will write the following files from scratch and save them in the \cl{scripts
 \item \cl{model\_GTRG\_TEFBD.Rev}: specifies the parameters and moves for the general-time reversible model of sequence evolution with gamma-distributed rates across sites (GTR+$\Gamma$).
 \item \cl{model\_Morph\_TEFBD.Rev}: specifies the model describing discrete morphological character change (binary characters) under a strict morphological clock. 
 \end{itemize}
+{\footnotesize $^*$Note: if you do not already have a good text editor that you like, we recommend one that has features for syntax coloring, easy navigation between different files, line numbers, etc.
+A good option is \href{http://www.sublimetext.com/}{Sublime Text}, which is available for Mac OSX, Windows, and Linux.}
 
 All of the files that you will create are also provided in the \RevBayes tutorial repository. 
 Please refer to these files to verify or troubleshoot your own scripts. 
 %TODO add link to scripts
+
 
 \bigskip
 \subsection{Start the Master \Rev File and Import Data}\label{subsect:RB-StartMasterRev}
@@ -144,17 +147,31 @@ Open your text editor and create the master \Rev file called {\textcolor{red}{\c
 Enter the \Rev code provided in this section in the new model file.
 \end{framed}}
 
+The file you will begin in this section will be the one you load into \RevBayes when you've completed all of the components of the analysis.
+In this section you will begin the file and write the \Rev commands for loading in the taxon list and managing the data matrices.
+Then, starting in Section \ref{subsect:RB-ModelFBD}, you will move on to writing modular files for each of the model components. 
+Once the model files are complete, you will return to editing \cl{mcmc\_TEFBD.Rev} and complete the \Rev script with the instructions given in Section \ref{subsect:RB-CompleteMCMC}.
+
 \medskip
 \subsubsection{Load Taxon List}\label{subsub:RB-TaxList}
 
-Now we read in the full list of taxa and create a workspace object with the total number of taxa. 
-
+Begin the \Rev script by loading in the list of taxon names from the \cl{bears\_taxa.tsv} file using the \cl{readTaxonData()} function.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 taxa <- readTaxonData("data/bears_taxa.tsv", delimiter=TAB)
-n_taxa <- taxa.size() # the number of taxa
 \end{lstlisting}
 \end{snugshade*}}
+This function reads the tab-delimited file and creates a variable called \cl{taxa} that is a list of all of the taxon names relevant to this analysis. 
+This list includes all of the fossil and extant bears.
+
+Next, create a new variable called \cl{n\_taxa} which is a constant node that is equal to the number of species in our analysis (22). 
+This variable will be useful for downstream components of the model specification, thus it is best to instantiate it here. 
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+n_taxa <- taxa.size() 
+\end{lstlisting}
+\end{snugshade*}}
+
 
 \medskip
 \subsubsection{Load Data Matrices}\label{subsub:RB-LoadData}
