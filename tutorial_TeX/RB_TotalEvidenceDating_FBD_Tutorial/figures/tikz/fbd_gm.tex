@@ -1,0 +1,57 @@
+\begin{tikzpicture}
+\node[snode] (tau) at (1,1) {\LARGE $\tau$};
+\node[snode] (lambda) at ($(tau)+(-3,4)$) {\LARGE $\lambda$};
+\node[snode] (mu) at ($(tau)+(0,4)$) {\LARGE $\mu$};
+\node[snode] (psi) at ($(tau)+(3,4)$) {\LARGE $\psi$};
+\node[constnode] (nu) at ($(mu)+(0,2)$) {\Large $\nu$};
+\draw [taro] (lambda) -- (tau);
+\draw [taro] (mu) -- (tau);
+\draw [taro] (psi) -- (tau);
+\draw [taro] (nu) -- (lambda);
+\draw [taro] (nu) -- (mu);
+\draw [taro] (nu) -- (psi);
+%\node at ($(nx)+(0,-1)$) {time tree};
+%\node at ($(nx)+(0,-1.75)$) {Node ages};
+\node at ($(nu)+(0,0.75)$) {\scriptsize exponential};
+\node[constnode] (rho) at ($(tau)+(4.5,1)$) {\LARGE $\rho$};
+\node[snode] (T) at ($(tau)+(-5.5,2)$) {\large $T$};
+\draw[taro] (T) -- (tau) ;
+\draw[taro] (rho) -- (tau) ;
+%\node[constnode] (rp1) at ($(rho)+(-1.5,1)$) {\LARGE $a$};
+%\node[constnode] (rp2) at ($(rho)+(-1.5,-1)$) {\LARGE $b$};
+%\draw[taro] (rp1) -- (rho) ;
+%\draw[taro] (rp2) -- (rho) ;
+\draw[taro] (rho) -- (tau) ;
+\node[white, fill=brnt, shape=rectangle, rounded corners] at ($(T)+(0,-1)$) {origin time};
+\node[white, fill=brnt, shape=rectangle, rounded corners] at ($(rho)+(0,-1)$) {sampling probability};
+\node[white, fill=brnt, shape=rectangle, rounded corners] at ($(lambda)+(0,-1)$) [centered]{speciation rate};
+\node[white, fill=brnt, shape=rectangle, rounded corners] at ($(mu)+(0,-1)$) [centered]{extinction rate};
+\node[white, fill=brnt, shape=rectangle, rounded corners] at ($(psi)+(0,-1)$) [centered]{fossilization rate};
+\node (ddd) at ($(tau)+(3,-3)$) {to the phyloCTMCs};
+\draw[dtaro] (tau) -- (ddd) ;
+\node[detnode] (offset) at ($(tau)+(-3,-3)$) {\large $t_i$};
+\node[obnode] (fossil) at ($(offset)+(-4,0)$) {\large $\mathcal{F}_i$};
+\node[detnode] (ai) at ($(fossil)+(2,0.75)$) {\large $x_i$};
+\node[detnode] (bi) at ($(fossil)+(2,-0.75)$) {\large $y_i$};
+\node[constnode] (mini) at ($(ai)+(0,1.5)$) {\large $a_i$};
+\node[constnode] (maxi) at ($(bi)+(0,-1.5)$) {\large $b_i$};
+\draw[dtaro] (tau) -- (offset) ;
+\draw[taro] (offset) -- (ai) ;
+\draw[taro] (offset) -- (bi) ;
+\draw[taro] (ai) -- (fossil) ;
+\draw[taro] (bi) -- (fossil) ;
+\draw[taro] (mini) -- (ai) ;
+\draw[taro] (maxi) -- (bi) ;
+\node[white, fill=brnt, shape=rectangle, rounded corners] at ($(fossil)+(0,-1.25)$) {fossil age};
+\node[constnode] (min) at ($(T)+(-1.5,1.5)$) {\large $a$};
+\node[constnode] (max) at ($(T)+(-2,-0.25)$) {\large $b$};
+\draw[taro] (min) -- (T) ;
+\draw[taro] (max) -- (T) ;
+\node at ($(T)-(2,-0.6)$) {\scriptsize uniform};
+\node at ($(fossil)+(2,0)$) {\scriptsize uniform};
+\node at ($(offset)+(0,0.75)$) {\scriptsize offset};
+\node[rectangle, dashed, very thick, inner sep=6mm, draw=black!100, fit=(fossil)(offset)(mini)(maxi)] (fossil_plate) {};
+\node[anchor=south east,inner sep=7pt] at (fossil_plate.south east) {\small $i \in N$};
+\end{tikzpicture}
+
+

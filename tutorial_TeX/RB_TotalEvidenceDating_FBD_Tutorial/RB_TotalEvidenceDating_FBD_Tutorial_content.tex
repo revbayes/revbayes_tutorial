@@ -1,13 +1,15 @@
 
 \section{Introduction}
 
-\citet{Ronquist2012a}
+\citet{Ronquist2012a} 
+
+Exercise is in Section \ref{sect:RB-ExerciseMain}.
 
 \subsection{Models}
 
 \subsubsection{Sequence Evolution}
 
-Point to other tutorials (e.g., GTR stuff)
+Point to other tutorials (e.g., GTR stuff) 
 
 \subsubsection{Morphological Character Change}
 
@@ -37,10 +39,15 @@ We tried to keep this tutorial very basic and introduce all the language concept
 You may only need the RB\_Basics\_Tutorial for a more in-depth discussion of concepts in \Rev.
 
 
+
+
+\section{Exercise: Estimating the Phylogeny and Divergence Times of Fossil and Extant Bears}\label{sect:RB-ExerciseMain}
+
+%TODO Background
 %%%%%%%%
 %%   Data   %%
 %%%%%%%%
-\section{Data and files}
+\subsection{Data and files}\label{subsect:RB-DataFiles}
 
 We provide the data file(s) which we will use in this tutorial.
 You may want to use your own data instead.
@@ -50,11 +57,9 @@ In the \cl{data} folder, you will find the following files
 \end{itemize}
 
 
-
-\section{Exercise: Title}\label{sect:RB-ExerciseMain}
-
 \bigskip
 \subsection{Getting Started}\label{subsect:RB-GetStart}
+
 
 %TODO Stuff about how to start or Rev basics?
 
@@ -76,10 +81,22 @@ In the \cl{data} folder, you will find the following files
 
 \bigskip
 
-\subsection{Creating \Rev Files}\label{subsect:RB-CreateingFiles}
+\subsection{Creating \Rev Files}\label{subsect:RB-CreatingFiles}
 
 For complex models and analyses, it is best to create \Rev script files that will contain all of the model parameters, moves, and functions. 
 In this exercise, you will work primarily in your text editor and create a set of modular files that will be easily managed and interchanged.
+You will write the following files from scratch and save them in the \cl{scripts} directory:
+\begin{itemize}[noitemsep,topsep=0pt]
+\item \cl{mcmc\_TEFBD.Rev}: the master \Rev file that loads the data, the separate model files, and specifies the monitors and MCMC sampler.
+\item \cl{model\_FBDP\_TEFBD.Rev}: specifies the model parameters and moves required for the fossilized birth-death prior on the tree topology, divergence times, fossil occurrence times, and diversification dynamics.
+\item \cl{model\_UCExp\_TEFBD.Rev}: specifies the components of the uncorrelated exponential model of lineage-specific substitution rate variation.
+\item \cl{model\_GTRG\_TEFBD.Rev}: specifies the parameters and moves for the general-time reversible model of sequence evolution with gamma-distributed rates across sites (GTR+$\Gamma$)
+\item \cl{model\_Morph\_TEFBD.Rev}: specifies the model describing discrete morphological character change (binary characters) under a strict morphological clock. 
+\end{itemize}
+
+All of the files that you will create are also provided in the \RevBayes tutorial repository. 
+Please refer to these files to verify or troubleshoot your own scripts. 
+%TODO add link to scripts
 
 \bigskip
 \subsection{Start the Master \Rev File and Import Data}\label{subsect:RB-StartMasterRev}
@@ -107,8 +124,10 @@ n_taxa <- taxa.size() # the number of taxa
 \medskip
 \subsubsection{Load Data Matrices}\label{subsub:RB-LoadData}
 
-The first command will load in the sequences using the \cl{readDiscreteCharacterData()} function and assign it to a variable called \cl{cytb}. 
+\RevBayes uses the function \cl{readDiscreteCharacterData()} to load a data matrix to the workspace from a formatted file. 
+This function can be used for both molecular sequences and discrete morphological characters.
 
+Load the cytochrome-b sequences from file and assign the data matrix to a variable called \cl{cytb}.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 cytb <- readDiscreteCharacterData("data/bears_cytb.nex") 
@@ -256,7 +275,7 @@ moves[mvi++] = mvScale(death_rate, delta=1, weight=3.0)
 \end{lstlisting}
 \end{snugshade*}}
 
-In order to print nodes in our graph to output (also called \textit{monitoring}), we need to create deterministic nodes for the diversification and turnover. 
+In order to print the states of model variables output files (also called \textit{monitoring}), we need to create deterministic nodes for the diversification and turnover. 
 Deterministic nodes are value transformations between existing stochastic nodes. 
 So we will define diversification and turnover as deterministic nodes.
 
