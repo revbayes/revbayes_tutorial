@@ -1,7 +1,9 @@
 BUILD_ALL="false"
 
 
-BUILD_GETTING_STARTED="true"
+BUILD_GETTING_STARTED="false"
+
+BUILD_MCMC_INTRO="true"
 
 BUILD_DIVERSIFICATION_RATE="false"
 BUILD_DIVERSIFICATION_RATE_EPISODIC="false"
@@ -12,7 +14,7 @@ BUILD_DIVERSIFICATION_RATE_SAMPLING="false"
 
 
 
-# diversification rate estimation
+# Getting started
 if [[ ${BUILD_GETTING_STARTED} == "true" || ${BUILD_ALL} == "true" ]]
 then
 cd RB_Getting_Started
@@ -26,6 +28,32 @@ rm RB_Getting_Started.bbl
 rm RB_Getting_Started.blg
 rm RB_Getting_Started.log
 rm RB_Getting_Started.out
+
+cd ..
+fi
+
+
+
+############
+#          #
+#   MCMC   #
+#          #
+############
+
+# simple MCMC
+if [[ ${BUILD_MCMC_INTRO} == "true" || ${BUILD_ALL} == "true" ]]
+then
+cd RB_MCMC_Intro_Tutorial
+pdflatex RB_MCMC_Intro_Tutorial.tex
+bibtex RB_MCMC_Intro_Tutorial
+pdflatex RB_MCMC_Intro_Tutorial.tex
+pdflatex RB_MCMC_Intro_Tutorial.tex
+
+rm RB_MCMC_Intro_Tutorial.aux
+rm RB_MCMC_Intro_Tutorial.bbl
+rm RB_MCMC_Intro_Tutorial.blg
+rm RB_MCMC_Intro_Tutorial.log
+rm RB_MCMC_Intro_Tutorial.out
 
 cd ..
 fi
