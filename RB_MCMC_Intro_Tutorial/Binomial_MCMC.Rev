@@ -28,7 +28,7 @@ monitors[2] = mnScreen(printgen=1000, p)
 analysis = mcmc(my_model, monitors, moves)
 
 # Run the MCMC
-analysis.burnin(generations=10000,tuningInterval=1000)
+analysis.burnin(generations=10000,tuningInterval=200)
 analysis.run(100000)
 
 # Show how the moves performed
