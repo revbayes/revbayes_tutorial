@@ -2,8 +2,9 @@ BUILD_ALL="false"
 
 
 BUILD_GETTING_STARTED="false"
+BUILD_BASICS="false"
 
-BUILD_MCMC_INTRO="true"
+BUILD_MCMC_INTRO="false"
 
 BUILD_DIVERSIFICATION_RATE="false"
 BUILD_DIVERSIFICATION_RATE_EPISODIC="false"
@@ -12,7 +13,11 @@ BUILD_DIVERSIFICATION_RATE_SAMPLING="false"
 
 
 
-
+###################
+#                 #
+#   Basic Stuff   #
+#                 #
+###################
 
 # Getting started
 if [[ ${BUILD_GETTING_STARTED} == "true" || ${BUILD_ALL} == "true" ]]
@@ -28,6 +33,25 @@ rm RB_Getting_Started.bbl
 rm RB_Getting_Started.blg
 rm RB_Getting_Started.log
 rm RB_Getting_Started.out
+
+cd ..
+fi
+
+
+# Basics
+if [[ ${BUILD_BASICS} == "true" || ${BUILD_ALL} == "true" ]]
+then
+cd RB_Basics_Tutorial
+pdflatex RB_Basics_Tutorial.tex
+bibtex RB_Basics_Tutorial
+pdflatex RB_Basics_Tutorial.tex
+pdflatex RB_Basics_Tutorial.tex
+
+rm RB_Basics_Tutorial.aux
+rm RB_Basics_Tutorial.bbl
+rm RB_Basics_Tutorial.blg
+rm RB_Basics_Tutorial.log
+rm RB_Basics_Tutorial.out
 
 cd ..
 fi
