@@ -400,8 +400,8 @@ for(i in 1:fossil_intervals.size())
 \end{snugshade*}}
 
 Finally, we can also create deterministic nodes for other quantities we might be interested in monitoring. 
-Below, we will define a monitor that prints the number of fossils in the tree that are sampled ancestors. 
-We will also define a deterministic node for the age of the crown group of extant bears.
+We will define a deterministic node for the number of fossils in the tree that are sampled ancestors. 
+We will also define a node for the age of the crown group of extant bears.
 In addition, we can monitor the sampled age of a particular fossil.
 
 {\tt \begin{snugshade*}
@@ -495,7 +495,7 @@ er ~ dnDirichlet(er_hp)
 \end{snugshade*}}
 
 We need special moves to propose changes to a Dirichlet random variable, also known as a simplex (a vector constrained sum to one).
-Here, we use a ``Simplex Element Scale'' move, which scales a single element of a simplex and then renormalizes it to sum to one.
+Here, we use a ``Simplex Element Scale'' move, which scales a single element of a simplex and then renormalizes the vector to sum to one.
 The tuning parameter \cl{alpha} specifies how conservative the proposal should be, with larger values of \cl{alpha} leading to proposals closer to the current value.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
