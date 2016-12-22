@@ -47,9 +47,23 @@ RevBayes has two ways of doing this: one is used for datasets in which only pars
 
 Clocks \citep{Zuckerkandl1962} and relaxing them 
 
+\begin{figure}[h!]
+\centering
+\includegraphics[scale=0.3,angle=0]{\ResourcePath figures/tikz/uexp_gm}
+\caption{\small A graphical model of the uncorrelated exponential relaxed clock model. In this model, the clock rate on each branch is identically and independently distributed according to an exponential distribution with mean drawn from an exponential hyperprior distribution. }
+\label{fig:uexp_gm}
+\end{figure}
+
 \subsubsection{Lineage Diversification and Sampling}
 
 Birth-death processes and FBD
+
+\begin{figure}[h!]
+\centering
+\includegraphics[scale=0.3,angle=0]{\ResourcePath figures/tikz/fbd_gm}
+\caption{\small A graphical model of the fossilized birth death process. In this model, the speciation, extinction and fossilization rates are drawn from exponential distributions, while the origin time and fossil ages are uniformly distributed. }
+\label{fig:fbd_gm}
+\end{figure}
 
 \section{Prerequisites}
 
@@ -332,7 +346,7 @@ fbd_dist = dnFBDP(origin=origin_time, lambda=speciation_rate, mu=extinction_rate
 \end{lstlisting}
 \end{snugshade*}}
 
-Note that we created the distribution as a workspace variable using the workspace assignment operator \verb+=+.
+Note that we created the distribution as a workspace variable using the workspace assignment operator \cl{=}.
 This is because we still need to include a topology constraint in our final specification of the tree prior.
 Specifically, we do not have any morphological or molecular data for the fossil species \textit{Ursus abstrusus}.
 Therefore, in order to use the age of this fossil as a calibration, we need to specify to which clade it belongs.
@@ -370,7 +384,7 @@ moves[mvi++] = mvRootTimeSlideUniform(fbd_tree, origin_time, weight=5.0)
 
 Next we need to account for uncertainty in the age estimates of our fossils.
 We do this by assuming each fossil can occur with uniform probability anywhere within its observed stratigraphic range.
-Stratigraphic range data for each fossil species is provided in the file \verb+bears_fossil_intervals.tsv+.
+Stratigraphic range data for each fossil species is provided in the file \cl{bears\_fossil\_intervals.tsv}.
 First, we read this file into a matrix, then we loop over this matrix and for each fossil create a uniform random variable.
 Note that this is somewhat different from the typical approach to node calibration.
 Here, instead of treating the calibration density as an additional prior distribution on the tree, we treat it as the \textit{likelihood} of our fossil data given the tree parameter.
