@@ -357,7 +357,7 @@ fbd_tree ~ dnConstrainedTopology(fbd_dist, constraints=constraints)
 \end{snugshade*}}
 
 Next, in order to sample from the posterior distribution of trees, we need to specify moves that propose changes to the  topology and node times.
-We also include a proposal that toggles whether a fossil is a `sampled ancestor` - a fossil species that has sampled descendants present on the tree.
+We also include a proposal that toggles whether a fossil is a ``sampled ancestor'' - a fossil species that has sampled descendants present on the tree.
 When conditioning on the origin time, we also need to explicitly sample the root age.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
@@ -482,7 +482,7 @@ Enter the \Rev code provided in this section in the new model file.
 
 For our nucleotide sequence evolution model, we need to define a general time reversible (GTR) substitution matrix.
 A nucleotide GTR matrix is defined by a set of 4 stationary frequencies, and 6 exchangeability rates.
-We create stochastic nodes for these variables, each from a uniform Dirichlet prior distribution.
+We create stochastic nodes for these variables, each drawn from a uniform Dirichlet prior distribution.
 
 {\tt \begin{snugshade*}
 \begin{lstlisting}
@@ -494,8 +494,8 @@ er ~ dnDirichlet(er_hp)
 \end{lstlisting}
 \end{snugshade*}}
 
-Special moves are required to propose changes to a Dirichlet random variable, also known as a simplex (a vector constrained sum to one).
-Here, we use a \cl{SimplexElementScale} move, which scales a single element of a simplex and then renormalizes it to sum to one.
+We need special moves to propose changes to a Dirichlet random variable, also known as a simplex (a vector constrained sum to one).
+Here, we use a ``Simplex Element Scale'' move, which scales a single element of a simplex and then renormalizes it to sum to one.
 The tuning parameter \cl{alpha} specifies how conservative the proposal should be, with larger values of \cl{alpha} leading to proposals closer to the current value.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
@@ -522,7 +522,7 @@ moves[mvi++] = mvScale(alpha_cytb, lambda=1,    weight=1.0)
 \end{lstlisting}
 \end{snugshade*}}
 
-Then we create a Gamma$(\alpha,\alpha)$ distribution, discretized into 4 rate categories using the \cl{DiscretizeGamma} function.
+Then we create a Gamma$(\alpha,\alpha)$ distribution, discretized into 4 rate categories using the ``Discretize Gamma'' function.
 Here, \cl{rates\_cytb} is a deterministic vector of rates computed as the mean of each category.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
@@ -530,7 +530,7 @@ rates_cytb := fnDiscretizeGamma( alpha_cytb, alpha_cytb, 4 )
 \end{lstlisting}
 \end{snugshade*}}
 
-Finally, we can create the \cl{PhyloCTMC} distribution for our sequence data, including the gamma-distributed site rate categories, as well as the branch rates defined as part of our exponential relaxed clock.
+Finally, we can create the phylogenetic continuous time markov chain (PhyloCTMC) distribution for our sequence data, including the gamma-distributed site rate categories, as well as the branch rates defined as part of our exponential relaxed clock.
 We set the value of this distribution equal to our observed data and identify it as a static part of the likelihood using the \cl{clamp} method.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
@@ -580,7 +580,7 @@ for(i in 1:beta_cats.size())
 \end{snugshade*}}
 
 
-As in the molecular data partition, we will allow gamma-dstributed rate heterogeneity among sites.
+As in the molecular data partition, we will allow gamma-distributed rate heterogeneity among sites.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 alpha_morpho ~ dnExponential( 1.0 )
@@ -605,10 +605,10 @@ moves[mvi++] = mvScale(clock_morpho, lambda=1,    weight=4.0)
 \end{snugshade*}}
 
 As in our molecular data partition, we now combine our data and our model. There are some unique aspects to doing this for morphology. \par
-You will notice that we have a variable called `coding'. This variable allows us to condition on biases in the way the morphological data were collected.
-This specifies the ascertainment bias correction discussed in \ref{subsubsection{Morphological Character Change}}. \par
+You will notice that we have an option called \cl{coding}. This option allows us to condition on biases in the way the morphological data were collected (ascertainment bias).
+The option \cl{coding=variable} specifies that we should correct for coding only variable characters (discussed in \ref{subsubsection{Morphological Character Change}}). \par
 
-We use the flag `siteMatrices=true' to indicate that we are providing multiple Q matrices generated as a function of our state frequency variation model. \par
+We use the flag \cl{siteMatrices=true} to indicate that we are providing multiple Q matrices generated as a function of our state frequency variation model. \par
 
 
 {\tt \begin{snugshade*}
@@ -739,14 +739,14 @@ source("scripts/mcmc_TEFBD.Rev")
 \medskip
 \subsubsection{Evaluate MCMC}\label{subsub:RB-EvalMCMC}
 
-For this part of the tutorial, we will use a software called Tracer. Tracer allows researchers to visualize the MCMC sample for any parameters in the log file. Start Tracer by double-clicking on the Tracer executeable. Click the plus sign on the left-hand side of the screen to add your log file (see Fig.\ \ref{fig:tracer}). Navigate to your log file, and click `OK'. \par
+For this part of the tutorial, we will use a software called Tracer. Tracer allows researchers to visualize the MCMC sample for any parameters in the log file. Start Tracer by double-clicking on the Tracer executeable. Click the plus sign on the left-hand side of the screen to add your log file (see Fig.\ \ref{fig:tracer}). Navigate to your log file, and click ``OK''. \par
 \begin{figure}[h!]
 \centering
 \fbox{\includegraphics[width=\textwidth,angle=0]{\ResourcePath figures/tracer.png}}
-\caption{\small The Tracer window. To add data, click on the `+' sign, highlighted in red above.}
+\caption{\small The Tracer window. To add data, click on the ``+'' sign, highlighted in red above.}
 \label{fig:tracer}
 \end{figure}
-Immediately upon loading, you will view the `Estimates' window, which shows the actual values sampled in the MCMC. In this window, the statistics on the left-hand side are the mean of the distribution and the Effective Sample Size (ESS) for that parameter. Parameters in a phylogenetic model may be correlated. The ESS is meant to provide a representation of the number of independent draws represented by the MCMC sample. This quantity will typically be much smaller than the number of generations of the chain. Poor values for the ESS will be colored red. You will likely see a lot of red values in the log file you made today because we did not run the chain very long. The data used to make the screenshots can be found in the bears\_long.zip file in the output directory. \par
+Immediately upon loading, you will view the ``Estimates'' window, which shows the actual values sampled in the MCMC. In this window, the statistics on the left-hand side are the mean of the distribution and the Effective Sample Size (ESS) for that parameter. Parameters in a phylogenetic model may be correlated. The ESS is meant to provide a representation of the number of independent draws represented by the MCMC sample. This quantity will typically be much smaller than the number of generations of the chain. Poor values for the ESS will be colored red. You will likely see a lot of red values in the log file you made today because we did not run the chain very long. The data used to make the screenshots can be found in the bears\_long.zip file in the output directory. \par
 Take a look at some of the parameters. Are there any that have really low ESS? Why do you think that might be? \par
 
 \begin{figure}[h!]
