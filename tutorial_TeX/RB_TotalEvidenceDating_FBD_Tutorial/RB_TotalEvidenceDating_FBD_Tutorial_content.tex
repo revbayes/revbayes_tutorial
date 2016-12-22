@@ -9,7 +9,7 @@ Exercise is in Section \ref{sect:RB-ExerciseMain}.
 
 \subsubsection{Sequence Evolution}
 
-In this tutorial, our molecular data are best analyzed with a General Time-Reversible model of sequence evolution and gamma-distributed rate heterogeneity. This model of sequence evolution is covered thoroughly in CTMC_Tutorial. 
+In this tutorial, our molecular data are best analyzed with a General Time-Reversible model of sequence evolution and gamma-distributed rate heterogeneity. This model of sequence evolution is covered thoroughly in CTMC\_Tutorial. 
 
 \subsubsection{Morphological Character Change}
 
@@ -427,16 +427,11 @@ Open your text editor and create the lineage-specific branch-rate model file cal
 Enter the \Rev code provided in this section in the new model file.
 \end{framed}}
 
-For our hierarchical, uncorrelated exponential relaxed clock model, we first define the mean branch rate as an exponential random variable.
+For our hierarchical, uncorrelated exponential relaxed clock model, we first define the mean branch rate as an exponential random variable. Then, we specify some scale proposal moves on the mean rate parameter.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 branch_rates_mean ~ dnExponential(10.0)
-\end{lstlisting}
-\end{snugshade*}}
 
-Then, we specify some scale proposal moves on the mean rate parameter.
-{\tt \begin{snugshade*}
-\begin{lstlisting}
 moves[mvi++] = mvScale(branch_rates_mean, lambda=0.01, weight=1.0)
 moves[mvi++] = mvScale(branch_rates_mean, lambda=0.1,  weight=1.0)
 moves[mvi++] = mvScale(branch_rates_mean, lambda=1.0,  weight=1.0)
@@ -477,13 +472,70 @@ moves[mvi++] = mvVectorScale(branch_rates, lambda=1.0,  weight=4.0)
 
 \bigskip
 
-\subsection{The General-Time Reversible Gamma-Rates Model of Sequence Evolution}\label{subsect:RB-ModelGTRG}
+\subsection{The General Time Reversible + Gamma Model of Nucleotide Sequence Evolution}\label{subsect:RB-ModelGTRG}
 
 {\begin{framed}
 Open your text editor and create the molecular substitution model file called {\textcolor{red}{\cl{model\_GTRG\_TEFBD.Rev}}} in the \cl{scripts} directory.
 
 Enter the \Rev code provided in this section in the new model file.
 \end{framed}}
+
+For our nucleotide sequence evolution model, we need to define a general time reversible (GTR) substitution matrix.
+A nucleotide GTR matrix is defined by a set of 4 stationary frequencies, and 6 exchangeability rates.
+We create stochastic nodes for these variables, each from a uniform Dirichlet prior distribution.
+
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+sf_hp <- v(1,1,1,1)
+sf ~ dnDirichlet(sf_hp)
+
+er_hp <- v(1,1,1,1,1,1)
+er ~ dnDirichlet(er_hp)
+\end{lstlisting}
+\end{snugshade*}}
+
+Special moves are required to propose changes to a Dirichlet random variable, also known as a simplex (a vector constrained sum to one). Here, we use a \cl{SimplexElementScale} move, which scales a single element of a simplex and then renormalizes it to sum to one.
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+moves[mvi++] = mvSimplexElementScale(er, alpha=10.0, weight=5.0)
+moves[mvi++] = mvSimplexElementScale(sf, alpha=10.0, weight=5.0)
+\end{lstlisting}
+\end{snugshade*}}
+
+Then we can define a deterministic node for our GTR substitution matrix using the special GTR matrix function.
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+Q_cytb := fnGTR(er,sf)
+\end{lstlisting}
+\end{snugshade*}}
+
+Next, in order to model gamma-distributed rates across, we create an exponential parameter $\alpha$ for the shape of the gamma distribution, along with scale proposals.
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+alpha_cytb ~ dnExponential( 1.0 )
+
+moves[mvi++] = mvScale(alpha_cytb, lambda=0.01, weight=1.0)
+moves[mvi++] = mvScale(alpha_cytb, lambda=0.1,  weight=1.0)
+moves[mvi++] = mvScale(alpha_cytb, lambda=1,    weight=1.0)
+\end{lstlisting}
+\end{snugshade*}}
+
+Then we create a Gamma$(\alpha,\alpha)$ distribution, discretized into 4 rate categories using the \cl{DiscretizeGamma} function.
+Here, \cl{rates\_cytb} is a deterministic vector of rates computed as the mean of each category.
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+rates_cytb := fnDiscretizeGamma( alpha_cytb, alpha_cytb, 4 )
+\end{lstlisting}
+\end{snugshade*}}
+
+Finally, we can create the \cl{PhyloCTMC} distribution for our sequence data, including the gamma-distributed site rate categories, as well as the branch rates defined as part of our exponential relaxed clock.
+We set the value of this distribution equal to our observed data and identify it as a static part of the likelihood using the \cl{clamp} method.
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+phySeq ~ dnPhyloCTMC(tree=fbd_tree, Q=Q_cytb, siteRates=rates_cytb, branchRates=branch_rates, type="DNA")
+phySeq.clamp(cytb)
+\end{lstlisting}
+\end{snugshade*}}
 
 \bigskip
 
