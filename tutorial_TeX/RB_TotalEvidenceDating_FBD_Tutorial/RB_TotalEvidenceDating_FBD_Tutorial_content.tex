@@ -9,7 +9,7 @@ Exercise is in Section \ref{sect:RB-ExerciseMain}.
 
 \subsubsection{Sequence Evolution}
 
-In this tutorial, our molecular data are best analyzed with a General Time-Reversible model of sequence evolution and gamma-distributed rate heterogeneity. This model of sequence evolution is covered thoroughly in CTMC\_Tutorial. 
+In this tutorial, our molecular data are best analyzed with a General Time-Reversible model of sequence evolution and gamma-distributed rate heterogeneity. This model of sequence evolution is covered thoroughly in the RB\_CTMC\_Tutorial.
 
 \subsubsection{Morphological Character Change}
 
@@ -737,7 +737,23 @@ source("scripts/mcmc_TEFBD.Rev")
 \medskip
 \subsubsection{Evaluate MCMC}\label{subsub:RB-EvalMCMC}
 
-%TODO this is tracer stuff
+For this part of the tutorial, we will use a software called Tracer. Tracer allows researchers to visualize the MCMC sample for any parameters in the log file. Start Tracer by double-clicking on the Tracer executeable. Click the plus sign on the left-hand side of the screen to add your log file (see Fig.\ \ref{fig:tracer}). Navigate to your log file, and click `OK'. \par
+\begin{figure}[h!]
+\centering
+\fbox{\includegraphics[width=\textwidth,angle=0]{\ResourcePath figures/tracer.png}}
+\caption{\small The Tracer window. To add data, click on the `+' sign, highlighted in red above.}
+\label{fig:tracer}
+\end{figure}
+Immediately upon loading, you will view the `Estimates' window, which shows the actual values sampled in the MCMC. In this window, the statistics on the left-hand side are the mean of the distribution and the Effective Sample Size (ESS) for that parameter. Parameters in a phylogenetic model may be correlated. The ESS is meant to provide a representation of the number of independent draws represented by the MCMC sample. This quantity will typically be much smaller than the number of generations of the chain. Poor values for the ESS will be colored red. You will likely see a lot of red values in the log file you made today because we did not run the chain very long. The data used to make the screenshots can be found in the bears\_long.zip file in the output directory. \par
+Take a look at some of the parameters. Are there any that have really low ESS? Why do you think that might be? \par
+
+\begin{figure}[h!]
+\centering
+\fbox{\includegraphics[width=\textwidth,angle=0]{\ResourcePath figures/samplewindow}}
+\caption{\small The Estimates window. The left-hand window provides mean and ESS of the chain. The right-hand window visualizes the distribution of samples.}
+\label{fig:tracer}
+\end{figure}
+
 
 
 \medskip
