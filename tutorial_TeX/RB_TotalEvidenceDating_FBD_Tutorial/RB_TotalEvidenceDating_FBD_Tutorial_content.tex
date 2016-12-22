@@ -23,7 +23,7 @@ In the tutorial, we will relax this assumption through the use of a prior on sta
 This prior is visualized in Fig. 1. 
 \begin{figure}[h!]
 \centering
-\fbox{\includegraphics[width=\textwidth,angle=0]{\ResourcePath figures/tikz/morpho_gm}}
+\includegraphics[scale=0.3,angle=0]{\ResourcePath figures/tikz/morpho_gm}
 \caption{\small A graphical model of the Beta-distributed frequencies across sites model. In this model, stationary state frequencies are drawn from a discrete Beta distribution and used to generate Q-matrices that allow character change asymmetry.}
 \label{fig:morpho_gm}
 \end{figure}
@@ -163,12 +163,12 @@ Once the model files are complete, you will return to editing \cl{mcmc\_TEFBD.Re
 \subsubsection{Load Taxon List}\label{subsub:RB-TaxList}
 
 Begin the \Rev script by loading in the list of taxon names from the \cl{bears\_taxa.tsv} file using the \cl{readTaxonData()} function.
-{\tt \begin{snugshade*}
+\begin{snugshade*}
 \begin{lstlisting}
-taxa <- readTaxonData("data/bears_taxa.tsv", delimiter=TAB)
+taxa <- readTaxonData("data/bears_taxa.tsv")
 \end{lstlisting}
-\end{snugshade*}}
-This function reads the tab-delimited file and creates a variable called \cl{taxa} that is a list of all of the taxon names relevant to this analysis. 
+\end{snugshade*}
+This function reads a tab-delimited file and creates a variable called \cl{taxa} that is a list of all of the taxon names relevant to this analysis. 
 This list includes all of the fossil and extant bears.
 
 
@@ -225,17 +225,17 @@ n_taxa <- taxa.size()
 
 Next, create a \textit{workspace variable} called \cl{mvi}. 
 This variable is an iterator that will build a vector containing all of the MCMC moves used to propose new states for every stochastic node in the model graph. 
-After each time a new move is added to the vector, \cl{mvi} will be incremented by a value of \cl{1}.
+Each time a new move is added to the vector, \cl{mvi} will be incremented by a value of \cl{1}.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 mvi = 1
 \end{lstlisting}
 \end{snugshade*}}
 One important distinction here is that \cl{mvi} is part of the \RevBayes workspace and not the hierarchical model. 
-Thus, we use the \cl{=} operator instead of the \cl{<-} operator. 
+Thus, we use the workspace assignment operator \cl{=} instead of the constant node assignment \cl{<-}. 
 
 {\begin{framed}
-Save your current working of \cl{model\_FBDP\_TEFBD.Rev} in the \cl{scripts} directory.
+Save your current working version of \cl{model\_FBDP\_TEFBD.Rev} in the \cl{scripts} directory.
 
 We will now move on to the next \Rev file and will complete \cl{model\_FBDP\_TEFBD.Rev} in Section \ref{subsect:RB-CompleteMCMC}.
 \end{framed}}
@@ -250,41 +250,39 @@ Open your text editor and create the fossilized birth-death model file called {\
 Enter the \Rev code provided in this section in the new model file.
 \end{framed}}
 
-Two key parameters of the FBD process are the birth rate (the rate at which lineages are added to the tree) and the death rate (the rate at which lineages are removed from the tree). 
+Two key parameters of the FBD process are the speciation rate (the rate at which lineages are added to the tree) and the extinction rate (the rate at which lineages are removed from the tree). 
 We'll place exponential priors on both of these values. 
 An exponential prior with a $\lambda$ =  10 places a higher probability on values closer to zero than one for these parameters. 
 
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-birth_rate ~ dnExponential(10)
-death_rate ~ dnExponential(10)
+speciation_rate ~ dnExponential(10)
+extinction_rate ~ dnExponential(10)
 \end{lstlisting}
 \end{snugshade*}}
 
 Now that the priors have been specified, we give RevBayes some information on how to sample values for our parameters. 
-We'll use a scaling move, which changes the value sampled multiplicatively with the tuning parameter. 
+We'll use a scaling move, which proposes multiplicative changes to a parameter. 
 We will use three different tuning parameters, which govern the size of the move. 
 Including multiple tuning parameters improves mixing. 
 
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-moves[mvi++] = mvScale(birth_rate, lambda=0.01, weight=3.0)
-moves[mvi++] = mvScale(birth_rate, lambda=0.1, weight=3.0)
-moves[mvi++] = mvScale(birth_rate, lambda=1.0, weight=3.0)
-moves[mvi++] = mvScale(death_rate, delta=0.01, weight=3.0)
-moves[mvi++] = mvScale(death_rate, delta=0.1, weight=3.0)
-moves[mvi++] = mvScale(death_rate, delta=1, weight=3.0)
+moves[mvi++] = mvScale(speciation_rate, lambda=0.01, weight=1)
+moves[mvi++] = mvScale(speciation_rate, lambda=0.1,  weight=1)
+moves[mvi++] = mvScale(speciation_rate, lambda=1.0,  weight=1)
+
+moves[mvi++] = mvScale(extinction_rate, lambda=0.01, weight=1)
+moves[mvi++] = mvScale(extinction_rate, lambda=0.1,  weight=1)
+moves[mvi++] = mvScale(extinction_rate, lambda=1,    weight=1)
 \end{lstlisting}
 \end{snugshade*}}
 
-In order to print the states of model variables output files (also called \textit{monitoring}), we need to create deterministic nodes for the diversification and turnover. 
-Deterministic nodes are value transformations between existing stochastic nodes. 
-So we will define diversification and turnover as deterministic nodes.
-
+In addition to the speciation and extinction rates, we may also be interested in inferring diversification (speciation minus extinction) and turnover (extinction divided by speciation). Since these parameters can be expressed as a deterministic transformation of the speciation and extinction rates, we can monitor their values by creating two deterministic nodes:
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-diversification := birth_rate - death_rate
-turnover := death_rate/birth_rate
+diversification := speciation_rate - extinction_rate
+turnover := extinction_rate/speciation_rate
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -297,59 +295,125 @@ rho <- 1.0
 \end{lstlisting}
 \end{snugshade*}}
 
-The rate of sampling fossils ($\psi$), on the other hand is not known. 
-We will use an exponential prior on this parameter as well, and use a slide move to sample values from our distribution.
+The fossil sampling rate ($\psi$), on the other hand is not known. 
+We will use an exponential prior on this parameter as well, and use a scale move to sample values from the posterior distribution.
 
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 psi ~ dnExponential(10) 
-moves[mvi++] = mvScale(birth_rate, lambda=0.01, weight=3.0)
-moves[mvi++] = mvScale(birth_rate, lambda=0.1, weight=3.0)
-moves[mvi++] = mvScale(birth_rate, lambda=1.0, weight=3.0)
+moves[mvi++] = mvScale(psi, lambda=0.01, weight=1)
+moves[mvi++] = mvScale(psi, lambda=0.1,  weight=1)
+moves[mvi++] = mvScale(psi, lambda=1,    weight=1)
 \end{lstlisting}
 \end{snugshade*}}
 
-Under the FBD model, the process is conditioned on the age of the origin, or the start of the process. 
-We will specify a uniform distribution on the age of the origin. If you looked in the bears taxa file, you might notice that the age of the oldest fossil is slightly younger than the upper bound of the uniform distribution on the origin age. 
-For this parameter, we will use a sliding window move. A sliding window move samples within an interval (defined by \cl{delta}). 
+Under the FBD model, the process is can be conditioned on the age of the origin, or the age of the root. In our case, we will condition on the origin time of bears, and
+we will specify a uniform distribution on the origin age. If you looked in the bears taxa file, you might notice that the age of the oldest fossil is slightly younger than the upper bound of the uniform distribution on the origin age. 
+For this parameter, we will use a sliding window move. A sliding window samples a parameter uniformly within an interval (defined by the half-width \cl{delta}). 
 Sliding window moves can be tricky for small values, as the window may overlap zero. 
-However, for parameters such as the origin, there is little risk of this being an issue.
+However, for parameters such as the origin age, there is little risk of this being an issue.
 
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 origin_time ~ dnUnif(37.0, 55.0)
-moves[mvi++] = mvSlide(origin_time, delta=0.01, weight=10.0)
-moves[mvi++] = mvSlide(origin_time, delta=0.1, weight=10.0)
-moves[mvi++] = mvSlide(origin_time, delta=1, weight=10.0)
+moves[mvi++] = mvSlide(origin_time, delta=0.01, weight=5.0)
+moves[mvi++] = mvSlide(origin_time, delta=0.1,  weight=5.0)
+moves[mvi++] = mvSlide(origin_time, delta=1,    weight=5.0)
 \end{lstlisting}
 \end{snugshade*}}
 
-All the parameters of the FBD process are now defined. 
-The next step is to combine these parameters to define the tree prior as the FBD.
+All the parameters of the FBD process have now been specified. 
+The next step is to use these parameters to define the FBD tree prior distribution.
 
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-tree_prior = dnFBDP(origin=origin_time, lambda=birth_rate, mu=death_rate, psi=psi, rho=rho, taxa=taxa)
+fbd_dist = dnFBDP(origin=origin_time, lambda=speciation_rate, mu=extinction_rate, psi=psi, rho=rho, taxa=taxa)
 \end{lstlisting}
 \end{snugshade*}}
 
-Next, we will define the \cl{fbd\_tree} variable as a random variable. 
-It will be used to generate trees under the FBD process that conform to our clade constraints. 
+Note that we created the distribution as a workspace variable using the workspace assignment operator \verb+=+.
+This is because we still need to include a topology constraint in our final specification of the tree prior.
+Specifically, we do not have any morphological or molecular data for the fossil species \textit{Ursus abstrusus}.
+Therefore, in order to use the age of this fossil as a calibration, we need to specify to which clade it belongs.
+In this case, \textit{Ursus abstrusus} belongs to the subfamily Ursinae, so we define a clade for Ursinae including \textit{Ursus abstrusus}.
 
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-fbd_tree ~ dnConstrainedTopology(tree_prior, constraints) 
+clade_ursinae = clade("Melursus_ursinus", "Ursus_arctos", "Ursus_maritimus", 
+                      "Helarctos_malayanus", "Ursus_americanus", "Ursus_thibetanus", 
+                      "Ursus_abstrusus", "Ursus_spelaeus")
+\end{lstlisting}
+\end{snugshade*}}
+
+Then we can specify the final constrained tree prior distribution by creating a vector of constraints, and providing it along with the workspace FBD distribution to the constrained topology distribution.
+Here we use the stochastic assignment operator \verb+~+ to create a stochastic node for our tree variable. 
+
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+constraints = v(clade_ursinae)
+fbd_tree ~ dnConstrainedTopology(fbd_dist, constraints=constraints)
+\end{lstlisting}
+\end{snugshade*}}
+
+Next, in order to sample from the posterior distribution of trees, we need to specify moves that propose changes to the  topology and node times.
+We also include a proposal \cl{mvCollapseExpandFossilBranch} that toggles whether a fossil is a `sampled ancestor` - a fossil species that has sampled descendants present on the tree.
+When conditioning on the origin time, we also need to explicitly sample the root age.
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+moves[mvi++] = mvFNPR(fbd_tree, weight=15.0)
+moves[mvi++] = mvCollapseExpandFossilBranch(fbd_tree, origin_time, weight=6.0)
+moves[mvi++] = mvNodeTimeSlideUniform(fbd_tree, weight=40.0)
+moves[mvi++] = mvRootTimeSlideUniform(fbd_tree, origin_time, weight=5.0)
+\end{lstlisting}
+\end{snugshade*}}
+
+Next we need to account for uncertainty in the age estimates of our fossils.
+We do this by assuming each fossil can occur with uniform probability anywhere within its observed stratigraphic range.
+Stratigraphic range data for each fossil species is provided in the file \verb+bears_fossil_intervals.tsv+.
+First we read this file into a matrix \verb+fossil_intervals+.
+Then we loop over this matrix and for each fossil create a uniform random variable, clamped at the fossils observed median age.
+Note that this is somewhat different from the typical approach to node calibration.
+Here, instead of treating the calibration density as an additional prior distribution on the tree, we treat it as the \textit{likelihood} of our fossil data given the tree parameter.
+Specifically, we assume the likelihood of a particular fossil observation is equal to one if the fossil's inferred occurrence time falls within its observed stratigraphic range.
+This is equivalent to saying the likelihood of the observed median age is uniform within the stratigraphic interval surrounding the inferred fossil occurrence time.
+
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+fossil_intervals = readDataDelimitedFile(file="data/bears_fossil_intervals.tsv", header=true)
+
+for(i in 1:fossil_intervals.size())
+{
+    taxon  = fossil_intervals[i][1]
+    obs_min = fossil_intervals[i][2]
+    obs_max = fossil_intervals[i][3]
+    
+    t[i] := tmrca(fbd_tree, clade(taxon))
+    
+    half    = (obs_max - obs_min)/2
+    umin[i] := max(v(t[i] - half, 0.0))
+    umax[i] := t[i] + half
+    
+    fossil[i] ~ dnUniform(umin[i], umax[i])
+    fossil[i].clamp( obs_min + half )
+}
 \end{lstlisting}
 \end{snugshade*}}
 
 Finally, we can also create deterministic nodes for other quantities we might be interested in monitoring. 
-Below, we will define a monitor that prints the number of fossils that are inferred to be `sampled ancestors' - lineages that are present in the phylogeny, and have descendants present on the tree. 
-We will also define a deterministic node for the age of the crown group of bears, using the previously-defined extant bear constraint (Section \ref{}).
+Below, we will define a monitor that prints the number of fossils in the tree that are `sampled ancestors' - taxa that are present in the phylogeny, and have descendants present on the tree. 
+We will also define a deterministic node for the age of the crown group of extant bears.
+In addition, we can monitor the sampled age of a particular fossil.
 
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-sa := fbd_tree.numSampledAncestors();
-crown := tmrca(fbd_tree, clade_extant)
+num_samp_anc := fbd_tree.numSampledAncestors()
+
+clade_extant = clade("Ailuropoda_melanoleuca","Tremarctos_ornatus","Melursus_ursinus",
+                    "Ursus_arctos","Ursus_maritimus","Helarctos_malayanus",
+                    "Ursus_americanus","Ursus_thibetanus")
+age_extant := tmrca(fbd_tree, clade_extant)
+
+age_Kretzoiarctos_beatrix   := tmrca(fbd_tree, clade("Kretzoiarctos_beatrix"))
 \end{lstlisting}
 \end{snugshade*}}
 
