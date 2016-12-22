@@ -2,9 +2,6 @@
 # Uncorrelated exponential model on molecular branch rates #
 ############################################################
 
-# Get the number of branches in the tree
-n_branches <- 2 * n_taxa - 2
-
 # The rate along each branch is drawn from an exponential prior
 branch_rates_mean ~ dnExponential(10.0)
 
@@ -12,6 +9,9 @@ branch_rates_mean ~ dnExponential(10.0)
 moves[mvi++] = mvScale(branch_rates_mean, lambda=0.01, weight=1.0)
 moves[mvi++] = mvScale(branch_rates_mean, lambda=0.1,  weight=1.0)
 moves[mvi++] = mvScale(branch_rates_mean, lambda=1.0,  weight=1.0)
+
+# Get the number of branches in the tree
+n_branches <- 2 * n_taxa - 2
 
 # Now we will create a vector of stochastic nodes #
 # Each element in the vector represents a branch rate #
