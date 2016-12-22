@@ -494,7 +494,9 @@ er ~ dnDirichlet(er_hp)
 \end{lstlisting}
 \end{snugshade*}}
 
-Special moves are required to propose changes to a Dirichlet random variable, also known as a simplex (a vector constrained sum to one). Here, we use a \cl{SimplexElementScale} move, which scales a single element of a simplex and then renormalizes it to sum to one.
+Special moves are required to propose changes to a Dirichlet random variable, also known as a simplex (a vector constrained sum to one).
+Here, we use a \cl{SimplexElementScale} move, which scales a single element of a simplex and then renormalizes it to sum to one.
+The tuning parameter \cl{alpha} specifies how conservative the proposal should be, with larger values of \cl{alpha} leading to proposals closer to the current value.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 moves[mvi++] = mvSimplexElementScale(er, alpha=10.0, weight=5.0)
