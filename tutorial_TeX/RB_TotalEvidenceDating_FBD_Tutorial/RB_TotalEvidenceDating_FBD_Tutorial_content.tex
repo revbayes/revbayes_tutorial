@@ -307,8 +307,9 @@ moves[mvi++] = mvScale(psi, lambda=1,    weight=1)
 \end{lstlisting}
 \end{snugshade*}}
 
-Under the FBD model, the process is can be conditioned on the age of the origin, or the age of the root. In our case, we will condition on the origin time of bears, and
-we will specify a uniform distribution on the origin age. If you looked in the bears taxa file, you might notice that the age of the oldest fossil is slightly younger than the upper bound of the uniform distribution on the origin age. 
+Under the FBD model, the process is can be conditioned on the age of the origin, or the age of the root.
+In our case, we will condition on the origin time of bears, and
+we will specify a uniform distribution on the origin age.
 For this parameter, we will use a sliding window move. A sliding window samples a parameter uniformly within an interval (defined by the half-width \cl{delta}). 
 Sliding window moves can be tricky for small values, as the window may overlap zero. 
 However, for parameters such as the origin age, there is little risk of this being an issue.
@@ -356,7 +357,7 @@ fbd_tree ~ dnConstrainedTopology(fbd_dist, constraints=constraints)
 \end{snugshade*}}
 
 Next, in order to sample from the posterior distribution of trees, we need to specify moves that propose changes to the  topology and node times.
-We also include a proposal \cl{mvCollapseExpandFossilBranch} that toggles whether a fossil is a `sampled ancestor` - a fossil species that has sampled descendants present on the tree.
+We also include a proposal that toggles whether a fossil is a `sampled ancestor` - a fossil species that has sampled descendants present on the tree.
 When conditioning on the origin time, we also need to explicitly sample the root age.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
@@ -370,8 +371,7 @@ moves[mvi++] = mvRootTimeSlideUniform(fbd_tree, origin_time, weight=5.0)
 Next we need to account for uncertainty in the age estimates of our fossils.
 We do this by assuming each fossil can occur with uniform probability anywhere within its observed stratigraphic range.
 Stratigraphic range data for each fossil species is provided in the file \verb+bears_fossil_intervals.tsv+.
-First we read this file into a matrix \verb+fossil_intervals+.
-Then we loop over this matrix and for each fossil create a uniform random variable, clamped at the fossils observed median age.
+First, we read this file into a matrix, then we loop over this matrix and for each fossil create a uniform random variable.
 Note that this is somewhat different from the typical approach to node calibration.
 Here, instead of treating the calibration density as an additional prior distribution on the tree, we treat it as the \textit{likelihood} of our fossil data given the tree parameter.
 Specifically, we assume the likelihood of a particular fossil observation is equal to one if the fossil's inferred occurrence time falls within its observed stratigraphic range.
@@ -400,7 +400,7 @@ for(i in 1:fossil_intervals.size())
 \end{snugshade*}}
 
 Finally, we can also create deterministic nodes for other quantities we might be interested in monitoring. 
-Below, we will define a monitor that prints the number of fossils in the tree that are `sampled ancestors' - taxa that are present in the phylogeny, and have descendants present on the tree. 
+Below, we will define a monitor that prints the number of fossils in the tree that are sampled ancestors. 
 We will also define a deterministic node for the age of the crown group of extant bears.
 In addition, we can monitor the sampled age of a particular fossil.
 
@@ -427,6 +427,53 @@ Open your text editor and create the lineage-specific branch-rate model file cal
 Enter the \Rev code provided in this section in the new model file.
 \end{framed}}
 
+For our hierarchical, uncorrelated exponential relaxed clock model, we first define the mean branch rate as an exponential random variable.
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+branch_rates_mean ~ dnExponential(10.0)
+\end{lstlisting}
+\end{snugshade*}}
+
+Then, we specify some scale proposal moves on the mean rate parameter.
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+moves[mvi++] = mvScale(branch_rates_mean, lambda=0.01, weight=1.0)
+moves[mvi++] = mvScale(branch_rates_mean, lambda=0.1,  weight=1.0)
+moves[mvi++] = mvScale(branch_rates_mean, lambda=1.0,  weight=1.0)
+\end{lstlisting}
+\end{snugshade*}}
+
+Before creating a rate parameter for each branch, we need to get the number of branches in the tree. For rooted trees with $n$ taxa, the number of branches is $2n-2$.
+
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+n_branches <- 2 * n_taxa - 2
+\end{lstlisting}
+\end{snugshade*}}
+
+Then, use a for loop to define a rate for each branch.
+The branch rates are independently and identically exponentially distributed with mean equal to the mean branch rate parameter we specified above.
+For each rate parameter we also create scale proposal moves.
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+for(i in 1:n_branches){
+    branch_rates[i] ~ dnExp(1/branch_rates_mean)
+    moves[mvi++] = mvScale(branch_rates[i], lambda=1.0,  weight=1.0)
+    moves[mvi++] = mvScale(branch_rates[i], lambda=0.1,  weight=1.0)
+    moves[mvi++] = mvScale(branch_rates[i], lambda=0.01, weight=1.0)
+}
+\end{lstlisting}
+\end{snugshade*}}
+
+Lastly, we use a vector scale move to propose changes to all branch rates simultaneously.
+This way we can sample the total branch rate independently of each individual rate, which can improve mixing.
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+moves[mvi++] = mvVectorScale(branch_rates, lambda=0.01, weight=4.0) 
+moves[mvi++] = mvVectorScale(branch_rates, lambda=0.1,  weight=4.0) 
+moves[mvi++] = mvVectorScale(branch_rates, lambda=1.0,  weight=4.0)
+\end{lstlisting}
+\end{snugshade*}}
 
 \bigskip
 
