@@ -747,14 +747,23 @@ For this part of the tutorial, we will use a software called Tracer. Tracer allo
 \label{fig:tracer}
 \end{figure}
 Immediately upon loading, you will view the ``Estimates'' window, which shows the actual values sampled in the MCMC. In this window, the statistics on the left-hand side are the mean of the distribution and the Effective Sample Size (ESS) for that parameter. Parameters in a phylogenetic model may be correlated. The ESS is meant to provide a representation of the number of independent draws represented by the MCMC sample. This quantity will typically be much smaller than the number of generations of the chain. Poor values for the ESS will be colored red. You will likely see a lot of red values in the log file you made today because we did not run the chain very long. The data used to make the screenshots can be found in the bears\_long.zip file in the output directory. \par
-Take a look at some of the parameters. Are there any that have really low ESS? Why do you think that might be? \par
-
 \begin{figure}[h!]
 \centering
 \fbox{\includegraphics[width=\textwidth,angle=0]{\ResourcePath figures/samplewindow}}
 \caption{\small The Estimates window. The left-hand window provides mean and ESS of the chain. The right-hand window visualizes the distribution of samples.}
 \label{fig:tracer}
 \end{figure}
+Take a look at some of the parameters. Are there any that have really low ESS? Why do you think that might be? \par
+Next, we can click over to the Trace window. This window shows us the estimates for a given parameter, ordered by position in the chain. The left side of the chain often has a portion of the chain shaded out. This is referred to as `burn-in'. The idea of burn-in is that an MCMC may not immediately begin sampling from the true distribution of values, particularly if the starting condition of the chain is poor. Therefore, these values are often discarded (or `burned'). \par
+\begin{figure}[h!]
+\centering
+\fbox{\includegraphics[width=\textwidth,angle=0]{\ResourcePath figures/trace}}
+\caption{\small The trace window. The Y-axis is an estimate of the parameter being sampled (in this case likelihood score) and the X-axis is position in the MCMC chain.}
+\label{fig:tracer}
+\end{figure}
+The trace window allows us to evaluate how well our chain is sampling parameter space. The output in Figure 4 is a fairly good trace - there is no consistent pattern or trend in the samples, nor are the large square-shaped steps in the trace. The presence of a trend, or of large leaps in a parameter value might indicate that your MCMC is not mixing well. You can read more about MCMC tuning and improving mixing in the tutorial RB\_MCMC\_Intro\_Tutorial and RB\_MCMC\_Tutorial. \par
+
+Are there any parameters in your log files that show trends or large leaps? What steps might you take to solve these issues? \par
 
 
 
