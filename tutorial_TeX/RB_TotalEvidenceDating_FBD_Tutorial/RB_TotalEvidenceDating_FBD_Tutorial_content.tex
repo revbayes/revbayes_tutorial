@@ -386,10 +386,12 @@ Next we need to account for uncertainty in the age estimates of our fossils.
 We do this by assuming each fossil can occur with uniform probability anywhere within its observed stratigraphic range.
 Stratigraphic range data for each fossil species is provided in the file \cl{bears\_fossil\_intervals.tsv}.
 First, we read this file into a matrix, then we loop over this matrix and for each fossil create a uniform random variable.
-Note that this is somewhat different from the typical approach to node calibration.
+
+This is somewhat different from the typical approach to node calibration.
 Here, instead of treating the calibration density as an additional prior distribution on the tree, we treat it as the \textit{likelihood} of our fossil data given the tree parameter.
-Specifically, we assume the likelihood of a particular fossil observation is equal to one if the fossil's inferred occurrence time falls within its observed stratigraphic range.
-This is equivalent to saying the likelihood of the observed median age is uniform within the stratigraphic interval surrounding the inferred fossil occurrence time.
+Specifically, we assume the likelihood of a particular fossil observation is equal to one if the fossil's inferred occurrence time falls within its observed stratigraphic range, and zero otherwise.
+This likelihood is proportional any uniform density that is non-zero when the occurrence time falls within the observed interval.
+For example, we'll use a random variable uniformly distributed in the interval offset by the fossil occurrence time, and we'll include this variable in the likelihood by clamping it at zero.
 
 {\tt \begin{snugshade*}
 \begin{lstlisting}
@@ -402,13 +404,9 @@ for(i in 1:fossil_intervals.size())
     obs_max = fossil_intervals[i][3]
     
     t[i] := tmrca(fbd_tree, clade(taxon))
-    
-    half    = (obs_max - obs_min)/2
-    umin[i] := max(v(t[i] - half, 0.0))
-    umax[i] := t[i] + half
-    
-    fossil[i] ~ dnUniform(umin[i], umax[i])
-    fossil[i].clamp( obs_min + half )
+        
+    fossil[i] ~ dnUniform(t[i] - obs_max, t[i] - obs_min)
+    fossil[i].clamp( 0 )
 }
 \end{lstlisting}
 \end{snugshade*}}
