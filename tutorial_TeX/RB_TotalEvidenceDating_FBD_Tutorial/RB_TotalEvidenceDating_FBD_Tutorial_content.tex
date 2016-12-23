@@ -421,18 +421,24 @@ moves[mvi++] = mvRootTimeSlideUniform(fbd_tree, origin_time, weight=5.0)
 Next we need to account for uncertainty in the age estimates of our fossils.
 We do this by assuming each fossil can occur with uniform probability anywhere within its observed stratigraphic range.
 Stratigraphic range data for each fossil species is provided in the file \cl{bears\_fossil\_intervals.tsv}.
-First, we read this file into a matrix, then we loop over this matrix and for each fossil create a uniform random variable.
+First, we read this file into a matrix called \cl{fossil\_intervals}. %, then we loop over this matrix and for each fossil create a uniform random variable.
 
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+fossil_intervals = readDataDelimitedFile(file="data/bears_fossil_intervals.tsv", header=true)
+\end{lstlisting}
+\end{snugshade*}}
+
+Next, we will loop over this matrix and for each fossil create a uniform random variable.
 This is somewhat different from the typical approach to node calibration.
 Here, instead of treating the calibration density as an additional prior distribution on the tree, we treat it as the \textit{likelihood} of our fossil data given the tree parameter.
 Specifically, we assume the likelihood of a particular fossil observation is equal to one if the fossil's inferred occurrence time falls within its observed stratigraphic range, and zero otherwise.
 This likelihood is proportional to any uniform density that is non-zero when the occurrence time falls within the observed interval.
 So we'll use a random variable uniformly distributed in the interval offset by the fossil occurrence time, and we'll include this variable in the likelihood by clamping it at zero.
 
+
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-fossil_intervals = readDataDelimitedFile(file="data/bears_fossil_intervals.tsv", header=true)
-
 for(i in 1:fossil_intervals.size())
 {
     taxon  = fossil_intervals[i][1]
@@ -534,6 +540,13 @@ moves[mvi++] = mvVectorScale(branch_rates, lambda=0.1,  weight=4.0)
 moves[mvi++] = mvVectorScale(branch_rates, lambda=1.0,  weight=4.0)
 \end{lstlisting}
 \end{snugshade*}}
+
+{\begin{framed}
+You have completed the FBD model file. Save \cl{model\_UExp\_TEFBD.Rev} in the \cl{scripts} directory.
+
+We will now move on to the next model file.
+\end{framed}}
+
 
 \bigskip
 
