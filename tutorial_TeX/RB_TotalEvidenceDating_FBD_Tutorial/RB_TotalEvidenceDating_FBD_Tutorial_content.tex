@@ -786,14 +786,14 @@ Are there any parameters in your log files that show trends or large leaps? What
 
 %TODO this they can do interactively in rb
 
-Start up RevBayes at the command line. You should do this from within the \cl{RB\_TotalEvidenceDating\_FBD\_Tutorial} directory.
+Start up RevBayes at the command line. You should do this from within the \\\cl{RB\_TotalEvidenceDating\_FBD\_Tutorial} directory. We will use functions implemented in RevBayes to summarize our trees.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 ./rb
 \end{lstlisting}
 \end{snugshade*}}
 
-Read in the MCMC sample of trees from file.
+Read in the MCMC sample of trees from file. The first thing we need to do is remove taxa for which we did not have any molecular or morphological data. These taxa haven't been placed on the tree due to their actual phylogenetic relationships, so it would be misleading to include them in a  summary tree. We will use the \cl{fnPruneTree} function to remove them. Then we will use the mccTree function to return a maximum clade credibility tree. The MCC tree is the tree with the maximum product of the posterior clade probabilities.  \par
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 trace = readTreeTrace("output/bears.trees")
@@ -808,7 +808,10 @@ mccTree(trace_pruned, "output/bears.mcc.tre" )
 \end{lstlisting}
 \end{snugshade*}}
 
-See Fig.\ \ref{fig:IcyTreeSumm}
+There are sampled ancestors present in the tree. This makes visualizing the tree fairly difficult in traditional tree viewers. Today, we will make use of a browser-based tree viewer called \href{http://tgvaughan.github.io/icytree/}{IcyTree}. This tree viewer has the ability to view sampled ancestor trees, as well as many other nice abilities for tree visualization. Navigate to the page and open the tree. \par
+
+
+Try to replicate Fig.\ \ref{fig:IcyTreeSumm}. Hint: Look under style, at `Mark Singletons'. Why might a node with a sampled ancestor be referred to as a singleton? Try clicking on a branch. What are the fields telling you? Are the ages of the fossil tips the same as what was shown in Tracer? 
 
 \begin{figure}[h!]
 \centering
