@@ -7,6 +7,18 @@ Exercise is in Section \ref{sect:RB-ExerciseMain}.
 
 \subsection{Models}
 
+\subsubsection{Lineage Diversification and Sampling}
+
+Birth-death processes and FBD
+
+\begin{figure}[h!]
+\centering
+\includegraphics[scale=0.3,angle=0]{\ResourcePath figures/tikz/fbd_gm}
+\caption{\small A graphical model of the fossilized birth death process. In this model, the speciation, extinction and fossilization rates are drawn from exponential distributions, while the origin time and fossil ages are uniformly distributed. }
+\label{fig:fbd_gm}
+\end{figure}
+
+
 \subsubsection{Sequence Evolution}
 
 In this tutorial, our molecular data are best analyzed with a General Time-Reversible model of sequence evolution and gamma-distributed rate heterogeneity. This model of sequence evolution is covered thoroughly in the RB\_CTMC\_Tutorial.
@@ -23,7 +35,7 @@ In the tutorial, we will relax this assumption through the use of a prior on sta
 This prior is visualized in Fig. 1. 
 \begin{figure}[h!]
 \centering
-\includegraphics[scale=0.3,angle=0]{\ResourcePath figures/tikz/morpho_gm}
+\fbox{\includegraphics[scale=0.3,angle=0]{\ResourcePath figures/tikz/morpho_gm}}
 \caption{\small A graphical model of the Beta-distributed frequencies across sites model. In this model, stationary state frequencies are drawn from a discrete Beta distribution and used to generate Q-matrices that allow character change asymmetry.}
 \label{fig:morpho_gm}
 \end{figure}
@@ -54,16 +66,6 @@ Clocks \citep{Zuckerkandl1962} and relaxing them
 \label{fig:uexp_gm}
 \end{figure}
 
-\subsubsection{Lineage Diversification and Sampling}
-
-Birth-death processes and FBD
-
-\begin{figure}[h!]
-\centering
-\includegraphics[scale=0.3,angle=0]{\ResourcePath figures/tikz/fbd_gm}
-\caption{\small A graphical model of the fossilized birth death process. In this model, the speciation, extinction and fossilization rates are drawn from exponential distributions, while the origin time and fossil ages are uniformly distributed. }
-\label{fig:fbd_gm}
-\end{figure}
 
 \section{Prerequisites}
 
@@ -141,7 +143,8 @@ When you execute \RevBayes in this exercise, you will do so within the main dire
 
 For complex models and analyses, it is best to create \Rev script files that will contain all of the model parameters, moves, and functions. 
 In this exercise, you will work primarily in your text editor and create a set of modular files that will be easily managed and interchanged.
-You will write the following files from scratch in a text editor$^*$ and save them in the \cl{scripts} directory:
+You will write the following files from scratch in a text editor\footnote{If you do not already have a good text editor that you like, we recommend one that has features for syntax coloring, easy navigation between different files, line numbers, etc.
+A good option is \href{http://www.sublimetext.com/}{Sublime Text}, which is available for Mac OSX, Windows, and Linux.} and save them in the \cl{scripts} directory:
 \begin{itemize}[noitemsep,topsep=0pt]
 \item \cl{mcmc\_TEFBD.Rev}: the master \Rev file that loads the data, the separate model files, and specifies the monitors and MCMC sampler.
 \item \cl{model\_FBDP\_TEFBD.Rev}: specifies the model parameters and moves required for the fossilized birth-death prior on the tree topology, divergence times, fossil occurrence times, and diversification dynamics.
@@ -149,10 +152,8 @@ You will write the following files from scratch in a text editor$^*$ and save th
 \item \cl{model\_GTRG\_TEFBD.Rev}: specifies the parameters and moves for the general-time reversible model of sequence evolution with gamma-distributed rates across sites (GTR+$\Gamma$).
 \item \cl{model\_Morph\_TEFBD.Rev}: specifies the model describing discrete morphological character change (binary characters) under a strict morphological clock. 
 \end{itemize}
-{\footnotesize $^*$Note: if you do not already have a good text editor that you like, we recommend one that has features for syntax coloring, easy navigation between different files, line numbers, etc.
-A good option is \href{http://www.sublimetext.com/}{Sublime Text}, which is available for Mac OSX, Windows, and Linux.}
 
-All of the files that you will create are also provided in the \RevBayes tutorial repository. 
+All of the files that you will create are also provided in the \RevBayes tutorial repository\footnote{\url{https://github.com/revbayes/revbayes_tutorial/tree/master/RB_TotalEvidenceDating_FBD_Tutorial/scripts}}. 
 Please refer to these files to verify or troubleshoot your own scripts. 
 %TODO add link to scripts
 
@@ -172,6 +173,8 @@ The file you will begin in this section will be the one you load into \RevBayes 
 In this section you will begin the file and write the \Rev commands for loading in the taxon list and managing the data matrices.
 Then, starting in Section \ref{subsect:RB-ModelFBD}, you will move on to writing modular files for each of the model components. 
 Once the model files are complete, you will return to editing \cl{mcmc\_TEFBD.Rev} and complete the \Rev script with the instructions given in Section \ref{subsect:RB-CompleteMCMC}.
+
+%{\footnotesize{This file is provided in the \RevBayes tutorial repository: \href{https://github.com/revbayes/revbayes_tutorial/blob/master/RB_TotalEvidenceDating_FBD_Tutorial/scripts/mcmc_TEFBD.Rev}{\cl{mcmc\_TEFBD.Rev}}.}}
 
 \medskip
 \subsubsection{Load Taxon List}\label{subsub:RB-TaxList}
