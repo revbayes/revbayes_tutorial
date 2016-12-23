@@ -68,13 +68,13 @@ RevBayes has two ways of doing this: one is used for datasets in which only pars
 
 Rates of nucleotide sequence evolution can vary widely among lineages, and so models that account for this variation by relaxing the assumption of a strict molecular clock can allow for more accurate estimates of substitution rates and divergence times \citep{Drummond2006}.
 The simplest type of relaxed clock model assumes that lineage-specific substitution rates are independent or ``uncorrelated''.
-One example of such an uncorrelated relaxed model is the ``Uncorrelated exponential relaxed clock'' (or UExp), in which the substitution rate for each lineage is assumed to be independent and identically distributed according to an exponential distribution (depicted in Fig. \ref{fig:uexp_gm}).
+One example of such an uncorrelated relaxed model is the ``Uncorrelated exponential relaxed clock'' (or UExp), in which the substitution rate for each lineage is assumed to be independent and identically distributed according to an exponential density (depicted in Fig. \ref{fig:uexp_gm}).
 This is the model that we will use in this tutorial.
 Another possible uncorrelated relaxed clock model is the uncorrelated lognormal model, described in the \href{https://github.com/revbayes/revbayes_tutorial/raw/master/tutorial_TeX/RB_Dating_Tutorial/RB_Dating_Tutorial.pdf}{RB\_Dating\_Tutorial}.
 \begin{figure}[h!]
 \centering
 \includegraphics[scale=0.3,angle=0]{\ResourcePath figures/tikz/uexp_gm}
-\caption{\small A graphical model of the uncorrelated exponential relaxed clock model. In this model, the clock rate on each branch is identically and independently distributed according to an exponential distribution with mean drawn from an exponential hyperprior distribution. }
+\caption{\small A graphical model of the uncorrelated exponential relaxed clock model. In this model, the clock rate on each branch is independent and identically distributed according to an exponential density with mean drawn from an exponential hyperprior distribution. }
 \label{fig:uexp_gm}
 \end{figure}
 
@@ -511,7 +511,7 @@ n_branches <- 2 * n_taxa - 2
 \end{snugshade*}}
 
 Then, use a for loop to define a rate for each branch.
-The branch rates are independently and identically exponentially distributed with mean equal to the mean branch rate parameter we specified above.
+The branch rates are independent and identically exponentially distributed with mean equal to the mean branch rate parameter we specified above.
 For each rate parameter we also create scale proposal moves.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
