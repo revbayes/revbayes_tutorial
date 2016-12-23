@@ -171,7 +171,7 @@ Enter the \Rev code provided in this section in the new model file.
 
 The file you will begin in this section will be the one you load into \RevBayes when you've completed all of the components of the analysis.
 In this section you will begin the file and write the \Rev commands for loading in the taxon list and managing the data matrices.
-Then, starting in Section \ref{subsect:RB-ModelFBD}, you will move on to writing modular files for each of the model components. 
+Then, starting in Section \ref{subsect:RB-ModelFBD}, you will move on to writing module files for each of the model components. 
 Once the model files are complete, you will return to editing \cl{mcmc\_TEFBD.Rev} and complete the \Rev script with the instructions given in Section \ref{subsect:RB-CompleteMCMC}.
 
 %{\footnotesize{This file is provided in the \RevBayes tutorial repository: \href{https://github.com/revbayes/revbayes_tutorial/blob/master/RB_TotalEvidenceDating_FBD_Tutorial/scripts/mcmc_TEFBD.Rev}{\cl{mcmc\_TEFBD.Rev}}.}}
@@ -252,9 +252,9 @@ One important distinction here is that \cl{mvi} is part of the \RevBayes workspa
 Thus, we use the workspace assignment operator \cl{=} instead of the constant node assignment \cl{<-}. 
 
 {\begin{framed}
-Save your current working version of \cl{model\_FBDP\_TEFBD.Rev} in the \cl{scripts} directory.
+Save your current working version of \cl{mcmc\_TEFBD.Rev} in the \cl{scripts} directory.
 
-We will now move on to the next \Rev file and will complete \cl{model\_FBDP\_TEFBD.Rev} in Section \ref{subsect:RB-CompleteMCMC}.
+We will now move on to the next \Rev file and will complete \cl{mcmc\_TEFBD.Rev} in Section \ref{subsect:RB-CompleteMCMC}.
 \end{framed}}
 
 
@@ -267,10 +267,14 @@ Open your text editor and create the fossilized birth-death model file called {\
 Enter the \Rev code provided in this section in the new model file.
 \end{framed}}
 
+\subsubsection{Speciation and Extinction Rates}\label{subsub:RB-FBD-SpeciationExtinction}
+
 Two key parameters of the FBD process are the speciation rate (the rate at which lineages are added to the tree) and the extinction rate (the rate at which lineages are removed from the tree). 
 We'll place exponential priors on both of these values. 
-An exponential prior with a $\lambda$ =  10 places a higher probability on values closer to zero than one for these parameters. 
-
+%An exponential prior with a $\lambda$ =  10 places a higher probability on values closer to zero than one for these parameters. 
+Each parameter is assumed to be drawn independently from a different exponential distribution with rates $\delta_{\lambda}$ and $\delta_{\mu}$ respectively (see Fig.\ \ref{fig:fbd_gm}). 
+Here, we will assume that $\delta_{\lambda} = \delta_{\mu} = 10$. 
+Note that an exponential distribution with $\delta = 10$ has an expected value (mean) of $1/10$. 
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 speciation_rate ~ dnExponential(10)
@@ -278,11 +282,14 @@ extinction_rate ~ dnExponential(10)
 \end{lstlisting}
 \end{snugshade*}}
 
-Now that the priors have been specified, we give RevBayes some information on how to sample values for our parameters. 
-We'll use a scaling move, which proposes multiplicative changes to a parameter. 
-We will use three different tuning parameters, which govern the size of the move. 
-Including multiple tuning parameters improves mixing. 
+For every stochastic node we declare, we must also specify proposal algorithms (called \textit{moves}) to sample the value of the parameter in proportion to its posterior probability.
+If a move is not specified for a stochastic node, then it will not be estimated, but fixed to its initial value. 
 
+The rate parameters for extinction and speciation are both real, positive numbers (\IE floating point variables). 
+For both of these nodes, we will use a scaling move (\cl{mvScale()}), which proposes multiplicative changes to a parameter.
+Many moves also require us to set a \textit{tuning value}, which is called \cl{lambda} for \cl{mvScale()}, which determine the size of the proposed change. 
+Here, we will use three scale moves for each parameter with  different values of lambda. 
+By using multiple moves for a single parameter, we will improve the mixing of the Markov chain. 
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 moves[mvi++] = mvScale(speciation_rate, lambda=0.01, weight=1)
@@ -295,7 +302,7 @@ moves[mvi++] = mvScale(extinction_rate, lambda=1,    weight=1)
 \end{lstlisting}
 \end{snugshade*}}
 
-In addition to the speciation and extinction rates, we may also be interested in inferring diversification (speciation minus extinction) and turnover (extinction divided by speciation). Since these parameters can be expressed as a deterministic transformation of the speciation and extinction rates, we can monitor their values by creating two deterministic nodes:
+In addition to the speciation ($\lambda$) and extinction ($\mu$) rates, we may also be interested in inferring diversification ($\lambda - \mu$) and turnover ($\mu/\lambda$). Since these parameters can be expressed as a deterministic transformation of the speciation and extinction rates, we can monitor their values by creating two deterministic nodes using the \cl{:=} operator.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 diversification := speciation_rate - extinction_rate
@@ -303,18 +310,22 @@ turnover := extinction_rate/speciation_rate
 \end{lstlisting}
 \end{snugshade*}}
 
-All extant bears are represented in this dataset. 
-Therefore, we can fix the sampling probability of extant lineages to 1.
+\subsubsection{Probability of Sampling Extant Taxa}\label{subsub:RB-FBD-Rho}
 
+All extant bears are represented in this dataset. 
+Therefore, we will fix the probability of sampling an extant lineage ($\rho$) to 1.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 rho <- 1.0
 \end{lstlisting}
 \end{snugshade*}}
+Because $\rho$ is a constant node (assigned using the \cl{<-} operator), we do not have to assign a move to this parameter.
 
-The fossil sampling rate ($\psi$), on the other hand is not known. 
-We will use an exponential prior on this parameter as well, and use a scale move to sample values from the posterior distribution.
+\subsubsection{The Fossil Sampling Rate}\label{subsub:RB-FBD-Psi}
 
+Since our data set includes serially sampled lineages, we must also account for the rate of sampling back in time. 
+This is the fossil sampling (or recovery) rate ($\psi$), which we will instantiate as a stochastic node. 
+As with the speciation and extinction rates (Sect.\ \ref{subsub:RB-FBD-SpeciationExtinction}), we will use an exponential prior on this parameter and use scale moves to sample values from the posterior distribution.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 psi ~ dnExponential(10) 
@@ -323,6 +334,8 @@ moves[mvi++] = mvScale(psi, lambda=0.1,  weight=1)
 moves[mvi++] = mvScale(psi, lambda=1,    weight=1)
 \end{lstlisting}
 \end{snugshade*}}
+
+\subsubsection{The Origin Time}\label{subsub:RB-FBD-Origin}
 
 Under the FBD model, the process is can be conditioned on the age of the origin, or the age of the root.
 In our case, we will condition on the origin time of bears, and
@@ -340,6 +353,8 @@ moves[mvi++] = mvSlide(origin_time, delta=1,    weight=5.0)
 \end{lstlisting}
 \end{snugshade*}}
 
+\subsubsection{The FBD Distribution}\label{subsub:RB-FBD-dnFBD}
+
 All the parameters of the FBD process have now been specified. 
 The next step is to use these parameters to define the FBD tree prior distribution.
 
@@ -348,6 +363,8 @@ The next step is to use these parameters to define the FBD tree prior distributi
 fbd_dist = dnFBDP(origin=origin_time, lambda=speciation_rate, mu=extinction_rate, psi=psi, rho=rho, taxa=taxa)
 \end{lstlisting}
 \end{snugshade*}}
+
+\subsubsection{Clade Constraints}\label{subsub:RB-FBD-Constraints}
 
 Note that we created the distribution as a workspace variable using the workspace assignment operator \cl{=}.
 This is because we still need to include a topology constraint in our final specification of the tree prior.
@@ -373,6 +390,8 @@ fbd_tree ~ dnConstrainedTopology(fbd_dist, constraints=constraints)
 \end{lstlisting}
 \end{snugshade*}}
 
+\subsubsection{Moves on the Tree Topology and Node Ages}\label{subsub:RB-FBD-TreeMoves}
+
 Next, in order to sample from the posterior distribution of trees, we need to specify moves that propose changes to the  topology and node times.
 We also include a proposal that toggles whether a fossil is a ``sampled ancestor'' - a fossil species that has sampled descendants present on the tree.
 When conditioning on the origin time, we also need to explicitly sample the root age.
@@ -384,6 +403,8 @@ moves[mvi++] = mvNodeTimeSlideUniform(fbd_tree, weight=40.0)
 moves[mvi++] = mvRootTimeSlideUniform(fbd_tree, origin_time, weight=5.0)
 \end{lstlisting}
 \end{snugshade*}}
+
+\subsubsection{Sampling Fossil Occurrence Ages}\label{subsub:RB-FBD-TipSamp}
 
 Next we need to account for uncertainty in the age estimates of our fossils.
 We do this by assuming each fossil can occur with uniform probability anywhere within its observed stratigraphic range.
@@ -413,6 +434,15 @@ for(i in 1:fossil_intervals.size())
 }
 \end{lstlisting}
 \end{snugshade*}}
+
+
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+moves[mvi++] = mvFossilTimeSlideUniform(fbd_tree, origin_time, weight=5.0)
+\end{lstlisting}
+\end{snugshade*}}
+
+\subsubsection{Monitoring Parameters of Interest using Deterministic Nodes}\label{subsub:RB-FBD-DetNodes}
 
 Finally, we can also create deterministic nodes for other quantities we might be interested in monitoring. 
 We will define a deterministic node for the number of fossils in the tree that are sampled ancestors. 
