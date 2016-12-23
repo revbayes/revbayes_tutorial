@@ -365,7 +365,7 @@ moves[mvi++] = mvSlide(origin_time, delta=1,    weight=5.0)
 \end{lstlisting}
 \end{snugshade*}}
 
-\subsubsection{The FBD Distribution}\label{subsub:RB-FBD-dnFBD}
+\subsubsection{The FBD Distribution Object}\label{subsub:RB-FBD-dnFBD}
 
 All the parameters of the FBD process have now been specified. 
 The next step is to use these parameters to define the FBD tree prior distribution.
@@ -617,6 +617,12 @@ phySeq.clamp(cytb)
 \end{lstlisting}
 \end{snugshade*}}
 
+{\begin{framed}
+You have completed the FBD model file. Save \cl{model\_GTRG\_TEFBD.Rev} in the \cl{scripts} directory.
+
+We will now move on to the next model file.
+\end{framed}}
+
 \bigskip
 
 \subsection{Modeling the Evolution of Binary Morphological Characters}\label{subsect:RB-ModelMorph}
@@ -696,6 +702,11 @@ phyMorpho.clamp(morpho)
 \end{lstlisting}
 \end{snugshade*}}
 
+{\begin{framed}
+You have completed the FBD model file. Save \cl{model\_Morph\_TEFBD.Rev} in the \cl{scripts} directory.
+
+We will now move on to the next model file.
+\end{framed}}
 
 \bigskip
 
@@ -758,6 +769,8 @@ monitors[mni++] = mnScreen(printgen=10, age_extant, num_samp_anc, origin_time)
 mymcmc = mcmc(mymodel, monitors, moves)
 
 mymcmc.run(generations=10000)
+
+q()
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -766,22 +779,26 @@ Save and close all files.
 \end{framed}}
 
 \bigskip
-\subsection{Run it}\label{subsect:RB-RunMCMC}
+\subsection{Execute the MCMC Analysis}\label{subsect:RB-RunMCMC}
 
+With all the parameters specified and all analysis components in place, you are now ready to run your analysis. 
+The \Rev scripts you just created will all be used by \RevBayes and loaded in the appropriate order.
 
+Begin by running the \RevBayes executable.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 ./rb
 \end{lstlisting}
 \end{snugshade*}}
 
-Execute the MCMC analysis:
+Provided that you started \RevBayes from the correct directory (in \cl{RB\_TotalEvidenceDating\_FBD\_Tutorial}), you can then use the \cl{source()} function to feed \RevBayes your master script file (\cl{mcmc\_TEFBD.Rev}).
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 source("scripts/mcmc_TEFBD.Rev")
 \end{lstlisting}
 \end{snugshade*}}
 
+This will execute the analysis and you should see the following output:
 {\tiny{\tt \begin{snugshade*}
 \begin{lstlisting}
 |*   Processing file "scripts/mcmc_TEFBD.Rev"
