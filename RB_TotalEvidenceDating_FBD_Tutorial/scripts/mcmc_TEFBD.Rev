@@ -32,7 +32,7 @@ n_taxa <- taxa.size()
 
 source("scripts/model_FBDP_TEFBD.Rev")
 
-source("scripts/model_UCExp_TEFBD.Rev")
+source("scripts/model_UExp_TEFBD.Rev")
 
 source("scripts/model_GTRG_TEFBD.Rev")
 
