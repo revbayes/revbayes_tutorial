@@ -554,7 +554,7 @@ er ~ dnDirichlet(er_hp)
 \end{snugshade*}}
 
 We need special moves to propose changes to a Dirichlet random variable, also known as a simplex (a vector constrained sum to one).
-Here, we use a ``Simplex Element Scale'' move, which scales a single element of a simplex and then renormalizes the vector to sum to one.
+Here, we use a \cl{mvSimplexElementScale} move, which scales a single element of a simplex and then renormalizes the vector to sum to one.
 The tuning parameter \cl{alpha} specifies how conservative the proposal should be, with larger values of \cl{alpha} leading to proposals closer to the current value.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
@@ -581,7 +581,7 @@ moves[mvi++] = mvScale(alpha_cytb, lambda=1,    weight=1.0)
 \end{lstlisting}
 \end{snugshade*}}
 
-Then we create a Gamma$(\alpha,\alpha)$ distribution, discretized into 4 rate categories using the ``Discretize Gamma'' function.
+Then we create a Gamma$(\alpha,\alpha)$ distribution, discretized into 4 rate categories using the \cl{fnDiscretizeGamma} function.
 Here, \cl{rates\_cytb} is a deterministic vector of rates computed as the mean of each category.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
@@ -838,7 +838,7 @@ Start up RevBayes at the command line. You should do this from within the \\\cl{
 \end{lstlisting}
 \end{snugshade*}}
 
-Read in the MCMC sample of trees from file. The first thing we need to do is remove taxa for which we did not have any molecular or morphological data. These taxa haven't been placed on the tree due to their actual phylogenetic relationships, so it would be misleading to include them in a  summary tree. We will use the \cl{fnPruneTree} function to remove them. Then we will use the mccTree function to return a maximum clade credibility tree. The MCC tree is the tree with the maximum product of the posterior clade probabilities.  \par
+Read in the MCMC sample of trees from file. The first thing we need to do is remove taxa for which we did not have any molecular or morphological data. These taxa haven't been placed on the tree due to their actual phylogenetic relationships, so it would be misleading to include them in a  summary tree. We will use the \cl{fnPruneTree} function to remove them. Then we will use the mccTree function to return a maximum clade credibility (MCC) tree. The MCC tree is the tree with the maximum product of the posterior clade probabilities. When considering trees with sampled ancestors, we refer to the maximum sampled ancestor clade credibility (MSACC) tree \citep{Gavryushkina2016}. \par
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 trace = readTreeTrace("output/bears.trees")
@@ -853,14 +853,14 @@ mccTree(trace_pruned, "output/bears.mcc.tre" )
 \end{lstlisting}
 \end{snugshade*}}
 
-There are sampled ancestors present in the tree. This makes visualizing the tree fairly difficult in traditional tree viewers. Today, we will make use of a browser-based tree viewer called \href{http://tgvaughan.github.io/icytree/}{IcyTree}. This tree viewer has the ability to view sampled ancestor trees, as well as many other nice abilities for tree visualization. Navigate to the page and open the tree. 
+When there are sampled ancestors present in the tree, visualizing the tree can be fairly difficult in traditional tree viewers. We will make use of a browser-based tree viewer called \href{http://tgvaughan.github.io/icytree/}{IcyTree}. This tree viewer has the ability to view sampled ancestor trees, as well as many other nice abilities for tree visualization. Navigate to the page and open the tree. 
 
-Try to replicate Fig. \ref{fig:IcyTreeSumm}. Hint: Look under style, at `Mark Singletons'. Why might a node with a sampled ancestor be referred to as a singleton? Try clicking on a branch. What are the fields telling you? Are the ages of the fossil tips the same as what was shown in Tracer? 
+Try to replicate Fig. \ref{fig:IcyTreeSumm}. Hint: Look under style, at ``Mark Singletons''. Why might a node with a sampled ancestor be referred to as a singleton? Try clicking on a branch. What are the fields telling you? Are the ages of the fossil tips the same as what was shown in Tracer? 
 
 \begin{figure}[h!]
 \centering
 \fbox{\includegraphics[width=\textwidth,angle=0]{\ResourcePath figures/summary_tree.pdf}}
-\caption{\small This is a place-holder figure.}
+\caption{\small Maximum sampled ancestor clade credibility (MSACC) tree of bear species used in this tutorial. Numbers above fossil nodes indicate the posterior probability of being a sampled ancestor.}
 \label{fig:IcyTreeSumm}
 \end{figure}
 
