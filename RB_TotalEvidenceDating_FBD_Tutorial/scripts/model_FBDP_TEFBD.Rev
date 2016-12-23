@@ -84,12 +84,8 @@ for(i in 1:fossil_intervals.size())
     
     t[i] := tmrca(fbd_tree, clade(taxon))
     
-    half    = (obs_max - obs_min)/2
-    umin[i] := max(v(t[i] - half, 0.0))
-    umax[i] := t[i] + half
-    
-    fossil[i] ~ dnUniform(umin[i], umax[i])
-    fossil[i].clamp( obs_min + half )
+    fossil[i] ~ dnUniform(t[i] - obs_max, t[i] - obs_min)
+    fossil[i].clamp( 0 )
 }
 
 # Add a move to sample the fossil times #
