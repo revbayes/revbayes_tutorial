@@ -9,18 +9,16 @@ Exercise is in Section \ref{sect:RB-ExerciseMain}.
 
 \subsubsection{Sequence Evolution}
 
-In this tutorial, our molecular data are best analyzed with a General Time-Reversible model of sequence evolution and gamma-distributed rate heterogeneity. This model of sequence evolution is covered thoroughly in the RB\_CTMC\_Tutorial.
+In this tutorial, our molecular data are best analyzed with a General Time-Reversible model of sequence evolution and gamma-distributed rate heterogeneity. This model of sequence evolution is covered thoroughly in the \href{https://github.com/revbayes/revbayes_tutorial/raw/master/tutorial_TeX/RB_CTMC_Tutorial/RB_CTMC_Tutorial.pdf}{RB\_CTMC\_Tutorial}.
 
 \subsubsection{Morphological Character Change}
 
 The incorporation of morphological data from fossils into phylogenetic analyses allows us to directly observe organisms that existed in the past.
-In 2001, Paul Lewis described a model, the Mk model, to allow for the incorporation of morphology into likelihood and Bayesian analyses.
-The Mk model uses a generalized Jukes-Cantor matrix.
-This introduces a number of assumptions. 
-One key assumption is that characters exhibit symmetrical change - that a given character is as likely to transition from a one state to another as it is to reverse.
+The Mk model \citep{Lewis2001} uses a generalized Jukes-Cantor matrix to allow for the incorporation of morphology into likelihood and Bayesian analyses.
+One key assumption of this model is that characters exhibit symmetrical change - that a given character is as likely to transition from a one state to another as it is to reverse.
 For example, this assumption applied to a binary character would mean that a change from a 0 state to a 1 state is as likely as a change from a 1 state to a 0 state. \par
 In the tutorial, we will relax this assumption through the use of a prior on stationary state frequencies. 
-This prior is visualized in Fig. 1. 
+This prior is visualized in Fig. \ref{fig:morpho_gm}. 
 \begin{figure}[h!]
 \centering
 \includegraphics[scale=0.3,angle=0]{\ResourcePath figures/tikz/morpho_gm}
@@ -45,8 +43,11 @@ RevBayes has two ways of doing this: one is used for datasets in which only pars
 
 \subsubsection{Lineage-Specific Substitution Rates}
 
-Clocks \citep{Zuckerkandl1962} and relaxing them 
-
+Rates of nucleotide sequence evolution can vary widely among lineages, and so models that account for this variation by relaxing the assumption of a strict molecular clock can allow for more accurate estimates of substitution rates and divergence times \citep{Drummond2006}.
+The simplest type of relaxed clock model assumes that lineage-specific substitution rates are independent or ``uncorrelated''.
+One example of such an uncorrelated relaxed model is the ``Uncorrelated exponential relaxed clock'' (or UExp), in which the substitution rate for each lineage is assumed to be independent and identically distributed according to an exponential distribution (depicted in Fig. \ref{fig:uexp_gm}).
+This is the model that we will use in this tutorial.
+Another possible uncorrelated relaxed clock model is the Uncorrelated Lognormal model, described in the \href{https://github.com/revbayes/revbayes_tutorial/raw/master/tutorial_TeX/RB_Dating_Tutorial/RB_Dating_Tutorial.pdf}{RB\_Dating\_Tutorial}.
 \begin{figure}[h!]
 \centering
 \includegraphics[scale=0.3,angle=0]{\ResourcePath figures/tikz/uexp_gm}
@@ -72,8 +73,8 @@ What do you need to know before doing this?
 \subsection{Requirements}
 We assume that you have read and hopefully completed the following tutorials:
 \begin{itemize}
-\item RB\_Getting\_Started
-\item RB\_Basics\_Tutorial
+\item \href{https://github.com/revbayes/revbayes_tutorial/raw/master/tutorial_TeX/RB_Getting_Started/RB_Getting_Started.pdf}{RB\_Getting\_Started}
+\item \href{https://github.com/revbayes/revbayes_tutorial/raw/master/tutorial_TeX/RB_Basics_Tutorial/RB_Basics_Tutorial.pdf}{RB\_Basics\_Tutorial}
 \end{itemize}
 Note that the RB\_Basics\_Tutorial introduces the basic syntax of \Rev but does not cover any phylogenetic models.
 You may skip the RB\_Basics\_Tutorial if you have some familiarity with \R.
@@ -85,12 +86,8 @@ You may only need the RB\_Basics\_Tutorial for a more in-depth discussion of con
 
 \section{Exercise: Estimating the Phylogeny and Divergence Times of Fossil and Extant Bears}\label{sect:RB-ExerciseMain}
 
-Information about the exercise, citations for the data, questions. 
+In this exercise, we will combine different types of data from 22 species of bears to estimate a posterior distribution of calibrated time trees. The dataset we will use encompasses 8 extant species and 14 fossil species, consisting of morphological data for 18 species, nucleotide sequence data from 10 species, and stratigraphic fossil range data for all 14 fossil species. Two fossil species do not have any morphological or molecular data.
 
-%TODO Background
-%%%%%%%%
-%%   Data   %%
-%%%%%%%%
 \subsection{Data files}\label{subsect:RB-DataFiles}
 
 We provide the data files which we will use in this tutorial.
@@ -98,7 +95,7 @@ You may want to use your own data instead.
 In the \cl{data} folder, you will find the following files
 \begin{itemize}[noitemsep,topsep=0pt]
 \item \cl{bears\_taxa.tsv}: a tab-separated table listing every bear species (both fossil and extant) and their occurrence dates. For extant taxa, the occurrence date is \cl{0.0} (\IE the present) and for fossil species, the occurrence date is equal to the mean of the age range (the ranges are defined in a separate file).
-\item \cl{bears\_cytb.nex}: an alignment in NEXUS format of 1,000 bp of cytochrome-b sequences for 10 bear species. This alignment includes 8 living bears and 2 extinct sub-fossil bears.
+\item \cl{bears\_cytb.nex}: an alignment in NEXUS format of 1,000 bp of cytochrome b sequences for 10 bear species. This alignment includes 8 living bears and 2 extinct sub-fossil bears.
 \item \cl{bears\_morphology.nex}: a matrix of 62 discrete, binary (coded \cl{0} or \cl{1}) morphological characters for 18 species of fossil and extant bears.
 \item \cl{bears\_fossil\_intervals.tsv}: a tab-separated table containing the age ranges (minimum and maximum in millions of years) for 14 fossil bears.
 \end{itemize}
@@ -145,8 +142,8 @@ You will write the following files from scratch in a text editor$^*$ and save th
 \begin{itemize}[noitemsep,topsep=0pt]
 \item \cl{mcmc\_TEFBD.Rev}: the master \Rev file that loads the data, the separate model files, and specifies the monitors and MCMC sampler.
 \item \cl{model\_FBDP\_TEFBD.Rev}: specifies the model parameters and moves required for the fossilized birth-death prior on the tree topology, divergence times, fossil occurrence times, and diversification dynamics.
-\item \cl{model\_UCExp\_TEFBD.Rev}: specifies the components of the uncorrelated exponential model of lineage-specific substitution rate variation.
-\item \cl{model\_GTRG\_TEFBD.Rev}: specifies the parameters and moves for the general-time reversible model of sequence evolution with gamma-distributed rates across sites (GTR+$\Gamma$).
+\item \cl{model\_UExp\_TEFBD.Rev}: specifies the components of the uncorrelated exponential model of lineage-specific substitution rate variation.
+\item \cl{model\_GTRG\_TEFBD.Rev}: specifies the parameters and moves for the general time-reversible model of sequence evolution with gamma-distributed rates across sites (GTR+$\Gamma$).
 \item \cl{model\_Morph\_TEFBD.Rev}: specifies the model describing discrete morphological character change (binary characters) under a strict morphological clock. 
 \end{itemize}
 {\footnotesize $^*$Note: if you do not already have a good text editor that you like, we recommend one that has features for syntax coloring, easy navigation between different files, line numbers, etc.
@@ -390,8 +387,8 @@ First, we read this file into a matrix, then we loop over this matrix and for ea
 This is somewhat different from the typical approach to node calibration.
 Here, instead of treating the calibration density as an additional prior distribution on the tree, we treat it as the \textit{likelihood} of our fossil data given the tree parameter.
 Specifically, we assume the likelihood of a particular fossil observation is equal to one if the fossil's inferred occurrence time falls within its observed stratigraphic range, and zero otherwise.
-This likelihood is proportional any uniform density that is non-zero when the occurrence time falls within the observed interval.
-For example, we'll use a random variable uniformly distributed in the interval offset by the fossil occurrence time, and we'll include this variable in the likelihood by clamping it at zero.
+This likelihood is proportional to any uniform density that is non-zero when the occurrence time falls within the observed interval.
+So we'll use a random variable uniformly distributed in the interval offset by the fossil occurrence time, and we'll include this variable in the likelihood by clamping it at zero.
 
 {\tt \begin{snugshade*}
 \begin{lstlisting}
@@ -431,10 +428,10 @@ age_Kretzoiarctos_beatrix   := tmrca(fbd_tree, clade("Kretzoiarctos_beatrix"))
 
 \bigskip
 
-\subsection{The Uncorrelated Exponential Relaxed-Clock Model}\label{subsect:RB-ModelUCExp}
+\subsection{The Uncorrelated Exponential Relaxed-Clock Model}\label{subsect:RB-ModelUExp}
 
 {\begin{framed}
-Open your text editor and create the lineage-specific branch-rate model file called {\textcolor{red}{\cl{model\_UCExp\_TEFBD.Rev}}} in the \cl{scripts} directory.
+Open your text editor and create the lineage-specific branch-rate model file called {\textcolor{red}{\cl{model\_UExp\_TEFBD.Rev}}} in the \cl{scripts} directory.
 
 Enter the \Rev code provided in this section in the new model file.
 \end{framed}}
@@ -484,7 +481,7 @@ moves[mvi++] = mvVectorScale(branch_rates, lambda=1.0,  weight=4.0)
 
 \bigskip
 
-\subsection{The General Time Reversible + Gamma Model of Nucleotide Sequence Evolution}\label{subsect:RB-ModelGTRG}
+\subsection{The General Time-Reversible + Gamma Model of Nucleotide Sequence Evolution}\label{subsect:RB-ModelGTRG}
 
 {\begin{framed}
 Open your text editor and create the molecular substitution model file called {\textcolor{red}{\cl{model\_GTRG\_TEFBD.Rev}}} in the \cl{scripts} directory.
@@ -492,7 +489,7 @@ Open your text editor and create the molecular substitution model file called {\
 Enter the \Rev code provided in this section in the new model file.
 \end{framed}}
 
-For our nucleotide sequence evolution model, we need to define a general time reversible (GTR) substitution matrix.
+For our nucleotide sequence evolution model, we need to define a general time-reversible (GTR) substitution matrix.
 A nucleotide GTR matrix is defined by a set of 4 stationary frequencies, and 6 exchangeability rates.
 We create stochastic nodes for these variables, each drawn from a uniform Dirichlet prior distribution.
 
@@ -650,7 +647,7 @@ This step will load in the model scripts we have written in the text editor.
 \begin{lstlisting}
 source("scripts/model_FBDP_TEFBD.Rev")
 
-source("scripts/model_UCExp_TEFBD.Rev")
+source("scripts/model_UExp_TEFBD.Rev")
 
 source("scripts/model_GTRG_TEFBD.Rev")
 
@@ -723,8 +720,8 @@ source("scripts/mcmc_TEFBD.Rev")
 |*   Successfully read one character matrix from file 'data/bears_morphology.nex'
 |*   Processing file "scripts/model_FBDP_TEFBD.Rev"
 |*   Processing of file "scripts/model_FBDP_TEFBD.Rev" completed
-|*   Processing file "scripts/model_UCExp_TEFBD.Rev"
-|*   Processing of file "scripts/model_UCExp_TEFBD.Rev" completed
+|*   Processing file "scripts/model_UExp_TEFBD.Rev"
+|*   Processing of file "scripts/model_UExp_TEFBD.Rev" completed
 |*   Processing file "scripts/model_GTRG_TEFBD.Rev"
 |*   Processing of file "scripts/model_GTRG_TEFBD.Rev" completed
 |*   Processing file "scripts/model_Morph_TEFBD.Rev"
@@ -751,7 +748,7 @@ source("scripts/mcmc_TEFBD.Rev")
 \medskip
 \subsubsection{Evaluate MCMC}\label{subsub:RB-EvalMCMC}
 
-For this part of the tutorial, we will use a software called Tracer. Tracer allows researchers to visualize the MCMC sample for any parameters in the log file. Start Tracer by double-clicking on the Tracer executeable. Click the plus sign on the left-hand side of the screen to add your log file (see Fig.\ \ref{fig:tracer}). Navigate to your log file, and click ``OK''. \par
+For this part of the tutorial, we will use a software called Tracer. Tracer allows researchers to visualize the MCMC sample for any parameters in the log file. Start Tracer by double-clicking on the Tracer executeable. Click the plus sign on the left-hand side of the screen to add your log file (see Fig. \ref{fig:tracer}). Navigate to your log file, and click ``OK''. \par
 \begin{figure}[h!]
 \centering
 \fbox{\includegraphics[width=\textwidth,angle=0]{\ResourcePath figures/tracer.png}}
@@ -809,7 +806,7 @@ mccTree(trace_pruned, "output/bears.mcc.tre" )
 There are sampled ancestors present in the tree. This makes visualizing the tree fairly difficult in traditional tree viewers. Today, we will make use of a browser-based tree viewer called \href{http://tgvaughan.github.io/icytree/}{IcyTree}. This tree viewer has the ability to view sampled ancestor trees, as well as many other nice abilities for tree visualization. Navigate to the page and open the tree. \par
 
 
-Try to replicate Fig.\ \ref{fig:IcyTreeSumm}. Hint: Look under style, at `Mark Singletons'. Why might a node with a sampled ancestor be referred to as a singleton? Try clicking on a branch. What are the fields telling you? Are the ages of the fossil tips the same as what was shown in Tracer? 
+Try to replicate Fig. \ref{fig:IcyTreeSumm}. Hint: Look under style, at `Mark Singletons'. Why might a node with a sampled ancestor be referred to as a singleton? Try clicking on a branch. What are the fields telling you? Are the ages of the fossil tips the same as what was shown in Tracer? 
 
 \begin{figure}[h!]
 \centering
