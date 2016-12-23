@@ -31,7 +31,7 @@ Birth-death processes and FBD
 
 \subsubsection{Sequence Evolution}\label{subsub:Intro-GTR}
 
-In this tutorial, our molecular data are best analyzed with a general time-reversible model of sequence evolution and gamma-distributed rate heterogeneity.
+In this tutorial, we will analyze our molecular data using a general time-reversible model of nucleotide evolution and gamma-distributed rate heterogeneity across sites.
 This model of sequence evolution is covered thoroughly in the \href{https://github.com/revbayes/revbayes_tutorial/raw/master/tutorial_TeX/RB_CTMC_Tutorial/RB_CTMC_Tutorial.pdf}{RB\_CTMC\_Tutorial}.
 
 \subsubsection{Morphological Character Change}\label{subsub:Intro-Morpho}
@@ -53,13 +53,13 @@ Therefore, we can draw the stationary state frequencies of our 0 and 1 character
 Using the stationary state frequencies drawn from the Beta distribution, we can then create new Q-matrices that allow for asymmetrical change in characters states (i.e., for changing from state 0 to state 1 to be more likely than changing from state 1 to state 0, or vice versa). 
 We can do multiple draws from the Beta distribution, creating multiple different Q-matrices per datset.
 This allows for heterogeneity in character change asymmetry across the dataset. 
-Likewise, we will use the Gamma distributed rate heterogeneity described in (other tutorial) to allow for different characters to evolve at different rates.\par
+Likewise, we will use the Gamma distributed rate heterogeneity (described in \href{https://github.com/revbayes/revbayes_tutorial/raw/master/tutorial_TeX/RB_CTMC_Tutorial/RB_CTMC_Tutorial.pdf}{RB\_CTMC\_Tutorial}) to allow for different characters to evolve at different rates.\par
 
 Because of the way morphological data are collected, we need to exercise caution in how we model the data. 
 Traditionally, phylogenetic trees were built from morphological data using parsimony. 
 Therefore, characters were collected to be parsimony informative - that is, to be useful for discriminating between phylogenetic hypotheses under the maximum parsimony criterion.
 This means that many morphological datasets do not contain invariant characters or autapomorphies, as these cannot be used to discriminate among hypotheses under parsimony. 
-By excluding these low rate of evolution characters, the estimated branch lengths can be inflated.
+By excluding these low rate of evolution characters, the estimated branch lengths can be inflated \citep{Felsenstein1992,Lewis2001}.
 Therefore, it is important to use models that can condition on the coding bias. 
 RevBayes has two ways of doing this: one is used for datasets in which only parsimony informative characters are observed; the other is for datasets in which parsimony informative characters and non-parsimony informative variable characters (such as autapomorphies) are observed. \par
 
