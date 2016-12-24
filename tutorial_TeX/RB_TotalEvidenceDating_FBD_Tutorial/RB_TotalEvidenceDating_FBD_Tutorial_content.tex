@@ -503,20 +503,37 @@ moves[mvi++] = mvFossilTimeSlideUniform(fbd_tree, origin_time, weight=5.0)
 
 \subsubsection{Monitoring Parameters of Interest using Deterministic Nodes}\label{subsub:RB-FBD-DetNodes}
 
-Finally, we can also create deterministic nodes for other quantities we might be interested in monitoring. 
-We will define a deterministic node for the number of fossils in the tree that are sampled ancestors. 
-We will also define a node for the age of the crown group of extant bears.
-In addition, we can monitor the sampled age of a particular fossil.
+There are additional parameters that may be of particular interest to us that are not directly inferred as part of this graphical model. 
+As with the diversification and turnover nodes specified in Section \ref{subsub:RB-FBD-SpeciationExtinction}, we can create deterministic nodes to sample the posterior distributions of these parameters. 
+%We will define a deterministic node for the number of fossils in the tree that are sampled ancestors. 
+%We will also define a node for the age of the crown group of extant bears.
+%In addition, we can monitor the sampled age of a particular fossil.
+%
 
+Create a deterministic node called \cl{num\_samp\_anc} that will compute the number of sampled ancestors in our \cl{fbd\_tree}.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 num_samp_anc := fbd_tree.numSampledAncestors()
+\end{lstlisting}
+\end{snugshade*}}
 
+
+We are also interested in the age of the most-recent-common ancestor (MRCA) of all living bears. 
+To monitor the age of this node in our MCMC sample, we must use the \cl{clade()} function to identify the node. Importantly, since we did not include this clade in our constraints that defined \cl{fbd\_tree}, this clade will not be constrained to be monophyletic. 
+Once this clade is defined, we can instantiate a determinisstic node called \cl{age\_extant} with the \cl{tmrca()} function that will record the age of the MRCA of all living bears.
+{\tt \begin{snugshade*}
+\begin{lstlisting}
 clade_extant = clade("Ailuropoda_melanoleuca","Tremarctos_ornatus","Melursus_ursinus",
                     "Ursus_arctos","Ursus_maritimus","Helarctos_malayanus",
                     "Ursus_americanus","Ursus_thibetanus")
 age_extant := tmrca(fbd_tree, clade_extant)
+\end{lstlisting}
+\end{snugshade*}}
 
+In the same way we monitored the MRCA of the extant bears, we can also create a deterministic node to monitor the age of a fossil taxon that we are particularly interested in recording. 
+We will monitor the marginal distribution of the age of \textit{Kretzoiarctos beatrix}, which is between 11.2--11.8 My.
+{\tt \begin{snugshade*}
+\begin{lstlisting}
 age_Kretzoiarctos_beatrix   := tmrca(fbd_tree, clade("Kretzoiarctos_beatrix"))
 \end{lstlisting}
 \end{snugshade*}}
