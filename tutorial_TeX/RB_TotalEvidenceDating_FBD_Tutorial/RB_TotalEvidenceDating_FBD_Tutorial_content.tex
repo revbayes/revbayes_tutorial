@@ -5,6 +5,8 @@
 
 Exercise is in Section \ref{sect:RB-ExerciseMain}.
 
+\RevBayes \citep{Hoehna2016}
+
 \subsection{Models}\label{subsect:Intro-Models}
 
 The focus of this tutorial is to introduce you to specifying the models used in an analysis of fossil and extant taxa. 
@@ -14,7 +16,7 @@ The focus of this tutorial is to introduce you to specifying the models used in 
 \centering
 \fbox{\includegraphics[width=\textwidth,angle=0]{\ResourcePath figures/tikz/full_model_modular}}
 \caption{\small  }
-\label{fig:fbd_gm}
+\label{fig:module-gm}
 \end{figure}
 
 
@@ -100,11 +102,50 @@ You may only need the RB\_Basics\_Tutorial for a more in-depth discussion of con
 
 \section{Exercise: Estimating the Phylogeny and Divergence Times of Fossil and Extant Bears}\label{sect:RB-ExerciseMain}
 
-In this exercise, we will combine different types of data from 22 species of bears to estimate a posterior distribution of calibrated time trees.
-The dataset we will use encompasses 8 extant species and 14 fossil species, consisting of morphological data for 18 species, nucleotide sequence data from 10 species, and stratigraphic fossil range data for all 14 fossil species.
-Two fossil species do not have any morphological or molecular data.
+In this exercise, we will combine different types of data from 22 species of extant and extinct bears to estimate a posterior distribution of calibrated time trees for this group.
+The analysis in this tutorial includes data from several different sources (see Fig.\ \ref{fig:module-gm}).
+We have molecular sequence data for ten species, which represent all of the eight living bears and two extinct species sequenced from sub-fossil specimens (\textit{Arctodus simus, Ursus spelaeus}).
+The sequence alignment provided is a 1,000 bp fragment of the cytochrome-b mitochondrial gene \citep{krause2008}.
+The morphological character matrix unites 18 taxa (both fossil and extant) with 62 binary characters \citep{abella12}.
+Further, we must provide an occurrence time for each taxon sampled from the fossil record.
+For the fossil species, this information is obtained from the literature or fossil databases like the \href{http://fossilworks.org/}{Fossilworks PaleoDB} or the \href{http://fossilcalibrations.org/}{Fossil Calibration Database}, or from your own paleontological expertise. 
+The 14 fossil species used in this analysis are listed in Table \ref{bearFossilTable} along with the age range for the specimen and relevant citation.
+For this exercise, we will fix the ages to a value within the age range provided in Table \ref{bearFossilTable}. 
+Finally, there are two fossil species (\textit{Parictis montanus, Ursus abstrusus}) for which we do not have morphological character data (or molecular data) and we must use prior information about their phylogenetic relationships to incorporate these taxa in our analysis. 
+This information will be applied using clade constraints.
 
-\subsection{Data files}\label{subsect:RB-DataFiles}
+\begin{table}[tbh!]
+\centering
+\caption{Fossil species used for calibrating divergence times under the FBD model. Modified from Table S.3 in the supplemental appendix of \citet{Heath2014}.}\label{bearFossilTable}
+{\small
+\begin{tabular}{@{\extracolsep{\fill}}l  c c c r}
+\hline
+\multicolumn{1}{@{}l}{\textbf{Fossil species}}  & &\multicolumn{1}{c}{\textbf{Age range (My)}}  & &\multicolumn{1}{r}{\textbf{Citation}} \\ 
+\hline
+\hspace{2mm} \textit{Parictis montanus} & & 33.9--37.2 & & \cite{clark1972,krause2008}\\
+\hspace{2mm} \textit{Zaragocyon daamsi} & & 20--22.8  & & \cite{ginsburg1995,abella12}\\
+\hspace{2mm} \textit{Ballusia elmensis} & & 13.7--16 & & \cite{ginsburg1998,abella12}\\
+\hspace{2mm} \textit{Ursavus primaevus} & & 13.65--15.97 & & \cite{andrews1977,abella12}\\
+\hspace{2mm} \textit{Ursavus brevihinus} & & 15.97--16.9  & & \cite{heizmann1980,abella12}\\
+\hspace{2mm} \textit{Indarctos vireti} & & 7.75--8.7  & & \cite{montoya2001,abella12}\\
+\hspace{2mm} \textit{Indarctos arctoides} & & 8.7--9.7 & & \cite{geraads2005,abella12}\\
+\hspace{2mm} \textit{Indarctos punjabiensis} & & 4.9--9.7 & & \cite{baryshnikov2002,abella12}\\
+\hspace{2mm} \textit{Ailurarctos lufengensis} & & 5.8--8.2 & & \cite{jin2007,abella12}\\
+\hspace{2mm} \textit{Agriarctos spp.} & & 4.9--7.75 && \cite{abella2011,abella12}\\
+\hspace{2mm} \textit{Kretzoiarctos beatrix} & & 11.2--11.8 & & \cite{abella2011,abella12}\\
+\hspace{2mm} \textit{Arctodus simus} & & 0.012--2.588 & & \cite{churcher1993,krause2008}\\
+\hspace{2mm} \textit{Ursus abstrusus} & & 1.8--5.3 & & \cite{bjork1970,krause2008}\\
+\hspace{2mm} \textit{Ursus spelaeus} & & 0.027--0.25 & & \cite{loreille2001,krause2008}\\
+\hline
+\end{tabular}}
+\end{table}
+
+
+%The dataset we will use encompasses 8 extant species and 14 fossil species, consisting of morphological data for 18 species, nucleotide sequence data from 10 species, and stratigraphic fossil range data for all 14 fossil species.
+%Two fossil species do not have any morphological or molecular data.
+
+\subsection{The Data}\label{subsect:RB-DataFiles}
+
 
 We provide the data files which we will use in this tutorial.
 You may want to use your own data instead.
