@@ -483,9 +483,11 @@ fossil_intervals = readDataDelimitedFile(file="data/bears_fossil_intervals.tsv",
 Next, we will loop over this matrix and for each fossil create a uniform random variable.
 This is somewhat different from the typical approach to node calibration.
 Here, instead of treating the calibration density as an additional prior distribution on the tree, we treat it as the \textit{likelihood} of our fossil data given the tree parameter.
-Specifically, we assume the likelihood of a particular fossil observation is equal to one if the fossil's inferred occurrence time falls within its observed stratigraphic range, and zero otherwise.
-This likelihood is proportional to any uniform density that is non-zero when the occurrence time falls within the observed interval.
-So we'll use a random variable uniformly distributed in the interval offset by the fossil occurrence time, and we'll include this variable in the likelihood by clamping it at zero.
+Specifically, we assume the likelihood of a particular fossil observation is equal to one if the fossil's inferred age on the tree falls within its observed stratigraphic range, and zero otherwise.
+We can represent this in \RevBayes using any uniform distribution that is proportional to the likelihood, i.e. non-zero when the likelihood is equal to one.
+
+For example, the likelihood is equal to one whenever $T_{\min} < t_i < T_{\max} \implies t_i - T_{\max} < 0 < t_i - T_{\min}$, where $t_i$ is the inferred fossil age, and $(T_{\min},T_{\max})$ is the stratigraphic range.
+So let's represent the likelihood using a random variable uniformly distributed in $(t_i - T_{\max}, t_i - T_{\min})$ and clamped at zero.
 
 
 {\tt \begin{snugshade*}
@@ -493,18 +495,18 @@ So we'll use a random variable uniformly distributed in the interval offset by t
 for(i in 1:fossil_intervals.size())
 {
     taxon  = fossil_intervals[i][1]
-    obs_min = fossil_intervals[i][2]
-    obs_max = fossil_intervals[i][3]
+    T_min = fossil_intervals[i][2]
+    T_max = fossil_intervals[i][3]
     
     t[i] := tmrca(fbd_tree, clade(taxon))
         
-    fossil[i] ~ dnUniform(t[i] - obs_max, t[i] - obs_min)
+    fossil[i] ~ dnUniform(t[i] - T_max, t[i] - T_min)
     fossil[i].clamp( 0 )
 }
 \end{lstlisting}
 \end{snugshade*}}
 
-
+Finally, we create a move that samples the ages of the fossil nodes on the tree. 
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 moves[mvi++] = mvFossilTimeSlideUniform(fbd_tree, origin_time, weight=5.0)

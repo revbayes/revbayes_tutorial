@@ -79,12 +79,12 @@ fossil_intervals = readDataDelimitedFile(file="data/bears_fossil_intervals.tsv",
 for(i in 1:fossil_intervals.size())
 {
     taxon  = fossil_intervals[i][1]
-    obs_min = fossil_intervals[i][2]
-    obs_max = fossil_intervals[i][3]
+    T_min = fossil_intervals[i][2]
+    T_max = fossil_intervals[i][3]
     
     t[i] := tmrca(fbd_tree, clade(taxon))
     
-    fossil[i] ~ dnUniform(t[i] - obs_max, t[i] - obs_min)
+    fossil[i] ~ dnUniform(t[i] - T_max, t[i] - T_min)
     fossil[i].clamp( 0 )
 }
 
