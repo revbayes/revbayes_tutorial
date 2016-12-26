@@ -944,11 +944,17 @@ This will execute the analysis and you should see the following output:
 \medskip
 \subsubsection{Evaluate MCMC}\label{subsub:RB-EvalMCMC}
 
-For this part of the tutorial, we will use a software called Tracer.
-Tracer allows researchers to visualize the MCMC sample for any parameters in the log file.
-Start Tracer by double-clicking on the Tracer executeable.
-Click the plus sign on the left-hand side of the screen to add your log file (see Fig. \ref{fig:tracer}).
-Navigate to your log file, and click ``OK''.
+In this section, we will evaluate the \textit{mixing} and \textit{convergence} of our MCMC simulation using the program Tracer.
+We can also summarize the marginal distributions for particular parameters we're interested in.
+\href{http://tree.bio.ed.ac.uk/software/tracer/}{Tracer} \citep{Rambaut2011} is a tool for visualizing parameters sampled by MCMC.
+This program is limited to numerical parameters, however, and cannot be used to summarize or analyze MCMC samples of the tree topology (this will be discussed further in Section \ref{subsub:RB-SummarizeTree}).
+
+Import the MCMC log file into Tracer.
+\begin{framed}
+Open Tracer and import the \cl{bearsDivtime\_FBD.log} file in the \mi{File\textrightarrow Import New Trace File}.
+Or click the plus sign on the left-hand side of the screen to add your log file (see Fig. \ref{fig:tracer}).
+\end{framed}
+
 
 \begin{figure}[h!]
 \centering
@@ -956,14 +962,19 @@ Navigate to your log file, and click ``OK''.
 \caption{\small The Tracer window. To add data, click on the ``+'' sign, highlighted in red above.}
 \label{fig:tracer}
 \end{figure}
-Immediately upon loading, you will view the ``Estimates'' window, which shows the actual values sampled in the MCMC.
-In this window, the statistics on the left-hand side are the mean of the distribution and the Effective Sample Size (ESS) for that parameter.
-Parameters in a phylogenetic model may be correlated.
-The ESS is meant to provide a representation of the number of independent draws represented by the MCMC sample.
+Immediately upon loading your file, 
+%you will see the \mi{Estimates} window, which shows a histogram and summary statistics of the values sampled by the Markov chain.
+you will see the list of \mi{Trace Files} on the left-hand side.
+The bottom left section, called \mi{Traces}, provides a list of every parameter in the log file, along with the mean and the Effective Sample Size (ESS) for the posterior sample of that parameter.
+The ESS statistic provides a measure of the number of independent draws in our sample for a given parameter.
 This quantity will typically be much smaller than the number of generations of the chain.
-Poor values for the ESS will be colored red.
-You will likely see a lot of red values in the log file you made today because we did not run the chain very long.
-The data used to make the screenshots can be found in the bears\_long.zip file in the output directory.
+In Tracer, poor values for the ESS will be colored red.
+You will likely see a lot of red values because the MCMC runs in this exercise are too short to effectively sample the posterior distributions of most parameters.
+A much longer analysis is provided in the \cl{output} directory. 
+%The data used to make the screenshots can be found in the bears\_long.zip file in the output directory.
+
+The inspection window for your selected parameter is the \mi{Estimates} window, which shows a histogram and summary statistics of the values sampled by the Markov chain. 
+Figure \ref{fig:tracer} shows the marginal distribution of the \mi{Posterior} statistic for the analysis provided in the \cl{output} directory.
 
 \begin{figure}[h!]
 \centering
