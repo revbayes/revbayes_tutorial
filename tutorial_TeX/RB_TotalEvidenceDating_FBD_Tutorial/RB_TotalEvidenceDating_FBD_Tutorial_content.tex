@@ -1008,9 +1008,17 @@ Are there any parameters in your log files that show trends or large leaps? What
 
 %TODO this they can do interactively in rb
 
+In addition to evaluating the performance and sampling of an MCMC run using numerical parameters, it is also important to inspect the sampled topology and tree parameters. 
+This is a difficult endeavor, however. 
+One tool for diagnosing non-convergence and mixing using the sample of trees is \href{https://github.com/danlwarren/RWTY}{RWTY} \citep{RWTY}. 
+In this tutorial, we will only summarize the sampled trees, but we encourage you to consider approaches for assessing the performance of the sampler for the tree topology.
+
+Ultimately, we are interested in summarizing the sampled trees and branch times, given that our Markov chain has sampled all of the important parameters in proportion to their posterior probabilities. 
+\RevBayes includes some functions for summarizing the tree topology and other tree parameters.
+
+We will complete this part of the tutorial using \RevBayes interactively.
 Start up RevBayes at the command line.
 You should do this from within the \cl{RB\_TotalEvidenceDating\_FBD\_Tutorial} directory.
-We will use functions implemented in RevBayes to summarize our trees.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 ./rb
@@ -1018,26 +1026,61 @@ We will use functions implemented in RevBayes to summarize our trees.
 \end{snugshade*}}
 
 Read in the MCMC sample of trees from file.
-The first thing we need to do is remove taxa for which we did not have any molecular or morphological data.
-These taxa haven't been placed on the tree due to their actual phylogenetic relationships, so it would be misleading to include them in a  summary tree.
-We will use the \cl{fnPruneTree} function to remove them.
-Then we will use the mccTree function to return a maximum clade credibility (MCC) tree.
-The MCC tree is the tree with the maximum product of the posterior clade probabilities.
-When considering trees with sampled ancestors, we refer to the maximum sampled ancestor clade credibility (MSACC) tree \citep{Gavryushkina2016}.
-
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 trace = readTreeTrace("output/bears.trees")
+\end{lstlisting}
+\end{snugshade*}}
 
+
+The first thing we need to do is remove taxa for which we did not have any molecular or morphological data.
+The phylogenetic placement of these taxa is based only on their occurrence times and any clade constraints we applied (see Section \ref{subsub:RB-FBD-Constraints}). 
+Because less data are available to resolve their relationships to other lineages, we will treat their placement as \textit{nuisance parameters} and remove them from the summary tree.
+
+We must read our complete taxon list into \RevBayes so that we can easily access the taxon names of the lineages we'd like to prune.
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+taxa <- readTaxonData("data/bears_taxa.tsv")
+\end{lstlisting}
+\end{snugshade*}}
+
+We will 
+%use the \cl{fnPruneTree()} function to 
+remove two fossil taxa, \textit{Parictis montanus} and \textit{Ursus abstrusus}, from every tree in the trace file before summarizing the samples.
+These two species have the indices \cl{17} and \cl{20} in our list of taxa. 
+You can view the list by typing its variable name \cl{taxa}:
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+taxa 
+|*  [ Ailuropoda_melanoleuca, Helarctos_malayanus, Melursus_ursinus, Tremarctos_ornatus,
+|*  Ursus_americanus, Ursus_arctos, Ursus_maritimus, Ursus_thibetanus, Agriarctos_spp,
+|*  Ailurarctos_lufengensis, Arctodus_simus, Ballusia_elmensis, Indarctos_arctoides,
+|*  Indarctos_punjabiensis, Indarctos_vireti, Kretzoiarctos_beatrix, Parictis_montanus,
+|*  Ursavus_brevirhinus, Ursavus_primaevus, Ursus_abstrusus, Ursus_spelaeus, Zaragocyon_daamsi]
+\end{lstlisting}
+\end{snugshade*}}
+
+
+Use the \cl{fnPruneTree()} function to prune taxon \cl{17} and taxon \cl{20} from each tree using a \cl{for} loop.
+{\tt \begin{snugshade*}
+\begin{lstlisting}
 for(i in 1:trace.size())
 {
     trees[i] = fnPruneTree(trace.getTree(i), pruneTaxa=v(taxa[17],taxa[20]))
 }
+\end{lstlisting}
+\end{snugshade*}}
 
+Then we will use the mccTree function to return a maximum clade credibility (MCC) tree.
+The MCC tree is the tree with the maximum product of the posterior clade probabilities.
+When considering trees with sampled ancestors, we refer to the maximum sampled ancestor clade credibility (MSACC) tree \citep{Gavryushkina2016}.
+{\tt \begin{snugshade*}
+\begin{lstlisting}
 trace_pruned = treeTrace(trees)
 mccTree(trace_pruned, "output/bears.mcc.tre" )
 \end{lstlisting}
 \end{snugshade*}}
+
 
 When there are sampled ancestors present in the tree, visualizing the tree can be fairly difficult in traditional tree viewers.
 We will make use of a browser-based tree viewer called \href{http://tgvaughan.github.io/icytree/}{IcyTree}.
