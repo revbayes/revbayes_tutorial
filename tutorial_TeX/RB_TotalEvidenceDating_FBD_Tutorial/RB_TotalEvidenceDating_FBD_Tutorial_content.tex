@@ -28,7 +28,7 @@ The ``total-evidence'' analysis described in this tutorial uses a graphical mode
 
 The joint prior distribution on tree topologies and divergence times of living and extinct species used in this tutorial is described by the \textit{fossilized birth-death} (FBD) process \citep{Stadler2010, Heath2014}. 
 This model simply treats the fossil observations as part of the process governing the tree topology and branch times (Fig.\ \ref{fig:module-gm}). 
-The fossilized birth-death process provides a model for the distribution of speciation times, tree topology, and distribution of lineage samples before the present (\IE, non-contemporaneous samples like fossils or viruses). 
+The fossilized birth-death process provides a model for the distribution of speciation times, tree topology, and distribution of lineage samples before the present (\IE non-contemporaneous samples like fossils or viruses). 
 This type of tree is shown in Figure \ref{fig:example-tree}. 
 Importantly, this model can be used \textit{with or without} character data for the historical samples. 
 Thus, it provides a reasonable prior distribution for analyses combining morphological or DNA data for both extant and fossil taxa---\IE the so-called ``total-evidence'' approaches described by \citet{Ronquist2012a} \citep[also see][]{Pyron2011}. 
@@ -164,7 +164,7 @@ We have molecular sequence data for ten species, which represent all of the eigh
 The sequence alignment provided is a 1,000 bp fragment of the cytochrome-b mitochondrial gene \citep{krause2008}.
 The morphological character matrix unites 18 taxa (both fossil and extant) with 62 binary characters \citep{abella12}.
 %Further, we must provide an occurrence time for each taxon sampled from the fossil record.
-For the fossil species, this occurrence times are obtained from the literature or fossil databases like the \href{http://fossilworks.org/}{Fossilworks PaleoDB} or the \href{http://fossilcalibrations.org/}{Fossil Calibration Database}, or from your own paleontological expertise. 
+For the fossil species, occurrence times are obtained from the literature or fossil databases like the \href{http://fossilworks.org/}{Fossilworks PaleoDB} or the \href{http://fossilcalibrations.org/}{Fossil Calibration Database}, or from your own paleontological expertise. 
 The 14 fossil species used in this analysis are listed in Table \ref{bearFossilTable} along with the age range for the specimen and relevant citation.
 %For this exercise, we will fix the ages to a value within the age range provided in Table \ref{bearFossilTable}. 
 Finally, there are two fossil species (\textit{Parictis montanus, Ursus abstrusus}) for which we do not have morphological character data (or molecular data) and we must use prior information about their phylogenetic relationships to incorporate these taxa in our analysis. 
@@ -444,10 +444,9 @@ moves[mvi++] = mvScale(psi, lambda=1,    weight=1)
 
 \subsubsection{The Origin Time}\label{subsub:Exercise-FBD-Origin}
 
-The FBD process can be conditioned on the age of the origin, or the age of the root \citep{Stadler2010}.
-In our case, we will condition on the origin time of bears, and
-we will specify a uniform distribution on the origin age.
-For this parameter, we will use a sliding window move. A sliding window samples a parameter uniformly within an interval (defined by the half-width \cl{delta}). 
+We will condition the FBD process on the origin time of bears, and we will specify a uniform distribution on the origin age.
+For this parameter, we will use a sliding window move.
+A sliding window samples a parameter uniformly within an interval (defined by the half-width \cl{delta}). 
 Sliding window moves can be tricky for small values, as the window may overlap zero. 
 However, for parameters such as the origin age, there is little risk of this being an issue.
 
@@ -513,29 +512,29 @@ moves[mvi++] = mvRootTimeSlideUniform(fbd_tree, origin_time, weight=5.0)
 
 \subsubsection{Sampling Fossil Occurrence Ages}\label{subsub:Exercise-FBD-TipSampling}
 
-Next we need to account for uncertainty in the age estimates of our fossils using the stratigraphic range data provided in the file \cl{bears\_fossil\_intervals.tsv}.
-First, we read this file into a matrix called \cl{fossil\_intervals}. %, then we loop over this matrix and for each fossil create a uniform random variable.
+Next, we need to account for uncertainty in the age estimates of our fossils using the observed minimum and maximum stratigraphic ages provided in the file \cl{bears\_fossil\_intervals.tsv}.
+First, we read this file into a matrix called \cl{intervals}.
 
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-fossil_intervals = readDataDelimitedFile(file="data/bears_fossil_intervals.tsv", header=true)
+intervals = readDataDelimitedFile(file="data/bears_fossil_intervals.tsv", header=true)
 \end{lstlisting}
 \end{snugshade*}}
 
-Next, we will loop over this matrix and for each fossil create a uniform random variable.
-Remember, we can represent the fossil likelihood using any uniform distribution that is proportional to the likelihood, \IE non-zero when the likelihood is equal to one (section \ref{subsect:Intro-TipSampling}).
+Next, we loop over this matrix and for each fossil observation create a uniform random variable representing the likelihood.
+Remember, we can represent the fossil likelihood using any uniform distribution that is non-zero when the likelihood is equal to one (section \ref{subsect:Intro-TipSampling}).
 
-For example, we know the likelihood is equal to one whenever $a_i < t_i < b_i$, which implies $t_i - b_i < 0 < t_i - a_i$, where $t_i$ is the inferred fossil age, and $(a_i,b_i)$ is the stratigraphic range.
-So let's represent the likelihood using a random variable uniformly distributed in $(t_i - b_i, t_i - a_i)$ and clamped at zero.
+For example, we know the likelihood is equal to one whenever $a_i < t_i < b_i$ where $t_i$ is the inferred fossil age, and $(a_i,b_i)$ is the observed stratigraphic interval (see section \ref{subsect:Intro-TipSampling}), which implies $t_i - b_i < 0 < t_i - a_i$.
+So let's represent the likelihood using a uniform random variable uniformly distributed in $(t_i - b_i, t_i - a_i)$ and clamped at zero.
 
 
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-for(i in 1:fossil_intervals.size())
+for(i in 1:intervals())
 {
-    taxon  = fossil_intervals[i][1]
-    a_i = fossil_intervals[i][2]
-    b_i = fossil_intervals[i][3]
+    taxon  = intervals[i][1]
+    a_i = intervals[i][2]
+    b_i = intervals[i][3]
     
     t[i] := tmrca(fbd_tree, clade(taxon))
         

@@ -71,16 +71,16 @@ moves[mvi++] = mvRootTimeSlideUniform(fbd_tree, origin_time, weight=5.0)
 
 ### Use stratigraphic range data to explicitly sample the fossil occurence times ###
 # Read in the stratigraphic range data file #
-fossil_intervals = readDataDelimitedFile(file="data/bears_fossil_intervals.tsv", header=true)
+intervals = readDataDelimitedFile(file="data/bears_fossil_intervals.tsv", header=true)
 
 # Setup the fossil tip sampling #
 # Use a for loop to create a uniform distribution on the occurence time for each fossil #
 # The boundaries of the uniform distribution are specified in the tsv file #
-for(i in 1:fossil_intervals.size())
+for(i in 1:intervals.size())
 {
-    taxon  = fossil_intervals[i][1]
-    a_i = fossil_intervals[i][2]
-    b_i = fossil_intervals[i][3]
+    taxon  = intervals[i][1]
+    a_i = intervals[i][2]
+    b_i = intervals[i][3]
     
     t[i] := tmrca(fbd_tree, clade(taxon))
     
