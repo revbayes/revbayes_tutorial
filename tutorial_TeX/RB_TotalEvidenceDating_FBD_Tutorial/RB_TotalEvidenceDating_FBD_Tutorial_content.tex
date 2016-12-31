@@ -524,7 +524,7 @@ intervals = readDataDelimitedFile(file="data/bears_fossil_intervals.tsv", header
 Next, we loop over this matrix and for each fossil observation create a uniform random variable representing the likelihood.
 Remember, we can represent the fossil likelihood using any uniform distribution that is non-zero when the likelihood is equal to one (section \ref{subsect:Intro-TipSampling}).
 
-For example, we know the likelihood is equal to one whenever $a_i < t_i < b_i$ where $t_i$ is the inferred fossil age, and $(a_i,b_i)$ is the observed stratigraphic interval (see section \ref{subsect:Intro-TipSampling}), which implies $t_i - b_i < 0 < t_i - a_i$.
+For example, if $t_i$ is the inferred fossil age and $(a_i,b_i)$ is the observed stratigraphic interval, we know the likelihood is equal to one when $a_i < t_i < b_i$, or equivalently $t_i - b_i < 0 < t_i - a_i$.
 So let's represent the likelihood using a uniform random variable uniformly distributed in $(t_i - b_i, t_i - a_i)$ and clamped at zero.
 
 
@@ -953,21 +953,23 @@ This program is limited to numerical parameters, however, and cannot be used to 
 
 Import the MCMC log file into Tracer.
 \begin{framed}
-Open Tracer and import the \cl{bearsDivtime\_FBD.log} file in the \mi{File\textrightarrow Import New Trace File}.
+Open Tracer and import the \cl{bears.log} file in the \mi{File\textrightarrow Import New Trace File}.
 Or click the plus sign on the left-hand side of the screen to add your log file (see Fig. \ref{fig:tracer}).
 \end{framed}
 
 
 \begin{figure}[h!]
-\centering
-\fbox{\includegraphics[width=\textwidth,angle=0]{\ResourcePath figures/tracer.png}}
+\fbox{%
+\begin{minipage}{\textwidth}\centering
+\includegraphics[width=\textwidth,angle=0]{\ResourcePath figures/tracer.png}
 \caption{\small The Tracer window. To add data, click on the ``+'' sign, highlighted in red above.}
+\end{minipage}}
 \label{fig:tracer}
 \end{figure}
 Immediately upon loading your file, 
 %you will see the \mi{Estimates} window, which shows a histogram and summary statistics of the values sampled by the Markov chain.
-you will see the list of \cl{Trace Files} on the left-hand side.
-The bottom left section, called \cl{Traces}, provides a list of every parameter in the log file, along with the mean and the Effective Sample Size (ESS) for the posterior sample of that parameter.
+you will see the list of \mi{Trace Files} on the left-hand side.
+The bottom left section, called \mi{Traces}, provides a list of every parameter in the log file, along with the mean and the Effective Sample Size (ESS) for the posterior sample of that parameter.
 The ESS statistic provides a measure of the number of independent draws in our sample for a given parameter.
 This quantity will typically be much smaller than the number of generations of the chain.
 In Tracer, poor values for the ESS will be colored red.
@@ -975,13 +977,15 @@ You will likely see a lot of red values because the MCMC runs in this exercise a
 A much longer analysis is provided in the \cl{output} directory. 
 %The data used to make the screenshots can be found in the bears\_long.zip file in the output directory.
 
-The inspection window for your selected parameter is the \cl{Estimates} window, which shows a histogram and summary statistics of the values sampled by the Markov chain. 
-Figure \ref{fig:tracer} shows the marginal distribution of the \cl{Posterior} statistic for the analysis provided in the \cl{output} directory.
+The inspection window for your selected parameter is the \mi{Estimates} window, which shows a histogram and summary statistics of the values sampled by the Markov chain. 
+Figure \ref{fig:tracer} shows the marginal distribution of the \mi{Posterior} statistic for the analysis provided in the \cl{output} directory.
 
 \begin{figure}[h!]
-\centering
-\fbox{\includegraphics[width=\textwidth,angle=0]{\ResourcePath figures/samplewindow}}
+\fbox{%
+\begin{minipage}{\textwidth}\centering
+\includegraphics[width=\textwidth,angle=0]{\ResourcePath figures/samplewindow}
 \caption{\small The Estimates window. The left-hand window provides mean and ESS of the chain. The right-hand window visualizes the distribution of samples.}
+\end{minipage}}
 \label{fig:tracer}
 \end{figure}
 Are there any parameters that have really low ESS? Why do you think that might be?
@@ -992,9 +996,11 @@ The left side of the chain has a shaded portion that has been excluded as ``burn
 Samples taken near the beginning of chain are often discarded or ``burned'' because the MCMC may not immediately begin sampling from the target posterior distribution, particularly if the starting condition of the chain is far from the region of highest likelihood.
 
 \begin{figure}[h!]
-\centering
-\fbox{\includegraphics[width=\textwidth,angle=0]{\ResourcePath figures/trace}}
+\fbox{%
+\begin{minipage}{\textwidth}\centering
+\includegraphics[width=\textwidth,angle=0]{\ResourcePath figures/trace}
 \caption{\small The trace window. The vertical axis is the sampled value of highlighted parameter (in this case likelihood score) and the horizontal axis is the iteration of the MCMC.}
+\end{minipage}}
 \label{fig:tracer}
 \end{figure}
 The trace window allows us to evaluate how well our chain is sampling parameter space.
@@ -1094,9 +1100,11 @@ What are the fields telling you?
 Are the ages of the fossil tips the same as what was shown in Tracer? 
 
 \begin{figure}[h!]
-\centering
-\fbox{\includegraphics[width=\textwidth,angle=0]{\ResourcePath figures/summary_tree.pdf}}
+\fbox{%
+\begin{minipage}{\textwidth}\centering
+\includegraphics[width=\textwidth,angle=0]{\ResourcePath figures/summary_tree.pdf}
 \caption{\small Maximum sampled ancestor clade credibility (MSACC) tree of bear species used in this tutorial. Numbers above fossil nodes indicate the posterior probability of being a sampled ancestor.}
+\end{minipage}}
 \label{fig:IcyTreeSumm}
 \end{figure}
 
