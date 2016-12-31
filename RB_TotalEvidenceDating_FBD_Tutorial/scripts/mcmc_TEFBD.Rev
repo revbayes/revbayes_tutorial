@@ -12,9 +12,7 @@
 # Reading in the Data #
 #######################
 # Create the full list of taxa (including all fossils and extant species #
-taxa <- readTaxonData("data/bears_taxa.tsv", delimiter=TAB)
-n_taxa <- taxa.size() # the number of taxa
-
+taxa <- readTaxonData("data/bears_taxa.tsv")
 
 # Import the molecular sequences #
 # this file contains only the taxa for which sequence data are available #
@@ -30,24 +28,23 @@ morpho.addMissingTaxa( taxa )
 
 ## helpers
 mvi = 1
-
+n_taxa <- taxa.size()
 
 source("scripts/model_FBDP_TEFBD.Rev")
 
-source("scripts/model_UCExp_TEFBD.Rev")
+source("scripts/model_UExp_TEFBD.Rev")
 
 source("scripts/model_GTRG_TEFBD.Rev")
 
 source("scripts/model_Morph_TEFBD.Rev")
 
 
-###################################
-# MCMC and summarizing the output #
-###################################
+########
+# MCMC #
+########
 
 # initialize the model object #
 mymodel = model(sf)
-#mymodel.graph("model.dot")
 
 mni = 1
 
@@ -64,9 +61,6 @@ mymcmc = mcmc(mymodel, monitors, moves)
 
 # Run the MCMC #
 mymcmc.run(generations=10000)
-
-# Summarize the acceptance rates of the various moves #
-#mymcmc.operatorSummary()
 
 # Quit RevBayes #
 q()

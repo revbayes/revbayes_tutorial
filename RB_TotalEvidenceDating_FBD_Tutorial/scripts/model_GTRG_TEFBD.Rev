@@ -28,7 +28,7 @@ moves[mvi++] = mvScale(alpha_cytb, lambda=0.01, weight=1.0)
 moves[mvi++] = mvScale(alpha_cytb, lambda=0.1,  weight=1.0)
 moves[mvi++] = mvScale(alpha_cytb, lambda=1,    weight=1.0)
 
-rates_cytb := fnDiscretizeGamma( alpha_cytb, alpha_cytb, 4, false )
+rates_cytb := fnDiscretizeGamma( alpha_cytb, alpha_cytb, 4 )
 
 ### Create the substitution model and clamp with our observed DNA data ###
 phySeq ~ dnPhyloCTMC(tree=fbd_tree, Q=Q_cytb, siteRates=rates_cytb, branchRates=branch_rates, type="DNA")
