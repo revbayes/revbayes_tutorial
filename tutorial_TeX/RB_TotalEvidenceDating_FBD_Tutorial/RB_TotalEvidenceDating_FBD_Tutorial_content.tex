@@ -8,8 +8,8 @@ We begin by outlining the models used in this analysis in section \ref{sect:Intr
 
 We assume that you have read and hopefully completed the following tutorials:
 \begin{itemize}
-\item \href{https://github.com/revbayes/revbayes_tutorial/raw/master/tutorial_TeX/RB_Getting_Started/RB_Getting_Started.pdf}{RB\_Getting\_Started}
-\item \href{https://github.com/revbayes/revbayes_tutorial/raw/master/tutorial_TeX/RB_Basics_Tutorial/RB_Basics_Tutorial.pdf}{RB\_Basics\_Tutorial}
+\item \href{https://github.com/revbayes/revbayes_tutorial/raw/master/tutorial_TeX/RB_Getting_Started/RB_Getting_Started.pdf}{Getting started}
+\item \href{https://github.com/revbayes/revbayes_tutorial/raw/master/tutorial_TeX/RB_Basics_Tutorial/RB_Basics_Tutorial.pdf}{\Rev basics}
 \end{itemize}
 
 \section{Introduction}\label{sect:Introduction}
@@ -85,16 +85,16 @@ In the example (Figure \ref{fig:example-tree}), several of the fossils have samp
 \subsection{Nucleotide Sequence Evolution}\label{subsect:Intro-GTR}
 
 The model component for the molecular data uses a general time-reversible model of nucleotide evolution and gamma-distributed rate heterogeneity across sites.
-This model of sequence evolution is covered thoroughly in the \href{https://github.com/revbayes/revbayes_tutorial/raw/master/tutorial_TeX/RB_CTMC_Tutorial/RB_CTMC_Tutorial.pdf}{RB\_CTMC\_Tutorial}.
+This model of sequence evolution is covered thoroughly in the \href{https://github.com/revbayes/revbayes_tutorial/raw/master/tutorial_TeX/RB_CTMC_Tutorial/RB_CTMC_Tutorial.pdf}{Substitution Models} tutorial.
 
 
 \subsubsection{Lineage-Specific Rates of Sequence Evolution}\label{subsub:Intro-GTR-UExp}
 
 Rates of nucleotide sequence evolution can vary widely among lineages, and so models that account for this variation by relaxing the assumption of a strict molecular clock can allow for more accurate estimates of substitution rates and divergence times \citep{Drummond2006}.
 The simplest type of relaxed clock model assumes that lineage-specific substitution rates are independent or ``uncorrelated''.
-One example of such an uncorrelated relaxed model is the ``Uncorrelated exponential relaxed clock'' (or UExp), in which the substitution rate for each lineage is assumed to be independent and identically distributed according to an exponential density (Fig. \ref{fig:uexp_gm}).
+One example of such an uncorrelated relaxed model is the ``Uncorrelated exponential relaxed clock'', in which the substitution rate for each lineage is assumed to be independent and identically distributed according to an exponential density (Fig. \ref{fig:uexp_gm}).
 This is the model that we will use in this tutorial.
-Another possible uncorrelated relaxed clock model is the uncorrelated lognormal model, described in the \href{https://github.com/revbayes/revbayes_tutorial/raw/master/tutorial_TeX/RB_Dating_Tutorial/RB_Dating_Tutorial.pdf}{RB\_Dating\_Tutorial}.
+Another possible uncorrelated relaxed clock model is the uncorrelated lognormal model, described in the \href{https://github.com/revbayes/revbayes_tutorial/raw/master/tutorial_TeX/RB_Dating_Tutorial/RB_Dating_Tutorial.pdf}{Relaxed Clocks} tutorial.
 \begin{figure}[h!]
 \fbox{%
 \begin{minipage}{\textwidth}\centering
@@ -114,9 +114,9 @@ In this tutorial we will consider only binary morphological characters, \IE char
 So for example, the assumption of the Mk model applied to our binary character would mean that a change from a 0 state to a 1 state is as likely as a change from a 1 state to a 0 state.
 This assumption is equivalent to assuming that the stationary probability of being in a 1 state is equal to $1/2$.
 
-In the tutorial, we will relax this assumption by allowing the stationary 1-state probability to take on any value between 0 and 1, drawn from a beta prior distribution.
+In this tutorial, we will relax this assumption by allowing the stationary 1-state probability to take on any value between 0 and 1, drawn from a beta prior distribution.
 In addition, we will allow each morphological character to have its own substitution matrix with its own stationary frequency (Fig. \ref{fig:morpho_gm}).
-Then, similar to the way we model site-specific substitution rates using a discretized gamma distribution (described in \href{https://github.com/revbayes/revbayes_tutorial/raw/master/tutorial_TeX/RB_CTMC_Tutorial/RB_CTMC_Tutorial.pdf}{RB\_CTMC\_Tutorial}), we will model site-specific stationary frequencies using a discretized beta distribution \citep{Wright2016}.
+Then, similar to the way we model site-specific substitution rates using a discretized gamma distribution (described in \href{https://github.com/revbayes/revbayes_tutorial/raw/master/tutorial_TeX/RB_CTMC_Tutorial/RB_CTMC_Tutorial.pdf}{Substitution Models}), we will model site-specific stationary frequencies using a discretized beta distribution \citep{Wright2016}.
 
 Because of the way morphological data are collected, we need to exercise caution in how we model the data. 
 Traditionally, phylogenetic trees were built from morphological data using parsimony. 
@@ -124,7 +124,7 @@ Therefore, only parsimony informative characters were collected - that is, chara
 This means that many morphological datasets do not contain invariant characters or autapomorphies, as these are not parsimony informative. 
 However, by excluding these low rate of evolution characters, estimates of the branch lengths can be inflated \citep{Felsenstein1992,Lewis2001}.
 Therefore, it is important to use models that can condition on the coding bias. 
-\RevBayes has two ways of doing this: one is used for datasets in which only parsimony informative characters are observed; the other is for datasets in which parsimony informative characters and non-parsimony informative variable characters (such as autapomorphies) are observed.
+\RevBayes has two ways of doing this: one is used for datasets in which only parsimony informative characters are observed; the other is for datasets in which parsimony informative characters and parsimony uninformative variable characters (such as autapomorphies) are observed.
 \begin{figure}[h!]
 \fbox{%
 \begin{minipage}{\textwidth}\centering
@@ -145,7 +145,7 @@ $$f[\mathcal{F}_i \mid a_i, b_i, t_i] = \begin{cases}
 1 & \text{if } a_i < t_i < b_i\\
 0 & \text{otherwise}
 \end{cases}$$
-In other words, we assume the likelihood is equal to one if the inferred age $t_i$ is consistent with the fossil record.
+In other words, we assume the likelihood is equal to one if the inferred age is consistent with the fossil record.
 We can represent this likelihood in \RevBayes using any uniform distribution that is proportional to the likelihood, \IE non-zero when the likelihood is equal to one (Fig. \ref{fig:tipsampling_gm}).
 \begin{figure}[h!]
 \fbox{%
@@ -156,7 +156,7 @@ We can represent this likelihood in \RevBayes using any uniform distribution tha
 \label{fig:tipsampling_gm}
 \end{figure}
 
-\section{Estimating the Phylogeny and Divergence Times of Fossil and Extant Bears}\label{sect:Exercise}
+\section{Exercise: Estimating the Phylogeny and Divergence Times of Fossil and Extant Bears}\label{sect:Exercise}
 
 In this exercise, we will combine different types of data from 22 species of extant and extinct bears to estimate a posterior distribution of calibrated time trees for this group.
 %The analysis in this tutorial includes data from several different sources (see Fig.\ \ref{fig:module-gm}).
@@ -218,7 +218,7 @@ In the \cl{data} folder, you will find the following files
 {\begin{framed}
 On your own computer, create a directory called {\textcolor{red}{\cl{RB\_TotalEvidenceDating\_FBD\_Tutorial}}} (or any name you like). 
 
-In this directory download and unzip the archive containing the data files: \href{www.revbayes.com}{\cl{data.zip}}.
+In this directory download and unzip the archive containing the data files: \href{https://github.com/revbayes/revbayes_tutorial/raw/master/RB_TotalEvidenceDating_FBD_Tutorial/data.zip}{\cl{data.zip}}.
 
 Additionally, create a new directory (in \cl{RB\_TotalEvidenceDating\_FBD\_Tutorial}) called {\textcolor{red}{\cl{scripts}}}
 \end{framed}}
@@ -760,7 +760,7 @@ moves[mvi++] = mvScale(beta_hp, lambda=0.01, weight=1.0 )
 
 Next, we'll create a vector containing four different site stationary state frequencies. 
 This is similar to allowing gamma-distributed rate variation across sites. 
-We will then use these stationary frequencies to generate a set of new Q-matrices which do not enforce the assumptions of the same transition rates at every site and equal forward and backwards transition rates.
+We will then use these stationary frequencies to generate a set of new substitution matrices which do not enforce the assumptions of the same transition rates at every site and equal forward and backwards transition rates.
 
 {\tt \begin{snugshade*}
 \begin{lstlisting}
@@ -1000,7 +1000,7 @@ Samples taken near the beginning of chain are often discarded or ``burned'' beca
 The trace window allows us to evaluate how well our chain is sampling parameter space.
 The output in Figure 4 is a fairly good trace - there is no consistent pattern or trend in the samples, nor are there large square-shaped steps in the trace.
 The presence of a trend or large leaps in a parameter value might indicate that your MCMC is not mixing well.
-You can read more about MCMC tuning and improving mixing in the tutorial \href{https://github.com/revbayes/revbayes_tutorial/raw/master/tutorial_TeX/RB_MCMC_Intro_Tutorial/RB_MCMC_Intro_Tutorial.pdf}{RB\_MCMC\_Intro\_Tutorial} and \href{https://github.com/revbayes/revbayes_tutorial/raw/master/tutorial_TeX/RB_MCMC_Tutorial/RB_MCMC_Tutorial.pdf}{RB\_MCMC\_Tutorial}.
+You can read more about MCMC tuning and improving mixing in the tutorials \href{https://github.com/revbayes/revbayes_tutorial/raw/master/tutorial_TeX/RB_MCMC_Intro_Tutorial/RB_MCMC_Intro_Tutorial.pdf}{Intro to MCMC} and \href{https://github.com/revbayes/revbayes_tutorial/raw/master/tutorial_TeX/RB_MCMC_Tutorial/RB_MCMC_Tutorial.pdf}{MCMC Algorithms}.
 
 Are there any parameters in your log files that show trends or large leaps? What steps might you take to solve these issues?
 
