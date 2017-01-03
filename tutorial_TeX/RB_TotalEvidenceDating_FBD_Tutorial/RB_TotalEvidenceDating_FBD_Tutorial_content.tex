@@ -183,6 +183,21 @@ Therefore, it is important to use models that can condition on the coding bias.
 
 %TODO write about the morphological clock
 
+Just like with the molecular data (section \ref{subsub:Intro-GTR-UExp}), our observations of discrete morphological characters are conditional on the rate of change along each branch in the tree. 
+This model component defines the \textit{branch rate model} of the morphological data in the generalized graphical model shown in Fig.\ \ref{fig:module-gm}.
+The branch-rate model we described for the molecular data in section \ref{subsub:Intro-GTR-UExp} varies the substitution rate across the tree (\IE a relaxed molecular clock). 
+For the morphological data, we will assume that the rate of discrete character change is constant over time and among lineages.
+This model is a ``strict clock'' like the constant-rate molecular clock described by \citet{Zuckerkandl1962}.
+The strict clock is the simplest model we can construct for the morphological branch-rate model and the graphical model is shown in Fig.\ \ref{fig:morph_clock_gm}.
+
+\begin{figure}[h!]
+\fbox{%
+\begin{minipage}{\textwidth}\centering
+\includegraphics[scale=0.3,angle=0]{\ResourcePath figures/tikz/morph_clock_gm}
+\caption{\small The graphical-model representation of the branch-rate model governing the evolution of morphological characters. This model is consistent with a strict morphological clock, where every branch has the same rate of change ($c$) and that rate is drawn from an exponential distribution with a rate parameter of $\delta_c$.}
+\end{minipage}}
+\label{fig:morph_clock_gm}
+\end{figure}
 
 \section{Exercise: Estimating the Phylogeny and Divergence Times of Fossil and Extant Bears}\label{sect:Exercise}
 
@@ -984,10 +999,10 @@ We can also summarize the marginal distributions for particular parameters we're
 \href{http://tree.bio.ed.ac.uk/software/tracer/}{Tracer} \citep{Rambaut2011} is a tool for visualizing parameters sampled by MCMC.
 This program is limited to numerical parameters, however, and cannot be used to summarize or analyze MCMC samples of the tree topology (this will be discussed further in section \ref{subsub:Exercise-SummarizeTree}).
 
-Import the MCMC log file into Tracer.
+%Import the MCMC log file into Tracer.
 \begin{framed}
 Open Tracer and import the \cl{bears.log} file in the \mi{File\textrightarrow Import New Trace File}.
-Or click the plus sign on the left-hand side of the screen to add your log file (see Fig. \ref{fig:tracer}).
+Or click the \fbox{$+$} button on the left-hand side of the screen to add your log file (see Fig.\ \ref{fig:tracer}).
 \end{framed}
 
 
@@ -1001,7 +1016,7 @@ Or click the plus sign on the left-hand side of the screen to add your log file 
 \end{figure}
 Immediately upon loading your file, 
 %you will see the \mi{Estimates} window, which shows a histogram and summary statistics of the values sampled by the Markov chain.
-you will see the list of \mi{Trace Files} on the left-hand side.
+you will see the list of \mi{Trace Files} on the left-hand side (you can load multiple files).
 The bottom left section, called \mi{Traces}, provides a list of every parameter in the log file, along with the mean and the Effective Sample Size (ESS) for the posterior sample of that parameter.
 The ESS statistic provides a measure of the number of independent draws in our sample for a given parameter.
 This quantity will typically be much smaller than the number of generations of the chain.
@@ -1021,7 +1036,10 @@ Figure \ref{fig:tracer} shows the marginal distribution of the \mi{Likelihood} s
 \end{minipage}}
 \label{fig:tracer}
 \end{figure}
+
+\begin{framed}
 Are there any parameters that have really low ESS? Why do you think that might be?
+\end{framed}
 
 Next, we can click over to the Trace window.
 This window shows us the samples for a given parameter at each iteration of the MCMC.
@@ -1041,7 +1059,9 @@ The output in Figure 4 is a fairly good trace - there is no consistent pattern o
 The presence of a trend or large leaps in a parameter value might indicate that your MCMC is not mixing well.
 You can read more about MCMC tuning and improving mixing in the tutorials \href{https://github.com/revbayes/revbayes_tutorial/raw/master/tutorial_TeX/RB_MCMC_Intro_Tutorial/RB_MCMC_Intro_Tutorial.pdf}{Intro to MCMC} and \href{https://github.com/revbayes/revbayes_tutorial/raw/master/tutorial_TeX/RB_MCMC_Tutorial/RB_MCMC_Tutorial.pdf}{MCMC Algorithms}.
 
+\begin{framed}
 Are there any parameters in your log files that show trends or large leaps? What steps might you take to solve these issues?
+\end{framed}
 
 \medskip
 \subsubsection{Summarize Tree}\label{subsub:Exercise-SummarizeTree}
@@ -1050,7 +1070,7 @@ Are there any parameters in your log files that show trends or large leaps? What
 
 In addition to evaluating the performance and sampling of an MCMC run using numerical parameters, it is also important to inspect the sampled topology and tree parameters. 
 This is a difficult endeavor, however. 
-One tool for evaluating convergence and mixing of the trees samples is \href{https://github.com/danlwarren/RWTY}{RWTY} \citep{Warren2016}. 
+One tool for evaluating convergence and mixing of the tree samples is \href{https://github.com/danlwarren/RWTY}{RWTY} \citep{Warren2016}. 
 In this tutorial, we will only summarize the sampled trees, but we encourage you to consider approaches for assessing the performance of the MCMC with respect to the tree topology.
 
 Ultimately, we are interested in summarizing the sampled trees and branch times, given that our MCMC has sampled all of the important parameters in proportion to their posterior probabilities. 
@@ -1129,14 +1149,16 @@ Additionally, it correctly represents sampled ancestors on the tree as a node wi
 
 {\begin{framed}
 Navigate to \url{http://tgvaughan.github.io/icytree} and open the file \cl{output/bears.mcc.tre} in IcyTree.
-\end{framed}}
 
-
-Try to replicate Fig. \ref{fig:IcyTreeSumm}. Hint: Look under style, at ``Mark Singletons''.
+Try to replicate Fig.\ \ref{fig:IcyTreeSumm}. Hint: Look under style, at ``Mark Singletons''.
 Why might a node with a sampled ancestor be referred to as a singleton?
+
 Try clicking on a branch.
 What are the fields telling you?
 Are the ages of the fossil tips the same as what was shown in Tracer? 
+\end{framed}}
+
+
 
 %TODO more here, create final tree image
 
