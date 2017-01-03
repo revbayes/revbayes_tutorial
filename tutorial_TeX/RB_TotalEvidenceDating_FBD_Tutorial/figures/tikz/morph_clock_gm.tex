@@ -1,0 +1,11 @@
+\definecolor{shc}{RGB}{238,224,229}
+\begin{tikzpicture}
+\node[snode] (x) at (1,1) {\LARGE $c$};
+\node[constnode] (mu) at ($(x)+(-2,0)$) {\Large $\delta_{c}$};
+\draw [taro] (mu) -- (x) ;
+\node (ddd) at ($(x)+(0,-2)$) {\scriptsize to the phyloCTMC};
+\draw[dtaro] (x) -- (ddd) ;
+\node (ex) at ($(x)+(0,0.7)$) [centered]{\scriptsize exponential};
+\node[white, fill=brnt, shape=rectangle, rounded corners] at ($(x)+(0.75,0)$) [right]{clock rate};
+\end{tikzpicture}
+
