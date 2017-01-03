@@ -83,13 +83,13 @@ moves[mvi++] = mvScale(distance_scale, weight=3)
 for (i in 1:n_epochs) {
     for (j in 1:n_areas) {
         for (k in 1:n_areas) {
-            #dist_cost[i][j][k] := -distance_scale * distances[j][k]
-            #dr[i][j][k]  := dispersal_rate * connectivity[i][j][k] * exp(dist_cost[i][j][k])
-            dr[i][j][k]  := dispersal_rate * connectivity[i][j][k] * exp(-distance_scale * distances[j][k])
+            dr[i][j][k] <- abs(0)
+            if (connectivity[i][j][k] > 0) {
+                dr[i][j][k] := dispersal_rate * exp(-distance_scale * distances[j][k])
+            }
         }
     }
 }
-
 
 # then extirpation rates (or per-area extinction rates)
 #log10_extirpation_rate ~ dnUniform(-4,2)

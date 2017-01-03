@@ -104,7 +104,8 @@ Note, there is one connectivity matrix per epoch, ordered from oldest to younges
 \begin{snugshade}
 \begin{lstlisting}
 for (i in 1:n_epochs) {
-  connectivity[i] <- readDataDelimitedFile(file=geo_fn+".connectivity."+i+".txt", delimiter=" ")
+  epoch_fn[i] = geo_fn + ".connectivity." + i + ".txt"
+  connectivity[i] <- readDataDelimitedFile(file=epoch_fn[i], delimiter=" ")
 }
 \end{lstlisting}
 \end{snugshade}
@@ -336,6 +337,8 @@ mymcmc.run(n_gen)
 \end{snugshade}
 
 \subsection*{Results}
+
+{\it Example results have around found in {\tt output\_example/epoch.*} }
 
 When compared to the ancestral state estimates from the ``simple'' analysis (Figure \ref{fig:simple_RevGadgets_ase}), these results are more consonant with what we know about the origination times of the islands and lineages (Figure XX).
 First, this reconstruction asserts that the clade originated in the modern Hawaiian islands at a time when only Kauai was above sea level, hence high confidence in the root state of K.

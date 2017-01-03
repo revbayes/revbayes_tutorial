@@ -3,7 +3,7 @@
 # filenames
 range_fn = "data/n6/silversword.n6.range.nex"
 mol_fn   = "data/n6/silversword.mol.nex"
-phy_fn   = "data/n6/silversword.tre"
+tree_fn   = "data/n6/silversword.tre"
 out_fn   = "output/epoch_phy"
 geo_fn   = "data/n6/hawaii.n6"
 times_fn = geo_fn + ".times.txt"
@@ -41,7 +41,7 @@ n_epochs <- time_bounds.size()
 
 # epoch connectivity
 for (i in 1:n_epochs) {
-    epoch_fn = geo_fn + "." + i + ".txt"
+    epoch_fn = geo_fn + ".connectivity." + i + ".txt"
     connectivity[i] <- readDataDelimitedFile(file=epoch_fn, delimiter=" ")
 }
 
@@ -49,10 +49,10 @@ for (i in 1:n_epochs) {
 distances <- readDataDelimitedFile(file=dist_fn, delimiter=" ")
 
 # tree
-phy_init = readTrees(phy_fn)[1]
+tree_init = readTrees(tree_fn)[1]
 
 # taxa
-taxa = dat_mol.taxa()
+taxa = tree_init.taxa()
 n_taxa = taxa.size()
 n_branches = 2 * n_taxa - 2
 
@@ -77,11 +77,11 @@ death ~ dnExp(1)
 moves[mvi++] = mvScale(death)
 
 # birth-death process
-phy ~ dnBDP(lambda=birth, mu=death, rho=rho, rootAge=root_age, taxa=taxa)
+tree ~ dnBDP(lambda=birth, mu=death, rho=rho, rootAge=root_age, taxa=taxa)
 
 # provide a starting tree (not essential)
-phy.setValue(phy_init)
-root_age.setValue(phy_init.rootAge())
+tree.setValue(tree_init)
+root_age.setValue(tree_init.rootAge())
 
 # tree moves
 moves[mvi++] = mvNNI(phy, weight=n_branches/2)
@@ -168,13 +168,13 @@ moves[mvi++] = mvScale(distance_scale, weight=3)
 for (i in 1:n_epochs) {
     for (j in 1:n_areas) {
         for (k in 1:n_areas) {
-            #dist_cost[i][j][k] := -distance_scale * distances[j][k]
-            #dr[i][j][k]  := dispersal_rate * connectivity[i][j][k] * exp(dist_cost[i][j][k])
-            dr[i][j][k]  := dispersal_rate * connectivity[i][j][k] * exp(-distance_scale * distances[j][k])
+            dr[i][j][k] <- abs(0)
+            if (connectivity[i][j][k] > 0) {
+                dr[i][j][k] := dispersal_rate * exp(-distance_scale * distances[j][k])
+            }
         }
     }
 }
-
 
 # then extirpation rates (or per-area extinction rates)
 #log10_extirpation_rate ~ dnUniform(-6,3)
@@ -240,7 +240,7 @@ rf_DEC    <- rep(0, n_states)
 rf_DEC[n_areas+1] <- 1  # Mainland (Z) is the only possible starting state
 rf_DEC    <- simplex(rf_DEC)
 
-m_bg ~ dnPhyloCTMCClado(tree=phy,
+m_bg ~ dnPhyloCTMCClado(tree=tree,
                            Q=Q_DEC_epoch,
                            cladoProbs=P_DEC,
                            branchRates=rate_bg,
@@ -262,7 +262,7 @@ ingroup_clade <- clade("Wilkesia_hobdyi",
                        "Dubautia_microcephala",
                        "Argyroxiphium_caliginis")
 
-ingroup_age := tmrca(phy, ingroup_clade)
+ingroup_age := tmrca(tree, ingroup_clade)
 for (i in 1:n_epochs) {
     ingroup_older_island[i] := ifelse(ingroup_age > epoch_times[i], 1, 0)
 }
