@@ -6,7 +6,7 @@ We begin by outlining the models used in this analysis in section \ref{sect:Intr
 
 \subsection{Requirements}\label{subsect:Overview-Requirements}
 
-\subsubsection{Required Software}
+\subsubsection{Required Software}\label{subsub:Req-Software}
 This tutorial requires that you download and install the latest release of \RevBayes \citep{Hoehna2017a}. 
 Directions for downloading and installing the software are available on the program webpage:
 \begin{center}
@@ -16,7 +16,8 @@ Directions for downloading and installing the software are available on the prog
 The exercise provided also requires additional programs for editing text files and visualizing output. 
 Please download the following programs:
 \begin{itemize}[noitemsep,topsep=0pt]
-\item A text editor -- we suggest \href{https://www.sublimetext.com/}{Sublime Text}
+\item A good text editor -- if you do not already have one that you like, we recommend one that has features for syntax coloring, easy navigation between different files, line numbers, etc.
+A good option is \href{http://www.sublimetext.com/}{Sublime Text}, which is available for Mac OSX, Windows, and Linux.
 \item \href{http://tree.bio.ed.ac.uk/software/tracer/}{Tracer} -- for visualizing and assessing numerical parameter samples from \RevBayes
 \item Firefox or Google Chrome -- these are the supported web browsers for the phylogenetic tree visualization program, \href{http://tgvaughan.github.io/icytree/}{IcyTree}
 \end{itemize}
@@ -298,8 +299,7 @@ When you execute \RevBayes in this exercise, you will do so within the main dire
 
 For complex models and analyses, it is best to create \Rev script files that will contain all of the model parameters, moves, and functions. 
 In this exercise, you will work primarily in your text editor and create a set of modular files that will be easily managed and interchanged.
-You will write the following files from scratch in a text editor\footnote{If you do not already have a good text editor that you like, we recommend one that has features for syntax coloring, easy navigation between different files, line numbers, etc.
-A good option is \href{http://www.sublimetext.com/}{Sublime Text}, which is available for Mac OSX, Windows, and Linux.} and save them in the \cl{scripts} directory:
+You will write the following files from scratch in a text editor\footnote{In section \ref{subsub:Req-Software} we offer a recommendation for a text editor.} and save them in the \cl{scripts} directory:
 \begin{itemize}[noitemsep,topsep=0pt]
 \item \cl{mcmc\_TEFBD.Rev}: the master \Rev file that loads the data, the separate model files, and specifies the monitors and MCMC sampler.
 \item \cl{model\_FBDP\_TEFBD.Rev}: specifies the model parameters and moves required for the fossilized birth-death prior on the tree topology, divergence times, fossil occurrence times, and diversification dynamics.
