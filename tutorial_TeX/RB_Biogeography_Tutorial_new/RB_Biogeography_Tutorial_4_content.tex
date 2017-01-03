@@ -2,14 +2,14 @@
 %%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%
 
-\section{Biogeographic dating using DEC}
+\section{Biogeographic dating using DEC} \label{sec:bg_phylo}
 
 This analysis will jointly estimate phylogeny and biogeography.
-One benefit is that the biogeographic analysis will intrinsically accommodate phylogenetic uncertainty.
-Another is that paleogeographic evidence may provide information about the geological timing of speciation events in the phylogeny.
+One benefit is that the biogeographic analysis will intrinsically accommodate phylogenetic uncertainty, both in terms of topology and branch lengths.
+Another is that paleogeographic evidence has the potential provide information about the geological timing of speciation events in the phylogeny \citep{landis16}.
 Finally, biogeographic data may lend support to certain phylogenetic relationships that have poor resolution otherwise.
 
-Hawaiian silverswords are nested in a larger group of plants, the tarweeds.
+As mentioned in Section \ref{sec:bg_simple}, Hawaiian silverswords are nested in a larger group of plants, the tarweeds.
 Fossil pollen evidence indicates that tarweeds diversified during a period of aridification from 15--5 Ma in the western regions of North America (cite Baldwin papers).
 Although the oldest Hawaiian island that silverswords inhabit is Kauai, it is possible that silverswords first colonized older islands in the Emperor Island chain that predate the formation of Kauai at about 5.1 Ma.
 
@@ -20,16 +20,25 @@ Did silverswords colonize Kauai once directly from the California coast? Or did 
 \centering
 \includegraphics[width=\textwidth]{figures/fig_biogeo_dating.png}
 \caption{Cartoon of biogeographic transition probabilities as functions of geological time, and how that relates to speciation times. (a) Areas split, dispersal before split, positive probability; (b) Areas split, dispersal after split, zero probability; (c) Areas merge, dispersal after merge, positive probability; (d) Areas merge, dispersal before merge, zero probabilty. [ Improve description later. ]}
+\label{fig:biogeo_dating_cartoon}
 \end{figure}
 
-We will move from our simpler 4-area model to a 6-area model, where we now include the remaining Hawaiian islands (R) and the North American mainland (Z).
+To address these issues, it is necessary that we transition from our simpler 4-area model to a richer 6-area model (see Figure \ref{fig:hawaii_areas}).
+The mainland area (Z) is necessary to force the silversword and tarweed clade to originate apart from the islands.
+The area corresponding to the older island chain (R) is necessary because we do not know {\it a priori} whether silverswords colonized the modern islands directly from Z, or first colonized R and only later dispersed into the younger islands any number of times.
+This permits the silversword origin time to precede the formation of Kauai when the dispersal rate is large.
+
 Additionally, we will add three tarweed taxa to our dataset, increasing the total number of taxa to 38.
 We'll use internal transcribed spacer (ITS) to estimate the phylogeny, which is a 600 bp non-coding locus that is historically important for plant systematics.
 Because the locus is relatively short, it will also leave us with a fair amount of phylogenetic uncertainty in branch length and topology estimates.
 However, because we're estimating phylogeny and biogeography, it will be correctly incorporated into our ancestral range estimates.
 
+Note: like all dating methods, including node calibration methods, tip dating methods, and fossilized birth death dating methods, process-based biogeographic dating estimates are prior sensitive and dataset dependent.
+Applying this model to alternative data sets should be done with care!
 
-Much of this tutorial will be similar to the previous section, except we are adding a birth-death process and a molecular substitution process to the model graph.
+Much of this tutorial will be similar to the previous sections, except we are adding a birth-death process and a molecular substitution process to the model graph.
+
+\subsection*{Analysis}
 
 Create the necessary input/output variables.
 
@@ -54,8 +63,6 @@ mni = 1
 n_gen = 1e5    # more parameters, longer run!
 \end{lstlisting}
 \end{snugshade}
-
-% max range size
 
 Impose limits to the maximum range size, both to prohibit widespread species ranges and to improve the computational efficiency of the method.
 
@@ -445,6 +452,7 @@ ch.run(10000)
 \end{lstlisting}
 \end{snugshade}
 
+\subsection*{Results}
 
 Finally, let's look at the trees and posterior distribution.
 
@@ -452,6 +460,21 @@ Finally, let's look at the trees and posterior distribution.
 \centering
 \includegraphics[width=0.7\textwidth]{figures/fig_biogeo_dating_ingroup_age.png}
 \caption{Using the paleogeographic model largely prefers that silverswords originated after the formation of Kauai. Without paleogeography, silverswords originated as long as 15 Ma ago.}
+\end{figure}
+
+
+\begin{figure}[!ht]
+\centering
+\includegraphics[width=0.5\textwidth]{figures/fig_simple_ages.pdf}
+\caption{XX}
+\label{fig:fig_simple_ages}
+\end{figure}
+
+\begin{figure}[!ht]
+\centering
+\includegraphics[width=0.5\textwidth]{figures/fig_epoch_ages.pdf}
+\caption{XX}
+\label{fig:fig_epoch_ages}
 \end{figure}
 
 

@@ -43,23 +43,10 @@ n_epochs <- time_bounds.size()
 for (i in 1:n_epochs) {
     epoch_fn = geo_fn + "." + i + ".txt"
     connectivity[i] <- readDataDelimitedFile(file=epoch_fn, delimiter=" ")
-    #adj[i] <- readDataDelimitedFile(file=epoch_fn, delimiter=" ")
-    #for (j in 1:n_areas) {
-    #    for (k in 1:n_areas) {
-    #        connectivity[i][j][k] <- adj[i][j][k]
-    #    }
-    #}
 }
 
 # area distances
 distances <- readDataDelimitedFile(file=dist_fn, delimiter=" ")
-#distances_raw <- readDataDelimitedFile(file=dist_fn, delimiter=" ")
-#for (i in 1:n_areas) {
-#for (j in 1:n_areas) {
-#distances[i][j] <- distances_raw[i][j]
-#}
-#}
-
 
 # tree
 phy_init = readTrees(phy_fn)[1]
@@ -128,7 +115,7 @@ kappa ~ dnGamma(2,2)
 moves[mvi++] = mvScale(kappa)
 
 bf ~ dnDirichlet( [1,1,1,1] )
-moves[mvi++] = mvSimplexElementScale(bf, alpha=10, weight=2)
+moves[mvi++] = mvSimplex(bf, alpha=10, weight=2, offset=1)
 
 Q_mol := fnHKY(kappa, bf)
 
@@ -152,37 +139,60 @@ seq_mol.clamp(dat_mol)
 # Biogeography models #
 #######################
 
+rate_bg <- 1
+
+#log10_dispersal_rate ~ dnUniform(-4,2)
+#log10_dispersal_rate.setValue(-2)
+#dispersal_rate := 10^log10_dispersal_rate
+#moves[mvi++] = mvSlide(log10_dispersal_rate, weight=4)
+
 # first, the distance function
+#dispersal_rate ~ dnGamma(2,2)
+#dispersal_rate <- abs(1)
+#dispersal_rate.setValue(1)
+#moves[mvi++] = mvScale(dispersal_rate)
 
-dispersal_rate ~ dnExp(0.01)
-dispersal_rate.setValue(1)
-moves[mvi++] = mvScale(dispersal_rate)
+log10_rate_bg ~ dnUniform(-4,2)
+log10_rate_bg.setValue(-2)
+rate_bg := 10^log10_rate_bg
+moves[mvi++] = mvSlide(log10_rate_bg, weight=4)
 
-distance_scale ~ dnExp(1)
+dispersal_rate <- abs(1)
+
+
+distance_scale ~ dnUnif(0,20)
 distance_scale.setValue(0.001)
-moves[mvi++] = mvScale(distance_scale)
+moves[mvi++] = mvScale(distance_scale, weight=3)
 
 # then, the dispersal rate matrix
 for (i in 1:n_epochs) {
     for (j in 1:n_areas) {
         for (k in 1:n_areas) {
-            dist_cost[i][j][k] := -distance_scale * distances[j][k]
-            dr[i][j][k]  := dispersal_rate * connectivity[i][j][k] * exp(dist_cost[i][j][k])
+            #dist_cost[i][j][k] := -distance_scale * distances[j][k]
+            #dr[i][j][k]  := dispersal_rate * connectivity[i][j][k] * exp(dist_cost[i][j][k])
+            dr[i][j][k]  := dispersal_rate * connectivity[i][j][k] * exp(-distance_scale * distances[j][k])
         }
     }
 }
 
 
 # then extirpation rates (or per-area extinction rates)
-extirpation_rate ~ dnExp(1)
-moves[mvi++] = mvScale(extirpation_rate)
+#log10_extirpation_rate ~ dnUniform(-6,3)
+#log10_extirpation_rate.setValue(-2)
+#moves[mvi++] = mvSlide(log10_extirpation_rate, weight=4)
+#extirpation_rate := 10^log10_extirpation_rate
+log_sd <- 0.5
+log_mean <- ln(1) - 0.5*log_sd^2
+extirpation_rate ~ dnLognormal(mean=log_mean, sd=log_sd)
+moves[mvi++] = mvScale(extirpation_rate, weight=2)
+
 
 for (i in 1:n_epochs) {
     for (j in 1:n_areas) {
         for (k in 1:n_areas) {
             er[i][j][k] <- abs(0.0) 
-            if (j == k) { er[i][k][k] := extirpation_rate }
         }
+        er[i][j][j] := extirpation_rate
     }
 }
 
@@ -210,13 +220,15 @@ for (i in 1:n_epochs) {
 Q_DEC_epoch := fnEpoch(Q=Q_DEC, times=epoch_times, rates=rep(1, n_epochs))
 
 # biogeographic clock rate is 1
-rate_bg <- 1
+#rate_bg <- 1
     
 # build clado probs
 clado_event_types <- [ "s", "a" ]
-clado_type_probs ~ dnDirichlet( [1, 1] )
-moves[mvi++] = mvSimplexElementScale(clado_type_probs, alpha=10)
-P_DEC := fnDECCladoProbs(eventProbs=clado_type_probs,
+p_sympatry ~ dnUniform(0,1)
+p_allopatry := abs(1.0 - p_sympatry)
+moves[mvi++] = mvSlide(p_sympatry, delta=0.1, weight=2)
+clado_event_probs := simplex(p_sympatry, p_allopatry)
+P_DEC := fnDECCladoProbs(eventProbs=clado_event_probs,
                          eventTypes=clado_event_types,
                          numCharacters=n_areas,
                          maxRangeSize=max_areas)
@@ -225,10 +237,10 @@ P_DEC := fnDECCladoProbs(eventProbs=clado_type_probs,
 
 # root frequencies
 rf_DEC    <- rep(0, n_states)
-rf_DEC[n_areas+1] <- 1  # Kauai is the only possible starting state
+rf_DEC[n_areas+1] <- 1  # Mainland (Z) is the only possible starting state
 rf_DEC    <- simplex(rf_DEC)
 
-ctmc_bg ~ dnPhyloCTMCClado(tree=phy,
+m_bg ~ dnPhyloCTMCClado(tree=phy,
                            Q=Q_DEC_epoch,
                            cladoProbs=P_DEC,
                            branchRates=rate_bg,
@@ -236,7 +248,7 @@ ctmc_bg ~ dnPhyloCTMCClado(tree=phy,
                            type="NaturalNumbers",
                            nSites=1)
     
-ctmc_bg.clamp(dat_range_n)
+m_bg.clamp(dat_range_n)
 
 
 
@@ -252,15 +264,16 @@ ingroup_clade <- clade("Wilkesia_hobdyi",
 
 ingroup_age := tmrca(phy, ingroup_clade)
 for (i in 1:n_epochs) {
-    ingroup_island_diff[i] := ingroup_age - epoch_times[i]
+    ingroup_older_island[i] := ifelse(ingroup_age > epoch_times[i], 1, 0)
 }
 
 
-monitors[mni++] = mnScreen(printgen=100, dispersal_rate, extirpation_rate, distance_scale, ingroup_age)
+
+monitors[mni++] = mnScreen(printgen=100, dispersal_rate, distance_scale, ingroup_age)
 monitors[mni++] = mnModel(file=out_fn+".model.log", printgen=100)
 monitors[mni++] = mnFile(phy, filename=out_fn+".tre", printgen=100)
 monitors[mni++] = mnJointConditionalAncestralState(tree=phy,
-                                                       ctmc=ctmc_bg,
+                                                       ctmc=m_bg,
                                                        type="NaturalNumbers",
                                                        withTips=true,
                                                        withStartStates=true,
@@ -271,7 +284,7 @@ monitors[mni++] = mnJointConditionalAncestralState(tree=phy,
 # Analysis #
 ############
 
-mdl = model(ctmc_bg, ingroup_island_diff)
+mdl = model(m_bg, ingroup_older_island)
 ch = mcmc(mdl, monitors, moves)
 
 ch.run(n_gen)

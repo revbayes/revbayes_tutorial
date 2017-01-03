@@ -1,0 +1,311 @@
+#!/usr/bin/rb
+
+# filenames
+clade_names = [ "silversword", "psychotria" ]
+n_clades = clade_names.size()
+
+for (i in 1:n_clades) {
+    range_fn[i] = "data/n6/" + clade_names[i] + ".n6.range.nex"
+    mol_fn[i]   = "data/n6/" + clade_names[i] + ".mol.nex"
+    phy_fn[i]   = "data/n6/" + clade_names[i] + ".tre"
+}
+out_fn   = "output/multi_phy"
+geo_fn   = "data/n6/hawaii.n6"
+times_fn = geo_fn + ".times.txt"
+dist_fn  = geo_fn + ".distances.txt"
+
+# move/monitor index
+mvi = 1
+mni = 1
+n_gen = 1e6
+
+
+###############
+# shared data #
+##############
+
+
+# epoch times
+time_bounds <- readDataDelimitedFile(file=times_fn, delimiter=" ")
+n_epochs <- time_bounds.size()
+
+# epoch connectivity
+for (i in 1:n_epochs) {
+    epoch_fn = geo_fn + "." + i + ".txt"
+    connectivity[i] <- readDataDelimitedFile(file=epoch_fn, delimiter=" ")
+}
+
+# area distances
+distances <- readDataDelimitedFile(file=dist_fn, delimiter=" ")
+
+
+# build the times
+for (i in 1:n_epochs) {
+    time_max[i] <- time_bounds[i][1]
+    time_min[i] <- time_bounds[i][2]
+
+    if (i == n_epochs) {
+        epoch_times[i] <- abs(0)
+    } else {
+        epoch_times[i] ~ dnUniform(time_min[i], time_max[i])
+        moves[mvi++] = mvSlide(epoch_times[i], delta=(time_bounds[i][1]-time_bounds[i][2])/2)
+    }
+}
+
+##############
+# clade data #
+##############
+
+for (i in 1:n_clades) {
+
+    # read molecular data
+    dat_mol[i] = readDiscreteCharacterData(mol_fn[i])
+
+    # read binary (01) presence-absence range data
+    dat_range_01[i] = readDiscreteCharacterData(range_fn[i])
+    n_areas[i] <- dat_range_01[i].nchar()
+
+    # determine the number of states
+    max_areas[i] <- 2
+    n_states[i] <- 0
+    for (k in 0:max_areas[i]) n_states[i] += choose(n_areas[i], k)
+
+    # convert binary ranges into NaturalNumbers
+    dat_range_n[i] = formatDiscreteCharacterData(dat_range_01[i], "DEC", n_states[i])
+
+    # tree
+    phy_init[i] = readTrees(phy_fn[i])[1]
+
+    # taxa
+    taxa[i] = dat_mol[i].taxa()
+    n_taxa[i] = taxa[i].size()
+    n_branches[i] = 2 * n_taxa[i] - 2
+}
+
+###############
+# Tree models #
+###############
+#
+for (i in 1:n_clades) {
+
+    # root age
+    root_age[i] ~ dnUniform(0, 15)
+    moves[mvi++] = mvScale(root_age[i], weight=2)
+
+    # proportion of sampled tips
+    rho[i] <- 35 / 50
+
+    # birth rate
+    birth[i] ~ dnExp(1)
+    moves[mvi++] = mvScale(birth[i])
+
+    # death rate
+    death[i] ~ dnExp(1)
+    moves[mvi++] = mvScale(death[i])
+
+    # birth-death process
+    phy[i] ~ dnBDP(lambda=birth[i], mu=death[i], rho=rho[i], rootAge=root_age[i], taxa=taxa[i])
+
+    # provide a starting tree (not essential)
+    phy[i].setValue(phy_init[i])
+    root_age[i].setValue(phy_init[i].rootAge())
+
+    # tree moves
+    moves[mvi++] = mvNNI(phy[i], weight=n_branches[i]/2)
+    moves[mvi++] = mvFNPR(phy[i], weight=n_branches[i]/8)
+    moves[mvi++] = mvNodeTimeSlideUniform(phy[i], weight=n_branches[i]/2)
+
+}
+
+###################
+# Molecular model #
+###################
+
+for (i in 1:n_clades) {
+
+    # molecular clock
+    log10_rate_mol[i] ~ dnUniform(-6,3)
+    log10_rate_mol[i].setValue(-1)
+    moves[mvi++] = mvSlide(log10_rate_mol[i], weight=5, delta=0.2)
+    rate_mol[i] := 10^log10_rate_mol[i]
+
+    # relaxed clock
+    branch_sd[i] <- 1.0
+    branch_mean[i] <- 0 - 0.5*branch_sd[i]^2
+    for (j in 1:n_branches[i]) {
+        branch_rate_multiplier[i][j] ~ dnLognormal(mean=branch_mean[i], sd=branch_sd[i])
+        moves[mvi++] = mvScale(branch_rate_multiplier[i][j])
+        branch_rates[i][j] := rate_mol[i] * branch_rate_multiplier[i][j]
+    }
+
+    # HKY substitution process
+    kappa[i] ~ dnGamma(2,2)
+    moves[mvi++] = mvScale(kappa[i])
+
+    bf[i] ~ dnDirichlet( [1,1,1,1] )
+    moves[mvi++] = mvSimplex(bf[i], alpha=10, weight=2, offset=1)
+
+    Q_mol[i] := fnHKY(kappa[i], bf[i])
+
+    # +Gamma-4 among site rate variation
+    alpha[i] ~ dnUniform(0,50)
+    moves[mvi++] = mvScale(alpha[i])
+    site_rates[i] := fnDiscretizeGamma(alpha[i], alpha[i], numCats=4)
+
+    # substitution process over phylogeny
+    seq_mol[i] ~ dnPhyloCTMC(Q=Q_mol[i],
+                          tree=phy[i],
+                          branchRates=branch_rates[i],
+                          siteRates=site_rates[i],
+                          type="DNA",
+                          nSites=dat_mol[i].nchar())
+
+    # observe multiple sequence alignemnt
+    seq_mol[i].clamp(dat_mol[i])
+}
+
+#######################
+# Biogeography models #
+#######################
+
+# first, the distance function
+
+dispersal_rate ~ dnExp(1)
+dispersal_rate.setValue(1)
+moves[mvi++] = mvScale(dispersal_rate)
+
+distance_scale ~ dnExp(1)
+distance_scale.setValue(0.001)
+moves[mvi++] = mvScale(distance_scale)
+
+# then, the dispersal rate matrix
+for (i in 1:n_epochs) {
+    for (j in 1:n_areas[1]) {
+        for (k in 1:n_areas[1]) {
+            dist_cost[i][j][k] := -distance_scale * distances[j][k]
+            dr[i][j][k]  := dispersal_rate * connectivity[i][j][k] * exp(dist_cost[i][j][k])
+        }
+    }
+}
+
+# then extirpation rates (or per-area extinction rates)
+extirpation_rate ~ dnExp(1)
+moves[mvi++] = mvScale(extirpation_rate)
+
+for (i in 1:n_epochs) {
+    for (j in 1:n_areas[1]) {
+        for (k in 1:n_areas[1]) {
+            er[i][j][k] <- abs(0.0) 
+        }
+        er[i][k][k] := extirpation_rate
+    }
+}
+
+
+# build DEC rate matrices
+for (i in 1:n_epochs) {
+    Q_DEC[i] := fnDECRateMatrix(dispersalRates=dr[i],
+                                extirpationRates=er[i],
+                                maxRangeSize=max_areas[1])
+}
+
+
+# combine the epoch rate matrices and times
+Q_DEC_epoch := fnEpoch(Q=Q_DEC, times=epoch_times, rates=rep(1, n_epochs))
+
+    
+# build clado probs
+clado_event_types <- [ "s", "a" ]
+#clado_type_probs[m] ~ dnDirichlet( [1, 1] )
+#moves[mvi++] = mvSimplex(clado_type_probs[m], alpha=10, offset=1)
+p_sympatry ~ dnUniform(0,1)
+p_allopatry := abs(1.0 - p_sympatry)
+clado_event_probs := simplex(p_sympatry, p_allopatry)
+moves[mvi++] = mvSlide(p_sympatry, delta=0.1, weight=2)
+P_DEC := fnDECCladoProbs(eventProbs=clado_event_probs,
+                         eventTypes=clado_event_types,
+                         numCharacters=n_areas[1],
+                         maxRangeSize=max_areas[1])
+
+
+
+# root frequencies
+rf_DEC            <- rep(0, n_states[1])
+rf_DEC[n_areas[1]+1] <- 1  # Mainland (Z,7) is the only possible starting state
+rf_DEC            <- simplex(rf_DEC)
+
+for (m in 1:n_clades) {
+    # biogeographic clock rate is 1
+    if (m==1) {
+        rate_bg[m] <- abs(1)
+    } else {
+        rate_bg[m] ~ dnGamma(2,2)
+        moves[mvi++] = mvScale(rate_bg[m], weight=2)
+    }
+
+    ctmc_bg[m] ~ dnPhyloCTMCClado(tree=phy[m],
+                               Q=Q_DEC_epoch,
+                               cladoProbs=P_DEC,
+                               branchRates=rate_bg[m],
+                               rootFrequencies=rf_DEC,
+                               type="NaturalNumbers",
+                               nSites=1)
+        
+    ctmc_bg[m].clamp(dat_range_n[m])
+}
+
+
+
+############
+# Monitors #
+############
+
+# monitor the age of the silversword ingroup
+if (!false) {
+    ingroup_clade[1] <- clade("Wilkesia_hobdyi",
+                              "Dubautia_reticulata",
+                              "Dubautia_microcephala",
+                              "Argyroxiphium_caliginis")
+
+    ingroup_clade[2] <- clade("P_hexandra_M",
+                              "P_mariniana_Oahu",
+                              "P_greenwelliae07",
+                              "P_mauiensis_Eke")
+
+    for (m in 1:n_clades) {
+        ingroup_age[m] := tmrca(phy[m], ingroup_clade[m])
+        for (i in 1:n_epochs) {
+            ingroup_island_diff[m][i] := ingroup_age[m] - epoch_times[i]
+        }
+    }
+
+}
+
+
+monitors[mni++] = mnScreen(printgen=100, dispersal_rate, extirpation_rate, distance_scale) # , ingroup_age)
+monitors[mni++] = mnModel(file=out_fn+".model.log", printgen=100)
+for (m in 1:n_clades) {
+    monitors[mni++] = mnFile(phy[m], filename=out_fn+"."+clade_names[m]+".tre", printgen=100)
+    monitors[mni++] = mnFile(alpha[m], bf[m], birth[m], branch_rates[m], p_allopatry, p_sympatry, death[m], dispersal_rate, distance_scale, epoch_times, extirpation_rate, kappa[m], log10_rate_mol[m], rate_mol[m], rate_bg[m], root_age[m], site_rates[m], ingroup_age[m], ingroup_island_diff[m],
+                             filename=out_fn+"."+clade_names[m]+".model.log",
+                             printgen=100)
+    monitors[mni++] = mnJointConditionalAncestralState(tree=phy[m],
+                                                           ctmc=ctmc_bg[m],
+                                                           type="NaturalNumbers",
+                                                           withTips=true,
+                                                           withStartStates=true,
+                                                           filename=out_fn+"."+clade_names[m]+".states.log",
+                                                           printgen=100)
+}
+
+############
+# Analysis #
+############
+
+mdl = model(ctmc_bg) #, ingroup_island_diff)
+ch = mcmc(mdl, monitors, moves)
+
+ch.run(n_gen)
+
+
+quit()

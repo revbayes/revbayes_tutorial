@@ -2,7 +2,7 @@
 %%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%
 
-\section{Simple DEC analysis}
+\section{Simple DEC analysis} \label{sec:bg_simple}
 
 
 The tutorials will reconstruct the ancestral ranges of the silversword alliance (Tribe {\it Madiinae}), a diverse clade of about 50 species.
@@ -12,11 +12,13 @@ The size and age of the clade, combined with our knowledge of Hawaiian island fo
  
 \begin{figure}[!ht]
 \centering
-\includegraphics[width=0.7\textwidth]{figures/fig_hawaii_areas.pdf}
+\includegraphics[width=0.6\textwidth]{figures/fig_hawaii_areas.pdf}
 \caption{A beautiful figure of the discrete areas for tutorial. Six areas are shown: Kauai and Niihau (K); Oahu (O); Maui-Nui, Lanai, and Molokai (M); Hawaii (H); the remaining Hawaiian islands (R); and the North American mainland (Z).}
+\label{fig:hawaii_areas}
 \end{figure}
  
-For this analysis in this section, we will use just four areas
+For this tutorial we'll focus entirely on the silversword alliance and the modern Hawaiian archipelago.
+To begin, we'll use just four areas, K, O, M, and H, and include areas R and Z in later analyses (Fig \ref{fig:hawaii_areas}).
 
 \begin{table}[!ht]
 \centering
@@ -42,16 +44,17 @@ KOMH & 1111 & 4 & 15 \\
 \caption{Area coding used for four areas: K is Kauai and Nihoa; O is Oahu; M is Maui Nui, Lanai, and Molokai; H is Hawaii island.}
 \end{table}
 
+\subsection*{Analysis}
 
 First, we'll create some variables to manage files
 
-{\tt \begin{snugshade*}
+\begin{snugshade*}
 \begin{lstlisting}
 range_fn = "data/n4/silversword.n4.range.nex"
-phy_fn = "data/n4/silversword.tre"
+tree_fn = "data/n4/silversword.tre"
 out_fn = "output/simple"
 \end{lstlisting}
-\end{snugshade*} }
+\end{snugshade*}
 
 then read in our character data as binary presence-absence characters
 
@@ -65,7 +68,7 @@ then encode the species ranges into natural numbers
 
 \begin{snugshade}
 \begin{lstlisting}
-dat_range_n    = formatDiscreteCharacterData(dat_geo_01, "DEC")
+dat_range_n    = formatDiscreteCharacterData(dat_range_01, "DEC")
 \end{lstlisting}
 \end{snugshade}
 
@@ -74,7 +77,7 @@ Record the number of areas
 
 \begin{snugshade}
 \begin{lstlisting}
-n_areas = dat_geo_01.nchar()
+n_areas = dat_range_01.nchar()
 \end{lstlisting}
 \end{snugshade}
 
@@ -94,19 +97,42 @@ For now, we'll assume we know the dated species phylogeny without error.
 
 \begin{snugshade}
 \begin{lstlisting}
-psi <- readTrees(phy_fn)[1]
+tree <- readTrees(tree_fn)[1]
 \end{lstlisting}
 \end{snugshade}
 
-
+Next, we'll build the anagenetic rate matrix for the DEC model.
+In its simplest form, this requires a dispersal rate and an extirpation rate.
 For this analysis, we'll assume that all pairs of areas share the same dispersal rate and all areas share the same extirpation rate.
+To gain greater control to observe and manage prior sensitivity, we'll reparameterize the DEC rate matrix to report the {\it relative} rates of dispersal versus extirpation events.
+One we have the relative rate matrix, we'll scale the {\it absolute} rate of anagenesis in geological time units with a biogeographic clock parameter, similar to the molecular clock parameter used in dating analyses.
 
-First, create a dispersal rate parameter and assign it a scale move
+First, create a parameter for the arrival rate for anagenetic range evolution events.
+We'll apply an uninformative prior to the rate's magnitude by first assigning a uniform distribution to the log$_{10}$ rate.
 
 \begin{snugshade}
 \begin{lstlisting}
-r_d ~ dnExponential(1)
-mv[++mi] = mvScale(r_d)
+log10_rate_bg ~ dnUniform(-4,2)
+log10_rate_bg.setValue(-2)
+moves[1] = mvSlide(log10_rate_bg, weight=4)
+\end{lstlisting}
+\end{snugshade}
+
+Create a deterministic function to convert the rate from log-scale to linear-scale.
+
+\begin{snugshade}
+\begin{lstlisting}
+rate_bg := 10^log10_rate_bg
+\end{lstlisting}
+\end{snugshade}
+
+This gives us a uniform prior over orders of magnitude, ranging from $10^{-4}$ to $10^2$ events per million years.
+
+Because the rate matrix will describe the relative anagenetic event rates, we will assume that dispersal occurs at the relative (fixed) rate of one.
+
+\begin{snugshade}
+\begin{lstlisting}
+dispersal_rate <- abs(1)
 \end{lstlisting}
 \end{snugshade}
 
@@ -115,19 +141,22 @@ then create the dispersal rate matrix
 \begin{snugshade}
 \begin{lstlisting}
 for (i in 1:n_areas) {
-    for (j in 1:n_areas) {
-        dr[i][j] := r_d
-    }
+  for (j in 1:n_areas) {
+    dr[i][j] <- dispersal_rate
+  }
 }
 \end{lstlisting}
 \end{snugshade}
 
-Next, assign the prior distribution to the extirpation rate and assign it a move
+Next, assign the prior distribution to the relative extirpation rate and assign it a move.
+The prior distribution of extirpation rates uses {\tt log\_sd} and {\tt log\_mean} values to give it the expected value of one -- i.e. ranges are expected to lose and gain areas at the same rate under the prior.
 
 \begin{snugshade}
 \begin{lstlisting}
-r_e ~ dnExponential(1)
-mv[++mi] = mvScale(r_e)
+log_sd <- 0.5
+log_mean <- ln(1) - 0.5*log_sd^2
+extirpation_rate ~ dnLognormal(mean=log_mean, sd=log_sd)
+moves[2] = mvScale(extirpation_rate, weight=2)
 \end{lstlisting}
 \end{snugshade}
 
@@ -136,10 +165,10 @@ then create a matrix of extirpation rates
 \begin{snugshade}
 \begin{lstlisting}
 for (i in 1:n_areas) {
-    for (j in 1:n_areas) {
-	    er[i][j] <- abs(0)        
-    }
-	er[i][i] := r_e
+  for (j in 1:n_areas) {
+    er[i][j] <- abs(0)        
+  }
+  er[i][i] := extirpation_rate
 }
 \end{lstlisting}
 \end{snugshade}
@@ -147,6 +176,7 @@ for (i in 1:n_areas) {
 This diagonal matrix results in per-area extirpation rates that are mutually independent.
 All non-diagonal extirpation rates equal zero.
 (More on penalized ranges and off-diagonal rates later.)
+We can now create our relative rate matrix, {\tt Q\_DEC}, with the {\tt fnDECRateMatrix} function.
 
 \begin{snugshade}
 \begin{lstlisting}
@@ -154,37 +184,35 @@ Q_DEC := fnDECRateMatrix(dispersalRates=dr, extirpationRates=er)
 \end{lstlisting}
 \end{snugshade}
 
-Note, {\tt fnDECRateMatrix} does not rescale its elements in any way, so transition rates share the same time scale as the underlying tree.
+Note, {\tt fnDECRateMatrix} does not rescale its elements in any way, so transition rates share the same time scale as the underlying tree (typically, millions of years).
 This is in contrast to the standard molecular substitution processes (e.g. {\tt fnGTR}) whose rates are rescaled such that the process is expected to produce one event per site per unit time.
-For our parameterization, we assign the ``biogeographic clock'' the rate of one such that ${\bf Q} = \mu {\bf Q} = 1 {\bf Q}$.
 
-\begin{snugshade}
-\begin{lstlisting}
-rate_bg <- 1
-\end{lstlisting}
-\end{snugshade}
-
-In contrast, cladogenetic event probabilites are given by a transition probability matrix and do not require a rate matrix.
-First, we will create a vector of prior weights on cladogenesis events. Here, we assign a flat prior to all cladogenetic events
+Next, we need to create the cladogenetic probability matrix.
+Cladogenetic event probabilities are given by a transition probability matrix and do not require a rate matrix.
+First, we will create a vector of prior weights on cladogenesis events.
+Here, we assume all cladogenetic events are equiprobable.
 
 \begin{snugshade}
 \begin{lstlisting}
 clado_event_types <- [ "s", "a" ]
-clado_type_probs <- simplex(1, 1)
-P_DEC := fnDECCladoProbs(eventProbs=clado_type_probs,
-                           eventTypes=clado_event_types,
-                           numCharacters=n_areas)
+clado_event_probs <- simplex(1, 1)
+P_DEC := fnDECCladoProbs(eventProbs=clado_event_probs,
+                            eventTypes=clado_event_types,
+                            numCharacters=n_areas)
 \end{lstlisting}
 \end{snugshade}
 
-Create the cladogenetic transition probability matrix, which assigns probabilities to cladogenetic event classes.
-
-Finally, all our model components are encapsulated in the {\tt dnPhyloCTMCClado} distribution, which is similar to {\tt dnPhyloCTMC} except specialized to integrate over cladogenetic events.
+Finally, all our DEC model components are encapsulated in the {\tt dnPhyloCTMCClado} distribution, which is similar to {\tt dnPhyloCTMC} except specialized to integrate over cladogenetic events.
 Although this dataset has four areas, it is recognized single character with states valued from 1 to $2^4$, hence {\tt nSites=1}.
 
 \begin{snugshade}
 \begin{lstlisting}
-m ~ dnPhyloCTMCClado( tree=psi, Q=Q_DEC, cladoProbs=P_DEC, branchRates=rate_bg, nSites=1, type="NaturalNumbers" )
+m_bg ~ dnPhyloCTMCClado(tree=tree,
+                           Q=Q_DEC,
+                           cladoProbs=P_DEC,
+                           branchRates=rate_bg,
+                           nSites=1,
+                           type="NaturalNumbers")
 \end{lstlisting}
 \end{snugshade}
 
@@ -193,7 +221,7 @@ Attach the observed ranges to the model.
 
 \begin{snugshade}
 \begin{lstlisting}
-m.clamp(dat_geo)
+m_bg.clamp(dat_range_n)
 \end{lstlisting}
 \end{snugshade}
 
@@ -201,7 +229,7 @@ Compose the model.
 
 \begin{snugshade}
 \begin{lstlisting}
-mdl = model(m)
+mymodel = model(m_bg)
 \end{lstlisting}
 \end{snugshade}
 
@@ -209,22 +237,28 @@ Add the monitors. (The {\tt mnJointConditionalAncestralState} monitor will be de
 
 \begin{snugshade}
 \begin{lstlisting}
-mn[1] = mnScreen(r_d, r_d, printgen=1000)
-mn[2] = mnModel(file=out_fn+".params.txt", printgen=100)
-mn[3] = mnJointConditionalAncestralState(tree=psi, ctmc=m, filename=out_fn+".states.txt", type="NaturalNumbers", printgen=100, withTips=true, withStartStates=true)
+monitors[1] = mnScreen(rate_bg, extirpation_rate, printgen=100)
+monitors[2] = mnModel(file=out_fn+".params.log", printgen=10)
+monitors[3] = mnFile(tree, file=out_fn+".tre", printgen=10)
+monitors[4] = mnJointConditionalAncestralState(tree=tree,
+                                                    ctmc=m_bg,
+                                                    filename=out_fn+".states.log",
+                                                    type="NaturalNumbers",
+                                                    printgen=10,
+                                                    withTips=true,
+                                                    withStartStates=true)
 \end{lstlisting}
 \end{snugshade}
 
 Create the MCMC object, and run the chain after burn-in.
 \begin{snugshade}
 \begin{lstlisting}
-ch = mcmc(mv,mn,mdl)
-ch.burnin(1000, 10)
-ch.run(10000)
+mymcmc = mcmc(moves, monitors, mymodel)
+mymcmc.run(3000)
 \end{lstlisting}
 \end{snugshade}
 
-\subsubsection{Visualizing ancestral state reconstructions}
+\subsection*{Results}
 
 The {\tt mnJointConditionalAncestralState} monitor above created a states file.
 Each row in the states file lists the joint sample of ancestral states conditioned on the tip values for the whole tree.
@@ -238,10 +272,10 @@ To use it for other analyses, just modify the {\tt out\_str} variable below.
 Open a new RevBayes session. Set up the files we'll work with.
 \begin{snugshade}
 \begin{lstlisting}
-out_str      = "output/simple"
+out_str = "output/simple"
 out_state_fn = out_str + ".states.log"
-out_phy_fn   = out_str + ".tre"
-out_mcc_fn   = out_str + ".mcc.tre" 
+out_tree_fn = out_str + ".tre"
+out_mcc_fn = out_str + ".mcc.tre" 
 \end{lstlisting}
 \end{snugshade}
 
@@ -259,7 +293,7 @@ Get the ancestral state tree trace. It is important to use {\tt readAncestralTre
 
 \begin{snugshade}
 \begin{lstlisting}
-tree_trace = readAncestralStateTreeTrace(file=out_phy_fn, treetype="clock")
+tree_trace = readAncestralStateTreeTrace(file=out_tree_fn, treetype="clock")
 \end{lstlisting}
 \end{snugshade}
 
@@ -267,27 +301,34 @@ Read the maximum clade credibility tree and write it to file
 
 \begin{snugshade}
 \begin{lstlisting}
-mccTree(tree_trace, file=out_mcc_fn)
-mcc_tree = readTrees(out_mcc_fn)[1]
+mcc_tree = mccTree(tree_trace, file=out_mcc_fn)
 \end{lstlisting}
 \end{snugshade}
+
 
 Build the ancestral state tree
 
 \begin{snugshade}
 \begin{lstlisting}
-anc_tree = ancestralStateTree(tree=mcc_tree, ancestral_state_tree_trace_vector=state_trace, tree_trace=tree_trace, include_start_states=true, file=out_str+".ase", summary_statistic="MAP", site=0)
+anc_tree = ancestralStateTree(tree=mcc_tree,
+                              ancestral_state_trace_vector=state_trace,
+                              tree_trace=tree_trace,
+                              include_start_states=true,
+                              file=out_str+".ase.tre",
+                              burnin=0,
+                              summary_statistic="MAP",
+                              site=0)
 \end{lstlisting}
 \end{snugshade}
 
-We can review the output in {\tt ancestralStateTree} in FigTree.
+We can review the output from {\tt ancestralStateTree} in FigTree (Fig \ref{fig:simple_FigTree_ase}).
 
 \begin{figure}[!ht]
 \centering
 \includegraphics[width=0.6\textwidth]{figures/fig_simple_FigTree_ase.png}
 \caption{Tree with ancestral state estimates. The most probable end state of each branch (before cladogenesis) is shown at each node. Branches are labeled with the posterior probability for the ancestral state on the tipwards end of the branch.}
+\label{fig:simple_FigTree_ase}
 \end{figure}
-
 
 Nodes are annotated with the first three most probable ancestral states along with their posterior probabilities.
 When the tree is a random variable, as it is in later exercises, additional information about phylogenetic uncertainty is reported.
@@ -309,14 +350,18 @@ install_github("GuangchuangYu/ggtree")
 \end{lstlisting}
 \end{snugshade}
 
-Once this is installed you can generate a figure by executing {\tt source("plot\_anc\_state.n4.R\")} from within an R session.
+Once this is installed you can generate a figure by executing {\tt source("plot\_anc\_state.n4.R\")} from within an R session (Fig \ref{fig:simple_RevGadgets_ase}).
+Modifying the source file allows you to use the script with different datasets.
 
 \begin{figure}[!ht]
 \centering
 \includegraphics[width=0.7\textwidth]{figures/fig_simple_RevGadgets_ase.pdf}
 \caption{Tree with ancestral state estimates for the ``simple'' analysis. Nodes are annotated with ancestral states before and after cladogenetic events. Most probable states are shown. Colors of markers indicate the range state. Sizes of markers indicate the posterior probability of that state. }
+\label{fig:simple_RevGadgets_ase}
 \end{figure}
 
-Modifying the source file allows you to use the script with different datasets.
+Notice that the model infers a widespread ancestral range for the clade (KOMH) approximately four million years ago when only Kauai existed.
+Similar geologically unrealistic widespread ranges are estimated for the Agyroxiphium clade (KMH) and the Dubautia sheriffiana+arborea clade (OMH).
+The remaining tutorials will focus on improvements to the simple DEC model presented here.
 
 \newpage

@@ -2,7 +2,7 @@
 
 # filenames
 range_fn = "data/n4/silversword.n4.range.nex"
-phy_fn   = "data/n4/silversword.tre"
+tree_fn   = "data/n4/silversword.tre"
 out_fn   = "output/epoch"
 geo_fn   = "data/n4/hawaii.n4"
 times_fn = geo_fn + ".times.txt"
@@ -11,7 +11,7 @@ dist_fn  = geo_fn + ".distances.txt"
 # move/monitor index
 mvi = 1
 mni = 1
-n_gen = 1e4
+n_gen = 5000
 
 
 ########
@@ -36,24 +36,12 @@ n_epochs <- time_bounds.size()
 
 # epoch connectivity
 for (i in 1:n_epochs) {
-    epoch_fn = geo_fn + "." + i + ".txt"
+    epoch_fn = geo_fn + ".connectivity." + i + ".txt"
     connectivity[i] <- readDataDelimitedFile(file=epoch_fn, delimiter=" ")
-    #connectivity2[i] <- readDataDelimitedFile(file=epoch_fn, delimiter=" ")
-    #for (j in 1:n_areas) {
-    #    for (k in 1:n_areas) {
-    #        connectivity[i][j][k] <- connectivity2[i][j][k]
-    #    }
-    #}
 }
 
 # area distances
 distances <- readDataDelimitedFile(file=dist_fn, delimiter=" ")
-#distances_raw <- readDataDelimitedFile(file=dist_fn, delimiter=" ")
-#for (i in 1:n_areas) {
-#for (j in 1:n_areas) {
-#    distances[i][j] <- distances_raw[i][j]
-#}
-#}
 
 
 ###############
@@ -61,7 +49,7 @@ distances <- readDataDelimitedFile(file=dist_fn, delimiter=" ")
 ###############
 
 # read tree
-phy <- readTrees(phy_fn)[1]
+tree <- readTrees(tree_fn)[1]
 
 #######################
 # Biogeography models #
@@ -69,35 +57,61 @@ phy <- readTrees(phy_fn)[1]
 
 # first, the distance function
 
-dispersal_rate ~ dnExp(1)
-dispersal_rate.setValue(1)
-moves[mvi++] = mvScale(dispersal_rate)
+#rate_bg <- 1
 
-distance_scale ~ dnExp(1)
+#log10_dispersal_rate ~ dnUniform(-4,2)
+#log10_dispersal_rate.setValue(-2)
+#dispersal_rate := 10^log10_dispersal_rate
+#moves[mvi++] = mvSlide(log10_dispersal_rate, weight=3)
+
+# first, the dispersal rates
+#dispersal_rate ~ dnExp(1)
+#moves[mvi++] = mvScale(dispersal_rate, weight=2)
+
+log10_rate_bg ~ dnUniform(-4,2)
+log10_rate_bg.setValue(-2)
+rate_bg := 10^log10_rate_bg
+moves[mvi++] = mvSlide(log10_rate_bg, weight=4)
+
+dispersal_rate <- abs(1)
+
+distance_scale ~ dnUnif(0,20)
 distance_scale.setValue(0.01)
-moves[mvi++] = mvScale(distance_scale)
+moves[mvi++] = mvScale(distance_scale, weight=3)
 
 # then, the dispersal rate matrix
 for (i in 1:n_epochs) {
     for (j in 1:n_areas) {
         for (k in 1:n_areas) {
-            dist_cost[i][j][k] := -distance_scale * distances[j][k]
-            dr[i][j][k]  := dispersal_rate * connectivity[i][j][k] * exp(dist_cost[i][j][k])
+            #dist_cost[i][j][k] := -distance_scale * distances[j][k]
+            #dr[i][j][k]  := dispersal_rate * connectivity[i][j][k] * exp(dist_cost[i][j][k])
+            dr[i][j][k]  := dispersal_rate * connectivity[i][j][k] * exp(-distance_scale * distances[j][k])
         }
     }
 }
 
 
 # then extirpation rates (or per-area extinction rates)
-extirpation_rate ~ dnExp(1)
-moves[mvi++] = mvScale(extirpation_rate)
+#log10_extirpation_rate ~ dnUniform(-4,2)
+#log10_extirpation_rate.setValue(-2)
+#extirpation_rate := 10^log10_extirpation_rate
+#moves[mvi++] = mvSlide(log10_extirpation_rate, weight=3)
+
+log_sd <- 0.5
+log_mean <- ln(1) - 0.5*log_sd^2
+extirpation_rate ~ dnLognormal(mean=log_mean, sd=log_sd)
+moves[mvi++] = mvScale(extirpation_rate, weight=2)
+
+
+#extirpation_rate ~ dnExp(1)
+#moves[mvi++] = mvScale(extirpation_rate, weight=2)
 
 for (i in 1:n_epochs) {
     for (j in 1:n_areas) {
         for (k in 1:n_areas) {
             er[i][j][k] <- abs(0.0) 
-            if (j == k) { er[i][k][k] := extirpation_rate }
         }
+        er[i][j][j] := extirpation_rate
     }
 }
 
@@ -118,7 +132,7 @@ for (i in 1:n_epochs) {
         epoch_times[i] <- abs(0)
     } else {
         epoch_times[i] ~ dnUniform(time_min[i], time_max[i])
-        moves[mvi++] = mvSlide(epoch_times[i], delta=0.2)
+        moves[mvi++] = mvSlide(epoch_times[i], delta=(time_max[i]-time_min[i])/2)
     }
 }
 
@@ -126,12 +140,14 @@ for (i in 1:n_epochs) {
 Q_DEC_epoch := fnEpoch(Q=Q_DEC, times=epoch_times, rates=rep(1, n_epochs))
 
 # biogeographic clock rate is 1
-rate_bg <- 1
+#rate_bg <- 1
     
 # build clado probs
 clado_event_types <- [ "s", "a" ]
-clado_type_probs ~ dnDirichlet( [1, 1] )
-moves[mvi++] = mvSimplexElementScale(clado_type_probs, alpha=10)
+p_sympatry ~ dnUniform(0,1)
+p_allopatry := abs(1.0 - p_sympatry)
+clado_type_probs := simplex(p_sympatry, p_allopatry)
+moves[mvi++] = mvSlide(p_sympatry, weight=2)
 P_DEC := fnDECCladoProbs(eventProbs=clado_type_probs,
                          eventTypes=clado_event_types,
                          numCharacters=n_areas,
@@ -144,7 +160,7 @@ rf_DEC    <- rep(0, n_states)
 rf_DEC[2] <- 1  # Kauai is the only possible starting state
 rf_DEC    <- simplex(rf_DEC)
 
-ctmc_bg ~ dnPhyloCTMCClado(tree=phy,
+m_bg ~ dnPhyloCTMCClado(tree=tree,
                            Q=Q_DEC_epoch,
                            cladoProbs=P_DEC,
                            branchRates=rate_bg,
@@ -152,18 +168,18 @@ ctmc_bg ~ dnPhyloCTMCClado(tree=phy,
                            type="NaturalNumbers",
                            nSites=1)
     
-ctmc_bg.clamp(dat_range_n)
+m_bg.clamp(dat_range_n)
 
 ############
 # Monitors #
 ############
 
 
-monitors[mni++] = mnScreen(printgen=100, dispersal_rate, extirpation_rate, distance_scale)
+monitors[mni++] = mnScreen(printgen=100, rate_bg, extirpation_rate, distance_scale)
 monitors[mni++] = mnModel(file=out_fn+".model.log", printgen=10)
-monitors[mni++] = mnFile(phy, filename=out_fn+".tre", printgen=10)
-monitors[mni++] = mnJointConditionalAncestralState(tree=phy,
-                                                       ctmc=ctmc_bg,
+monitors[mni++] = mnFile(tree, filename=out_fn+".tre", printgen=10)
+monitors[mni++] = mnJointConditionalAncestralState(tree=tree,
+                                                       ctmc=m_bg,
                                                        type="NaturalNumbers",
                                                        withTips=true,
                                                        withStartStates=true,
@@ -174,10 +190,11 @@ monitors[mni++] = mnJointConditionalAncestralState(tree=phy,
 # Analysis #
 ############
 
-mdl = model(ctmc_bg)
-ch = mcmc(mdl, monitors, moves)
+mymodel = model(m_bg)
+mymcmc = mcmc(mymodel, monitors, moves)
 
-ch.run(n_gen)
+#mymcmc.burnin(floor(n_gen/2), 10)
+mymcmc.run(n_gen)
 
 
 quit()

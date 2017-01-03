@@ -91,7 +91,6 @@ for (i in 1:n_areas) {
     for (j in 1:n_areas) {
         er[i][j] <- abs(0)
     }
-    # overwrite the diagonal terms
     er[i][i] <- abs(1) 
 }
 \end{lstlisting}
@@ -140,7 +139,7 @@ Notice that ranges that are separated by multiple dispersal and extirpation even
 By default, the process conditions on the process never entering the null range when computing the transition probabilities.
 This is crucial so the model can both simulate and infer using identical (correct) probabilities.
 The  {\tt condition=Include} setting computes the raw probabilities of \citep{ree05}.
-Setting {\tt condition=Exclude} is the DEC* model of \citep{massana15} that removes the null range from the state space.
+Setting {\tt condition=Exclude} gives the DEC* model of \citep{massana15} that removes the null range from the state space, which is the first work to describe the pathology of the never-observed null range.
 
 \subsection{Modeling cladogenetic range evolution}
 

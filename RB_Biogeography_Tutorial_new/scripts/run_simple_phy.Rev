@@ -117,7 +117,7 @@ kappa ~ dnGamma(2,2)
 moves[mvi++] = mvScale(kappa)
 
 bf ~ dnDirichlet( [1,1,1,1] )
-moves[mvi++] = mvSimplexElementScale(bf, alpha=10, weight=2)
+moves[mvi++] = mvSimplex(bf, alpha=10, weight=2, offset=1)
 
 Q_mol := fnHKY(kappa, bf)
 
@@ -141,34 +141,39 @@ seq_mol.clamp(dat_mol)
 # Biogeography models #
 #######################
 
-# first, the distance function
+rate_bg <- 1
+log10_rate_bg ~ dnUniform(-4,2)
+log10_rate_bg.setValue(-2)
+rate_bg := 10^log10_rate_bg
+moves[mvi++] = mvSlide(log10_rate_bg, weight=4)
 
-#dispersal_rate ~ dnExp(1)
-#dispersal_rate.setValue(0.1)
-#moves[mvi++] = mvScale(dispersal_rate)
+if (false) {
+log10_dispersal_rate ~ dnUniform(-4,2)
+log10_dispersal_rate.setValue(-2)
+dispersal_rate := 10^log10_dispersal_rate
+moves[mvi++] = mvSlide(log10_dispersal_rate, weight=4)
 
-#distance_scale ~ dnExp(1)
-#distance_scale.setValue(0.01)
-#moves[mvi++] = mvScale(distance_scale)
-
-# then, the dispersal rate matrix
-for (j in 1:n_areas) {
-    for (k in 1:n_areas) {
-        #dr[j][k] := dispersal_rate * exp( -(distance_scale * distances[j][k]) )
-        dr[j][k] <- abs(1)
-    }
+log10_extirpation_rate ~ dnUnif(-6,3)
+moves[mvi++] = mvSlide(log10_extirpation_rate, weight=4)
+log10_extirpation_rate.setValue(-2)
+extirpation_rate := 10^log10_extirpation_rate
 }
 
+dispersal_rate <- abs(1)
 
-# then extirpation rates (or per-area extinction rates)
-#extirpation_rate ~ dnExp(1)
-#moves[mvi++] = mvScale(extirpation_rate)
+log_sd <- 0.5
+log_mean <- ln(1) - 0.5*log_sd^2
+extirpation_rate ~ dnLognormal(mean=log_mean, sd=log_sd)
+moves[mvi++] = mvScale(extirpation_rate, weight=2)
 
-for (j in 1:n_areas) {
-    for (k in 1:n_areas) {
-        er[j][k] <- abs(0.0) 
-        if (j == k) { er[k][k] <- abs(1) }
+
+# first, the distance function
+for (i in 1:n_areas) {
+    for (j in 1:n_areas) {
+        er[i][j] <- abs(0) 
+        dr[i][j] := dispersal_rate
     }
+    er[i][i] := extirpation_rate
 }
 
 # build DEC rate matrices
@@ -176,26 +181,21 @@ Q_DEC := fnDECRateMatrix(dispersalRates=dr,
                          extirpationRates=er,
                          maxRangeSize=max_areas)
 
-# biogeographic clock rate is 1
-rate_bg <- 1
     
 # build clado probs
 clado_event_types <- [ "s", "a" ]
 clado_event_probs <- simplex(1,1)
-#clado_type_probs ~ dnDirichlet( [1, 1] )
-#moves[mvi++] = mvSimplexElementScale(clado_type_probs, alpha=10)
 P_DEC := fnDECCladoProbs(eventProbs=clado_event_probs,
                          eventTypes=clado_event_types,
                          numCharacters=n_areas,
                          maxRangeSize=max_areas)
 
 
-
 # root frequencies
 rf_DEC    <- rep(1, n_states)
 rf_DEC    <- simplex(rf_DEC)
 
-ctmc_bg ~ dnPhyloCTMCClado(tree=phy,
+m_bg ~ dnPhyloCTMCClado(tree=phy,
                            Q=Q_DEC,
                            cladoProbs=P_DEC,
                            branchRates=rate_bg,
@@ -203,7 +203,7 @@ ctmc_bg ~ dnPhyloCTMCClado(tree=phy,
                            type="NaturalNumbers",
                            nSites=1)
     
-ctmc_bg.clamp(dat_range_n)
+m_bg.clamp(dat_range_n)
 
 # build the times
 for (i in 1:n_epochs) {
@@ -232,7 +232,7 @@ ingroup_clade <- clade("Wilkesia_hobdyi",
 
 ingroup_age := tmrca(phy, ingroup_clade)
 for (i in 1:n_epochs) {
-    ingroup_island_diff[i] := ingroup_age - epoch_times[i]
+    ingroup_older_island[i] := ifelse( ingroup_age > epoch_times[i], 1, 0 )
 }
 
 
@@ -240,7 +240,7 @@ monitors[mni++] = mnScreen(printgen=100, ingroup_age)
 monitors[mni++] = mnModel(file=out_fn+".model.log", printgen=100)
 monitors[mni++] = mnFile(phy, filename=out_fn+".tre", printgen=100)
 monitors[mni++] = mnJointConditionalAncestralState(tree=phy,
-                                                       ctmc=ctmc_bg,
+                                                       ctmc=m_bg,
                                                        type="NaturalNumbers",
                                                        withTips=true,
                                                        withStartStates=true,
@@ -251,7 +251,7 @@ monitors[mni++] = mnJointConditionalAncestralState(tree=phy,
 # Analysis #
 ############
 
-mdl = model(ctmc_bg, ingroup_island_diff)
+mdl = model(m_bg, ingroup_older_island, epoch_times)
 ch = mcmc(mdl, monitors, moves)
 
 ch.run(n_gen)
