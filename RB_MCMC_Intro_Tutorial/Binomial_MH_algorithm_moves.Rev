@@ -1,0 +1,122 @@
+################################################################################
+#
+# RevBayes Example: Writing your on MCMC algorithm for a simple Binomial model
+#
+# authors: Mike May and Sebastian Hoehna
+#
+################################################################################
+
+# Make up some coin flips!
+# Feel free to change these numbers
+n <- 100 # the number of flips
+x <- 63     # the number of heads
+
+# Initialize the chain with starting values
+alpha <- 1
+beta  <- 1
+p <- rbeta(n=1,alpha,beta)[1]
+
+
+# specify the likelihood function
+function RealPos likelihood(param) {
+   l = dbinomial(x,param,n,log=false)
+   return l
+}
+
+# specify the prior function
+function RealPos prior(param) {
+   pp = dbeta(param,alpha,beta,log=false)
+   return pp
+}
+
+# specify the uniform move
+function move_uniform( Natural weight) {
+
+    for (i in 1:weight) {
+        # Propose a new value of p
+        p_prime <- runif(n=1,0.0,1.0)[1]
+
+        # Compute the acceptance probability
+        R <- ( likelihood(p_prime) / likelihood(p) ) * ( prior(p_prime) / prior(p) )
+    
+        # Accept or reject the proposal
+        u <- runif(1,0,1)[1]
+        if (u < R){
+            # Accept the proposal
+            p <- p_prime
+        } else {
+            # Reject the proposal
+            # (we don't have to do anything here)
+        }
+    }
+    
+}
+
+
+# specify the sliding-window move
+function move_slide( RealPos delta, Natural weight) {
+
+    for (i in 1:weight) {
+        # Propose a new value of p
+        p_prime <- p + rnormal(n=1,0.0,delta)[1]
+
+        # Compute the acceptance probability
+        R <- ( likelihood(p_prime) / likelihood(p) ) * ( prior(p_prime) / prior(p) )
+    
+        # Accept or reject the proposal
+        u <- runif(1,0,1)[1]
+        if (u < R){
+            # Accept the proposal
+            p <- p_prime
+        } else {
+            # Reject the proposal
+            # (we don't have to do anything here)
+        }
+    }
+    
+}
+
+# specify the scaling move
+function move_scale( RealPos lambda, Natural weight) {
+
+    for (i in 1:weight) {
+        # Propose a new value of p
+        sf <- exp( lambda * ( runif(n=1,0,1) - 0.5 ) )
+        p_prime <- p * sf
+
+        # Compute the acceptance probability
+        R <- ( likelihood(p_prime) / likelihood(p) ) * ( prior(p_prime) / prior(p) ) * sf
+    
+        # Accept or reject the proposal
+        u <- runif(1,0,1)[1]
+        if (u < R){
+            # Accept the proposal
+            p <- p_prime
+        } else {
+            # Reject the proposal
+            # (we don't have to do anything here)
+        }
+    }
+    
+}
+
+# Prepare a file to log our samples
+write("iteration","p","\n",file="binomial_MH.log")
+write(0,p,"\n",file="binomial_MH.log",append=TRUE)
+
+# Write the MH algorithm
+reps = 10000
+printgen = 10
+
+for (rep in 1:reps) {
+
+    move_uniform(1)
+    
+    if ( (rep % printgen) == 0 ) {
+        # Write the samples to a file
+        write(rep,p,"\n",file="binomial_MH.log",append=TRUE)
+    }
+
+} # end MCMC
+
+q()

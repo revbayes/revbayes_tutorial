@@ -1,0 +1,22 @@
+\begin{tikzpicture}
+\node[obmod] (a) at (0,0) {\large Molecular Data};
+\node[smod] (rm) at ($(a)+(-4.5,1.35)$) {\large Substitution Model};
+\node[smod] (sr) at ($(a)+(-4,0)$) {\large Site Rate Model};
+\node[smod] (br) at ($(a)+(-4.5,-1.35)$) {\large Branch Rate Model};
+\draw[taro] (rm) -> (a);
+\draw[taro] (sr) -> (a);
+\draw[taro] (br) -> (a);
+\node[obmod] (c) at (8,0) {\large Morphological Data};
+\node[smod] (crm) at ($(c)+(5,1.35)$) {\large Substitution Model};
+\node[smod] (csr) at ($(c)+(4.5,0)$) {\large Site Rate Model};
+\node[smod] (cbr) at ($(c)+(5,-1.35)$) {\large Branch Rate Model};
+\draw[taro] (crm) -> (c);
+\draw[taro] (csr) -> (c);
+\draw[taro] (cbr) -> (c);
+\node (mid) at ($(a)!0.5!(c)$) { };
+\node[smod] (tree) at ($(mid)+(0,3)$) {\large Time Tree Model};
+\draw[taro] (tree) edge[bend left=-35] (a);
+\draw[taro] (tree) edge[bend right=-35] (c);
+\node[obmod] (f) at ($(tree)+(0,-5)$) {\large Fossil Occurrence Time Data};
+\draw[taro] (tree) -- (f);
+\end{tikzpicture}

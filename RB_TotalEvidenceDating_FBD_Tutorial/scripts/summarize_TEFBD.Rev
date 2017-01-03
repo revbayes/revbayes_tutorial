@@ -3,6 +3,9 @@
 # First, prune the fossil taxa for which we do not morphological or molecular data #
 trace = readTreeTrace("output/bears.trees")
 
+taxa <- readTaxonData("data/bears_taxa.tsv")
+
+
 for(i in 1:trace.size())
 {
     trees[i] = fnPruneTree(trace.getTree(i), pruneTaxa=v(taxa[17],taxa[20]))

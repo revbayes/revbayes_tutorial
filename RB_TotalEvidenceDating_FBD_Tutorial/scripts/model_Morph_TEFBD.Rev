@@ -24,7 +24,7 @@ for(i in 1:beta_cats.size())
 # We also use a discretized gamma distribution of rate categories #
 # again, the shape parameter is drawn from an exponential prior #
 alpha_morpho ~ dnExponential( 1.0 )
-rates_morpho := fnDiscretizeGamma( alpha_morpho, alpha_morpho, 4, false )
+rates_morpho := fnDiscretizeGamma( alpha_morpho, alpha_morpho, 4 )
 
 moves[mvi++] = mvScale(alpha_morpho, lambda=0.01, weight=1.0)
 moves[mvi++] = mvScale(alpha_morpho, lambda=0.1,  weight=1.0)

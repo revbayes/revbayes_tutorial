@@ -4,24 +4,24 @@
 
 
 # Define a exponential priors on the birth rate and death rate #
-birth_rate ~ dnExponential(10)
-death_rate ~ dnExponential(10)
+speciation_rate ~ dnExponential(10)
+extinction_rate ~ dnExponential(10)
 
-# Specify a scale move on the birth_rate parameter #
+# Specify a scale move on the speciation_rate parameter #
 # This move will be applied with 3 different tuning values (lambda) to help improve mixing # 
-moves[mvi++] = mvScale(birth_rate, lambda=0.01, weight=1)
-moves[mvi++] = mvScale(birth_rate, lambda=0.1,  weight=1)
-moves[mvi++] = mvScale(birth_rate, lambda=1.0,  weight=1)
+moves[mvi++] = mvScale(speciation_rate, lambda=0.01, weight=1)
+moves[mvi++] = mvScale(speciation_rate, lambda=0.1,  weight=1)
+moves[mvi++] = mvScale(speciation_rate, lambda=1.0,  weight=1)
 
-# Specify a sliding-window move on the death_rate parameter #
+# Specify a sliding-window move on the extinction_rate parameter #
 # This move will be applied with 3 different window widths (delta) to help improve mixing # 
-moves[mvi++] = mvScale(death_rate, lambda=0.01, weight=1)
-moves[mvi++] = mvScale(death_rate, lambda=0.1,  weight=1)
-moves[mvi++] = mvScale(death_rate, lambda=1,    weight=1)
+moves[mvi++] = mvScale(extinction_rate, lambda=0.01, weight=1)
+moves[mvi++] = mvScale(extinction_rate, lambda=0.1,  weight=1)
+moves[mvi++] = mvScale(extinction_rate, lambda=1,    weight=1)
 
 # Create deterministic nodes for the diversification and turnover rates so that they can be monitored #
-diversification := birth_rate - death_rate
-turnover := death_rate/birth_rate
+diversification := speciation_rate - extinction_rate
+turnover := extinction_rate/speciation_rate
 
 # Fix the probability of sampling parameter (rho) to 1, #
 # because all extant bears are represented in this analysis #
@@ -48,7 +48,7 @@ moves[mvi++] = mvSlide(origin_time, delta=1,    weight=5.0)
 
 
 ### Define the tree-prior distribution as the fossilized birth-death process ###
-tree_prior = dnFBDP(origin=origin_time, lambda=birth_rate, mu=death_rate, psi=psi, rho=rho, taxa=taxa)
+fbd_dist = dnFBDP(origin=origin_time, lambda=speciation_rate, mu=extinction_rate, psi=psi, rho=rho, taxa=taxa)
 
 # The will be a random variable of a constrained topology distribution that is governed by the FBD #
 # this distribution will generate FBD trees that match the monophyly constraints defined above #
@@ -56,9 +56,8 @@ clade_ursinae = clade("Melursus_ursinus", "Ursus_arctos", "Ursus_maritimus",
                       "Helarctos_malayanus", "Ursus_americanus", "Ursus_thibetanus", 
                       "Ursus_abstrusus", "Ursus_spelaeus")
 constraints = v(clade_ursinae)
-fbd_tree ~ dnConstrainedTopology(tree_prior, constraints=constraints)
+fbd_tree ~ dnConstrainedTopology(fbd_dist, constraints=constraints)
 
-#print(fbd_tree)
 # Specify moves on the tree and node times #
 # These moves update the tree topology 
 moves[mvi++] = mvFNPR(fbd_tree, weight=15.0)
@@ -72,25 +71,21 @@ moves[mvi++] = mvRootTimeSlideUniform(fbd_tree, origin_time, weight=5.0)
 
 ### Use stratigraphic range data to explicitly sample the fossil occurence times ###
 # Read in the stratigraphic range data file #
-fossil_intervals = readDataDelimitedFile(file="data/bears_fossil_intervals.tsv", header=true)
+intervals = readDataDelimitedFile(file="data/bears_fossil_intervals.tsv", header=true)
 
 # Setup the fossil tip sampling #
 # Use a for loop to create a uniform distribution on the occurence time for each fossil #
 # The boundaries of the uniform distribution are specified in the tsv file #
-for(i in 1:fossil_intervals.size())
+for(i in 1:intervals.size())
 {
-    taxon  = fossil_intervals[i][1]
-    obs_min = fossil_intervals[i][2]
-    obs_max = fossil_intervals[i][3]
+    taxon  = intervals[i][1]
+    a_i = intervals[i][2]
+    b_i = intervals[i][3]
     
     t[i] := tmrca(fbd_tree, clade(taxon))
     
-    half    = (obs_max - obs_min)/2
-    umin[i] := max(v(t[i] - half, 0.0))
-    umax[i] := t[i] + half
-    
-    fossil[i] ~ dnUniform(umin[i], umax[i])
-    fossil[i].clamp( obs_min + half )
+    fossil[i] ~ dnUniform(t[i] - b_i, t[i] - a_i)
+    fossil[i].clamp( 0 )
 }
 
 # Add a move to sample the fossil times #
@@ -108,19 +103,6 @@ clade_extant = clade("Ailuropoda_melanoleuca","Tremarctos_ornatus","Melursus_urs
                     "Ursus_americanus","Ursus_thibetanus")
 age_extant := tmrca(fbd_tree, clade_extant)
 
-# Monitor all the fossil ages #
-age_Agriarctos_spp          := tmrca(fbd_tree, clade("Agriarctos_spp"))
-age_Ailurarctos_lufengensis := tmrca(fbd_tree, clade("Ailurarctos_lufengensis"))
-age_Arctodus_simus          := tmrca(fbd_tree, clade("Arctodus_simus"))
-age_Ballusia_elmensis       := tmrca(fbd_tree, clade("Ballusia_elmensis"))
-age_Indarctos_arctoides     := tmrca(fbd_tree, clade("Indarctos_arctoides"))
-age_Indarctos_punjabiensis  := tmrca(fbd_tree, clade("Indarctos_punjabiensis"))
-age_Indarctos_vireti        := tmrca(fbd_tree, clade("Indarctos_vireti"))
+# Monitor the age of a particular fossil #
 age_Kretzoiarctos_beatrix   := tmrca(fbd_tree, clade("Kretzoiarctos_beatrix"))
-age_Parictis_montanus       := tmrca(fbd_tree, clade("Parictis_montanus"))
-age_Ursavus_brevirhinus     := tmrca(fbd_tree, clade("Ursavus_brevirhinus"))
-age_Ursavus_primaevus       := tmrca(fbd_tree, clade("Ursavus_primaevus"))
-age_Ursus_abstrusus         := tmrca(fbd_tree, clade("Ursus_abstrusus"))
-age_Ursus_spelaeus          := tmrca(fbd_tree, clade("Ursus_spelaeus"))
-age_Zaragocyon_daamsi       := tmrca(fbd_tree, clade("Zaragocyon_daamsi"))
 
