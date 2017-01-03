@@ -1,0 +1,45 @@
+#NEXUS
+
+Begin data;
+Dimensions ntax=35 nchar=4;
+Format datatype=Standard missing=? gap=- labels="01";
+Matrix
+                                                           [KOMH]
+    Argyroxiphium_grayanum_East_Maui_Art_Medeiros_sn        0010
+    Argyroxiphium_grayanum_West_Maui_BGB661                 0010
+    Argyroxiphium_caliginis_BGB660                          0010
+    Argyroxiphium_kauense_BGB773                            1000
+    Argyroxiphium_sandwicense_subsp._macrocephalum_GDC1239  0001
+    Argyroxiphium_sandwicense_subsp._sandwicense_BGB657     0001
+    Dubautia_arborea_BGB527                                 0001                        
+    Dubautia_ciliolata_subsp._ciliolata_BGB529              0001
+    Dubautia_ciliolata_subsp._glutinosa_BGB659              0001
+    Dubautia_herbstobatae_GDC1244                           0100
+    Dubautia_imbricata_BGB667                               1000
+    Dubautia_knudsenii_subsp._filiformis_GDC1234            1000
+    Dubautia_knudsenii_subsp._knudsenii_GDC1047             1000
+    Dubautia_knudsenii_subsp._nagatae_GDC1322               1000
+    Dubautia_laevigata_BGB671                               1000
+    Dubautia_latifolia_BGB675                               1000
+    Dubautia_laxa_subsp._hirsuta_GDC833                     1100 [ 1110 ]
+    Dubautia_laxa_subsp._laxa_BGB662                        0100
+    Dubautia_linearis_subsp._hillebrandii_BGB531            0001
+    Dubautia_linearis_subsp._linearis_BGB516                0001
+    Dubautia_menziesii_BGB522                               0010
+    Dubautia_microcephala_GDC1044                           1000
+    Dubautia_paleata_GDC1375                                1000
+    Dubautia_pauciflorula_BGB668                            1000
+    Dubautia_plantaginea_subsp._humilis_GDC1183             0010
+    Dubautia_plantaginea_subsp._magnifolia_BGB776           1000
+    Dubautia_plantaginea_subsp._plantaginea_GDC1180         1001
+    Dubautia_platyphylla_BGB524                             0010
+    Dubautia_raillardioides_BGB670                          1000
+    Dubautia_reticulata_BGB664                              0010
+    Dubautia_scabra_subsp._leiophylla_BGB778                0011
+    Dubautia_scabra_subsp._scabra_BGB530                    0001
+    Dubautia_sherffiana_BGB515                              0100
+    Wilkesia_gymnoxiphium_C76_022                           1000
+    Wilkesia_hobdyi_GDC1150                                 1000                            
+    ;
+End;
+

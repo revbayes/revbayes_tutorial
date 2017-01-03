@@ -1,0 +1,2 @@
+Iteration	Posterior	Likelihood	Prior	allopatry	clock_bg	dp	r_gain	r_loss	subset_sympatry	widespread_sympatry
+0	-1835.57	-1837.76	2.19402	0.189631	0.0205774	0.595937	0.159626	0.840374	0.367874	0.442495

@@ -1,0 +1,137 @@
+{
+    "name": "Earth",
+    "epochs": [
+        {
+            "name": "0_1000_0000", 
+            "start_age": 1000,
+			"end_age": 0, 
+            "areas": [
+                {
+                    "latitude": 0.0, 
+                    "longitude": -70.0, 
+                    "name": "SAm_N"
+                }, 
+                {
+                    "latitude": -25.0, 
+                    "longitude": -50.0, 
+                    "name": "SAm_E"
+                }, 
+                {
+                    "latitude": -45.0, 
+                    "longitude": -60.0, 
+                    "name": "SAm_S"
+                }, 
+                {
+                    "latitude": 60.0, 
+                    "longitude": -125.0, 
+                    "name": "NAm_NW"
+                }, 
+                {
+                    "latitude": 40.0, 
+                    "longitude": -80.0, 
+                    "name": "NAm_SE"
+                }, 
+                {
+                    "latitude": 60.0, 
+                    "longitude": -70.0, 
+                    "name": "NAm_NE"
+                }, 
+                {
+                    "latitude": 25.0, 
+                    "longitude": -105.0, 
+                    "name": "NAm_SW"
+                }, 
+                {
+                    "latitude": 70.0, 
+                    "longitude": -40.0, 
+                    "name": "Grn"
+                }, 
+                {
+                    "latitude": 50.0, 
+                    "longitude": 5.0, 
+                    "name": "Eur"
+                }, 
+                {
+                    "latitude": 45.0, 
+                    "longitude": 65.0, 
+                    "name": "As_C"
+                }, 
+                {
+                    "latitude": 40.0, 
+                    "longitude": 90.0, 
+                    "name": "As_E"
+                }, 
+                {
+                    "latitude": 20.0, 
+                    "longitude": 105.0, 
+                    "name": "As_SE"
+                }, 
+                {
+                    "latitude": 70.0, 
+                    "longitude": 150.0, 
+                    "name": "As_NE"
+                }, 
+                {
+                    "latitude": 10.0, 
+                    "longitude": -5.0, 
+                    "name": "Afr_W"
+                }, 
+                {
+                    "latitude": -25.0, 
+                    "longitude": 25.0, 
+                    "name": "Afr_S"
+                }, 
+                {
+                    "latitude": 0.0, 
+                    "longitude": 35.0, 
+                    "name": "Afr_E"
+                }, 
+                {
+                    "latitude": 25.0, 
+                    "longitude": 35.0, 
+                    "name": "Afr_N"
+                }, 
+                {
+                    "latitude": -20.0, 
+                    "longitude": 125.0, 
+                    "name": "Aus_N"
+                }, 
+                {
+                    "latitude": -30.0, 
+                    "longitude": 145.0, 
+                    "name": "Aus_S"
+                }, 
+                {
+                    "latitude": 20.0, 
+                    "longitude": 80.0, 
+                    "name": "Ind"
+                }, 
+                {
+                    "latitude": -20.0, 
+                    "longitude": 47.0, 
+                    "name": "Mdg"
+                }, 
+                {
+                    "latitude": -70.0, 
+                    "longitude": -40.0, 
+                    "name": "Ant_W"
+                }, 
+                {
+                    "latitude": -70.0, 
+                    "longitude": 65.0, 
+                    "name": "Ant_E"
+                }, 
+                {
+                    "latitude": 0.0, 
+                    "longitude": 120.0, 
+                    "name": "Mly"
+                }, 
+                {
+                    "latitude": 42.0, 
+                    "longitude": 174.0, 
+                    "name": "NZ"
+                }
+            ]
+        }
+    ]
+}

@@ -1,0 +1,48 @@
+#NEXUS
+
+Begin data;
+Dimensions ntax=38 nchar=6;
+Format datatype=Standard missing=? gap=- labels="01";
+Matrix
+                                                    [RKOMHZ]
+    Anisocarpus_madioides                            000001
+    Anisocarpus_scabridus                            000001
+    Carlquistia_muirii                               000001
+    Argyroxiphium_grayanum_East_Maui                 000100
+    Argyroxiphium_grayanum_West_Maui                 000100
+    Argyroxiphium_caliginis                          000100
+    Argyroxiphium_kauense                            010000
+    Argyroxiphium_sandwicense_subsp._macrocephalum   000010
+    Argyroxiphium_sandwicense_subsp._sandwicense     000010
+    Dubautia_arborea                                 000010                        
+    Dubautia_ciliolata_subsp._ciliolata              000010
+    Dubautia_ciliolata_subsp._glutinosa              000010
+    Dubautia_herbstobatae                            001000
+    Dubautia_imbricata                               010000
+    Dubautia_knudsenii_subsp._filiformis             010000
+    Dubautia_knudsenii_subsp._knudsenii              010000
+    Dubautia_knudsenii_subsp._nagatae                010000
+    Dubautia_laevigata                               010000
+    Dubautia_latifolia                               010000
+    Dubautia_laxa_subsp._hirsuta                     011000 [ 111000 ]
+    Dubautia_laxa_subsp._laxa                        001000
+    Dubautia_linearis_subsp._hillebrandii            000010
+    Dubautia_linearis_subsp._linearis                000010
+    Dubautia_menziesii                               000100
+    Dubautia_microcephala                            010000
+    Dubautia_paleata                                 010000
+    Dubautia_pauciflorula                            010000
+    Dubautia_plantaginea_subsp._humilis              000100
+    Dubautia_plantaginea_subsp._magnifolia           010000
+    Dubautia_plantaginea_subsp._plantaginea          010010
+    Dubautia_platyphylla                             000100
+    Dubautia_raillardioides                          010000
+    Dubautia_reticulata                              000100
+    Dubautia_scabra_subsp._leiophylla                000110
+    Dubautia_scabra_subsp._scabra                    000010
+    Dubautia_sherffiana                              001000
+    Wilkesia_gymnoxiphium                            010000
+    Wilkesia_hobdyi                                  010000                            
+    ;
+End;
+
