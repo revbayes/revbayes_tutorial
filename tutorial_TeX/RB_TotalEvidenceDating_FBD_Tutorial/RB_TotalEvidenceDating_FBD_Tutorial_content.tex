@@ -715,11 +715,10 @@ Enter the \Rev code provided in this section in the new model file.
 \end{framed}}
 
 For our hierarchical, uncorrelated exponential relaxed clock model, we first define the mean branch rate as an exponential random variable.
-Then, we specify some scale proposal moves on the mean rate parameter.
+Then, we specify scale proposal moves on the mean rate parameter.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 branch_rates_mean ~ dnExponential(10.0)
-
 moves[mvi++] = mvScale(branch_rates_mean, lambda=0.01, weight=1.0)
 moves[mvi++] = mvScale(branch_rates_mean, lambda=0.1,  weight=1.0)
 moves[mvi++] = mvScale(branch_rates_mean, lambda=1.0,  weight=1.0)
