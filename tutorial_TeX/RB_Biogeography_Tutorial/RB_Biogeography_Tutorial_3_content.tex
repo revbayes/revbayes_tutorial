@@ -129,7 +129,7 @@ tree <- readTrees(tree_fn)[1]
 
 % distances between areas
 
-Dispersal rates might make use of some extrinsic information, such as geographical distances between areas \citep{macarthur67, webb12}.
+Dispersal rates might make use of some extrinsic information, such as geographical distances between areas \citep{MacArthur1967, Webb2012}.
 We model this as $d_{ij} = a e ^ {-b g_{ij}}$ where $g_{ij}$ is the geographical distance between areas $i$ and $j$ and $a$ and $b$ are parameters that scale distance on linear and exponential scales, respectively. Note that all dispersal rates equal $a$ when $b=0$.
 The variables $a$, $b$, $d_{ij}$, and $g_{ij}$ are stored in memory as {\tt dispersal\_rate}, {\tt distance\_scale}, {\tt dr[i][j]}, and {\tt distances[i][j]}.
 
@@ -341,7 +341,7 @@ mymcmc.run(n_gen)
 {\it Example results have around found in {\tt output\_example/epoch.*} }
 
 When compared to the ancestral state estimates from the ``simple'' analysis (Figure \ref{fig:simple_RevGadgets_ase}), these results are more consonant with what we know about the origination times of the islands and lineages (Figure XX).
-First, this reconstruction asserts that the clade originated in the modern Hawaiian islands at a time when only Kauai was above sea level, hence high confidence in the root state of K.
+First, this reconstruction asserts that the clade originated in the modern Hawaiian islands at a time when only Kauai was above sea level.
 The ancestral range for Clade I is Maui (M) with probability 0.41 and Maui+Hawaii (MH) with probability 0.33.
 Similarly, the Clade II does not reconstruct OMH as an ancestral range, since Maui and Hawaii had not yet formed 2.4 Ma.
 %KMH and OMH, respecitvely.

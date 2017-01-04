@@ -217,10 +217,10 @@ In this exercise, we will combine different types of data from 22 species of ext
 %The analysis in this tutorial includes data from several different sources (see Fig.\ \ref{fig:module-gm}).
 We have molecular sequence data for ten species, which represent all of the eight living bears and two extinct species sequenced from sub-fossil specimens (\textit{Arctodus simus, Ursus spelaeus}).
 The sequence alignment provided is a 1,000 bp fragment of the cytochrome-b mitochondrial gene \citep{krause2008}.
-The morphological character matrix unites 18 taxa (both fossil and extant) with 62 binary characters \citep{abella12}.
+The morphological character matrix unites 18 taxa (both fossil and extant) with 62 binary (states \cl{0} or \cl{1}) characters \citep{abella12}.
 %Further, we must provide an occurrence time for each taxon sampled from the fossil record.
 For the fossil species, occurrence times are obtained from the literature or fossil databases like the \href{http://fossilworks.org/}{Fossilworks PaleoDB} or the \href{http://fossilcalibrations.org/}{Fossil Calibration Database}, or from your own paleontological expertise. 
-The 14 fossil species used in this analysis are listed in Table \ref{bearFossilTable} along with the age range for the specimen and relevant citation.
+The 14 fossil species used in this analysis are listed in Table \ref{bearFossilTable} along with the age range for the species and relevant citation.
 %For this exercise, we will fix the ages to a value within the age range provided in Table \ref{bearFossilTable}. 
 Finally, there are two fossil species (\textit{Parictis montanus, Ursus abstrusus}) for which we do not have morphological character data (or molecular data) and we must use prior information about their phylogenetic relationships to incorporate these taxa in our analysis. 
 This information will be applied using clade constraints.
@@ -255,6 +255,33 @@ This information will be applied using clade constraints.
 %The dataset we will use encompasses 8 extant species and 14 fossil species, consisting of morphological data for 18 species, nucleotide sequence data from 10 species, and stratigraphic fossil range data for all 14 fossil species.
 %Two fossil species do not have any morphological or molecular data.
 
+\medskip
+\subsection{Tutorial Format}\label{subsect:Exercise-Format}
+
+This tutorial follows a specific format for issuing instructions and information
+
+{\begin{framed}
+The boxed instructions guide you to complete tasks that are not part of the \RevBayes syntax, but rather direct you to create directories or files or similar.
+\end{framed}}
+
+Information describing the commands and instructions will be written in paragraph-form before or after they are issued.
+
+All commands that are specific to \RevBayes and command-line text, including all \Rev syntax, are given in \cl{monotype font}. 
+Furthermore, blocks of \Rev code that are needed to build the model, specify the analysis, or execute the run are given in separate shaded boxes.
+For example, we will instruct you to create a constant node called \cl{a} that is equal to \cl{1.5} using the \cl{<-} operator like this:
+%Load the cytochrome-b sequences from file and assign the data matrix to a variable called \cl{cytb}.
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+a <- 1.5
+\end{lstlisting}
+\end{snugshade*}}
+
+It is important to be aware that some PDF viewers may render some characters given as \colorbox{shadecolor}{\tt{Rev commands}} differently. 
+Thus, if you copy and paste text from this PDF, you may introduce some incorrect characters. 
+Because of this, we recommend that you type the instructions in this tutorial or copy them from the scripts provided. 
+
+
+\medskip
 \subsection{Data and Files}\label{subsect:Exercise-DataFiles}
 
 {\begin{framed}
@@ -268,7 +295,7 @@ This will create a folder called \cl{data} that contains the files necessary to 
 
 %We provide the data files which we will use in this tutorial.
 %You may want to use your own data instead.
-In the \cl{data} folder, you will find the following files
+In the \cl{data} folder, you will find the following files:
 \begin{itemize}[noitemsep,topsep=0pt]
 \item \cl{bears\_taxa.tsv}: a tab-separated table listing every bear species (both fossil and extant) and their occurrence dates. For extant taxa, the occurrence date is \cl{0.0} (\IE the present) and for fossil species, the occurrence date is equal to the mean of the age range (the ranges are defined in a separate file).
 \item \cl{bears\_cytb.nex}: an alignment in NEXUS format of 1,000 bp of cytochrome b sequences for 10 bear species. This alignment includes 8 living bears and 2 extinct sub-fossil bears.
@@ -308,8 +335,8 @@ When you execute \RevBayes in this exercise, you will do so within the main dire
 \subsection{Creating \Rev Files}\label{subsect:Exercise-CreatingFiles}
 
 For complex models and analyses, it is best to create \Rev script files that will contain all of the model parameters, moves, and functions. 
-In this exercise, you will work primarily in your text editor and create a set of modular files that will be easily managed and interchanged.
-You will write the following files from scratch in a text editor\footnote{In section \ref{subsub:Req-Software} we offer a recommendation for a text editor.} and save them in the \cl{scripts} directory:
+In this exercise, you will work primarily in your text editor\footnote{In section \ref{subsub:Req-Software} we offer a recommendation for a text editor.} and create a set of modular files that will be easily managed and interchanged.
+You will write the following files from scratch and save them in the \cl{scripts} directory:
 \begin{itemize}[noitemsep,topsep=0pt]
 \item \cl{mcmc\_TEFBD.Rev}: the master \Rev file that loads the data, the separate model files, and specifies the monitors and MCMC sampler.
 \item \cl{model\_FBDP\_TEFBD.Rev}: specifies the model parameters and moves required for the fossilized birth-death prior on the tree topology, divergence times, fossil occurrence times, and diversification dynamics.
