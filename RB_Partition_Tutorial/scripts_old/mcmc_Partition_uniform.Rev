@@ -1,7 +1,9 @@
 ################################################################################
 #
-# RevBayes Example: Bayesian inference of phylogeny using a GTR+Gamma+Inv
-#			substitution model for a single, uniform partition model.
+# RevBayes Exercise: Bayesian inference using MCMC and output analysis
+# 
+# This file: Specifies the full model parameters and moves for a single, uniform
+#				partition model
 #
 # authors: Tracy A. Heath, Michael Landis, Sebastian Hoehna and Brian R. Moore
 #
@@ -17,8 +19,6 @@ data_cytb = readDiscreteCharacterData("data/primates_cytb.nex")
 data = concatenate( data_cox2, data_cytb )
 
 # Get some useful variables from the data. We need these later on.
-n_species <- data.ntaxa()
-n_branches <- 2 * n_species - 3
 taxa <- data.taxa()
 
 mvi = 0 
@@ -47,7 +47,7 @@ Q := fnGTR(er,pi)
 # Among Site Rate Variation #
 #############################
 
-alpha_prior_mean <- ln(2.0)
+alpha_prior_mean <- 5.0
 alpha_prior_sd <- 0.587405
 alpha ~ dnLognormal( alpha_prior_mean, alpha_prior_sd )
 gamma_rates := fnDiscretizeGamma( alpha, alpha, 4, false )
@@ -62,27 +62,57 @@ moves[++mvi] = mvScale(pinvar, lambda=0.1, tune=true, weight=2.0)
 moves[++mvi] = mvSlide(pinvar, delta=10.0, tune=true, weight=2.0)
 
 
-
 ##############
 # Tree model #
 ##############
 
-out_group = clade("Galeopterus_variegatus")
-# Prior distribution on the tree topology	
-topology ~ dnUniformTopology(taxa, outgroup=out_group)
-moves[++mvi] = mvNNI(topology, weight=5.0)
-moves[++mvi] = mvSPR(topology, weight=1.0)
+### the BDP is conditioned on the root time
+### here we fix it to 90 million year ago
+root_time <- 90
 
-# Branch length prior
-for (i in 1:n_branches) {
-    bl[i] ~ dnExponential(10.0)
-	moves[++mvi] = mvScale(bl[i])
-}
+### the birth rate is a stochastic random variable drawn from a lognormal prior
+### MCMC samples this variable using a scale proposal
+diversification_mean <- ln( ln(450.0/2.0) / root_time )
+diversification_sd <- 0.587405
+diversification ~ dnLognormal(mean=diversification_mean,sd=diversification_sd) 
+moves[++mvi] = mvScale(diversification,lambda=1.0,tune=true,weight=3.0)
 
-TL := sum(bl)
-	
-psi := treeAssembly(topology, bl)
+turnover_mean <- ln( ln(450.0/2.0) / root_time )
+turnover_sd <- 0.587405*2
+turnover ~ dnLognormal(mean=turnover_mean,sd=turnover_sd) 
+moves[++mvi] = mvScale(turnover,lambda=1.0,tune=true,weight=3.0)
 
+### Transform the parameters
+birth_rate := diversification + turnover
+death_rate := turnover
+
+### rho is the probability of sampling species at the present
+### fix this to 23/450, since there are ~450 described species of primates
+### and we have sampled 23
+rho <- taxa.size()/450
+
+### the time tree is a stochastic node modeled by the constant rate birth-death process (dnBDP)
+psi ~ dnBDP(lambda=birth_rate, mu=death_rate, rho=rho, rootAge=root_time, samplingStrategy="uniform", condition="survival", taxa=taxa)
+
+moves[++mvi] = mvNarrow(psi, weight=5.0)
+moves[++mvi] = mvNNI(psi, weight=1.0)
+moves[++mvi] = mvFNPR(psi, weight=3.0)
+#moves[++mvi] = mvGPR(psi, weight=3.0)
+moves[++mvi] = mvSubtreeScale(psi, weight=3.0)
+moves[++mvi] = mvNodeTimeSlideUniform(psi, weight=15.0)
+
+
+
+
+###################
+# Molecular clock #
+###################
+
+### Here, we will estimate it here because we fixed the root age
+### we use a uniform prior on the log-transform clock rate
+log_clock_rate ~ dnUniform(-6,1)
+moves[++mvi] = mvSlide(log_clock_rate, weight=2.0)
+clock_rate := 10^log_clock_rate
 
 
 
@@ -91,7 +121,7 @@ psi := treeAssembly(topology, bl)
 ###################
 
 # the sequence evolution model
-phyloSeq ~ dnPhyloCTMC(tree=psi, Q=Q, siteRates=gamma_rates, pInv=pinvar, type="DNA")
+phyloSeq ~ dnPhyloCTMC(tree=psi, Q=Q, branchRates=clock_rate, siteRates=gamma_rates, pInv=pinvar, type="DNA")
 
 # attach the data
 phyloSeq.clamp(data)
@@ -104,18 +134,18 @@ phyloSeq.clamp(data)
 mymodel = model(psi)
 
 # add monitors
-monitors[++mni] = mnScreen(alpha, pinvar, TL, printgen=1000)
+monitors[++mni] = mnScreen(alpha, pinvar, clock_rate, printgen=1000)
 monitors[++mni] = mnFile(psi, filename="output/PS_uniform.trees", printgen=10)
 monitors[++mni] = mnModel(filename="output/PS_uniform.log",printgen=10)
 
 # run the analysis
-mymcmc = mcmc(mymodel, moves, monitors, nruns=2)
+mymcmc = mcmc(mymodel, moves, monitors)
 mymcmc.burnin(10000,100)
 mymcmc.run(30000)
 
 
 # summarize output
-treetrace = readTreeTrace("output/PS_uniform.trees", treetype="non-clock")
+treetrace = readTreeTrace("output/PS_uniform.trees")
 #treetrace.summarize()
 
 map_tree = mapTree(treetrace,"output/PS_uniform_map.tre")
