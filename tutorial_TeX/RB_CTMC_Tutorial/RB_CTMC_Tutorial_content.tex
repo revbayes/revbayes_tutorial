@@ -205,10 +205,14 @@ As you can see, all substitution rates are equal.
 The tree topology and branch lengths are stochastic nodes in our phylogenetic model. 
 In Figure \ref{fig:jc}, the tree topology is denoted $\Psi$ and the length of the branch leading to node $i$ is $\nu_i$.
 
-We will assume that all possible labeled, unrooted tree topologies have equal probability. This is the \cl{dnUniformTopology()} distribution in \RevBayes. Specify the \cl{topology} stochastic node by passing in the tip labels \cl{names} to the \cl{dnUniformTopology()} distribution:
+We will assume that all possible labeled, unrooted tree topologies have equal probability. 
+This is the \cl{dnUniformTopology()} distribution in \RevBayes. 
+Note that in \RevBayes it is advisable to specify the outgroup for your study system if you use an unrooted tree prior, whereas other software, \EG \MrBayes uses the first taxon in the data matrix file as the outgroup.
+Specify the \cl{topology} stochastic node by passing in the tip labels \cl{names} to the \cl{dnUniformTopology()} distribution:
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-topology ~ dnUniformTopology(names)
+out_group = clade("Galeopterus_variegatus")
+topology ~ dnUniformTopology(taxa, outgroup=out_group)
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -218,8 +222,8 @@ In the case of our unrooted tree topology, for example, we can use both a neares
 These moves do not have tuning parameters associated with them, thus you only need to pass in the \cl{topology} node and proposal \cl{weight}. 
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-moves[++mi] = mvNNI(topology, weight=1.0)
-moves[++mi] = mvSPR(topology, weight=1.0)
+moves[++mvi] = mvNNI(topology, weight=1.0)
+moves[++mvi] = mvSPR(topology, weight=1.0)
 \end{lstlisting}
 \end{snugshade*}}
 The weight specifies how often the move will be applied either on average per iteration or relative to all other moves.
@@ -233,18 +237,42 @@ Copy this entire block of \Rev~code into the console:
 \begin{lstlisting}
 for (i in 1:n_branches) {
    br_lens[i] ~ dnExponential(10.0)
-   moves[++mi] = mvScale(br_lens[i]) 
+   moves[++mvi] = mvScale(br_lens[i]) 
 }
 \end{lstlisting}
 \end{snugshade*}}
 
-It is convenient for monitoring purposes to add the tree length as deterministic variable. The tree length is simply the sum of all branch lengths. This parameter is denoted $\mathbb{L}$ in Figure \ref{fig:jc}.
+It is convenient for monitoring purposes to add the tree length as deterministic variable. 
+The tree length is simply the sum of all branch lengths. 
+%This parameter is denoted $\mathbb{L}$ in Figure \ref{fig:jc}.
 Accordingly, the tree length can be computed using the \cl{sum()} function, which calculates the sum of any vector of values.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 TL := sum(br_lens)
 \end{lstlisting}
 \end{snugshade*}}
+
+\begin{framed}
+\textbf{Alternative branch-length priors}\\
+Some studies, \EG \cite{Brown2010,Rannala2012}, have criticized the exponential prior distribution for branch lengths because it induces a gamma-dsitributed tree-length and the mean of this gamma distribution grows with the number of taxa.
+For example, we can use instead a specific gamma prior distribution (or any other distribution defined on a positive real variable) for the tree length, and then use a Dirichlet prior distribution to break the tree length into the corresponding branch lengths \citep{Zhang2012}.
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+# specify a prior distribution on the tree length with your desired mean
+TL ~ dnGamma(2,4)
+moves[++mvi] = mvScale(TL) 
+
+# now create a random variable for the relative branch lengths
+rel_branch_lengths ~ dnDirichlet( rep(1.0,n_branches) )
+moves[++mvi] = mvBetaSimplex(rel_branch_lengths, weight=n_branches)
+moves[++mvi] = mvDirichletSimplex(rel_branch_lengths, weight=n_branches/10.0)
+
+# finally, transform the relative branch lengths into actual branch lengths
+br_lens := rel_branch_lengths * TL
+\end{lstlisting}
+\end{snugshade*}}
+\end{framed}
+
 
 Finally, we can create a \emph{phylogram} (a phylogeny in which the branch lengths are proportional to the expected number of substitutions/site) by combining the tree topology and branch lengths.
 We do this using the \cl{treeAssembly()} function, which applies the value of the $i^{th}$ member of the \cl{br\_lens} vector to the branch leading to the $i^{th}$ node in \cl{topology}. 
@@ -258,7 +286,6 @@ phylogeny := treeAssembly(topology, br_lens)
 
 \begin{framed}
 \textbf{Prior on Time-Trees: Tree Topology and Node Ages}\\
-
 Alternatively, you may want to specify a prior on time-trees.
 Here we will briefly indicate how to specify such an prior which will lead to inference of time trees.
 
@@ -300,9 +327,9 @@ moves[++mvi] = mvNodeTimeSlideUniform(psi, weight=15.0)
 \end{snugshade*}}
 The weight specifies how often the move will be applied either on average per iteration or relative to all other moves.
 Have a look at the MCMC tutorial for more details about moves and MCMC strategies: \href{http://revbayes.github.io/tutorials.html}{http://revbayes.github.io/tutorials.html}
+\vspace{0.3cm}
 
 \textbf{Molecular clock}\\
-
 Additionally, in the case of time-calibrated trees, we need to add a molecular clock rate parameter.
 For example, we know from empirical estimates that the molecular clock rate is about  0.01 (=1\%) per million years per site
 Nevertheless, we can estimate it here because we fixed the root age.
@@ -436,8 +463,19 @@ When the analysis is complete, you will have the monitored files in your output 
 Methods for visualizing the marginal densities of parameter values are not currently available in \RevBayes itself. 
 Thus, it is important to use programs like \Tracer \citep{Rambaut2011} to evaluate mixing and non-convergence.
 
-\noindent \\ \impmark Look at the files called \cl{output/primates\_cytb\_JC\_posterior\_run\_1.log} and \cl{output/primates\_cytb\_JC\_posterior\_run\_2.log} in \Tracer. There you see the posterior distributions of the continuous parameters, \EG, the tree length variable \cl{TL}.
-
+\noindent \\ \impmark Look at the files called \cl{output/primates\_cytb\_JC\_posterior\_run\_1.log} and \\\cl{output/primates\_cytb\_JC\_posterior\_run\_2.log} in \Tracer. There you see the posterior distributions of the continuous parameters, \EG, the tree length variable \cl{TL}.
+\begin{figure}[htbp!]
+\centering
+\fbox{\includegraphics[width=0.4\textwidth]{\ResourcePath figures/primates_cytb_JC_TL_Trace.pdf}
+\includegraphics[width=0.4\textwidth]{\ResourcePath figures/primates_cytb_JC_TL_Distribution.pdf}}
+\caption{\small Left: Trace of tree-length samples for the two replicated MCMC runs. 
+The caterpillar-like look is a good sign as well as as that the two runs look virtually identical.
+You will also see that the effective sample size is comparably large, \IE much larger than 200.
+Right: Posterior distribution of the tree length of the primate phylogeny under a Jukes-Cantor substitution model. 
+Here we show the two independent replicated MCMC runs which yield the same posterior estimate.
+This is a superficial test that the MCMC has converged to the same estimate.}
+\label{fig:jc_tree}
+\end{figure}
 
 \subsection{Exercise 1}
 
@@ -460,7 +498,8 @@ map_tree = mapTree(treetrace,"output/primates_cytb_JC_MAP.tree")
 \centering
 \fbox{\includegraphics[width=0.8\textwidth]{\ResourcePath figures/primates_cytb_JC_tree.pdf}}
 \caption{\small Maximum a posteriori estimate of the primate phylogeny under a Jukes-Cantor substitution model. 
-The numbers at the nodes show the posterior probabilities for the clades.}
+The numbers at the nodes show the posterior probabilities for the clades.
+We have rooted the tree at the outgroup \emph{Galeopterus\_variegatus}}
 \label{fig:jc_tree}
 \end{figure}
 \noindent \\ \impmark Look at the file called \cl{output/primates\_cytb\_JC.tree} in \texttt{FigTree}. We show it in Figure~\ref{fig:jc_tree}.
@@ -571,7 +610,8 @@ A good move on variables drawn from a Dirichlet distribution is the \cl{mvSimple
 This move randomly takes an element from the simplex, proposes a new value for it drawn from a Beta distribution, and then rescales all values of the simplex to sum to 1 again.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-moves[++mvi] = mvSimplexElementScale(pi)
+moves[++mvi] = mvBetaSimplex(pi, weight=2)
+moves[++mvi] = mvDirichletSimplex(pi, weight=1)
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -694,7 +734,8 @@ The Dirichlet prior on our parameter \cl{er} creates a \href{http://en.wikipedia
 
 {\tt\small \begin{snugshade*}
 \begin{lstlisting}
-moves[++mvi] = mvSimplexElementScale(er) 
+moves[++mvi] = mvBetaSimplex(er, weight=3)
+moves[++mvi] = mvDirichletSimplex(er, weight=1)
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -711,7 +752,8 @@ The node \cl{pi} represents the $\pi$ node in Figure \ref{fig:gtr}.
 Now add the simplex scale move on the stationary frequencies to the moves vector:
 {\tt \small \begin{snugshade*}
 \begin{lstlisting}
-moves[++mvi] = mvSimplexElementScale(pi)  
+moves[++mvi] = mvBetaSimplex(pi, weight=2)
+moves[++mvi] = mvDirichletSimplex(pi, weight=1)
 \end{lstlisting}
 \end{snugshade*}}
 
