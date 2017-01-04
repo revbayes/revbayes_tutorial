@@ -1,9 +1,18 @@
-\section{Overview: Dispersal-Extinction-Cladogenesis model}
+\subsection*{Introduction}
 
-\subsection{Range characters}
+How did species come to live where they're found today?
+To answer this, we can leverage phylogenetic, molecular, and geographical information to model species distributions as the outcome of biogeographic processes.
+How to best model these processes requires special consideration, such as how ranges are inherited following speciation events, how geological events might influence dispersal rates, and what factors affect rates of dispersal and extirpation.
+A major technical challenge of modeling range evolution is how to translate these natural processes into stochastic processes that remain tractable for inference.
+This tutorial provides a brief background in some of these models, then describes how to perform Bayesian inference of historical biogeography using \RevBayes.
 
-Discrete biogeographical models typically rely on presence-absence data, that is, where a species is observed or not observed across multiple discrete areas.
-For example, say there are three areas: A, B, and C.
+\section{Overview of the Dispersal-Extinction-Cladogenesis model}
+
+\subsection*{Range characters}
+
+The Dispersal-Extinction-Cladogenesis (DEC) models range evolution as a discrete-valued process \citep{ree05, ree08}.
+DEC interprets taxon ranges as presence-absence data, that is, where a species is observed or not observed across multiple discrete areas.
+For example, say there are three areas, A, B, and C.
 If a species is present in areas A and C, then its range equals AC, which can also be encoded into the length-3 bit vector, 101.
 Bit vectors may also be transformed into (decimal) integers, \EG the binary number 101 equals the decimal number 5.
 
@@ -25,24 +34,25 @@ $\emptyset$ & 000 & 0 & 0 \\
 \end{table}
 %\end{center}
 
-Decimal representation is rarely used in discussion, but it is useful to keep in mind when considering the total number of possible ranges for a species.
+Decimal representation is rarely used in discussion, but it is useful to keep in mind when considering the total number of possible ranges for a species and when processing output.
+Note, \RevBayes assigns integers to ranges in order according to size.
 
-\subsection{Modeling anagenetic range evolution}
+\subsection*{Anagenetic range evolution}
 
-How might we model the dynamics of species range evolution?
-In this section, we'll cover the Dispersal-Extinction-Cladogenesis model first described by \citet{Ree2005}.
-To begin, we'll focus on anagenesis: evolution that occurs between speciation events within lineages.
-Since we have discrete characters we'll use the continuous-time Markov chain, which allows us to compute transition probability of a character changing from $i$ to $j$ in time $t$ through matrix exponentiation
+
+Anagenesis refers to range evolution that occurs between speciation events within lineages.
+Because DEC uses discrete-valued ranges, anagenesis is modeled using a continuous-time Markov chain.
+This, in turn, allows us to compute transition probability of a character changing from $i$ to $j$ in time $t$ through matrix exponentiation
 \[
-\mathbf{P}_{i,j}(t) = \left[ \exp \left\lbrace \mathbf{Q}t \right\rbrace \right]_{i,j},
+\mathbf{P}_{ij}(t) = \left[ \exp \left\lbrace \mathbf{Q}t \right\rbrace \right]_{ij},
 \]
 where $\textbf{Q}$ is the instantaneous rate matrix defining the rates of change between all pairs of characters, and $\textbf{P}$ is the transition probability rate matrix.
-Remember, $i$ and $j$ represent different ranges, each of which is encoded as the set of areas occupied by the species.
-Exponentiation of the rate matrix is powerful because it integrates over all possible scenarios of character transitions that could occur during $t$ so long as the chain begins in state $i$ and ends in state $j$.
+The indices $i$ and $j$ represent different ranges, each of which is encoded as the set of areas occupied by the species.
+The probability has integrated over all possible scenarios of character transitions that could occur during $t$ so long as the chain begins in state $i$ and ends in state $j$.
 
 We can then encode ${\bf Q}$ to reflect the allowable classes of range evolution events with biologically meaningful parameters.
 We'll take a simple model of range expansion (e.g. $BC \rightarrow ABC$) and range contraction (e.g. $BC \rightarrow C$).
-(Range expansion may also be referred to as dispersal or area gain and range contraction as extirpation, (local) extinction, or area loss.)
+Range expansion may also be referred to as dispersal or area gain and range contraction as extirpation, (local) extinction, or area loss.
 The rates in the transition matrix for three areas might appear as
 
 \[
@@ -60,9 +70,10 @@ The rates in the transition matrix for three areas might appear as
 		ABC 		& 0 	& 0 	& 0 	& 0 		& e_C 		& e_B 		& e_A 		& - \\								
 	\end{array},
 \]
-where $e = ( e_A, e_B, e_C )$ are the (local) extinction rates per area, and $d = ( d_{AB}, d_{AC}, d_{BC}, d_{CB}, d_{CA}, d_{BA})$ are the dispersal rates between areas.
+where $e = ( e_A, e_B, e_C )$ are the (local) extinction rates per area, and $d = ( d_{AB}, d_{AC}, d_{BC}, d_{BA}, d_{CA}, d_{CB})$ are the dispersal rates between areas.
 Notice that the sum of rates leaving state $\emptyset$ is zero, meaning any species that loses all areas in its range remains permanently extinct.
 
+To build our intuition, let's build a DEC rate matrix.
 Assume you have three areas
 
 \begin{snugshade}
@@ -71,7 +82,7 @@ n_areas <- 3
 \end{lstlisting}
 \end{snugshade}
 
-First, create a matrix of dispersal rates between area pairs.
+First, create a matrix of dispersal rates between area pairs, with rates $d_{AB} = d_{AC} = \ldots = d_{CB} = 1$
 
 \begin{snugshade}
 \begin{lstlisting}
@@ -83,7 +94,7 @@ for (i in 1:n_areas) {
 \end{lstlisting}
 \end{snugshade}
 
-Next, let's create the extirpation rates
+Next, let's create the extirpation rates with values $e_A=e_B=e_C=1$
 
 \begin{snugshade}
 \begin{lstlisting}
@@ -136,25 +147,26 @@ tp_DEC
 Substructures from the rate matrix are reflected in the transition probability matrix.
 Notice that ranges that are separated by multiple dispersal and extirpation events are the most improbable -- e.g. going from A to BC takes three events and has probability 0.005.
 
-By default, the process conditions on the process never entering the null range when computing the transition probabilities.
+By default, the \RevBayes conditions the anagenetic range evolution process on never entering the null range when computing the transition probabilities.
 This is crucial so the model can both simulate and infer using identical (correct) probabilities.
-The  {\tt condition=Include} setting computes the raw probabilities of \citep{ree05}.
-Setting {\tt condition=Exclude} gives the DEC* model of \citep{massana15} that removes the null range from the state space, which is the first work to describe the pathology of the never-observed null range.
+\citet{massana15} first noted that the null range results in abnormal extirpation rate and range size estimates.
+Their proposed solution to eliminate the null range from the state space is done with the {\tt condition=Exclude} setting. 
+The {\tt nullRange=Include} setting provides no special handling of the null range, and produces the raw probabilities of \citet{ree05}.
 
-\subsection{Modeling cladogenetic range evolution}
+\subsection*{Cladogenetic range evolution}
 
-Cladogenesis describes evolutionary change accompanying speciation.
-Daughter species are not expected to inherit their ancestral range identically in general.
-For each internal node in the reconstructed tree, one of two cladogenetic events can occur: sympatry or allopatry.
-Say the range of a species is $A$ the moment before speciation occurs at an internal phylogenetic node.
+The cladogenetic component of the DEC model describes evolutionary change accompanying speciation events.
+In the context of range evolution, daughter species do not necessarily inherit their ancestral range in an identical manner.
+For each internal node in the reconstructed tree, one of several cladogenetic events can occur, some of which are described below.
+
+Beginning with the simplest case first, suppose the range of a species is $A$ the moment before speciation occurs at an internal phylogenetic node.
 Since the species range is size one, both daughter lineages necessarily inherit the ancestral species range ($A$).
 In DEC parlance, this is called a {\it narrow sympatry} event.
-
-Now suppose the ancestral range is $ABC$.
+Now, suppose the ancestral range is $ABC$.
 Under {\it subset sympatric cladogenesis}, one lineage identically inherits the ancestral species range, $ABC$, while the other lineage inherits only a single area, i.e. only $A$ or $B$ or $C$.
 For {\it widspread sympatric cladogenesis}, both lineages inherit the ancestral range, $ABC$.
 Under {\it allopatric cladogenesis}, the ancestral range is split evenly among daughter lineages, e.g. one lineage may inherit $AB$ and the other inherits $C$.
-
+Finally, supposing the ancestral range is $A$, {\it jump dispersal cladogenesis}  results in one daughter lineage inheriting the ancestral range $A$, and the other daughter lineage inheriting a previously uninhabited area, $B$ or $C$.
 For an excellent overview of described state transitions for cladogenetic events, see \citet{Matzke2012}.
 
 Make the cladogenetic probability event matrix
@@ -171,7 +183,7 @@ P_DEC := fnDECCladoProbs(eventProbs=clado_event_probs,
 
 {\tt clado\_event\_types} defines what cladogenetic event types are used.
 {\tt "a"} and {\tt "s"} indicate allopatry and subset sympatry, as described in \citep{ree05}.
-Other cladogenetic events include jump dispersal ({\tt "j"}) and full sympatry ({\tt "f"}).
+Other cladogenetic events include jump dispersal \citep[{\tt "j"};][]{Matzke2012} and full sympatry \citep[{\tt "f"};][]{Landis2013}.
 The cladogenetic event probability matrix will assume that {\tt eventProbs} and {\tt eventTypes} share the same order.
 
 Print the cladogenetic transition probabilities
@@ -192,8 +204,10 @@ P_DEC
 \end{snugshade}
 
 The cladogenetic probability matrix becomes very sparse for large numbers of areas, so only non-zero values are shown.
+Each row reports a triplet of states---the ancestral state and the two daughter states---with the probability associated with that event.
+Since these are proper probabilities, the sum of probabilities for a given ancestral state over all possible cladogenetic outcomes equals one.
 
-\subsection{Things to consider}
+\subsection*{Things to consider}
 
 The probabilities of anagenetic change along lineages must account for all combinations of starting states and ending states.
 For 3 areas, there are 8 states, and thus $8 \times 8 = 64$ probability terms for pairs of states.
@@ -205,14 +219,17 @@ Let's consider what happens to the size of \textbf{Q} when the number of areas, 
 For three areas, \textbf{Q} is size $8 \times 8$.
 For ten areas, \textbf{Q} is size $2^{10} \times 2^{10} = 1024 \times 1024$, which approaches the largest size matrices that can be exponentiated in a practical amount of time.
 For twenty areas, \textbf{Q} is size $2^{20} \times 2^{20} \approx 10^6 \times 10^6$ and exponentiation is not viable.
+Thus, selecting the discrete areas for a DEC analysis should be done with regard to what one hopes to learn through the analysis itself.
 
-The DEC model ignores speciation events hidden by extinction or incomplete taxon sampling.
-The probability of cladogenesis and local extinction events would ideally be linked to a birth-death process, as it is in the GeoSSE model \citep{Goldberg2011}.
-Unfortunately, since the numerical method for SSE models scale poorly, and DEC models remain the only option when the geography has more than two or three areas.
-For more than ten areas, data augmentation may be used to infer ancestral ranges, as described in Section \ref{sec:bayarea}.
+%Methods to permit are available in \RevBayes, but require complicated inference algorithms and 
+%\citep{Landis13}
 
+%The DEC model ignores speciation events hidden by extinction or incomplete taxon sampling.
+%The probability of cladogenesis and local extinction events would ideally be linked to a birth-death process, as it is in the GeoSSE model \citep{Goldberg2011}.
+%Unfortunately, since the numerical method for SSE models scale poorly, and DEC models remain the only option when the geography has more than two or three areas.
+%For more than ten areas, data augmentation may be used to infer ancestral ranges, as described in Section \ref{sec:bayarea}.
 
-\subsection{Some questions}
+\subsection*{Some questions}
 
 {\bf \framebox{?} For the three-area DEC rate matrix above, what is the rate of leaving state AC in terms of dispersal and extinction parameters?}
 
