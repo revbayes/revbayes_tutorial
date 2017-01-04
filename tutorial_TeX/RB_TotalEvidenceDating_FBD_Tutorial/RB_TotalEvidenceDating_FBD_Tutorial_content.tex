@@ -562,7 +562,7 @@ This means that or move schedule will propose five times as many updates to \cl{
 \subsubsection{The FBD Distribution Object}\label{subsub:Exercise-FBD-dnFBD}
 
 All the parameters of the FBD process have now been specified. 
-The next step is to use these parameters to define the FBD tree prior distribution.
+The next step is to use these parameters to define the FBD tree prior distribution, which we will call \cl{fbd\_dist}.
 
 {\tt \begin{snugshade*}
 \begin{lstlisting}
@@ -575,8 +575,8 @@ fbd_dist = dnFBDP(origin=origin_time, lambda=speciation_rate, mu=extinction_rate
 Note that we created the distribution as a workspace variable using the workspace assignment operator \cl{=}.
 This is because we still need to include a topology constraint in our final specification of the tree prior.
 Specifically, we do not have any morphological or molecular data for the fossil species \textit{Ursus abstrusus}.
-Therefore, in order to use the age of this fossil as a calibration, we need to specify to which clade it belongs.
-In this case, \textit{Ursus abstrusus} belongs to the subfamily Ursinae, so we define a clade for Ursinae including \textit{Ursus abstrusus}.
+Therefore, in order to use the age of this fossil as an observation, we need to specify to which clade it belongs.
+In this case, \textit{Ursus abstrusus} belongs to the subfamily Ursinae, so we define a clade for the total group Ursinae including \textit{Ursus abstrusus}.
 
 {\tt \begin{snugshade*}
 \begin{lstlisting}
@@ -587,7 +587,7 @@ clade_ursinae = clade("Melursus_ursinus", "Ursus_arctos", "Ursus_maritimus",
 \end{snugshade*}}
 
 Then we can specify the final constrained tree prior distribution by creating a vector of constraints, and providing it along with the workspace FBD distribution to the constrained topology distribution.
-Here we use the stochastic assignment operator \verb+~+ to create a stochastic node for our tree variable. 
+Here we use the stochastic assignment operator \verb+~+ to create a stochastic node for our constrained, FBD-tree variable (called \cl{fbd\_tree}). 
 
 {\tt \begin{snugshade*}
 \begin{lstlisting}
@@ -596,11 +596,16 @@ fbd_tree ~ dnConstrainedTopology(fbd_dist, constraints=constraints)
 \end{lstlisting}
 \end{snugshade*}}
 
+It is important to recognize that we do not know if \textit{Ursus abstrusus} is a \textit{crown} or \textit{stem} Ursinae. 
+Because of this, we defined this clade constraint so that it constrained the \textit{total group} Ursinae and this uncertainty is taken into account.
+As a result, our MCMC will marginalize over both stem and crown positions of \textit{U.\ abstrusus} and sample the phylogeny in proportion to its posterior probability, conditional on our model and data.
+
 \subsubsection{Moves on the Tree Topology and Node Ages}\label{subsub:Exercise-FBD-TreeMoves}
 
-Next, in order to sample from the posterior distribution of trees, we need to specify moves that propose changes to the  topology and node times.
-We also include a proposal that toggles whether a fossil is a ``sampled ancestor'' - a fossil species that has sampled descendants present on the tree.
-When conditioning on the origin time, we also need to explicitly sample the root age.
+Next, in order to sample from the posterior distribution of trees, we need to specify moves that propose changes to the topology (\cl{mvFNPR}) and node times (\cl{mvNodeTimeSlideUniform}).
+Included with these moves is a proposal that will collapse or expand a fossil branch (\cl{mvCollapseExpandFossilBranch}).
+This will change a fossil that is a sampled ancestor (see Fig.\ \ref{fig:example-tree} and Sect.\ \ref{subsect:Intro-FBD}) so that it is on its own branch and vice versa.
+In addition, when conditioning on the origin time, we also need to explicitly sample the root age (\cl{mvRootTimeSlideUniform}).
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 moves[mvi++] = mvFNPR(fbd_tree, weight=15.0)
@@ -622,7 +627,7 @@ intervals = readDataDelimitedFile(file="data/bears_fossil_intervals.tsv", header
 \end{snugshade*}}
 
 Next, we loop over this matrix and for each fossil observation create a uniform random variable representing the likelihood.
-Remember, we can represent the fossil likelihood using any uniform distribution that is non-zero when the likelihood is equal to one (section \ref{subsect:Intro-TipSampling}).
+Remember, we can represent the fossil likelihood using any uniform distribution that is non-zero when the likelihood is equal to one (Sect.\ \ref{subsect:Intro-TipSampling}).
 
 For example, if $t_i$ is the inferred fossil age and $(a_i,b_i)$ is the observed stratigraphic interval, we know the likelihood is equal to one when $a_i < t_i < b_i$, or equivalently $t_i - b_i < 0 < t_i - a_i$.
 So let's represent the likelihood using a uniform random variable uniformly distributed in $(t_i - b_i, t_i - a_i)$ and clamped at zero.
@@ -644,7 +649,10 @@ for(i in 1:intervals())
 \end{lstlisting}
 \end{snugshade*}}
 
-Finally, we create a move that samples the ages of the fossil nodes on the tree. 
+%This is the first point where we are specifying observed data using the \cl{clamp} method of a stochastic node.
+%TODO we probably need more explanation about what "clamp"ing is. (too bad it's a bit of a weird case here)
+
+Finally, we add a move that samples the ages of the fossil nodes on the tree. 
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 moves[mvi++] = mvFossilTimeSlideUniform(fbd_tree, origin_time, weight=5.0)
