@@ -54,7 +54,7 @@ You may want to use your own data instead.
 In the \cl{data} folder, you will find the following files
 \begin{itemize}
 \item
-\cl{primates\_cytb.nex}: Alignment of the \textit{cytochrome b} subunit from 23 primates representing 14 of the 16 families (\textit{Indriidae} and \textit{Callitrichidae} are missing). Note that there is one outgroup species included: \emph{Galeopterus variegatus}.
+\cl{primates\_and\_galeopterus\_cytb.nex}: Alignment of the \textit{cytochrome b} subunit from 23 primates representing 14 of the 16 families (\textit{Indriidae} and \textit{Callitrichidae} are missing). Note that there is one outgroup species included: \emph{Galeopterus variegatus}.
 \end{itemize}
 
 
@@ -128,7 +128,7 @@ The next steps will walk you through the full specification of the model and MCM
 First load in the sequences using the \cl{readDiscreteCharacterData()} function. 
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-data <- readDiscreteCharacterData("data/primates_cytb.nex")
+data <- readDiscreteCharacterData("data/primates_and_galeopterus_cytb.nex")
 \end{lstlisting}
 \end{snugshade*}}
 Executing these lines initializes the data matrix as the respective \Rev variables. 
@@ -138,7 +138,7 @@ To report the current value of any variable, simply type the variable name and p
 data
 |*   DNA character matrix with 23 taxa and 1141 characters
 |*   =====================================================
-|*   Origination:                      primates_cytb.nex
+|*   Origination:                      primates_and_galeopterus_cytb.nex
 |*   Number of taxa:                   23
 |*   Number of included taxa:          23
 |*   Number of characters:             1141

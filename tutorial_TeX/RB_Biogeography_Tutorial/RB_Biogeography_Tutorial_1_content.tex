@@ -18,6 +18,7 @@ Bit vectors may also be transformed into (decimal) integers, \EG the binary numb
 
 %\begin{center}
 \begin{table}[!ht]
+\scriptsize
 \centering
 \begin{tabular}{lrcc}
 Range & Bits & Size & State \\ \hline
@@ -68,10 +69,11 @@ The rates in the transition matrix for three areas might appear as
 		AC 			& 0 	& e_C 	& 0 	& e_A 		& 0			& - 		& 0 		& d_{AB} + d_{CB} \\
 		BC 			& 0 	& 0 	& e_C 	& e_B 		& 0			& 0 		& - 		& d_{BA} + d_{CA} \\
 		ABC 		& 0 	& 0 	& 0 	& 0 		& e_C 		& e_B 		& e_A 		& - \\								
-	\end{array},
+	\end{array}
 \]
+
 where $e = ( e_A, e_B, e_C )$ are the (local) extinction rates per area, and $d = ( d_{AB}, d_{AC}, d_{BC}, d_{BA}, d_{CA}, d_{CB})$ are the dispersal rates between areas.
-Notice that the sum of rates leaving state $\emptyset$ is zero, meaning any species that loses all areas in its range remains permanently extinct.
+Notice that the sum of rates leaving the null range ($\emptyset$) is zero, meaning any lineage that loses all areas in its range remains that way permanently.
 
 To build our intuition, let's build a DEC rate matrix.
 Assume you have three areas
@@ -107,10 +109,10 @@ for (i in 1:n_areas) {
 \end{lstlisting}
 \end{snugshade}
 
-When the only non-zero extirpation rates are on the diagonal of the matrix, extirpation rates are independent of what other areas the taxon is occupies.
-More complex models that penalize widespread ranges spanning disconnected areas are explored in later sections.
+When the extirpation rate matrix is a diagonal matrix (i.e. all non-diagonal entries are zero), extirpation rates are mutually independent as in \citep{Ree2005}.
+More complex models that penalize widespread ranges that span disconnected areas are explored in later sections.
 
-Now, create the DEC rate matrix
+To continue, create the DEC rate matrix from the dispersal rates ({\tt dr}) and extirpation rates ({\tt er}).
 
 \begin{snugshade}
 \begin{lstlisting}
@@ -127,7 +129,7 @@ Q_DEC
 \end{lstlisting}
 \end{snugshade}
 
-Show the anagenetic transition probabilities for a branch of length {\tt 0.2}
+Compute the anagenetic transition probabilities for a branch of length {\tt 0.2}.
 
 \begin{snugshade}
 \begin{lstlisting}
@@ -144,13 +146,14 @@ tp_DEC
 \end{lstlisting}
 \end{snugshade}
 
-Substructures from the rate matrix are reflected in the transition probability matrix.
-Notice that ranges that are separated by multiple dispersal and extirpation events are the most improbable -- e.g. going from A to BC takes three events and has probability 0.005.
+Notice how the structure of the rate matrix is reflected in the transition probability matrix.
+For example, ranges that are separated by multiple dispersal and extirpation events are the most improbable: transitioning from going from A to BC takes a minimum of three events and has probability 0.005.
 
-By default, the \RevBayes conditions the anagenetic range evolution process on never entering the null range when computing the transition probabilities.
-This is crucial so the model can both simulate and infer using identical (correct) probabilities.
+Also note that the probability of entering or leaving the null range is zero.
+By default, the \RevBayes conditions the anagenetic range evolution process on never entering the null range when computing the transition probabilities ({\tt nullRange=CondSurv}).
+This allows the model to both simulate and infer using the same transition probabilities.
 \citet{Massana2015} first noted that the null range results in abnormal extirpation rate and range size estimates.
-Their proposed solution to eliminate the null range from the state space is done with the {\tt condition=Exclude} setting. 
+Their proposed solution to eliminate the null range from the state space is enabled with the {\tt nullRange=Exclude} setting. 
 The {\tt nullRange=Include} setting provides no special handling of the null range, and produces the raw probabilities of \citet{Ree2005}.
 
 \subsection*{Cladogenetic range evolution}
@@ -161,13 +164,13 @@ For each internal node in the reconstructed tree, one of several cladogenetic ev
 
 Beginning with the simplest case first, suppose the range of a species is $A$ the moment before speciation occurs at an internal phylogenetic node.
 Since the species range is size one, both daughter lineages necessarily inherit the ancestral species range ($A$).
-In DEC parlance, this is called a {\it narrow sympatry} event.
+In DEC parlance, this is called a narrow sympatry event.
 Now, suppose the ancestral range is $ABC$.
-Under {\it subset sympatric cladogenesis}, one lineage identically inherits the ancestral species range, $ABC$, while the other lineage inherits only a single area, i.e. only $A$ or $B$ or $C$.
-For {\it widspread sympatric cladogenesis}, both lineages inherit the ancestral range, $ABC$.
-Under {\it allopatric cladogenesis}, the ancestral range is split evenly among daughter lineages, e.g. one lineage may inherit $AB$ and the other inherits $C$.
-Finally, supposing the ancestral range is $A$, {\it jump dispersal cladogenesis}  results in one daughter lineage inheriting the ancestral range $A$, and the other daughter lineage inheriting a previously uninhabited area, $B$ or $C$.
-For an excellent overview of described state transitions for cladogenetic events, see \citet{Matzke2012}.
+Under subset sympatry, one lineage identically inherits the ancestral species range, $ABC$, while the other lineage inherits only a single area, i.e. only $A$ or $B$ or $C$.
+For widspread sympatric cladogenesis, both lineages inherit the ancestral range, $ABC$.
+Under allopatric cladogenesis, the ancestral range is split evenly among daughter lineages, e.g. one lineage may inherit $AB$ and the other inherits $C$.
+Finally, supposing the ancestral range is $A$, jump dispersal cladogenesis results in one daughter lineage inheriting the ancestral range $A$, and the other daughter lineage inheriting a previously uninhabited area, $B$ or $C$.
+See \citet{Matzke2012} for an excellent overview of the cladogenetic state transitions described in the literature.
 
 Make the cladogenetic probability event matrix
 

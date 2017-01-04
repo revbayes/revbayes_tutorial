@@ -50,9 +50,9 @@ We provide several data files that we will use in this tutorial; these are the s
 In the \cl{data} folder, you will find the following files
 \begin{itemize}
 \item
-\cl{primates\_cytb.nex}: Alignment of the \textit{cytochrome b} subunit from 23 primates representing 14 of the 16 families (\textit{Indriidae} and \textit{Callitrichidae} are missing).
+\cl{primates\_and\_galeopterus\_cytb.nex}: Alignment of the \textit{cytochrome b} subunit from 23 primates representing 14 of the 16 families (\textit{Indriidae} and \textit{Callitrichidae} are missing).
 \item
-\cl{primates\_cox2.nex}: Alignment of the \textit{COX-II} gene from the same 23 primates species.
+\cl{primates\_and\_galeopterus\_cox2.nex}: Alignment of the \textit{COX-II} gene from the same 23 primates species.
 \end{itemize}
 
 
@@ -105,8 +105,8 @@ Our first exercise is to construct a multi-gene analysis where all genes evolve 
 To begin, load in the sequences using the \cl{readDiscreteCharacterData()} function. 
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-data_cox2 = readDiscreteCharacterData("data/primates_cox2.nex")
-data_cytb = readDiscreteCharacterData("data/primates_cytb.nex")
+data_cox2 = readDiscreteCharacterData("data/primates_and_galeopterus_cox2.nex")
+data_cytb = readDiscreteCharacterData("data/primates_and_galeopterus_cytb.nex")
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -126,7 +126,7 @@ Typing \cl{data} reports the dimensions of the concatenated matrix, this provide
 
    DNA character matrix with 23 taxa and 1852 characters
    =====================================================
-   Origination:                   primates_cox2.nex
+   Origination:                   primates_and_galeopterus_cox2.nex
    Number of taxa:                23
    Number of included taxa:       23
    Number of characters:          1852
@@ -441,7 +441,7 @@ Since we wish to avoid individually specifying each parameter of the GTR+$\Gamma
 To do this, we begin by creating a vector of data file names:
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-filenames <- v("data/primates_cox2.nex", "data/primates_cytb.nex")
+filenames <- v("data/primates_and_galeopterus_cox2.nex", "data/primates_and_galeopterus_cytb.nex")
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -461,7 +461,8 @@ for (i in 1:n_data_subsets){
 \end{lstlisting}
 \end{snugshade*}}
 
-Next, we can initialize some important variables. This does require, however, that both of our alignments have the same number of species and matching tip names.
+Next, we can initialize some important variables. 
+This does require, however, that both of our alignments have the same number of species and matching tip names.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 taxa <- data[1].taxa()
@@ -693,8 +694,8 @@ For this exercise, we will partition sites within the cytB and cox2 gene by codo
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 clear()
-data_cox2 <- readDiscreteCharacterData("data/primates_cox2.nex")
-data_cytb <- readDiscreteCharacterData("data/primates_cytb.nex")
+data_cox2 <- readDiscreteCharacterData("data/primates_and_galeopterus_cox2.nex")
+data_cytb <- readDiscreteCharacterData("data/primates_and_galeopterus_cytb.nex")
 \end{lstlisting}
 \end{snugshade*}}
 

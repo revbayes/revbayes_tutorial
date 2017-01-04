@@ -14,8 +14,8 @@
 #######################
 
 # read in the character data
-data_cox2 <- readDiscreteCharacterData("data/primates_cox2.nex")
-data_cytb <- readDiscreteCharacterData("data/primates_cytb.nex")
+data_cox2 <- readDiscreteCharacterData("data/primates_and_galeopterus_cox2.nex")
+data_cytb <- readDiscreteCharacterData("data/primates_and_galeopterus_cytb.nex")
 
 
 # partition for 1st and 2nd codon position
