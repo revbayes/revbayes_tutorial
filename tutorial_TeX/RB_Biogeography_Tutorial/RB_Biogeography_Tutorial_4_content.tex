@@ -6,11 +6,11 @@
 
 This analysis will jointly estimate phylogeny and biogeography.
 One benefit is that the biogeographic analysis will intrinsically accommodate phylogenetic uncertainty, both in terms of topology and branch lengths.
-Another is that paleogeographic evidence has the potential provide information about the geological timing of speciation events in the phylogeny \citep{landis16}.
+Another is that paleogeographic evidence has the potential provide information about the geological timing of speciation events in the phylogeny \citep{Landis2016}.
 Finally, biogeographic data may lend support to certain phylogenetic relationships that have poor resolution otherwise.
 
 As mentioned in Section \ref{sec:bg_simple}, Hawaiian silverswords are nested in a larger group of plants, the tarweeds.
-Fossil pollen evidence indicates that tarweeds diversified during a period of aridification from 15--5 Ma in the western regions of North America (cite Baldwin papers).
+Fossil pollen evidence indicates that tarweeds diversified during a period of aridification from 15--5 Ma in the western regions of North America \citep{Baldwin1991}.
 Although the oldest Hawaiian island that silverswords inhabit is Kauai, it is possible that silverswords first colonized older islands in the Emperor Island chain that predate the formation of Kauai at about 5.1 Ma.
 
 This makes traditional node-based biogeographic calibrations challenging, because it would require a strong assumption about when and how many times the oldest silversword lineages colonized Kauai.
@@ -19,7 +19,7 @@ Did silverswords colonize Kauai once directly from the California coast? Or did 
 \begin{figure}[!ht]
 \centering
 \includegraphics[width=\textwidth]{figures/fig_biogeo_dating.png}
-\caption{Cartoon of biogeographic transition probabilities as functions of geological time, and how that relates to speciation times. (a) Areas split, dispersal before split, positive probability; (b) Areas split, dispersal after split, zero probability; (c) Areas merge, dispersal after merge, positive probability; (d) Areas merge, dispersal before merge, zero probabilty. [ Improve description later. ]}
+\caption{Cartoon of biogeographic transition probabilities as functions of geological time, and how that relates to speciation times. (a) Areas split, dispersal before split, positive probability; (b) Areas split, dispersal after split, zero probability; (c) Areas merge, dispersal after merge, positive probability; (d) Areas merge, dispersal before merge, zero probabilty. Figure from \citet{Landis2016}.}
 \label{fig:biogeo_dating_cartoon}
 \end{figure}
 
@@ -140,7 +140,7 @@ For this analysis, all starting trees should have a non-zero probability.
 However, in general, it is possible that certain combinations of phylogeny, biogeography, and paleogeography have zero-valued likelihoods should the epoch model introduce reducible rate matrix structures.
 In addition, the initial MCMC state must have a non-zero probability for it to work properly.
 For MCMC to operate correctly, it must be initialized with a state with non-zero probability.
-See the supplemental of \citet{buerki11} for an explanation.
+See the supplemental of \citet{Buerki2011} for an explanation.
 
 \begin{snugshade}
 \begin{lstlisting}
@@ -577,7 +577,7 @@ These two analyses only differ in terms of whether the phylogeny is fixed or est
 
 \begin{figure}[!ht]
 \centering
-\includegraphics[width=0.45\textwidth]{figures/fig_simple_ages.pdf} \includegraphics[width=0.45\textwidth]{figures/fig_epoch_ages.pdf} 
+\includegraphics[width=0.49\textwidth]{figures/fig_simple_ages.pdf} \includegraphics[width=0.49\textwidth]{figures/fig_epoch_ages.pdf} 
 
 \caption{Plot of trace for island ages and the origin time of living silverswords. The left panel ignores paleogeography while the right panel conditions on it.}
 \label{fig:epoch_ages}
