@@ -32,13 +32,11 @@ mni = 0
 #### specify the GTR+G+I substitution model applied uniformly to all sites ###
 er_prior <- v(1,1,1,1,1,1)
 er ~ dnDirichlet(er_prior)
-moves[++mvi] = mvBetaSimplex(er, alpha=10.0, tune=true, weight=3.0)
-moves[++mvi] = mvDirichletSimplex(er, alpha=10.0, tune=true, weight=1.0)
+moves[++mvi] = mvSimplexElementScale(er, alpha=10.0, tune=true, weight=3.0)
 
 pi_prior <- v(1,1,1,1) 
 pi ~ dnDirichlet(pi_prior)
-moves[++mvi] = mvBetaSimplex(pi, alpha=10.0, tune=true, weight=2.0)
-moves[++mvi] = mvDirichletSimplex(pi, alpha=10.0, tune=true, weight=1.0)
+moves[++mvi] = mvSimplexElementScale(pi, alpha=10.0, tune=true, weight=2.0)
 
 
 #### create a deterministic variable for the rate matrix ####
@@ -111,16 +109,15 @@ monitors[++mni] = mnFile(psi, filename="output/PS_uniform.trees", printgen=10)
 monitors[++mni] = mnModel(filename="output/PS_uniform.log",printgen=10)
 
 # run the analysis
-mymcmc = mcmc(mymodel, moves, monitors, nruns=2)
-mymcmc.burnin(10000,100)
-mymcmc.run(30000)
+pow_p = powerPosterior(mymodel, moves, monitors, "output/model_uniform.out", cats=100)
+pow_p.burnin(generations=3000,tuningInterval=200)
+pow_p.run(generations=1000)
 
+ss = steppingStoneSampler(file="output/model_uniform.out", powerColumnName="power", likelihoodColumnName="likelihood")
+ss.marginal()
 
-# summarize output
-treetrace = readTreeTrace("output/PS_uniform.trees", treetype="non-clock")
-#treetrace.summarize()
-
-map_tree = mapTree(treetrace,"output/PS_uniform_map.tre")
+ps = pathSampler(file="model_uniform.out", powerColumnName="power", likelihoodColumnName="likelihood")
+ps.marginal()
 
 
 # you may want to quit RevBayes now
