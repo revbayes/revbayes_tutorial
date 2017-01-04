@@ -3,7 +3,7 @@
 # RevBayes Example: Bayesian inference of phylogeny using a GTR+Gamma+Inv
 #			substitution model for a 2-gene partition model
 #
-# authors: Tracy A. Heath, Michael Landis, Sebastian Hoehna and Brian R. Moore
+# authors: Michael Landis, Sebastian Hoehna, Tracy A. Heath and Brian R. Moore
 #
 ################################################################################
 

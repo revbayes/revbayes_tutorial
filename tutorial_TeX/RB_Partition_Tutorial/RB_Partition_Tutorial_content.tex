@@ -558,6 +558,50 @@ moves[++mvi] = mvDirichletSimplex(part_rate_mult, alpha=1.0, tune=true, weight=2
 part_rate := part_rate_mult * n_data_subsets\end{lstlisting}
 \end{snugshade*}}
 
+
+\begin{framed}
+\textbf{Different Substitution Models for each Gene}\\
+Alternatively, we might be interested in applying different substitution models for each gene independently instead of assuming the same substitution albeit with different parameters for each gene.
+In this two gene case this is rather simple to do by specifying the substitution model for each gene independently.
+For many genes this might become lengthy and you might want to write a script to generate this section (note: we may provide such scripts soon).
+
+For simplicity and sake of demonstration, we assume that the cytochrome b region evolves under a Jukes-Cantor substitution model and the COX-II gene under an HKY substitution model.
+We begin with the cytochrome b gene and the Jukes-Cantor substitution model:
+{\tt \small \begin{snugshade*}
+\begin{lstlisting}
+# specify the JC rate matrix
+Q[1] <- fnJC(4)
+\end{lstlisting}
+\end{snugshade*}}
+
+Second, we specify the HKY substitution model for the COX-II gene:
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+pi_prior <- v(1,1,1,1) 
+pi ~ dnDirichlet(pi_prior)
+
+# specify a move to propose updates to on pi
+moves[++mvi] = mvBetaSimplex(pi, weight=2)
+moves[++mvi] = mvDirichletSimplex(pi, weight=1)
+
+# specify a lognormal distribution as the prior distribution on kappa
+kappa ~ dnLognormal(0.0,1.25)
+
+# a simple scaling move to update kappa
+moves[++mvi] = mvScale(kappa)
+
+# Finally, create the HKY rate matrix
+Q[2] := fnHKY(kappa,pi)
+\end{lstlisting}
+\end{snugshade*}}
+Note that we specified manually in this way our vector of rate matrices \cl{Q}.
+We can thus specify any substitution model manually for a given gene.
+We hope that this brief example conveys the idea how to specify gene-specific substitution models.
+You can add rate-variation among sites and/or probabilities for a site being invariant for each gene too.
+Finally, you can then either loop over all genes to create the \cl{dnPhyloCTMC} distribution (see below) if the structure of the model allows it (\IE if all models have a variable for site-rate-variation and probabilities for invariant site), or you efficiently set these variables to default values (\EG \cl{pinvar[i]=0.0} if there is no probability for a site being invariant for this gene), or you create the \cl{seq[i] $\sim$ dnPhyloCTMC(...)} manually outside a loop as well. 
+\end{framed}
+
+
 \subsubsection{Tree prior}
 
 We assume that both genes evolve along the same tree.

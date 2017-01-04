@@ -619,7 +619,7 @@ The second new variable is $\kappa$, which specifies the ratio of transition-tra
 The $\kappa$ parameter must be a positive-real number and a natural choice as the prior distribution is the lognormal distribution:
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-kappa ~ dnLnorm(0.0,1.25)
+kappa ~ dnLognormal(0.0,1.25)
 \end{lstlisting}
 \end{snugshade*}}
 Again, we need to specify a move for this new stochastic variable.

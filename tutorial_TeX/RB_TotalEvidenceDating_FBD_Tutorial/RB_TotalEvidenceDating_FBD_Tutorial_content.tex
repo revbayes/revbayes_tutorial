@@ -1,8 +1,8 @@
 
 \section{Overview}\label{sect:Overview}
 
-This tutorial demonstrates how to specify the models used in a ``total-evidence'' phylogenetic analysis of extant and fossil species, combining morphological and molecular data as well as stratigraphic range data from the fossil record \citep[\textit{i.e.,}][]{Ronquist2012a,Zhang2016,Gavryushkina2016}.
-We begin by outlining the models used in this analysis in section \ref{sect:Introduction}, followed by a detailed exercise in section \ref{sect:Exercise} demonstrating how to apply these models in \RevBayes \citep{Hoehna2017a} using data collected from living and fossil bears (family Ursidae).
+This tutorial demonstrates how to specify the models used in a Bayesian ``total-evidence'' phylogenetic analysis of extant and fossil species, combining morphological and molecular data as well as stratigraphic range data from the fossil record \citep[\textit{i.e.,}][]{Ronquist2012a,Zhang2016,Gavryushkina2016}.
+We begin by outlining the models used in this analysis in section \ref{sect:Introduction}, followed by a detailed exercise in section \ref{sect:Exercise} demonstrating how to apply these models in \RevBayes \citep{Hoehna2017a} and use Markov chain Monte Carlo (MCMC) to estimate the posterior distribution of dated phylogenies for data collected from living and fossil bears (family Ursidae).
 
 \bigskip
 \subsection{Requirements}\label{subsect:Overview-Requirements}
@@ -89,7 +89,7 @@ The birth-death parameters $\lambda$ and $\mu$ denote the speciation and extinct
 \fbox{%
 \begin{minipage}{\textwidth}\centering
 \includegraphics[width=0.55\textwidth,angle=0]{\ResourcePath figures/tikz/fbd_gm}
-\caption{\small A graphical model of the fossilized birth-death model describing the generation of the time tree (\mi{Time Tree Model} in Fig.\ \ref{fig:module-gm}) used in this tutorial. The parameters of the fossilized birth-death process are labeled in orange. The speciation, extinction and fossilization rates are drawn from exponential distributions, while the origin time is uniformly distributed. The sampling probability is constant and equal to one.} %TODO write a more detailed legend
+\caption{\small A graphical model of the fossilized birth-death model describing the generation of the time tree (\mi{Time Tree Model} in Fig.\ \ref{fig:module-gm}) used in this tutorial. The parameters of the fossilized birth-death process are labeled in orange. The speciation, extinction and fossilization rates are stochastic nodes (circles) drawn from exponential distributions, while the origin time is uniformly distributed. The sampling probability is constant node (square) and equal to one. For more information on probabilistic graphical models and their notation, please see \citet{Hoehna2014b}.} 
 \end{minipage}}
 \label{fig:fbd_gm}
 \end{figure}
@@ -217,10 +217,10 @@ In this exercise, we will combine different types of data from 22 species of ext
 %The analysis in this tutorial includes data from several different sources (see Fig.\ \ref{fig:module-gm}).
 We have molecular sequence data for ten species, which represent all of the eight living bears and two extinct species sequenced from sub-fossil specimens (\textit{Arctodus simus, Ursus spelaeus}).
 The sequence alignment provided is a 1,000 bp fragment of the cytochrome-b mitochondrial gene \citep{krause2008}.
-The morphological character matrix unites 18 taxa (both fossil and extant) with 62 binary characters \citep{abella12}.
+The morphological character matrix unites 18 taxa (both fossil and extant) with 62 binary (states \cl{0} or \cl{1}) characters \citep{abella12}.
 %Further, we must provide an occurrence time for each taxon sampled from the fossil record.
 For the fossil species, occurrence times are obtained from the literature or fossil databases like the \href{http://fossilworks.org/}{Fossilworks PaleoDB} or the \href{http://fossilcalibrations.org/}{Fossil Calibration Database}, or from your own paleontological expertise. 
-The 14 fossil species used in this analysis are listed in Table \ref{bearFossilTable} along with the age range for the specimen and relevant citation.
+The 14 fossil species used in this analysis are listed in Table \ref{bearFossilTable} along with the age range for the species and relevant citation.
 %For this exercise, we will fix the ages to a value within the age range provided in Table \ref{bearFossilTable}. 
 Finally, there are two fossil species (\textit{Parictis montanus, Ursus abstrusus}) for which we do not have morphological character data (or molecular data) and we must use prior information about their phylogenetic relationships to incorporate these taxa in our analysis. 
 This information will be applied using clade constraints.
@@ -255,6 +255,33 @@ This information will be applied using clade constraints.
 %The dataset we will use encompasses 8 extant species and 14 fossil species, consisting of morphological data for 18 species, nucleotide sequence data from 10 species, and stratigraphic fossil range data for all 14 fossil species.
 %Two fossil species do not have any morphological or molecular data.
 
+\medskip
+\subsection{Tutorial Format}\label{subsect:Exercise-Format}
+
+This tutorial follows a specific format for issuing instructions and information
+
+{\begin{framed}
+The boxed instructions guide you to complete tasks that are not part of the \RevBayes syntax, but rather direct you to create directories or files or similar.
+\end{framed}}
+
+Information describing the commands and instructions will be written in paragraph-form before or after they are issued.
+
+All commands that are specific to \RevBayes and command-line text, including all \Rev syntax, are given in \cl{monotype font}. 
+Furthermore, blocks of \Rev code that are needed to build the model, specify the analysis, or execute the run are given in separate shaded boxes.
+For example, we will instruct you to create a constant node called \cl{a} that is equal to \cl{1.5} using the \cl{<-} operator like this:
+%Load the cytochrome-b sequences from file and assign the data matrix to a variable called \cl{cytb}.
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+a <- 1.5
+\end{lstlisting}
+\end{snugshade*}}
+
+It is important to be aware that some PDF viewers may render some characters given as \colorbox{shadecolor}{\tt{Rev commands}} differently. 
+Thus, if you copy and paste text from this PDF, you may introduce some incorrect characters. 
+Because of this, we recommend that you type the instructions in this tutorial or copy them from the scripts provided. 
+
+
+\medskip
 \subsection{Data and Files}\label{subsect:Exercise-DataFiles}
 
 {\begin{framed}
@@ -268,7 +295,7 @@ This will create a folder called \cl{data} that contains the files necessary to 
 
 %We provide the data files which we will use in this tutorial.
 %You may want to use your own data instead.
-In the \cl{data} folder, you will find the following files
+In the \cl{data} folder, you will find the following files:
 \begin{itemize}[noitemsep,topsep=0pt]
 \item \cl{bears\_taxa.tsv}: a tab-separated table listing every bear species (both fossil and extant) and their occurrence dates. For extant taxa, the occurrence date is \cl{0.0} (\IE the present) and for fossil species, the occurrence date is equal to the mean of the age range (the ranges are defined in a separate file).
 \item \cl{bears\_cytb.nex}: an alignment in NEXUS format of 1,000 bp of cytochrome b sequences for 10 bear species. This alignment includes 8 living bears and 2 extinct sub-fossil bears.
@@ -308,8 +335,8 @@ When you execute \RevBayes in this exercise, you will do so within the main dire
 \subsection{Creating \Rev Files}\label{subsect:Exercise-CreatingFiles}
 
 For complex models and analyses, it is best to create \Rev script files that will contain all of the model parameters, moves, and functions. 
-In this exercise, you will work primarily in your text editor and create a set of modular files that will be easily managed and interchanged.
-You will write the following files from scratch in a text editor\footnote{In section \ref{subsub:Req-Software} we offer a recommendation for a text editor.} and save them in the \cl{scripts} directory:
+In this exercise, you will work primarily in your text editor\footnote{In section \ref{subsub:Req-Software} we offer a recommendation for a text editor.} and create a set of modular files that will be easily managed and interchanged.
+You will write the following files from scratch and save them in the \cl{scripts} directory:
 \begin{itemize}[noitemsep,topsep=0pt]
 \item \cl{mcmc\_TEFBD.Rev}: the master \Rev file that loads the data, the separate model files, and specifies the monitors and MCMC sampler.
 \item \cl{model\_FBDP\_TEFBD.Rev}: specifies the model parameters and moves required for the fossilized birth-death prior on the tree topology, divergence times, fossil occurrence times, and diversification dynamics.
@@ -405,7 +432,7 @@ n_taxa <- taxa.size()
 \end{lstlisting}
 \end{snugshade*}}
 
-Next, create a \textit{workspace variable} called \cl{mvi}. 
+Next, create a workspace variable called \cl{mvi}. 
 This variable is an iterator that will build a vector containing all of the MCMC moves used to propose new states for every stochastic node in the model graph. 
 Each time a new move is added to the vector, \cl{mvi} will be incremented by a value of \cl{1}.
 {\tt \begin{snugshade*}
@@ -434,12 +461,14 @@ Enter the \Rev code provided in this section in the new model file.
 
 \subsubsection{Speciation and Extinction Rates}\label{subsub:Exercise-FBD-SpeciationExtinction}
 
-Two key parameters of the FBD process are the speciation rate (the rate at which lineages are added to the tree) and the extinction rate (the rate at which lineages are removed from the tree). 
+Two key parameters of the FBD process are the speciation rate (the rate at which lineages are added to the tree, denoted by $\lambda$ in Fig.\ \ref{fig:fbd_gm}) and the extinction rate (the rate at which lineages are removed from the tree, $\mu$ in Fig.\ \ref{fig:fbd_gm}). 
 We'll place exponential priors on both of these values. 
 %An exponential prior with a $\lambda$ =  10 places a higher probability on values closer to zero than one for these parameters. 
 Each parameter is assumed to be drawn independently from a different exponential distribution with rates $\delta_{\lambda}$ and $\delta_{\mu}$ respectively (see Fig.\ \ref{fig:fbd_gm}). 
 Here, we will assume that $\delta_{\lambda} = \delta_{\mu} = 10$. 
 Note that an exponential distribution with $\delta = 10$ has an expected value (mean) of $1/10$. 
+
+Create the exponentially distributed stochastic nodes for the \cl{speciation\_rate} and \cl{exticntion\_rate} using the \cl{\textasciitilde} operator.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 speciation_rate ~ dnExponential(10)
@@ -452,7 +481,7 @@ If a move is not specified for a stochastic node, then it will not be estimated,
 
 The rate parameters for extinction and speciation are both real, positive numbers (\IE floating point variables). 
 For both of these nodes, we will use a scaling move (\cl{mvScale()}), which proposes multiplicative changes to a parameter.
-Many moves also require us to set a \textit{tuning value}, which is called \cl{lambda} for \cl{mvScale()}, which determine the size of the proposed change. 
+Many moves also require us to set a \textit{tuning value}, called \cl{lambda} for \cl{mvScale()}, which determine the size of the proposed change. 
 Here, we will use three scale moves for each parameter with  different values of lambda. 
 By using multiple moves for a single parameter, we will improve the mixing of the Markov chain. 
 {\tt \begin{snugshade*}
@@ -467,6 +496,14 @@ moves[mvi++] = mvScale(extinction_rate, lambda=1,    weight=1)
 \end{lstlisting}
 \end{snugshade*}}
 
+You will also notice that each move has a specified \cl{weight}. 
+This option allows you to indicate how many times you would like a given move to be performed at each MCMC cycle. 
+The way that we will run our MCMC for this tutorial will be to execute a \textit{schedule} of moves at each step in our chain instead of just one move per step, as is done in \cl{MrBayes} \citep{Ronquist2003} or \cl{BEAST} \citep{Drummond2012,Bouckaert2014}.
+Here, if we were to run our MCMC with our current vector of 6 moves, then our move schedule would perform 6 moves at each cycle.
+Within a cycle, an individual move is chosen from the move list in proportion to its weight. 
+Therefore, each move has an equal probability of being executed and will be performed on average one time per MCMC cycle. 
+For more information on moves and how they are performed in \RevBayes, please refer to the \href{https://github.com/revbayes/revbayes_tutorial/blob/master/tutorial_TeX/RB_MCMC_Intro_Tutorial/RB_MCMC_Intro_Tutorial.pdf}{Introduction to MCMC} and \href{https://github.com/ssb2017/revbayes_intro/blob/master/tutorials/RB_CTMC_Tutorial.pdf}{Substitution Models} tutorials.
+
 In addition to the speciation ($\lambda$) and extinction ($\mu$) rates, we may also be interested in inferring diversification ($\lambda - \mu$) and turnover ($\mu/\lambda$).
 Since these parameters can be expressed as a deterministic transformation of the speciation and extinction rates, we can monitor their values by creating two deterministic nodes using the \cl{:=} operator.
 {\tt \begin{snugshade*}
@@ -479,18 +516,19 @@ turnover := extinction_rate/speciation_rate
 \subsubsection{Probability of Sampling Extant Taxa}\label{subsub:Exercise-FBD-Rho}
 
 All extant bears are represented in this dataset. 
-Therefore, we will fix the probability of sampling an extant lineage ($\rho$) to 1.
+Therefore, we will fix the probability of sampling an extant lineage ($\rho$ in Fig.\ \ref{fig:fbd_gm}) to 1.
+The parameter \cl{rho} will be specified as a constant node using the \cl{<-} operator.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 rho <- 1.0
 \end{lstlisting}
 \end{snugshade*}}
-Because $\rho$ is a constant node (assigned using the \cl{<-} operator), we do not have to assign a move to this parameter.
+Because $\rho$ is a constant node, we do not have to assign a move to this parameter.
 
 \subsubsection{The Fossil Sampling Rate}\label{subsub:Exercise-FBD-Psi}
 
 Since our data set includes serially sampled lineages, we must also account for the rate of sampling back in time. 
-This is the fossil sampling (or recovery) rate ($\psi$), which we will instantiate as a stochastic node. 
+This is the fossil sampling (or recovery) rate ($\psi$ in Fig.\ \ref{fig:fbd_gm}), which we will instantiate as a stochastic node (named \cl{psi}). 
 As with the speciation and extinction rates (Sect.\ \ref{subsub:Exercise-FBD-SpeciationExtinction}), we will use an exponential prior on this parameter and use scale moves to sample values from the posterior distribution.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
@@ -503,8 +541,8 @@ moves[mvi++] = mvScale(psi, lambda=1,    weight=1)
 
 \subsubsection{The Origin Time}\label{subsub:Exercise-FBD-Origin}
 
-We will condition the FBD process on the origin time of bears, and we will specify a uniform distribution on the origin age.
-For this parameter, we will use a sliding window move.
+We will condition the FBD process on the origin time ($\phi$ in Fig.\ \ref{fig:fbd_gm}) of bears, and we will specify a uniform distribution on the origin age.
+For this parameter, we will use a sliding window move (\cl{mvSlide}).
 A sliding window samples a parameter uniformly within an interval (defined by the half-width \cl{delta}). 
 Sliding window moves can be tricky for small values, as the window may overlap zero. 
 However, for parameters such as the origin age, there is little risk of this being an issue.
@@ -518,10 +556,13 @@ moves[mvi++] = mvSlide(origin_time, delta=1,    weight=5.0)
 \end{lstlisting}
 \end{snugshade*}}
 
+Note that we specified a higher move \cl{weight} for each of the proposals operating on \cl{origin\_time} than we did for the three previous stochastic nodes.
+This means that or move schedule will propose five times as many updates to \cl{origin\_time} than it will to \cl{speciation\_rate}, \cl{extinction\_rate}, or \cl{psi}. 
+
 \subsubsection{The FBD Distribution Object}\label{subsub:Exercise-FBD-dnFBD}
 
 All the parameters of the FBD process have now been specified. 
-The next step is to use these parameters to define the FBD tree prior distribution.
+The next step is to use these parameters to define the FBD tree prior distribution, which we will call \cl{fbd\_dist}.
 
 {\tt \begin{snugshade*}
 \begin{lstlisting}
@@ -534,8 +575,8 @@ fbd_dist = dnFBDP(origin=origin_time, lambda=speciation_rate, mu=extinction_rate
 Note that we created the distribution as a workspace variable using the workspace assignment operator \cl{=}.
 This is because we still need to include a topology constraint in our final specification of the tree prior.
 Specifically, we do not have any morphological or molecular data for the fossil species \textit{Ursus abstrusus}.
-Therefore, in order to use the age of this fossil as a calibration, we need to specify to which clade it belongs.
-In this case, \textit{Ursus abstrusus} belongs to the subfamily Ursinae, so we define a clade for Ursinae including \textit{Ursus abstrusus}.
+Therefore, in order to use the age of this fossil as an observation, we need to specify to which clade it belongs.
+In this case, \textit{Ursus abstrusus} belongs to the subfamily Ursinae, so we define a clade for the total group Ursinae including \textit{Ursus abstrusus}.
 
 {\tt \begin{snugshade*}
 \begin{lstlisting}
@@ -546,7 +587,7 @@ clade_ursinae = clade("Melursus_ursinus", "Ursus_arctos", "Ursus_maritimus",
 \end{snugshade*}}
 
 Then we can specify the final constrained tree prior distribution by creating a vector of constraints, and providing it along with the workspace FBD distribution to the constrained topology distribution.
-Here we use the stochastic assignment operator \verb+~+ to create a stochastic node for our tree variable. 
+Here we use the stochastic assignment operator \verb+~+ to create a stochastic node for our constrained, FBD-tree variable (called \cl{fbd\_tree}). 
 
 {\tt \begin{snugshade*}
 \begin{lstlisting}
@@ -555,11 +596,16 @@ fbd_tree ~ dnConstrainedTopology(fbd_dist, constraints=constraints)
 \end{lstlisting}
 \end{snugshade*}}
 
+It is important to recognize that we do not know if \textit{Ursus abstrusus} is a \textit{crown} or \textit{stem} Ursinae. 
+Because of this, we defined this clade constraint so that it constrained the \textit{total group} Ursinae and this uncertainty is taken into account.
+As a result, our MCMC will marginalize over both stem and crown positions of \textit{U.\ abstrusus} and sample the phylogeny in proportion to its posterior probability, conditional on our model and data.
+
 \subsubsection{Moves on the Tree Topology and Node Ages}\label{subsub:Exercise-FBD-TreeMoves}
 
-Next, in order to sample from the posterior distribution of trees, we need to specify moves that propose changes to the  topology and node times.
-We also include a proposal that toggles whether a fossil is a ``sampled ancestor'' - a fossil species that has sampled descendants present on the tree.
-When conditioning on the origin time, we also need to explicitly sample the root age.
+Next, in order to sample from the posterior distribution of trees, we need to specify moves that propose changes to the topology (\cl{mvFNPR}) and node times (\cl{mvNodeTimeSlideUniform}).
+Included with these moves is a proposal that will collapse or expand a fossil branch (\cl{mvCollapseExpandFossilBranch}).
+This will change a fossil that is a sampled ancestor (see Fig.\ \ref{fig:example-tree} and Sect.\ \ref{subsect:Intro-FBD}) so that it is on its own branch and vice versa.
+In addition, when conditioning on the origin time, we also need to explicitly sample the root age (\cl{mvRootTimeSlideUniform}).
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 moves[mvi++] = mvFNPR(fbd_tree, weight=15.0)
@@ -581,7 +627,7 @@ intervals = readDataDelimitedFile(file="data/bears_fossil_intervals.tsv", header
 \end{snugshade*}}
 
 Next, we loop over this matrix and for each fossil observation create a uniform random variable representing the likelihood.
-Remember, we can represent the fossil likelihood using any uniform distribution that is non-zero when the likelihood is equal to one (section \ref{subsect:Intro-TipSampling}).
+Remember, we can represent the fossil likelihood using any uniform distribution that is non-zero when the likelihood is equal to one (Sect.\ \ref{subsect:Intro-TipSampling}).
 
 For example, if $t_i$ is the inferred fossil age and $(a_i,b_i)$ is the observed stratigraphic interval, we know the likelihood is equal to one when $a_i < t_i < b_i$, or equivalently $t_i - b_i < 0 < t_i - a_i$.
 So let's represent the likelihood using a uniform random variable uniformly distributed in $(t_i - b_i, t_i - a_i)$ and clamped at zero.
@@ -603,7 +649,10 @@ for(i in 1:intervals())
 \end{lstlisting}
 \end{snugshade*}}
 
-Finally, we create a move that samples the ages of the fossil nodes on the tree. 
+%This is the first point where we are specifying observed data using the \cl{clamp} method of a stochastic node.
+%TODO we probably need more explanation about what "clamp"ing is. (too bad it's a bit of a weird case here)
+
+Finally, we add a move that samples the ages of the fossil nodes on the tree. 
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 moves[mvi++] = mvFossilTimeSlideUniform(fbd_tree, origin_time, weight=5.0)
@@ -666,11 +715,10 @@ Enter the \Rev code provided in this section in the new model file.
 \end{framed}}
 
 For our hierarchical, uncorrelated exponential relaxed clock model, we first define the mean branch rate as an exponential random variable.
-Then, we specify some scale proposal moves on the mean rate parameter.
+Then, we specify scale proposal moves on the mean rate parameter.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 branch_rates_mean ~ dnExponential(10.0)
-
 moves[mvi++] = mvScale(branch_rates_mean, lambda=0.01, weight=1.0)
 moves[mvi++] = mvScale(branch_rates_mean, lambda=0.1,  weight=1.0)
 moves[mvi++] = mvScale(branch_rates_mean, lambda=1.0,  weight=1.0)
@@ -726,7 +774,7 @@ Open your text editor and create the molecular substitution model file called {\
 Enter the \Rev code provided in this section in the new model file.
 \end{framed}}
 
-For our nucleotide sequence evolution model, we need to define a general time-reversible (GTR) substitution matrix.
+For our nucleotide sequence evolution model, we need to define a general time-reversible (GTR) instantaneous-rate matrix (\IE $Q$-matrix).
 A nucleotide GTR matrix is defined by a set of 4 stationary frequencies, and 6 exchangeability rates.
 We create stochastic nodes for these variables, each drawn from a uniform Dirichlet prior distribution.
 
@@ -750,7 +798,7 @@ moves[mvi++] = mvSimplexElementScale(sf, alpha=10.0, weight=5.0)
 \end{lstlisting}
 \end{snugshade*}}
 
-Then we can define a deterministic node for our GTR substitution matrix using the special GTR matrix function.
+Then we can define a deterministic node for our GTR $Q$-matrix using the special GTR matrix function (\cl{fnGTR}).
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 Q_cytb := fnGTR(er,sf)
@@ -761,7 +809,6 @@ Next, in order to model gamma-distributed rates across, we create an exponential
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 alpha_cytb ~ dnExponential( 1.0 )
-
 moves[mvi++] = mvScale(alpha_cytb, lambda=0.01, weight=1.0)
 moves[mvi++] = mvScale(alpha_cytb, lambda=0.1,  weight=1.0)
 moves[mvi++] = mvScale(alpha_cytb, lambda=1,    weight=1.0)
@@ -889,8 +936,8 @@ Enter the \Rev code provided in this section in this file.
 \medskip
 \subsubsection{Source Model Scripts}\label{subsub:Exercise-SourceMods}
 
-This step will load in the model scripts we have written in the text editor.
-
+\RevBayes uses the \cl{source()} function to load commands from \Rev files into the workspace.
+Use this function to load in the model scripts we have written in the text editor and saved in the \cl{scripts} directory.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 source("scripts/model_FBDP_TEFBD.Rev")
@@ -904,27 +951,57 @@ source("scripts/model_Morph_TEFBD.Rev")
 \end{snugshade*}}
 
 
-
 \medskip
 \subsubsection{Create Model Object}\label{subsub:Exercise-ModObj}
 
-
+We can now create our workspace model variable with our fully specified model DAG. 
+We will do this with the \cl{model()} function and provide a single node in the graph (\cl{sf}).
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 mymodel = model(sf)
 \end{lstlisting}
 \end{snugshade*}}
-%\pagebreak
+
+The object \cl{mymodel} is a wrapper around the entire model graph and allows us to pass the model to various functions that are specific to our MCMC analysis.
 
 \medskip
 \subsubsection{Specify Monitors and Output Filenames}\label{subsub:Exercise-Monitors}
 
+The next important step for our master \Rev file is to specify the monitors and output file names.
+For this, we create a vector called \cl{monitors} that will each sample and record or output our MCMC. 
 
+First, we will specify a workspace variable to iterate over the \cl{monitors} vector.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 mni = 1
+\end{lstlisting}
+\end{snugshade*}}
+
+The first monitor we will create will monitor every named random variable in our model graph. 
+This will include every stochastic and deterministic node using the \cl{mnModel} monitor.
+The only parameter that is not included in the \cl{mnModel} is the tree topology. 
+Therefore, the parameters in the file written by this monitor are all numerical parameters written to a tab-separated text file that can be opened by accessory programs for evaluating such parameters.
+We will also name the output file for this monitor and indicate that we wish to sample our MCMC every 10 cycles.
+{\tt \begin{snugshade*}
+\begin{lstlisting}
 monitors[mni++] = mnModel(filename="output/bears.log", printgen=10)
+\end{lstlisting}
+\end{snugshade*}}
+
+The \cl{mnFile} monitor writes any parameter we specify to file.
+Thus, if we only cared about the speciation rate and nothing else (this is not a typical or recommended attitude for an analysis this complex) we wouldn't use the \cl{mnModel} monitor above and just use the \cl{mnFile} monitor to write a smaller and simpler output file.
+Since the tree topology is not included in the \cl{mnModel} monitor (because it is not numerical), we will use \cl{mnFile} to write the tree to file by specifying our \cl{fbd\_tree} variable in the arguments.
+{\tt \begin{snugshade*}
+\begin{lstlisting}
 monitors[mni++] = mnFile(filename="output/bears.trees", printgen=10, fbd_tree)
+\end{lstlisting}
+\end{snugshade*}}
+
+The last monitor we will add to our analysis will print information to the screen.
+Like with \cl{mnFile} we must tell \cl{mnScreen} which parameters we'd like to see updated on the screen. 
+We will choose the age of the MCRCA of living bears (\cl{age\_extant}), the number of sampled ancestors (\cl{num\_samp\_anc}), and the origin time (\cl{origin\_time}).
+{\tt \begin{snugshade*}
+\begin{lstlisting}
 monitors[mni++] = mnScreen(printgen=10, age_extant, num_samp_anc, origin_time)
 \end{lstlisting}
 \end{snugshade*}}
@@ -932,19 +1009,32 @@ monitors[mni++] = mnScreen(printgen=10, age_extant, num_samp_anc, origin_time)
 \medskip
 \subsubsection{Set up the MCMC}
 
-
+Once we have set up our model, moves, and monitors, we can now create the workspace variable that defines our MCMC run. 
+We do this using the \cl{mcmc()} function that simply takes the three main analysis components as arguments.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 mymcmc = mcmc(mymodel, monitors, moves)
+\end{lstlisting}
+\end{snugshade*}}
 
+The MCMC object that we named \cl{mymcmc} has a member method called \cl{.run()}. 
+This will execute our analysis and we will set the chain length to \cl{10000} cycles using the \cl{generations} option.
+{\tt \begin{snugshade*}
+\begin{lstlisting}
 mymcmc.run(generations=10000)
+\end{lstlisting}
+\end{snugshade*}}
 
+Once our Markov chain has terminated, we will want \RevBayes to close. 
+Tell the program to quit using the \cl{q()} function.
+{\tt \begin{snugshade*}
+\begin{lstlisting}
 q()
 \end{lstlisting}
 \end{snugshade*}}
 
 {\begin{framed}
-Save and close all files.
+You made it! Save and close all files.
 \end{framed}}
 
 \bigskip
@@ -960,7 +1050,7 @@ Begin by running the \RevBayes executable.
 \end{lstlisting}
 \end{snugshade*}}
 
-Provided that you started \RevBayes from the correct directory (in \cl{RB\_TotalEvidenceDating\_FBD\_Tutorial}), you can then use the \cl{source()} function to feed \RevBayes your master script file (\cl{mcmc\_TEFBD.Rev}).
+Provided that you started \RevBayes from the correct directory (\cl{RB\_TotalEvidenceDating\_FBD\_Tutorial}), you can then use the \cl{source()} function to feed \RevBayes your master script file (\cl{mcmc\_TEFBD.Rev}).
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 source("scripts/mcmc_TEFBD.Rev")
@@ -998,6 +1088,8 @@ This will execute the analysis and you should see the following output (though n
 |*...
 \end{lstlisting}
 \end{snugshade*}}}
+
+When the analysis is complete, \RevBayes will quit and you will have a new directory called \cl{output} that will contain all of the files you specified with the monitors (Sect.\ \ref{subsub:Exercise-Monitors}).
 
 \bigskip
 \subsection{Summarize Your Results}\label{subsect:Exercise-SummarizeResults}
