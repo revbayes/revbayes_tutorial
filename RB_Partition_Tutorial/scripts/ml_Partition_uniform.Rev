@@ -10,8 +10,8 @@
 ###### This just defines a single model for all sites #######
 
 ### Read in sequence data for both genes
-data_cox2 = readDiscreteCharacterData("data/primates_cox2.nex")
-data_cytb = readDiscreteCharacterData("data/primates_cytb.nex")
+data_cox2 = readDiscreteCharacterData("data/primates_and_galeopterus_cox2.nex")
+data_cytb = readDiscreteCharacterData("data/primates_and_galeopterus_cytb.nex")
 
 ### Create concatenated data matrix
 data = concatenate( data_cox2, data_cytb )

@@ -9,7 +9,7 @@
 
 
 ### Read in sequence data for the gene
-data = readDiscreteCharacterData("data/primates_cytb.nex")
+data = readDiscreteCharacterData("data/primates_and_galeopterus_cytb.nex")
 
 # Get some useful variables from the data. We need these later on.
 n_species <- data.ntaxa()
