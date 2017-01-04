@@ -1,8 +1,8 @@
 
 \section{Overview}\label{sect:Overview}
 
-This tutorial demonstrates how to specify the models used in a ``total-evidence'' phylogenetic analysis of extant and fossil species, combining morphological and molecular data as well as stratigraphic range data from the fossil record \citep[\textit{i.e.,}][]{Ronquist2012a,Zhang2016,Gavryushkina2016}.
-We begin by outlining the models used in this analysis in section \ref{sect:Introduction}, followed by a detailed exercise in section \ref{sect:Exercise} demonstrating how to apply these models in \RevBayes \citep{Hoehna2017a} using data collected from living and fossil bears (family Ursidae).
+This tutorial demonstrates how to specify the models used in a Bayesian ``total-evidence'' phylogenetic analysis of extant and fossil species, combining morphological and molecular data as well as stratigraphic range data from the fossil record \citep[\textit{i.e.,}][]{Ronquist2012a,Zhang2016,Gavryushkina2016}.
+We begin by outlining the models used in this analysis in section \ref{sect:Introduction}, followed by a detailed exercise in section \ref{sect:Exercise} demonstrating how to apply these models in \RevBayes \citep{Hoehna2017a} and use Markov chain Monte Carlo (MCMC) to estimate the posterior distribution of dated phylogenies for data collected from living and fossil bears (family Ursidae).
 
 \bigskip
 \subsection{Requirements}\label{subsect:Overview-Requirements}
@@ -89,7 +89,7 @@ The birth-death parameters $\lambda$ and $\mu$ denote the speciation and extinct
 \fbox{%
 \begin{minipage}{\textwidth}\centering
 \includegraphics[width=0.55\textwidth,angle=0]{\ResourcePath figures/tikz/fbd_gm}
-\caption{\small A graphical model of the fossilized birth-death model describing the generation of the time tree (\mi{Time Tree Model} in Fig.\ \ref{fig:module-gm}) used in this tutorial. The parameters of the fossilized birth-death process are labeled in orange. The speciation, extinction and fossilization rates are drawn from exponential distributions, while the origin time is uniformly distributed. The sampling probability is constant and equal to one.} %TODO write a more detailed legend
+\caption{\small A graphical model of the fossilized birth-death model describing the generation of the time tree (\mi{Time Tree Model} in Fig.\ \ref{fig:module-gm}) used in this tutorial. The parameters of the fossilized birth-death process are labeled in orange. The speciation, extinction and fossilization rates are stochastic nodes (circles) drawn from exponential distributions, while the origin time is uniformly distributed. The sampling probability is constant node (square) and equal to one. For more information on probabilistic graphical models and their notation, please see \citet{Hoehna2014b}.} 
 \end{minipage}}
 \label{fig:fbd_gm}
 \end{figure}
@@ -432,7 +432,7 @@ n_taxa <- taxa.size()
 \end{lstlisting}
 \end{snugshade*}}
 
-Next, create a \textit{workspace variable} called \cl{mvi}. 
+Next, create a workspace variable called \cl{mvi}. 
 This variable is an iterator that will build a vector containing all of the MCMC moves used to propose new states for every stochastic node in the model graph. 
 Each time a new move is added to the vector, \cl{mvi} will be incremented by a value of \cl{1}.
 {\tt \begin{snugshade*}
@@ -461,12 +461,14 @@ Enter the \Rev code provided in this section in the new model file.
 
 \subsubsection{Speciation and Extinction Rates}\label{subsub:Exercise-FBD-SpeciationExtinction}
 
-Two key parameters of the FBD process are the speciation rate (the rate at which lineages are added to the tree) and the extinction rate (the rate at which lineages are removed from the tree). 
+Two key parameters of the FBD process are the speciation rate (the rate at which lineages are added to the tree, denoted by $\lambda$ in Fig.\ \ref{fig:fbd_gm}) and the extinction rate (the rate at which lineages are removed from the tree, $\mu$ in Fig.\ \ref{fig:fbd_gm}). 
 We'll place exponential priors on both of these values. 
 %An exponential prior with a $\lambda$ =  10 places a higher probability on values closer to zero than one for these parameters. 
 Each parameter is assumed to be drawn independently from a different exponential distribution with rates $\delta_{\lambda}$ and $\delta_{\mu}$ respectively (see Fig.\ \ref{fig:fbd_gm}). 
 Here, we will assume that $\delta_{\lambda} = \delta_{\mu} = 10$. 
 Note that an exponential distribution with $\delta = 10$ has an expected value (mean) of $1/10$. 
+
+Create the exponentially distributed stochastic nodes for the \cl{speciation\_rate} and \cl{exticntion\_rate} using the \cl{\textasciitilde} operator.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 speciation_rate ~ dnExponential(10)
@@ -479,7 +481,7 @@ If a move is not specified for a stochastic node, then it will not be estimated,
 
 The rate parameters for extinction and speciation are both real, positive numbers (\IE floating point variables). 
 For both of these nodes, we will use a scaling move (\cl{mvScale()}), which proposes multiplicative changes to a parameter.
-Many moves also require us to set a \textit{tuning value}, which is called \cl{lambda} for \cl{mvScale()}, which determine the size of the proposed change. 
+Many moves also require us to set a \textit{tuning value}, called \cl{lambda} for \cl{mvScale()}, which determine the size of the proposed change. 
 Here, we will use three scale moves for each parameter with  different values of lambda. 
 By using multiple moves for a single parameter, we will improve the mixing of the Markov chain. 
 {\tt \begin{snugshade*}
@@ -494,6 +496,14 @@ moves[mvi++] = mvScale(extinction_rate, lambda=1,    weight=1)
 \end{lstlisting}
 \end{snugshade*}}
 
+You will also notice that each move has a specified \cl{weight}. 
+This option allows you to indicate how many times you would like a given move to be performed at each MCMC cycle. 
+The way that we will run our MCMC for this tutorial will be to execute a \textit{schedule} of moves at each step in our chain instead of just one move per step, as is done in \cl{MrBayes} \citep{Ronquist2003} or \cl{BEAST} \citep{Drummond2012,Bouckaert2014}.
+Here, if we were to run our MCMC with our current vector of 6 moves, then our move schedule would perform 6 moves at each cycle.
+Within a cycle, an individual move is chosen from the move list in proportion to its weight. 
+Therefore, each move has an equal probability of being executed and will be performed on average one time per MCMC cycle. 
+For more information on moves and how they are performed in \RevBayes, please refer to the \href{https://github.com/revbayes/revbayes_tutorial/blob/master/tutorial_TeX/RB_MCMC_Intro_Tutorial/RB_MCMC_Intro_Tutorial.pdf}{Introduction to MCMC} and \href{https://github.com/ssb2017/revbayes_intro/blob/master/tutorials/RB_CTMC_Tutorial.pdf}{Substitution Models} tutorials.
+
 In addition to the speciation ($\lambda$) and extinction ($\mu$) rates, we may also be interested in inferring diversification ($\lambda - \mu$) and turnover ($\mu/\lambda$).
 Since these parameters can be expressed as a deterministic transformation of the speciation and extinction rates, we can monitor their values by creating two deterministic nodes using the \cl{:=} operator.
 {\tt \begin{snugshade*}
@@ -506,18 +516,19 @@ turnover := extinction_rate/speciation_rate
 \subsubsection{Probability of Sampling Extant Taxa}\label{subsub:Exercise-FBD-Rho}
 
 All extant bears are represented in this dataset. 
-Therefore, we will fix the probability of sampling an extant lineage ($\rho$) to 1.
+Therefore, we will fix the probability of sampling an extant lineage ($\rho$ in Fig.\ \ref{fig:fbd_gm}) to 1.
+The parameter \cl{rho} will be specified as a constant node using the \cl{<-} operator.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 rho <- 1.0
 \end{lstlisting}
 \end{snugshade*}}
-Because $\rho$ is a constant node (assigned using the \cl{<-} operator), we do not have to assign a move to this parameter.
+Because $\rho$ is a constant node, we do not have to assign a move to this parameter.
 
 \subsubsection{The Fossil Sampling Rate}\label{subsub:Exercise-FBD-Psi}
 
 Since our data set includes serially sampled lineages, we must also account for the rate of sampling back in time. 
-This is the fossil sampling (or recovery) rate ($\psi$), which we will instantiate as a stochastic node. 
+This is the fossil sampling (or recovery) rate ($\psi$ in Fig.\ \ref{fig:fbd_gm}), which we will instantiate as a stochastic node (named \cl{psi}). 
 As with the speciation and extinction rates (Sect.\ \ref{subsub:Exercise-FBD-SpeciationExtinction}), we will use an exponential prior on this parameter and use scale moves to sample values from the posterior distribution.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
@@ -530,8 +541,8 @@ moves[mvi++] = mvScale(psi, lambda=1,    weight=1)
 
 \subsubsection{The Origin Time}\label{subsub:Exercise-FBD-Origin}
 
-We will condition the FBD process on the origin time of bears, and we will specify a uniform distribution on the origin age.
-For this parameter, we will use a sliding window move.
+We will condition the FBD process on the origin time ($\phi$ in Fig.\ \ref{fig:fbd_gm}) of bears, and we will specify a uniform distribution on the origin age.
+For this parameter, we will use a sliding window move (\cl{mvSlide}).
 A sliding window samples a parameter uniformly within an interval (defined by the half-width \cl{delta}). 
 Sliding window moves can be tricky for small values, as the window may overlap zero. 
 However, for parameters such as the origin age, there is little risk of this being an issue.
@@ -544,6 +555,9 @@ moves[mvi++] = mvSlide(origin_time, delta=0.1,  weight=5.0)
 moves[mvi++] = mvSlide(origin_time, delta=1,    weight=5.0)
 \end{lstlisting}
 \end{snugshade*}}
+
+Note that we specified a higher move \cl{weight} for each of the proposals operating on \cl{origin\_time} than we did for the three previous stochastic nodes.
+This means that or move schedule will propose five times as many updates to \cl{origin\_time} than it will to \cl{speciation\_rate}, \cl{extinction\_rate}, or \cl{psi}. 
 
 \subsubsection{The FBD Distribution Object}\label{subsub:Exercise-FBD-dnFBD}
 
