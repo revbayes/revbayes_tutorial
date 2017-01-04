@@ -10,7 +10,7 @@ This tutorial provides a brief background in some of these models, then describe
 
 \subsection*{Discrete range characters}
 
-The Dispersal-Extinction-Cladogenesis (DEC) models range evolution as a discrete-valued process \citep{ree05, ree08}.
+The Dispersal-Extinction-Cladogenesis (DEC) models range evolution as a discrete-valued process \citep{Ree2005, Ree2008}.
 DEC interprets taxon ranges as presence-absence data, that is, where a species is observed or not observed across multiple discrete areas.
 For example, say there are three areas, A, B, and C.
 If a species is present in areas A and C, then its range equals AC, which can also be encoded into the length-3 bit vector, 101.
@@ -149,9 +149,9 @@ Notice that ranges that are separated by multiple dispersal and extirpation even
 
 By default, the \RevBayes conditions the anagenetic range evolution process on never entering the null range when computing the transition probabilities.
 This is crucial so the model can both simulate and infer using identical (correct) probabilities.
-\citet{massana15} first noted that the null range results in abnormal extirpation rate and range size estimates.
+\citet{Massana2015} first noted that the null range results in abnormal extirpation rate and range size estimates.
 Their proposed solution to eliminate the null range from the state space is done with the {\tt condition=Exclude} setting. 
-The {\tt nullRange=Include} setting provides no special handling of the null range, and produces the raw probabilities of \citet{ree05}.
+The {\tt nullRange=Include} setting provides no special handling of the null range, and produces the raw probabilities of \citet{Ree2005}.
 
 \subsection*{Cladogenetic range evolution}
 
@@ -182,8 +182,8 @@ P_DEC := fnDECCladoProbs(eventProbs=clado_event_probs,
 \end{snugshade}
 
 {\tt clado\_event\_types} defines what cladogenetic event types are used.
-{\tt "a"} and {\tt "s"} indicate allopatry and subset sympatry, as described in \citep{ree05}.
-Other cladogenetic events include jump dispersal \citep[{\tt "j"};][]{Matzke2012} and full sympatry \citep[{\tt "f"};][]{Landis2013}.
+{\tt "a"} and {\tt "s"} indicate allopatry and subset sympatry, as described in \citep{Ree2005}.
+Other cladogenetic events include jump dispersal \citep[{\tt "j"};][]{Matzke2012} and full sympatry \citep[{\tt "f"};][]{Landis2013a}.
 The cladogenetic event probability matrix will assume that {\tt eventProbs} and {\tt eventTypes} share the same order.
 
 Print the cladogenetic transition probabilities
@@ -220,6 +220,9 @@ For three areas, \textbf{Q} is size $8 \times 8$.
 For ten areas, \textbf{Q} is size $2^{10} \times 2^{10} = 1024 \times 1024$, which approaches the largest size matrices that can be exponentiated in a practical amount of time.
 For twenty areas, \textbf{Q} is size $2^{20} \times 2^{20} \approx 10^6 \times 10^6$ and exponentiation is not viable.
 Thus, selecting the discrete areas for a DEC analysis should be done with regard to what one hopes to learn through the analysis itself.
+
+
+
 
 %Methods to permit are available in \RevBayes, but require complicated inference algorithms and 
 %\citep{Landis13}
