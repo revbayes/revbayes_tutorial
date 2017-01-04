@@ -1,0 +1,46 @@
+#NEXUS
+
+	Begin taxa;
+	Dimensions ntax=35;
+	Taxlabels
+		Argyroxiphium_caliginis
+		Argyroxiphium_grayanum_East_Maui
+		Argyroxiphium_grayanum_West_Maui
+		Argyroxiphium_kauense
+		Argyroxiphium_sandwicense_subsp._macrocephalum
+		Argyroxiphium_sandwicense_subsp._sandwicense
+		Dubautia_arborea
+		Dubautia_ciliolata_subsp._ciliolata
+		Dubautia_ciliolata_subsp._glutinosa
+		Dubautia_herbstobatae
+		Dubautia_imbricata
+		Dubautia_knudsenii_subsp._filiformis
+		Dubautia_knudsenii_subsp._knudsenii
+		Dubautia_knudsenii_subsp._nagatae
+		Dubautia_laevigata
+		Dubautia_latifolia
+		Dubautia_laxa_subsp._hirsuta
+		Dubautia_laxa_subsp._laxa
+		Dubautia_linearis_subsp._hillebrandii
+		Dubautia_linearis_subsp._linearis
+		Dubautia_menziesii
+		Dubautia_microcephala
+		Dubautia_paleata
+		Dubautia_pauciflorula
+		Dubautia_plantaginea_subsp._humilis
+		Dubautia_plantaginea_subsp._magnifolia
+		Dubautia_plantaginea_subsp._plantaginea
+		Dubautia_platyphylla
+		Dubautia_raillardioides
+		Dubautia_reticulata
+		Dubautia_scabra_subsp._leiophylla
+		Dubautia_scabra_subsp._scabra
+		Dubautia_sherffiana
+		Wilkesia_gymnoxiphium
+		Wilkesia_hobdyi
+		;
+End;
+
+Begin trees;
+tree TREE1 = [&R]((((((((((Dubautia_knudsenii_subsp._filiformis[&index=35]:0.030425,Dubautia_knudsenii_subsp._nagatae[&index=34]:0.030425)[&index=36,posterior=1.000000,age_95%_HPD={0.030425,0.030425}]:0.167839,Dubautia_knudsenii_subsp._knudsenii[&index=33]:0.198264)[&index=37,posterior=1.000000,age_95%_HPD={0.198264,0.198264}]:0.020351,(Dubautia_laxa_subsp._hirsuta[&index=32]:0.121229,Dubautia_laxa_subsp._laxa[&index=31]:0.121229)[&index=38,posterior=1.000000,age_95%_HPD={0.121229,0.121229}]:0.097386)[&index=39,posterior=1.000000,age_95%_HPD={0.218615,0.218615}]:0.040218,Dubautia_pauciflorula[&index=30]:0.258833)[&index=40,posterior=1.000000,age_95%_HPD={0.258833,0.258833}]:0.228714,((Dubautia_microcephala[&index=29]:0.176005,Dubautia_plantaginea_subsp._magnifolia[&index=28]:0.176005)[&index=41,posterior=1.000000,age_95%_HPD={0.176005,0.176005}]:0.006887,(Dubautia_plantaginea_subsp._humilis[&index=27]:0.142869,Dubautia_plantaginea_subsp._plantaginea[&index=26]:0.142869)[&index=42,posterior=1.000000,age_95%_HPD={0.142869,0.142869}]:0.040023)[&index=43,posterior=1.000000,age_95%_HPD={0.182892,0.182892}]:0.304655)[&index=44,posterior=1.000000,age_95%_HPD={0.487547,0.487547}]:0.281726,Dubautia_laevigata[&index=25]:0.769273)[&index=45,posterior=1.000000,age_95%_HPD={0.769273,0.769273}]:0.097658,Dubautia_imbricata[&index=24]:0.866931)[&index=46,posterior=1.000000,age_95%_HPD={0.866931,0.866931}]:0.324066,(((Wilkesia_gymnoxiphium[&index=23]:0.183955,Wilkesia_hobdyi[&index=22]:0.183955)[&index=47,posterior=1.000000,age_95%_HPD={0.183955,0.183955}]:0.503492,Dubautia_latifolia[&index=21]:0.687447)[&index=48,posterior=1.000000,age_95%_HPD={0.687447,0.687447}]:0.172632,(Dubautia_paleata[&index=20]:0.410659,Dubautia_raillardioides[&index=19]:0.410659)[&index=49,posterior=1.000000,age_95%_HPD={0.410659,0.410659}]:0.449420)[&index=50,posterior=1.000000,age_95%_HPD={0.860079,0.860079}]:0.330918)[&index=51,posterior=1.000000,age_95%_HPD={1.191,1.191}]:1.095388,((((Argyroxiphium_caliginis[&index=18]:0.027354,Argyroxiphium_grayanum_East_Maui[&index=17]:0.027354)[&index=52,posterior=1.000000,age_95%_HPD={0.027354,0.027354}]:0.149658,Argyroxiphium_grayanum_West_Maui[&index=16]:0.177012)[&index=53,posterior=1.000000,age_95%_HPD={0.177012,0.177012}]:0.052831,(Argyroxiphium_sandwicense_subsp._macrocephalum[&index=15]:0.095168,Argyroxiphium_sandwicense_subsp._sandwicense[&index=14]:0.095168)[&index=54,posterior=1.000000,age_95%_HPD={0.095168,0.095168}]:0.134675)[&index=55,posterior=1.000000,age_95%_HPD={0.229843,0.229843}]:1.114690,Argyroxiphium_kauense[&index=13]:1.344533)[&index=56,posterior=1.000000,age_95%_HPD={1.34453,1.34453}]:0.941852)[&index=57,posterior=1.000000,age_95%_HPD={2.28639,2.28639}]:1.858857,((((((Dubautia_arborea[&index=12]:0.020739,Dubautia_scabra_subsp._scabra[&index=11]:0.020739)[&index=58,posterior=1.000000,age_95%_HPD={0.020739,0.020739}]:0.029788,(Dubautia_linearis_subsp._hillebrandii[&index=10]:0.034110,Dubautia_linearis_subsp._linearis[&index=9]:0.034110)[&index=59,posterior=1.000000,age_95%_HPD={0.03411,0.03411}]:0.016417)[&index=60,posterior=1.000000,age_95%_HPD={0.050527,0.050527}]:0.061187,(Dubautia_ciliolata_subsp._ciliolata[&index=8]:0.049105,Dubautia_ciliolata_subsp._glutinosa[&index=7]:0.049105)[&index=61,posterior=1.000000,age_95%_HPD={0.049105,0.049105}]:0.062609)[&index=62,posterior=1.000000,age_95%_HPD={0.111714,0.111714}]:0.529791,Dubautia_scabra_subsp._leiophylla[&index=6]:0.641505)[&index=63,posterior=1.000000,age_95%_HPD={0.641505,0.641505}]:0.035273,((Dubautia_platyphylla[&index=5]:0.062301,Dubautia_reticulata[&index=4]:0.062301)[&index=64,posterior=1.000000,age_95%_HPD={0.062301,0.062301}]:0.015841,Dubautia_menziesii[&index=3]:0.078142)[&index=65,posterior=1.000000,age_95%_HPD={0.078142,0.078142}]:0.598636)[&index=66,posterior=1.000000,age_95%_HPD={0.676778,0.676778}]:1.562479,(Dubautia_herbstobatae[&index=2]:0.053901,Dubautia_sherffiana[&index=1]:0.053901)[&index=67,posterior=1.000000,age_95%_HPD={0.053901,0.053901}]:2.185356)[&index=68,posterior=1.000000,age_95%_HPD={2.23926,2.23926}]:1.905985)[&index=69,posterior=1.000000,age_95%_HPD={4.14524,4.14524}]:0.000000;
+End;

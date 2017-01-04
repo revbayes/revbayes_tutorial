@@ -1,293 +1,369 @@
-\section{Epoch models and ancestral range reconstruction}
 
-\subsection{Ancestral range reconstruction}
+%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%
 
-
-From the previous section, we created an ancestral state monitor by
-\begin{snugshade}
-\begin{lstlisting}
-mn[3] = mnJointConditionalAncestralState(tree=psi, ctmc=m, filename=out_fn+".states.txt", type="NaturalNumbers", printgen=10, withTips=true, withStartStates=true)
-\end{lstlisting}
-\end{snugshade}
-
-In this section, we'll use the output from running the DEC analysis assuming all each ordered pair of areas has its own dispersal parameter, and each area has its own extinction parameter.
-To generate these results, run
-\begin{snugshade}
-\begin{lstlisting}
-source("RevBayes_scripts/biogeography_DEC_diff.Rev")
-\end{lstlisting}
-\end{snugshade}
+\section{Simple DEC analysis} \label{sec:bg_simple}
 
 
-The joint-conditional ancestral state monitor samples the joint distribution of ancestral states every {\tt printgen} iterations over the entire tree, conditioning on the observed tip states.
-Due to cladogenesis, the state before speciation and the states inherited after speciation may differ, which we monitor setting {\tt withStartStates=true}.
-For convenience we record the tip states using {\tt withTips=true} though these are known through the input data.
-
-The resulting file, {\tt bg\_diff.states.txt}, appears as
-
-\begin{framed}
-\begin{lstlisting}
-Iteration	start_0	end_0	start_1	end_1	start_2	end_2	start_3	end_3	...
-0		2	2	2	4	2	2	2	6	...
-10		2	2	4	4	2	2	2	6	...
-20		2	2	2	4	2	2	6	6	...
-...
-\end{lstlisting}
-\end{framed}
-
-where columns give the integer-valued range corresponding to either the start or end of a branch leading to a particular node, and each row corresponds to a single sample drawn from the joint distribution of ancestral states.
-For example, the lineage leading to the node indexed 1 starts in state 2 (Africa) and ends in state 4 (Eurasia) at iteration 20.
-In Section \ref{sec:bayarea}, we will look at how stochastic mappings---the completely realized biogeographic history---may be analysed for data-augmented models.
-If you wish to write your own scripts to analyse the ancestral range reconstructions, know that each node's index is recorded when writing a tree's Newick string to file so states may be mapped on to the tree.
-
-\subsection{Data exploration with Phylowood}
-
-To interpret the biogeographical history of primates, we will generate a Phylowood (\url{http://mlandis.github.io/phylowood}) animation.
-First, we'll create variables for the relevant files
-
-\begin{snugshade}
-\begin{lstlisting}
-state_fn = "output/bg_diff.states.txt"
-atlas_fn = "data/earth3.still.atlas.txt"
-phw_fn = "output/bg_diff.phw.txt"
-\end{lstlisting}
-\end{snugshade}
-
-then create the animation file
-
-\begin{snugshade}
-\begin{lstlisting}
-convertToPhylowood(treefile=tree_fn, geofile=atlas_fn, statefile=state_fn, outfile=phw_fn, burnin=0., chartype="NaturalNumbers", bgtype="Range")
-\end{lstlisting}
-\end{snugshade}
-
-This file summarizes the MCMC output from a RevBayes biogeographical analysis as a Nexus-formatted file, which is used by Phylowood to generate interactive animations to explore biogeographic reconstructions.
-
-\noindent \\ \impmark Open \texttt{http://mlandis.github.io/phylowood}.
-
-\noindent \\ \impmark Drag and drop \texttt{./output/bg\_diff.phw.txt} into the text field.
-
-\begin{figure}[H]
+The following series of tutorials will reconstruct the ancestral ranges of the silversword alliance (Tribe {\it Madiinae}), a young and diverse clade of about 50 species \citep{carlquistXX}.
+Although silverswords are endemic to Hawaii, they are nested within a larger clade alongside tarweeds, which are native to the California coastline.
+The size and age of the silversword clade, combined with our knowledge of Hawaiian island formation, makes it an ideal system to explore concepts in historical biogeography and phylogeny.
+For further reading, consult: \citet{baldwin,XX,XX,XX}.
+ 
+\begin{figure}[!ht]
 \centering
-\includegraphics[width=4in]{figures/bg_1_mrca}
-\caption{Phylowood frame showing posterior ancestral range of root node.}
+\includegraphics[width=0.6\textwidth]{figures/fig_hawaii_areas.pdf}
+\caption{A beautiful figure of the discrete areas for tutorial. Six areas are shown: Kauai and Niihau (K); Oahu (O); Maui-Nui, Lanai, and Molokai (M); Hawaii (H); the remaining Hawaiian islands (R); and the North American mainland (Z).}
+\label{fig:hawaii_areas}
 \end{figure}
+ 
+For this tutorial we'll focus entirely on the silversword alliance and the modern Hawaiian archipelago.
+To begin, we'll use just four areas, K, O, M, and H, and include areas R and Z in later analyses (Fig \ref{fig:hawaii_areas}).
 
-\noindent \\ \impmark Click the Play button to view the animation. \\
-
-There are three control panels to help you filter data: the media panel, the map panel, and the phylogeny panel.
-The media buttons correspond to Beginning, Slow/Rewind, Play, Stop, Fast Forward, Ending (from left to right).
-The animation will play the timeframe corresponding to the slider.
-
-\noindent \\ \impmark Drag the slider to the right (the present).
-
-\begin{figure}[H]
+\begin{table}[!ht]
 \centering
-\includegraphics[width=4in]{figures/bg_1_tips}
-\caption{Phylowood frame showing distribution of extant taxon ranges.}
-\end{figure}
+\begin{tabular}{llcc}
+Range & Areas & Size & State \\ \hline
+$\emptyset$ & 0000 & 0 & 0 \\
+K    & 1000 & 1 & 1 \\
+O    & 0100 & 1 & 2 \\
+M    & 0010 & 1 & 3 \\
+H    & 0001 & 1 & 4 \\
+KO   & 1100 & 2 & 5 \\
+KM   & 1010 & 2 & 6 \\
+OM   & 0110 & 2 & 7 \\
+KH   & 1001 & 2 & 8 \\
+OH   & 0101 & 2 & 9 \\
+MH   & 0011 & 2 & 10 \\
+KOM  & 1110 & 3 & 11 \\ 
+KOH  & 1101 & 3 & 12 \\
+KMH  & 1011 & 3 & 13 \\
+OMH  & 0111 & 3 & 14 \\
+KOMH & 1111 & 4 & 15 \\
+\end{tabular}
+\caption{Area coding used for four areas: K is Kauai and Nihoa; O is Oahu; M is Maui Nui, Lanai, and Molokai; H is Hawaii island.}
+\end{table}
 
-\noindent \\ \impmark Pan and zoom around the map.\\
+\subsection*{Analysis}
 
-Marker colors correspond to the phylogenetic lineages in the phylogeny panel.
-Markers are split into slices and (loosely) sorted phylogenetically, so nearby slices are generally closely related.
-At divergence events, a marker's radius is proportional to the marginal posterior probability the node was present in the area at that time.
-Between divergence events, marker's radius is simply an interpolation of the values at the two endpoints.
-Some information about geological constraints and cladogenic events is lost.
+First, we'll create some variables to manage files
 
-\noindent \\ \impmark Mouseover an area to learn which lineage it belongs to and its presence probability. \\
+\begin{snugshade*}
+\begin{lstlisting}
+range_fn = "data/n4/silversword.n4.range.nex"
+tree_fn = "data/n4/silversword.tre"
+out_fn = "output/simple"
+\end{lstlisting}
+\end{snugshade*}
 
-Since it's difficult to see how specific clades evolve with so many taxa, Phylowood offers two ways to filter taxa from the animation.
-We call the set of a lineage, all its ancestral lineages towards the root, and all descendant lineages a phylogenetic heritage.
-The root's heritage is the entire clade.
-A leaf node's heritage is a path from the tip to the root.
-
-\noindent \\ \impmark Mouseover a lineage to temporarily highlight the lineage's heritage. Remove the mouseover to remove the highlight effect. \\
-
-The highlight effect is temporary and quickly allows you to single out lineages of interest during animation.
-Phylowood also offers a masking effect that persists until an unmask command is issued.
-
-\noindent \\ \impmark Double-click the white root branch to mask the root node's heritage (all lineages). Single click a lineage to unmask that lineage's heritage. \\
-
-\begin{figure}[H]
-\centering
-\includegraphics[width=4in]{figures/bg_1_loris}
-\caption{Phylowood frame highlighting the ancestral range for the MRCA extant lorises.}
-\end{figure}
-
-Now that the masking effects are in place, you're free to interact with other map components.
-In addition, the area of marker sizes is only distributed among unmasked lineages.
-
-Visit \texttt{https://github.com/mlandis/phylowood/wiki} to learn more about Phylowood.
-
-Phylowood is useful to understand whether your model generates sensible reconstructions.
-Keep in mind the animation and inference both use modern geographies, and that dispersal rates are not modeled to depend on geographical features.
-Notice the primate MRCA is widespread in two areas, the New World and Africa.
-The root age of the primate tree is about 80Mya, which is about 40Mya after East and West Gondwanaland split to separate modern Africa and South America, so vicariance did not give rise to New World Monkeys.
-This is corroborated by examining the fossil record, where the first appearance of primates in South America is about 35Mya.
-The standing theory is primates disperse from Africa to South America in a rare ``sweepstakes.''
-The naive primate biogeographic model described so far should produce more realistic reconstructions by taking continental drift into account.
-
-\subsection{Epoch models}
-
-To model the effects of geography, we will use {\it epoch} models.
-Rather than assuming the evolutionary process is constant with respect to time, it assumes the process is piecewise-constant.
-For example, Africa (along with all of Gondwanaland) split from Eurasia (and all of Laurasia) around 180 Mya.
-Africa merged with Eurasia only about 50 Mya.
-It is reasonable to expect that dispersal rates between Africa and Eurasia were lower before 50 Mya, and higher after 50 Mya until present.
-
-To model this, we will specify one rate matrix that describes anagenic dispersal and extinction processes before for ages $t \geq 50$ and a second rate matrix for the process operating after $0 \leq t < 50$.
-
-To proceed, first we will read in an {\tt Atlas} file, which fully describes the geography per time interval.
-For more on the {\tt Atlas} format, see Section XXX.
+then read in our character data as binary presence-absence characters
 
 \begin{snugshade}
 \begin{lstlisting}
-# read the atlas
-atlas <- readAtlas("data/earth3.drift.atlas.txt")
-n_epochs = atlas.nEpochs()
-times <- atlas.epochTimes()
+dat_range_01 = readDiscreteCharacterData(range_fn)
 \end{lstlisting}
 \end{snugshade}
 
-This atlas contains two epochs, each with three areas, and a single breakpoint at age 50 (50Mya).
-For example, the area for Africa in the second epoch from 50Mya -- present reads
+then encode the species ranges into natural numbers
+
 \begin{snugshade}
 \begin{lstlisting}
- {
-    "latitude": 10.0, 
-    "longitude": 20.0,
-	"dispersalValues": [ 0.1, 0.0, 1.0 ],
-	"extinctionValues": [ 1.0 ],
-    "name": "Africa"
+dat_range_n    = formatDiscreteCharacterData(dat_range_01, "DEC")
+\end{lstlisting}
+\end{snugshade}
+
+
+Record the number of areas
+
+\begin{snugshade}
+\begin{lstlisting}
+n_areas = dat_range_01.nchar()
+\end{lstlisting}
+\end{snugshade}
+
+You can view the taxon data to see how characters are coded
+\begin{snugshade}
+\begin{lstlisting}
+dat_range_01[1]
+ Argyroxiphium_grayanum_East_Maui:
+    0010
+dat_range_n[1]
+ Argyroxiphium_grayanum_East_Maui:
+    3
+\end{lstlisting}
+\end{snugshade}
+
+For now, we'll assume we know the dated species phylogeny without error.
+
+\begin{snugshade}
+\begin{lstlisting}
+tree <- readTrees(tree_fn)[1]
+\end{lstlisting}
+\end{snugshade}
+
+Next, we'll build the anagenetic rate matrix for the DEC model.
+In its simplest form, this requires a dispersal rate and an extirpation rate.
+For this analysis, we'll assume that all pairs of areas share the same dispersal rate and all areas share the same extirpation rate.
+To gain greater control to observe and manage prior sensitivity, we'll reparameterize the DEC rate matrix to report the {\it relative} rates of dispersal versus extirpation events.
+One we have the relative rate matrix, we'll scale the {\it absolute} rate of anagenesis in geological time units with a biogeographic clock parameter, similar to the molecular clock parameter used in dating analyses.
+
+First, create a parameter for the arrival rate for anagenetic range evolution events.
+We'll apply an uninformative prior to the rate's magnitude by first assigning a uniform distribution to the log$_{10}$ rate.
+
+\begin{snugshade}
+\begin{lstlisting}
+log10_rate_bg ~ dnUniform(-4,2)
+log10_rate_bg.setValue(-2)
+moves[1] = mvSlide(log10_rate_bg, weight=4)
+\end{lstlisting}
+\end{snugshade}
+
+Create a deterministic function to convert the rate from log-scale to linear-scale.
+
+\begin{snugshade}
+\begin{lstlisting}
+rate_bg := 10^log10_rate_bg
+\end{lstlisting}
+\end{snugshade}
+
+This gives us a uniform prior over orders of magnitude, ranging from $10^{-4}$ to $10^2$ events per million years.
+
+Because the rate matrix will describe the relative anagenetic event rates, we will assume that dispersal occurs at the relative (fixed) rate of one.
+
+\begin{snugshade}
+\begin{lstlisting}
+dispersal_rate <- abs(1)
+\end{lstlisting}
+\end{snugshade}
+
+then create the dispersal rate matrix
+
+\begin{snugshade}
+\begin{lstlisting}
+for (i in 1:n_areas) {
+  for (j in 1:n_areas) {
+    dr[i][j] <- dispersal_rate
+  }
 }
 \end{lstlisting}
 \end{snugshade}
 
-The {\tt dispersalValues} values share the ordering of the areas, and each area reports a value regarding it's relationship to other areas.
-Here, 0.1 in position 1 indicates the Atlantic Ocean obstructs dispersal from Africa to the Americas, while the 1.0 in position 3 indicates African primates may easily disperse into Eurasia by way of the Arabian Penninsula.
-(Note 0.0 in position 2 is the dispersal value from Africa to itself, so the value is arbitrary.)
-
-To extract these values in matrix form
+Next, assign the prior distribution to the relative extirpation rate and assign it a move.
+The prior distribution of extirpation rates uses {\tt log\_sd} and {\tt log\_mean} values to give it the expected value of one -- i.e. ranges are expected to lose and gain areas at the same rate under the prior.
 
 \begin{snugshade}
 \begin{lstlisting}
-d_prior <- atlas.getValues("dispersal")
+log_sd <- 0.5
+log_mean <- ln(1) - 0.5*log_sd^2
+extirpation_rate ~ dnLognormal(mean=log_mean, sd=log_sd)
+moves[2] = mvScale(extirpation_rate, weight=2)
 \end{lstlisting}
 \end{snugshade}
 
-where, for example, the dispersal rate more than 50 Myr in the past (epoch 1) from Africa (area 2) to Eurasia (area 3) is accessed by
+then create a matrix of extirpation rates
 
 \begin{snugshade}
 \begin{lstlisting}
-d_prior[1][2][3]
-\end{lstlisting}
-\end{snugshade}
-
-To use these empirical priors to rescale our naive priors
-
-\begin{snugshade}
-\begin{lstlisting}
-for (t in 1:n_epochs) {
-	for (i in 1:n_areas) {
-		for (j in 1:n_areas) {
-			if (i != j) {
-				d_raw[t][i][j] ~ dnExp( 10. )
-				mv[mvi++] = mvScale(d_raw[t][i][j], weight=2)
-				d[t][i][j] := d_raw[t][i][j] * abs(d_prior[t][i][j])
-			} else {
-				d[t][i][j] <- abs(0.)
-			}
-		}
-	}
+for (i in 1:n_areas) {
+  for (j in 1:n_areas) {
+    er[i][j] <- abs(0)        
+  }
+  er[i][i] := extirpation_rate
 }
 \end{lstlisting}
 \end{snugshade}
 
-We'll make no strong prior assumptions about epochs or areas differentially affecting extinction rates.
+This diagonal matrix results in per-area extirpation rates that are mutually independent.
+All non-diagonal extirpation rates equal zero.
+(More on penalized ranges and off-diagonal rates later.)
+We can now create our relative rate matrix, {\tt Q\_DEC}, with the {\tt fnDECRateMatrix} function.
 
 \begin{snugshade}
 \begin{lstlisting}
-# set up extinction per epoch
-e_prior <- atlas.getValues("extinction")
-for (t in 1:n_epochs) {
-	for (i in 1:n_areas) {
-		e_raw[t][i] ~ dnExp( 10. )
-		mv[mvi++] = mvScale(e_raw[t][i], weight=2)
-		e[t][i] := e_raw[t][i] * abs(d_prior[t][i][1])
-	}
-}
+Q_DEC := fnDECRateMatrix(dispersalRates=dr, extirpationRates=er)
 \end{lstlisting}
 \end{snugshade}
 
-Now we have dispersal rates and extinction rates per epoch in the matrices {\tt d} and {\tt e}.
+Note, {\tt fnDECRateMatrix} does not rescale its elements in any way, so transition rates share the same time scale as the underlying tree (typically, millions of years).
+This is in contrast to the standard molecular substitution processes (e.g. {\tt fnGTR}) whose rates are rescaled such that the process is expected to produce one event per site per unit time.
 
-Extant primate ranges do not appear capable of spanning all three areas simultaneously, so we might constrain the range evolution process to only allow ranges of size two
+Next, we need to create the cladogenetic probability matrix.
+Cladogenetic event probabilities are given by a transition probability matrix and do not require a rate matrix.
+First, we will create a vector of prior weights on cladogenesis events.
+Here, we assume all cladogenetic events are equiprobable.
 
 \begin{snugshade}
 \begin{lstlisting}
-rangeSize <- simplex(1,1,0)
+clado_event_types <- [ "s", "a" ]
+clado_event_probs <- simplex(1, 1)
+P_DEC := fnDECCladoProbs(eventProbs=clado_event_probs,
+                            eventTypes=clado_event_types,
+                            numCharacters=n_areas)
 \end{lstlisting}
 \end{snugshade}
 
-where the first and last elements are set to zero, so ranges cannot be size 0 or size 3.
-By calling {\tt fnDECRoot} with the {\tt rangeSize} parameter, we can also force the MRCA range size to be a single area.
+Finally, all our DEC model components are encapsulated in the {\tt dnPhyloCTMCClado} distribution, which is similar to {\tt dnPhyloCTMC} except specialized to integrate over cladogenetic events.
+Although this dataset has four areas, it is recognized single character with states valued from 1 to $2^4$, hence {\tt nSites=1}.
 
 \begin{snugshade}
 \begin{lstlisting}
-rf := fnDECRoot( rep(1,n_states), rangeSize=simplex(0,1,1,0) )
+m_bg ~ dnPhyloCTMCClado(tree=tree,
+                           Q=Q_DEC,
+                           cladoProbs=P_DEC,
+                           branchRates=rate_bg,
+                           nSites=1,
+                           type="NaturalNumbers")
 \end{lstlisting}
 \end{snugshade}
 
-Next, we'll create a rate matrix for each epoch
+The remaining tasks should be familiar from previous tutorials, so we can proceed briskly.
+Attach the observed ranges to the model.
 
 \begin{snugshade}
 \begin{lstlisting}
-for (t in 1:n_epochs) {
-	rates[t] ~ dnGamma(2,2)
-	mv[mvi++] = mvScale(rates[t], weight=2)	
-	q[t] := fnDECRateMatrix(d[t], e[t], rangeSize)
-}
+m_bg.clamp(dat_range_n)
 \end{lstlisting}
 \end{snugshade}
 
-with {\tt rates} being an epochal rate multiplier, each with mean 1.
-Notice, we construct {\tt q[t]} for each epoch {\tt t} in {\tt num\_epochs}, using the epoch's dispersal values {\tt d[t]} and extinction values {\tt e[t]}.
-Finally, we wrap our vector of rate matrices, {\tt q}, along with the epoch boundary times, {\tt times}, and  our epochal rates, {\tt rates} 
+Compose the model.
 
 \begin{snugshade}
 \begin{lstlisting}
-q_epoch := fnEpoch( Q=q, times=times, rates=rates )
+mymodel = model(m_bg)
 \end{lstlisting}
 \end{snugshade}
 
-Parameters like {\tt clado\_prob} and {\tt clock\_bg} still need to be created, as they were in the previous section.
-
-Otherwise, the model is created as before, except passing {\tt q\_epoch} into {\tt dnPhyloCTMCClado}.
+Add the monitors. (The {\tt mnJointConditionalAncestralState} monitor will be described later.)
 
 \begin{snugshade}
 \begin{lstlisting}
-m ~ dnPhyloCTMCClado( tree=psi, Q=q_epoch, rootFrequencies=rf, cladoProbs=clado_prob, branchRates=clock_bg, nSites=1, type="NaturalNumbers" )
-m.clamp(data)
-mdl = model(m)
+monitors[1] = mnScreen(rate_bg, extirpation_rate, printgen=100)
+monitors[2] = mnModel(file=out_fn+".params.log", printgen=10)
+monitors[3] = mnFile(tree, file=out_fn+".tre", printgen=10)
+monitors[4] = mnJointConditionalAncestralState(tree=tree,
+                                                    ctmc=m_bg,
+                                                    filename=out_fn+".states.log",
+                                                    type="NaturalNumbers",
+                                                    printgen=10,
+                                                    withTips=true,
+                                                    withStartStates=true)
 \end{lstlisting}
 \end{snugshade}
 
-This biologically and geographically informed model produces a more realistic range reconstruction
+Create the MCMC object, and run the chain after burn-in.
+\begin{snugshade}
+\begin{lstlisting}
+mymcmc = mcmc(moves, monitors, mymodel)
+mymcmc.run(3000)
+\end{lstlisting}
+\end{snugshade}
 
-\begin{figure}[H]
+\subsection*{Results}
+
+{\it Example results have around found in {\tt output\_example/epoch.*} }
+
+The {\tt mnJointConditionalAncestralState} monitor above created a states file.
+Each row in the states file lists the joint sample of ancestral states conditioned on the tip values for the whole tree.
+Each column corresponds to the phylogenetic node index for that particular MCMC sample.
+The index is used to later correspond the state samples with the tree samples when the topology is a random variable.
+(More on this in the ancestral state tutorial.)
+
+The script located at {\tt scripts/make\_anc\_states.Rev} contains code to construct an ancestral state tree.
+To use it for other analyses, just modify the {\tt out\_str} variable below.
+
+Open a new RevBayes session. Set up the files we'll work with.
+\begin{snugshade}
+\begin{lstlisting}
+out_str = "output/simple"
+out_state_fn = out_str + ".states.log"
+out_tree_fn = out_str + ".tre"
+out_mcc_fn = out_str + ".mcc.tre" 
+\end{lstlisting}
+\end{snugshade}
+
+
+Get the ancestral state trace
+
+\begin{snugshade}
+\begin{lstlisting}
+state_trace = readAncestralStateTrace(file=out_state_fn)
+\end{lstlisting}
+\end{snugshade}
+
+
+Get the ancestral state tree trace. It is important to use {\tt readAncestralTreeTrace} and not {\tt readTreeTrace} to properly annotate the tree with ancestral states.
+
+\begin{snugshade}
+\begin{lstlisting}
+tree_trace = readAncestralStateTreeTrace(file=out_tree_fn, treetype="clock")
+\end{lstlisting}
+\end{snugshade}
+
+Read the maximum clade credibility tree and write it to file
+
+\begin{snugshade}
+\begin{lstlisting}
+mcc_tree = mccTree(tree_trace, file=out_mcc_fn)
+\end{lstlisting}
+\end{snugshade}
+
+
+Build the ancestral state tree
+
+\begin{snugshade}
+\begin{lstlisting}
+anc_tree = ancestralStateTree(tree=mcc_tree,
+                              ancestral_state_trace_vector=state_trace,
+                              tree_trace=tree_trace,
+                              include_start_states=true,
+                              file=out_str+".ase.tre",
+                              burnin=0,
+                              summary_statistic="MAP",
+                              site=0)
+\end{lstlisting}
+\end{snugshade}
+
+We can review the output from {\tt ancestralStateTree} in FigTree (Fig \ref{fig:simple_FigTree_ase}).
+
+\begin{figure}[!ht]
 \centering
-\includegraphics[width=4in]{figures/bg_2_epoch}
-\caption{Phylowood frame showing Asian origin of primates, with subsequent dispersal into Africa and Americas.}
+\includegraphics[width=0.6\textwidth]{figures/fig_simple_FigTree_ase.png}
+\caption{Tree with ancestral state estimates. The most probable end state of each branch (before cladogenesis) is shown at each node. Branches are labeled with the posterior probability for the ancestral state on the tipwards end of the branch.}
+\label{fig:simple_FigTree_ase}
 \end{figure}
 
+Nodes are annotated with the first three most probable ancestral states along with their posterior probabilities.
+When the tree is a random variable, as it is in later exercises, additional information about phylogenetic uncertainty is reported.
 
-This example model may be run by typing
+Finally, we can also generate a figure with ancestral states in R using RevGadgets that is suitable for publication.
 
 \begin{snugshade}
 \begin{lstlisting}
-RevBayes_scripts/biogeography_epoch.Rev}
+# RevGadgets requires development tools for installation
+install.packages("devtools")
+library(devtools)
+
+# Install RevGadgets
+install_github("revbayes/RevGadgets")
+
+# Note about ggtree dependency:
+# RevGadgets requires ggtree version 1.5.14 or greater. This can be installed directly from GitHub:
+install_github("GuangchuangYu/ggtree")
 \end{lstlisting}
 \end{snugshade}
 
-which also produces the above Phylowood animation file.
+Once this is installed you can generate a figure by executing {\tt source("plot\_anc\_state.n4.R\")} from within an R session (Fig \ref{fig:simple_RevGadgets_ase}).
+Modifying the source file allows you to use the script with different datasets.
+
+\begin{figure}[!ht]
+\centering
+\includegraphics[width=0.7\textwidth]{figures/fig_simple_RevGadgets_ase.pdf}
+\caption{Tree with ancestral state estimates for the ``simple'' analysis. Nodes are annotated with ancestral states before and after cladogenetic events. Most probable states are shown. Colors of markers indicate the range state. Sizes of markers indicate the posterior probability of that state. }
+\label{fig:simple_RevGadgets_ase}
+\end{figure}
+
+Notice that the model infers a widespread ancestral range for the clade (KOMH) approximately four million years ago when only Kauai existed.
+Similar geologically unrealistic widespread ranges are estimated for the Agyroxiphium clade (KMH) and the Dubautia sheriffiana+arborea clade (OMH).
+The remaining tutorials will focus on improvements to the simple DEC model presented here.
+
+\newpage
