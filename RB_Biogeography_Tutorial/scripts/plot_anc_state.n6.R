@@ -7,8 +7,8 @@ if (stable) {
 library(ggtree)
 
 
-out_str = "output/simple_phy"
-#out_str = "output/epoch_phy"
+#out_str = "output/simple_phy"
+out_str = "output/epoch_phy"
 tree_fn = paste(out_str, ".ase.tre", sep="")
 
 st_lbl = c("R","K","O","M","H","Z",
@@ -48,16 +48,19 @@ st_colors = c(  "#1b9e77",
 names(st_colors) = st_lbl
 
 summary_statistic = "MAPRange"
+s = 5 / 17
 plot_ancestral_states(tree_file=tree_fn,
                       include_start_states=T,
                       shoulder_label_size=1.5,
+                      shoulder_label_nudge_x=-0.1*s,
                       summary_statistic=summary_statistic,
                       state_labels=st_lbl,
                       state_colors=st_colors,
                       node_label_size=2,
                       node_size_range=c(2,2),
+                      node_label_nudge_x=0.1*s,
                       tip_label_size=2,
-                      tip_label_offset=0.5,
-                      #xlim_visible=c(0,6),
-                      xlim_visible=c(0,17),
-                      show_posterior_legend=F)
+                      tip_label_offset=s*0.5,
+                      xlim_visible=c(0,s*17),
+                      show_posterior_legend=F,
+                      show_tree_scale=T)

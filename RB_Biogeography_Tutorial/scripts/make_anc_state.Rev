@@ -13,8 +13,8 @@ out_mcc_fn   = out_str + ".mcc.tre"
 
 # compute MCC tree for "reference tree"
 tree_trace = readTreeTrace(file=out_phy_fn, treetype="clock")
-tree_trace.setBurnin(0.5)
-mcc_tree = mccTree(tree_trace, file=out_mcc_fn)
+tree_trace.setBurnin(0.25)
+mcc_tree = mccTree(tree_trace, file=out_mcc_fn, mean=false)
 
 # get ancestral state trace
 state_trace = readAncestralStateTrace(file=out_state_fn)
