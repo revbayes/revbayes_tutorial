@@ -1,5 +1,7 @@
 \section{Overview}
 
+This tutorial provides the second protocol from our recent publication \citep{Hoehna2017a}.
+The first protocol is described in the \href{https://github.com/revbayes/revbayes_tutorial/raw/master/tutorial_TeX/RB_CTMC_Tutorial/RB_CTMC_Tutorial.pdf}{Substitution model tutorial} and the third protocol is described in the \href{https://github.com/revbayes/revbayes_tutorial/raw/master/tutorial_TeX/RB_BayesFactor_Tutorial/RB_BayesFactor_Tutorial.pdf}{Bayes factor tutorial}.
 
 This tutorial demonstrates how to accommodate variation in the substitution process across sites of an alignment.
 In the preceding tutorials, we assumed that all sites in an alignment evolved under an identical substitution process.
@@ -7,31 +9,35 @@ This assumption is likely to be violated biologically, since different nucleotid
 Here, we will demonstrate how to specify---and select among---alternative \emph{data partition schemes} using \RevBayes.
 This is commonly referred to as partitioned-data analysis, where two or more subsets of sites in our alignment are assumed to evolve under distinct processes.
 
-This tutorial will construct two multi-gene models.
+This tutorial will construct three multi-gene models.
 The first model, Partition\_uniform, assumes all genes evolve under the same process parameters.
 The second model, Partition\_gene, assumes all genes evolve according to the same process, but each gene has it's own set of process parameters.
 The third model, Partition\_codon, partitions the data not only by gene, but also by codon position.
-Each analysis will generate a {\it maximum a posteriori} tree to summarize the inferred phylogeny.
+Each analysis will generate a \emph{maximum a posteriori} tree to summarize the inferred phylogeny.
 An advanced exercise introduces how to compute Bayes factors to select across various partitioning schemes.
 
 All of the files for this analysis are provided for you and you can run these without significant effort using the \cl{source()} function in the \RevBayes console, \EG
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-source("RevBayes_scripts/mcmc_Partition_uniform.Rev")
+source("scripts/mcmc_Partition_uniform.Rev")
 \end{lstlisting}
 \end{snugshade*}}
 
-If everything loaded properly, then you should see the program begin running the Markov chain Monte Carlo analysis needed for estimating the posterior distribution. If you continue to let this run, then you will see it output the states of the Markov chain once the MCMC analysis begins.
+If everything loaded properly, then you should see the program begin running the Markov chain Monte Carlo analysis needed for estimating the posterior distribution. 
+If you continue to let this run, then you will see it output the states of the Markov chain once the MCMC analysis begins.
 
 \subsection{Requirements}
-We assume that you have previously completed the following tutorials:
+We assume that you have read and hopefully completed the following tutorials:
 \begin{itemize}
-\item RB\_Getting\_Started
-\item RB\_Data\_Tutorial
-\item RB\_CTMC\_Tutorial
-\item RB\_BayesFactor\_Tutorial
+\item \href{https://github.com/revbayes/revbayes_tutorial/raw/master/tutorial_TeX/RB_Getting_Started/RB_Getting_Started.pdf}{Getting started}
+\item \href{https://github.com/revbayes/revbayes_tutorial/raw/master/tutorial_TeX/RB_Basics_Tutorial/RB_Basics_Tutorial.pdf}{\Rev basics}
+\item \href{https://github.com/revbayes/revbayes_tutorial/raw/master/tutorial_TeX/RB_CTMC_Tutorial/RB_CTMC_Tutorial.pdf}{Substitution model}
+\item \href{https://github.com/revbayes/revbayes_tutorial/raw/master/tutorial_TeX/RB_BayesFactor_Tutorial/RB_BayesFactor_Tutorial.pdf}{Model selection using Bayes factors}
 \end{itemize}
-Accordingly, we will assume that you know how to execute and load data into \RevBayes, are familiar with some basic commands, and know how to perform Bayes factor comparisons to select among competing substitution models.
+Note that the \href{https://github.com/revbayes/revbayes_tutorial/raw/master/tutorial_TeX/RB_Basics_Tutorial/RB_Basics_Tutorial.pdf}{\Rev basics tutorial} introduces the basic syntax of \Rev but does not cover any phylogenetic models.
+You may skip the \href{https://github.com/revbayes/revbayes_tutorial/raw/master/tutorial_TeX/RB_Basics_Tutorial/RB_Basics_Tutorial.pdf}{\Rev basics tutorial} if you have some familiarity with \R.
+We tried to keep this tutorial very basic and introduce all the language concepts and theory on the way.
+You may only need the \href{https://github.com/revbayes/revbayes_tutorial/raw/master/tutorial_TeX/RB_Basics_Tutorial/RB_Basics_Tutorial.pdf}{\Rev basics tutorial} for a more in-depth discussion of concepts in \Rev.
 
 
 
@@ -130,9 +136,11 @@ Typing \cl{data} reports the dimensions of the concatenated matrix, this provide
 \end{lstlisting}
 \end{snugshade*}}
 
-For later use, we will store the taxon information (\cl{taxa}).
+For later use, we will store the taxon information (\cl{taxa}) and the number of taxa and branches.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
+n_species <- data.ntaxa()
+n_branches <- 2 * n_species - 3
 taxa <- data.taxa()
 \end{lstlisting}
 \end{snugshade*}}
@@ -157,11 +165,12 @@ er ~ dnDirichlet( er_prior )
 \end{lstlisting}
 \end{snugshade*}}
 
-and assign its move
+and assign its moves
 
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 moves[++mvi] = mvBetaSimplex(er, alpha=10, tune=true, weight=3) 
+moves[++mvi] = mvDirichletSimplex(er, alpha=10.0, tune=true, weight=1.0)
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -180,6 +189,7 @@ Now add the simplex scale move on the stationary frequencies to the moves vector
 {\tt \small \begin{snugshade*}
 \begin{lstlisting}
 moves[++mvi] = mvBetaSimplex(pi, alpha=10, tune=true, weight=2) 
+moves[++mvi] = mvDirichletSimplex(pi, alpha=10.0, tune=true, weight=1.0)
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -199,7 +209,7 @@ Since we do not have good prior knowledge about the variance in site rates, thus
 Create a constant node called \cl{alpha\_prior\_mean} for the mean parameter and a constant node called \cl{alpha\_prior\_sd} for the standard deviation of the lognormal prior on the gamma-shape parameter (this is represented as the constant $m_\alpha$ and $sd_\alpha$ parameters in Figure \ref{fig:gtrg}):
 {\tt\begin{snugshade*}
 \begin{lstlisting}
-alpha_prior_mean <- 5.0
+alpha_prior_mean <- ln(2.0)
 alpha_prior_sd <- 0.587405
 \end{lstlisting}
 \end{snugshade*}}
@@ -247,9 +257,6 @@ moves[++mvi] = mvSlide(pinvar, delta=10.0, tune=false, weight=2.0)
 \end{lstlisting}
 \end{snugshade*}}
 
-%Note, if the $+\Gamma$ model allows for one rate category to take a very small value, it approximates the zero-rate value for the $+I$ model.
-%This means when invariant site patterns are present, the $+\Gamma$ and $+I$ models vie to explain the same underlying evolutionary process of some sites evolving at a zero or near-zero rate.
-
 
 
 \subsubsection{Tree prior}
@@ -257,102 +264,63 @@ moves[++mvi] = mvSlide(pinvar, delta=10.0, tune=false, weight=2.0)
 The tree topology and branch lengths are also stochastic nodes in our model. 
 In Figure \ref{pipeline}, the tree topology is denoted $\Psi$ and the length of the branch leading to node $i$ is $\nu_i$.
 
-We will assume the topology and divergence times are distributed by a birth-death process called \cl{dnBDP()} in \RevBayes.
-We will assume a constant-rate birth-death process as the prior distribution on the tree.
-This means that all possible labeled, rooted tree topologies have equal probability. 
-The distribution in \RevBayes is \cl{dnBDP()}. 
-For the birth-death process we need a speciation rate and extinction rate parameter as well as a root age parameter.
+For simplicity, we will use the same prior distribution on the tree topology, a uniform topology prior, and branch lengths, independent exponential prior distributions, as done in the \href{https://github.com/revbayes/revbayes_tutorial/raw/master/tutorial_TeX/RB_CTMC_Tutorial/RB_CTMC_Tutorial.pdf}{substitution model tutorial}.
 
-We begin with the root age parameter.
-From other empirical studies we know that crown age of primates is about 90 Mya \citep{Perelman2011}.
-Thus, for the sake of simplicity in this tutorial we fix it to 90 Mya.
+We will assume that all possible labeled, unrooted tree topologies have equal probability. 
+This is the \cl{dnUniformTopology()} distribution in \RevBayes. 
+Note that in \RevBayes it is advisable to specify the outgroup for your study system if you use an unrooted tree prior, whereas other software, \EG \MrBayes uses the first taxon in the data matrix file as the outgroup.
+Specify the \cl{topology} stochastic node by passing in the tip labels \cl{names} to the \cl{dnUniformTopology()} distribution:
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-root_time <- 90
-\end{lstlisting}
-\end{snugshade*}}
-Next, we specify the two rate variables.
-We use a \textit{lognormal} distribution for both the \cl{diversification} and \cl{turnover} variables.
-We fix the mean of both prior distributions on the expected diversification rate and allow for one and two orders of magnitude prior uncertainty, repsectively.
-{\tt \begin{snugshade*}
-\begin{lstlisting}
-diversification_mean <- ln( ln(450.0/2.0) / root_time )
-diversification_sd <- 0.587405
-diversification ~ dnLognormal(mean=diversification_mean,sd=diversification_sd) 
-turnover_mean <- ln( ln(450.0/2.0) / root_time )
-turnover_sd <- 0.587405*2
-turnover ~ dnLognormal(mean=turnover_mean,sd=turnover_sd) 
-\end{lstlisting}
-\end{snugshade*}}
-Now we can transform the \cl{diversification} and \cl{turnover} into the \cl{speciation} rate and \cl{extinction} rate.
-{\tt \begin{snugshade*}
-\begin{lstlisting}
-birth_rate := diversification + turnover
-death_rate := turnover
-\end{lstlisting}
-\end{snugshade*}}
-Additionally, we know that we do not have all primate species included in this data set.
-We only have 23 out of the approximately 450 primate species.
-Thus, we use a sampling fraction to represent this incomplete taxon sampling  \citep{Hoehna2011,Hoehna2014a}.
-{\tt \begin{snugshade*}
-\begin{lstlisting}
-rho <- taxa.size()/450
-\end{lstlisting}
-\end{snugshade*}}
-Here we have created our first two stochastic variables.
-For each one of them we need to create at least one moves that change the stochastic variables.
-In this case we use scaling proposals because these are rate parameters and defined only on positive real numbers.
-{\tt \begin{snugshade*}
-\begin{lstlisting} 
-moves[++mvi] = mvScale(diversification,lambda=1.0,tune=true,weight=3.0)
-moves[++mvi] = mvScale(turnover,lambda=1.0,tune=true,weight=3.0)
+out_group = clade("Galeopterus_variegatus")
+topology ~ dnUniformTopology(taxa, outgroup=out_group)
 \end{lstlisting}
 \end{snugshade*}}
 
-Next, specify the \cl{tree} stochastic node by passing in the taxon information \cl{taxa} to the \cl{dnBDP()} distribution:
+To update the unrooted tree topology, we can use both a nearest-neighbor interchange move (\cl{mvNNI}) and a subtree-prune and regrafting move (\cl{mvSPR}). 
+These moves do not have tuning parameters associated with them, thus you only need to pass in the \cl{topology} node and proposal \cl{weight}. 
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-psi ~ dnBDP(lambda=birth_rate, mu=death_rate, rho=rho, rootAge=root_time, samplingStrategy="uniform", condition="survival", taxa=taxa)
-\end{lstlisting}
-\end{snugshade*}}
-
-Some types of stochastic nodes can be updated by a number of alternative moves. 
-Different moves may explore parameter space in different ways, and it is possible to use multiple different moves for a given parameter to improve mixing (the efficiency of the MCMC simulation). 
-In the case of our rooted tree, for example, we can use both a nearest-neighbor interchange move without and with changing the node ages (\cl{mvNarrow} and \cl{mvNNI}) and a fixed-nodeheight subtree-prune and regrafting move (\cl{mvFNPR}) and its Metroploized-Gibbs variant (\cl{mvGPR}) \citep{Hoehna2008,Hoehna2012}. 
-We also need moves that change the ages of the internal nodes; which are for example the \cl{mvSubtreeScale} and \cl{mvNodeTimeSlideUniform}.
-These moves do not have tuning parameters associated with them, thus you only need to pass in the \cl{psi} node and proposal \cl{weight}. 
-{\tt \begin{snugshade*}
-\begin{lstlisting}
-moves[++mvi] = mvNarrow(psi, weight=5.0)
-moves[++mvi] = mvNNI(psi, weight=1.0)
-moves[++mvi] = mvFNPR(psi, weight=3.0)
-moves[++mvi] = mvGPR(psi, weight=3.0)
-moves[++mvi] = mvSubtreeScale(psi, weight=3.0)
-moves[++mvi] = mvNodeTimeSlideUniform(psi, weight=15.0)
+moves[++mvi] = mvNNI(topology, weight=1.0)
+moves[++mvi] = mvSPR(topology, weight=1.0)
 \end{lstlisting}
 \end{snugshade*}}
 The weight specifies how often the move will be applied either on average per iteration or relative to all other moves.
-Have a look at the MCMC tutorial for more details about moves and MCMC strategies: \href{http://revbayes.github.io/tutorials.html}{http://revbayes.github.io/tutorials.html}
+Have a look at the \href{https://github.com/revbayes/revbayes_tutorial/raw/master/tutorial_TeX/RB_MCMC_Tutorial/RB_MCMC_Tutorial.pdf}{MCMC Diagnosis tutorial} for more details about moves and MCMC strategies (found on the \href{http://revbayes.github.io/tutorials.html}{\RevBayes~Tutorials Website}).
 
 
-\impmark{Fore more information on tree priors please read the \href{https://github.com/revbayes/revbayes_tutorial/raw/master/tutorial_TeX/RB_DiversificationRate_Tutorial/RB_DiversificationRate_Tutorial.pdf}{RB\_DiversificationRate\_Tutorial}.}
-
-\subsubsection{Molecular clock}
-
-We know from empirical estimates that the molecular clock rate is about  0.01 (=1\%) per million years per site
-Nevertheless, we will estimate it here because we fixed the root age.
-We use a uniform prior on the log-transform clock rate.
-This specifies our lack of prior knowledge on the magnitude of the clock rate.
-{\tt \begin{snugshade*}
+Next we have to create a stochastic node for each of the $2N-3$ branches in our tree (where $N=$ \cl{n\_species}). 
+We can do this using a \cl{for} loop --- this is a plate in our graphical model. In this loop, we can create each of the branch-length nodes and assign each move. 
+Copy this entire block of \Rev~code into the console:
+{\tt \small \begin{snugshade*}
 \begin{lstlisting}
-log_clock_rate ~ dnUniform(-6,1)
-moves[++mvi] = mvSlide(log_clock_rate, weight=2.0)
-clock_rate := 10^log_clock_rate
+for (i in 1:n_branches) {
+   br_lens[i] ~ dnExponential(10.0)
+   moves[++mvi] = mvScale(br_lens[i]) 
+}
 \end{lstlisting}
 \end{snugshade*}}
 
-Instead, you could also fix the clock rate and estimate the root age
-\impmark{Fore more information on molecular clocks please read the \href{https://github.com/revbayes/revbayes_tutorial/raw/master/tutorial_TeX/RB_DivergenceTimeCalibration_Tutorial/RB_DivergenceTimeCalibration_Tutorial.pdf}{RB\_DivergenceTime\_Tutorial}.}
+It is convenient for monitoring purposes to add the tree length as deterministic variable. 
+The tree length is simply the sum of all branch lengths. .
+Accordingly, the tree length can be computed using the \cl{sum()} function, which calculates the sum of any vector of values.
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+TL := sum(br_lens)
+\end{lstlisting}
+\end{snugshade*}}
+
+
+Finally, we can create a \emph{phylogram} (a phylogeny in which the branch lengths are proportional to the expected number of substitutions/site) by combining the tree topology and branch lengths.
+We do this using the \cl{treeAssembly()} function, which applies the value of the $i^{th}$ member of the \cl{br\_lens} vector to the branch leading to the $i^{th}$ node in \cl{topology}. 
+Thus, the \cl{phylogeny} variable is a deterministic node: 
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+phylogeny := treeAssembly(topology, br_lens)
+\end{lstlisting}
+\end{snugshade*}}
+
+\impmark{Fore more information on tree priors please read the \href{https://github.com/revbayes/revbayes_tutorial/raw/master/tutorial_TeX/RB_DiversificationRate_Tutorial/RB_DiversificationRate_Tutorial.pdf}{RB\_DiversificationRate\_Tutorial}.}
 
 
 \subsection{Putting it All Together}
@@ -361,7 +329,7 @@ We now have all the parameters needed to model the phylogenetic molecular substi
 
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-phyloSeq ~ dnPhyloCTMC(tree=psi, Q=Q, branchRates=clock_rate, siteRates=gamma_rates, pInv=pinvar, type="DNA")
+phyloSeq ~ dnPhyloCTMC(tree=psi, Q=Q,  siteRates=gamma_rates, pInv=pinvar, type="DNA")
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -404,7 +372,7 @@ monitors[++mni] = mnFile(psi, filename="output/PS_uniform.trees", printgen=10)
 Finally, create a screen monitor that will report the states of specified variables to the screen with \cl{mnScreen}:
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-monitors[++mni] = mnScreen(alpha, pinvar, clock_rate, printgen=1000)
+monitors[++mni] = mnScreen(alpha, pinvar, TL, printgen=1000)
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -414,9 +382,10 @@ monitors[++mni] = mnScreen(alpha, pinvar, clock_rate, printgen=1000)
 With a fully specified model, a set of monitors, and a set of moves, we can now set up the MCMC algorithm that will sample parameter values in proportion to their posterior probability. The \cl{mcmc()} function will create our MCMC object:
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-mymcmc = mcmc(mymodel, monitors, moves)
+mymcmc = mcmc(mymodel, monitors, moves, nruns=2)
 \end{lstlisting}
 \end{snugshade*}}
+Note that this will automatically run two independent replicated MCMC simulations because we specified \cl{nruns=2}.
 
 We can run the \cl{.burnin()} member function if we wish to pre-run the chain and discard the initial states. 
 {\tt \begin{snugshade*}
@@ -438,7 +407,7 @@ When the analysis is complete, you will have the monitor files in your output di
 \RevBayes~can also summarize the tree samples by reading in the tree-trace file:
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-treetrace = readTreeTrace("output/PS_uniform.trees")
+treetrace = readTreeTrace("output/PS_uniform.trees", treetype="non-clock")
 treetrace.summarize()
 \end{lstlisting}
 \end{snugshade*}}
@@ -554,7 +523,7 @@ Following this format, we construct the remaining partition parameters: the $+\G
 {\tt \small \begin{snugshade*}
 \begin{lstlisting}
 for (i in 1:n_data_subsets) {
-    alpha_prior_mean[i] <- 5.0
+    alpha_prior_mean[i] <- ln(2.0)
     alpha_prior_sd[i] <- 0.587405
     alpha[i] ~ dnLognormal( alpha_prior_mean[i], alpha_prior_sd[i] )
     gamma_rates[i] := fnDiscretizeGamma( alpha[i], alpha[i], 4, false )
@@ -576,26 +545,17 @@ for (i in 1:n_data_subsets) {
 \end{lstlisting}
 \end{snugshade*}}
 
-and the global (\IE base) molecular clock
+and the per-partition substitution rate multipliers 
 {\tt \small \begin{snugshade*}
 \begin{lstlisting}
-log_global_clock_rate ~ dnUniform(-6,1)
-moves[++mvi] = mvSlide(log_global_clock_rate, weight=2.0)
-global_clock_rate := 10^log_global_clock_rate
-\end{lstlisting}
-\end{snugshade*}}
-
-and the per-partition molecular clock
-{\tt \small \begin{snugshade*}
-\begin{lstlisting}
+# specify a rate multiplier for each partition
 part_rate_mult ~ dnDirichlet( rep(1.0, n_data_subsets) )
 moves[++mvi] = mvBetaSimplex(part_rate_mult, alpha=1.0, tune=true, weight=n_data_subsets)
 moves[++mvi] = mvDirichletSimplex(part_rate_mult, alpha=1.0, tune=true, weight=2.0)
 
-for (i in 1:n_data_subsets) {
-    part_rate[i] := part_rate_mult[i] * n_data_subsets * global_clock_rate
-}
-\end{lstlisting}
+# note that we use here a vector multiplication, 
+# i.e., multiplying each element of part_rate_mult by n_data_subsets
+part_rate := part_rate_mult * n_data_subsets\end{lstlisting}
 \end{snugshade*}}
 
 \subsubsection{Tree prior}
@@ -604,31 +564,21 @@ We assume that both genes evolve along the same tree.
 Hence, we need to specify a random variable for our tree parameter which is the same as was specified for {\tt mcmc\_Partition\_uniform.Rev}.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-root_time <- 90
+out_group = clade("Galeopterus_variegatus")
+# Prior distribution on the tree topology	
+topology ~ dnUniformTopology(taxa, outgroup=out_group)
+moves[++mvi] = mvNNI(topology, weight=5.0)
+moves[++mvi] = mvSPR(topology, weight=1.0)
 
-diversification_mean <- ln( ln(450.0/2.0) / root_time )
-diversification_sd <- 0.587405
-diversification ~ dnLognormal(mean=diversification_mean,sd=diversification_sd) 
-turnover_mean <- ln( ln(450.0/2.0) / root_time )
-turnover_sd <- 0.587405*2
-turnover ~ dnLognormal(mean=turnover_mean,sd=turnover_sd) 
+# Branch length prior
+for (i in 1:n_branches) {
+    bl[i] ~ dnExponential(10.0)
+	moves[++mvi] = mvScale(bl[i])
+}
 
-birth_rate := diversification + turnover
-death_rate := turnover
-
-rho <- taxa.size()/450
-
-moves[++mvi] = mvScale(diversification,lambda=1.0,tune=true,weight=3.0)
-moves[++mvi] = mvScale(turnover,lambda=1.0,tune=true,weight=3.0)
-
-psi ~ dnBDP(lambda=birth_rate, mu=death_rate, rho=rho, rootAge=root_time, samplingStrategy="uniform", condition="survival", taxa=taxa)
-
-moves[++mvi] = mvNarrow(psi, weight=5.0)
-moves[++mvi] = mvNNI(psi, weight=1.0)
-moves[++mvi] = mvFNPR(psi, weight=3.0)
-moves[++mvi] = mvGPR(psi, weight=3.0)
-moves[++mvi] = mvSubtreeScale(psi, weight=3.0)
-moves[++mvi] = mvNodeTimeSlideUniform(psi, weight=15.0)
+TL := sum(bl)
+	
+psi := treeAssembly(topology, bl)
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -664,7 +614,7 @@ create the monitors
 \begin{lstlisting}
 monitors[++mni] = mnModel(filename="output/PS_gene.log",printgen=10)
 monitors[++mni] = mnFile(psi, filename="output/PS_gene.trees", printgen=100)
-monitors[++mni] = mnScreen(global_clock_rate, printgen=1000)
+monitors[++mni] = mnScreen(TL, printgen=1000)
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -672,7 +622,7 @@ configure and run the MCMC analysis
 
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-mymcmc = mcmc(mymodel, moves, monitors)
+mymcmc = mcmc(mymodel, moves, monitors, nruns=2)
 mymcmc.burnin(10000,100)
 mymcmc.run(30000)
 \end{lstlisting}
@@ -682,7 +632,7 @@ and summarize the posterior density of trees with a MAP tree
 
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-treetrace = readTreeTrace("output/PS_gene.trees")
+treetrace = readTreeTrace("output/PS_gene.trees", treetype="non-clock")
 treetrace.summarize()
 mapTree(treetrace,"output/PS_gene_MAP.tre")
 \end{lstlisting}
@@ -751,10 +701,10 @@ The remaining parts of the model are identical to the previous exercise where we
 
 \item {\bf Reviewing posterior estimates.} Open the {\tt PS\_codon.log} file in \Tracer. Remember that data subsets 1 and 2 are for cox2, partitions 3 and 4 are for cytB, subsets 1 and 3 are for sites in the first and second codon positions (per gene), and subsets 2 and 4 are for sites in the third and fourth codon positions (per gene).
 
-Aside from the tree topology and divergence times, each data subset is modeled to have its own set of parameters.
+Aside from the tree topology and branch lengths, each data subset is modeled to have its own set of parameters.
 However, the posterior estimates for some parameters appear quite similar between some pairs of subsets yet different between other pairs of subsets.
-For example, {\tt part\_rate} is the per-subset molecular clock.
-This clock is approximately two orders of magnitude faster for partitions 2 and 4 (third codon position sites) than it is for subsets 1 and 3 (non-third codon position sites).
+For example, {\tt part\_rate} is the per-subset substitution rate.
+This clock is approximately one order of magnitude faster for partitions 2 and 4 (third codon position sites) than it is for subsets 1 and 3 (non-third codon position sites).
 
 Identify other parameter-subset relationships like this in the posterior.
 Under this model, would you consider the gene or the codon site position to hold greater influence over the site's evolutionary mode?
@@ -766,7 +716,7 @@ Do different models yield different tree topologies?
 Generally, do complex models provide higher or lower clade support?
 
 \item {\bf Partitioned model selection.}
-Bayes factors are computed as the ratio of marginal likelihoods (see the marginal likelihood tutorial (Section XXX) for more details).
+Bayes factors are computed as the ratio of marginal likelihoods (see the \href{https://github.com/revbayes/revbayes_tutorial/raw/master/tutorial_TeX/RB_BayesFactor_Tutorial/RB_BayesFactor_Tutorial.pdf}{model selection using Bayes factors tutorial} for more details).
 Rather than constructing the analysis with an {\tt mcmc} object, marginal likelihood computations rely on output from a {\tt powerPosterior} object.
 
 Copy {\tt mcmc\_Partition\_uniform.Rev} to {\tt ml\_Partition\_uniform.Rev}.
