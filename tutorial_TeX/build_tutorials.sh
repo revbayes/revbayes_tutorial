@@ -6,6 +6,11 @@ BUILD_BASICS="false"
 
 BUILD_MCMC_INTRO="false"
 
+BUILD_BAYES_FACTOR="true"
+
+BUILD_CTMC="true"
+BUILD_PARTITION="true"
+
 BUILD_DIVERSIFICATION_RATE="false"
 BUILD_DIVERSIFICATION_RATE_EPISODIC="false"
 BUILD_DIVERSIFICATION_RATE_ENVIRONMENTAL="false"
@@ -78,6 +83,74 @@ rm RB_MCMC_Intro_Tutorial.bbl
 rm RB_MCMC_Intro_Tutorial.blg
 rm RB_MCMC_Intro_Tutorial.log
 rm RB_MCMC_Intro_Tutorial.out
+
+cd ..
+fi
+
+#####################
+#                   #
+#   Model testing   #
+#                   #
+#####################
+
+# Bayes factors
+if [[ ${BUILD_BAYES_FACTOR} == "true" || ${BUILD_ALL} == "true" ]]
+then
+cd RB_BayesFactor_Tutorial
+pdflatex RB_BayesFactor_Tutorial.tex
+bibtex RB_BayesFactor_Tutorial
+pdflatex RB_BayesFactor_Tutorial.tex
+pdflatex RB_BayesFactor_Tutorial.tex
+
+rm RB_BayesFactor_Tutorial.aux
+rm RB_BayesFactor_Tutorial.bbl
+rm RB_BayesFactor_Tutorial.blg
+rm RB_BayesFactor_Tutorial.log
+rm RB_BayesFactor_Tutorial.out
+
+cd ..
+fi
+
+
+############################
+#                          #
+#   Phylogeny Estimation   #
+#                          #
+############################
+
+# Substitution model
+if [[ ${BUILD_CTMC} == "true" || ${BUILD_ALL} == "true" ]]
+then
+cd RB_CTMC_Tutorial
+pdflatex RB_CTMC_Tutorial.tex
+bibtex RB_CTMC_Tutorial
+pdflatex RB_CTMC_Tutorial.tex
+pdflatex RB_CTMC_Tutorial.tex
+
+rm RB_CTMC_Tutorial.aux
+rm RB_CTMC_Tutorial.bbl
+rm RB_CTMC_Tutorial.blg
+rm RB_CTMC_Tutorial.log
+rm RB_CTMC_Tutorial.out
+
+cd ..
+fi
+
+
+# Partitioned data analysis
+if [[ ${BUILD_PARTITION} == "true" || ${BUILD_ALL} == "true" ]]
+then
+cd RB_Partition_Tutorial
+pdflatex RB_Partition_Tutorial.tex
+bibtex RB_Partition_Tutorial
+pdflatex RB_Partition_Tutorial.tex
+pdflatex RB_Partition_Tutorial.tex
+
+rm RB_Partition_Tutorial.aux
+rm RB_Partition_Tutorial.bbl
+rm RB_Partition_Tutorial.blg
+rm RB_Partition_Tutorial.log
+rm RB_Partition_Tutorial.out
 
 cd ..
 fi
