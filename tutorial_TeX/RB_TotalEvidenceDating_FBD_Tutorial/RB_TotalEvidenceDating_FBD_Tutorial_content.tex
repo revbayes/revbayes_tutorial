@@ -1,25 +1,27 @@
 
 \section{Overview}\label{sect:Overview}
 
-This tutorial demonstrates how to specify the models used in a ``total-evidence'' phylogenetic analysis of extant and fossil species, combining morphological and molecular data as well as stratigraphic range data from the fossil record \citep[\textit{i.e.,}][]{Ronquist2012a}.
+This tutorial demonstrates how to specify the models used in a ``total-evidence'' phylogenetic analysis of extant and fossil species, combining morphological and molecular data as well as stratigraphic range data from the fossil record \citep[\textit{i.e.,}][]{Ronquist2012a,Zhang2016,Gavryushkina2016}.
 We begin by outlining the models used in this analysis in section \ref{sect:Introduction}, followed by a detailed exercise in section \ref{sect:Exercise} demonstrating how to apply these models in \RevBayes \citep{Hoehna2017a} using data collected from living and fossil bears (family Ursidae).
 
+\bigskip
 \subsection{Requirements}\label{subsect:Overview-Requirements}
 
 \subsubsection{Required Software}\label{subsub:Req-Software}
-This tutorial requires that you download and install the latest release of \RevBayes \citep{Hoehna2017a}. 
+This tutorial requires that you download and install the latest release of \RevBayes \citep{Hoehna2017a}, which is available for Mac OS X, Windows, and Linux operating systems. 
 Directions for downloading and installing the software are available on the program webpage:
-\begin{center}
+%\begin{center}
 \href{http://revbayes.com/}{http://revbayes.com}.
-\end{center} 
+%\end{center} 
 
 The exercise provided also requires additional programs for editing text files and visualizing output. 
-Please download the following programs:
+The following are very useful tools for working with \RevBayes:
 \begin{itemize}[noitemsep,topsep=0pt]
 \item A good text editor -- if you do not already have one that you like, we recommend one that has features for syntax coloring, easy navigation between different files, line numbers, etc.
 A good option is \href{http://www.sublimetext.com/}{Sublime Text}, which is available for Mac OSX, Windows, and Linux.
 \item \href{http://tree.bio.ed.ac.uk/software/tracer/}{Tracer} -- for visualizing and assessing numerical parameter samples from \RevBayes
-\item Firefox or Google Chrome -- these are the supported web browsers for the phylogenetic tree visualization program, \href{http://tgvaughan.github.io/icytree/}{IcyTree}
+\item \href{http://tgvaughan.github.io/icytree/}{IcyTree} -- a web-hosted phylogenetic tree visualization tool that is supported for \href{https://www.mozilla.org/en-US/firefox/products/}{Firefox} or \href{https://www.google.com/chrome/}{Google Chrome} browsers 
+\item \href{http://tree.bio.ed.ac.uk/software/figtree/}{FigTree} -- a tree visualization prgram
 \end{itemize}
 
 \subsubsection{Prerequisite Tutorials}
@@ -30,7 +32,7 @@ In addition to installing the software, this tutorial assumes that you have read
 \end{itemize}
 
 
-
+\bigskip
 \section{Introduction}\label{sect:Introduction}
 
 The ``total-evidence'' analysis described in this tutorial uses a graphical model \citep{Hoehna2014b} integrating three separate likelihood components or data partitions (Fig. \ref{fig:module-gm}): one for molecular data (section \ref{subsect:Intro-GTR}), one for morphological data (section \ref{subsect:Intro-Morpho}), and one for fossil stratigraphic range data (section \ref{subsect:Intro-TipSampling}). In addition, all likelihood components are conditioned on a tree topology with divergence times, which is modeled according to a separate prior component (section \ref{subsect:Intro-FBD}).
