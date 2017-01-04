@@ -1,8 +1,6 @@
 ################################################################################
 #
-# RevBayes Example: Bayesian inference using MCMC and output analysis
-# 
-# This file: Specifies the full model parameters and moves for a GTR+Gamma+Inv
+# RevBayes Example: Bayesian inference of phylogeny using a Jukes-Cantor
 #			substitution model on a single gene.
 #
 # authors: Sebastian Hoehna, Michael Landis, and Tracy A. Heath

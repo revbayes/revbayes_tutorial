@@ -1,25 +1,27 @@
 
 \section{Overview}\label{sect:Overview}
 
-This tutorial demonstrates how to specify the models used in a ``total-evidence'' phylogenetic analysis of extant and fossil species, combining morphological and molecular data as well as stratigraphic range data from the fossil record \citep[\textit{i.e.,}][]{Ronquist2012a}.
+This tutorial demonstrates how to specify the models used in a ``total-evidence'' phylogenetic analysis of extant and fossil species, combining morphological and molecular data as well as stratigraphic range data from the fossil record \citep[\textit{i.e.,}][]{Ronquist2012a,Zhang2016,Gavryushkina2016}.
 We begin by outlining the models used in this analysis in section \ref{sect:Introduction}, followed by a detailed exercise in section \ref{sect:Exercise} demonstrating how to apply these models in \RevBayes \citep{Hoehna2017a} using data collected from living and fossil bears (family Ursidae).
 
+\bigskip
 \subsection{Requirements}\label{subsect:Overview-Requirements}
 
 \subsubsection{Required Software}\label{subsub:Req-Software}
-This tutorial requires that you download and install the latest release of \RevBayes \citep{Hoehna2017a}. 
+This tutorial requires that you download and install the latest release of \RevBayes \citep{Hoehna2017a}, which is available for Mac OS X, Windows, and Linux operating systems. 
 Directions for downloading and installing the software are available on the program webpage:
-\begin{center}
+%\begin{center}
 \href{http://revbayes.com/}{http://revbayes.com}.
-\end{center} 
+%\end{center} 
 
 The exercise provided also requires additional programs for editing text files and visualizing output. 
-Please download the following programs:
+The following are very useful tools for working with \RevBayes:
 \begin{itemize}[noitemsep,topsep=0pt]
 \item A good text editor -- if you do not already have one that you like, we recommend one that has features for syntax coloring, easy navigation between different files, line numbers, etc.
 A good option is \href{http://www.sublimetext.com/}{Sublime Text}, which is available for Mac OSX, Windows, and Linux.
 \item \href{http://tree.bio.ed.ac.uk/software/tracer/}{Tracer} -- for visualizing and assessing numerical parameter samples from \RevBayes
-\item Firefox or Google Chrome -- these are the supported web browsers for the phylogenetic tree visualization program, \href{http://tgvaughan.github.io/icytree/}{IcyTree}
+\item \href{http://tgvaughan.github.io/icytree/}{IcyTree} -- a web-hosted phylogenetic tree visualization tool that is supported for \href{https://www.mozilla.org/en-US/firefox/products/}{Firefox} or \href{https://www.google.com/chrome/}{Google Chrome} browsers 
+\item \href{http://tree.bio.ed.ac.uk/software/figtree/}{FigTree} -- a tree visualization prgram
 \end{itemize}
 
 \subsubsection{Prerequisite Tutorials}
@@ -30,7 +32,7 @@ In addition to installing the software, this tutorial assumes that you have read
 \end{itemize}
 
 
-
+\bigskip
 \section{Introduction}\label{sect:Introduction}
 
 The ``total-evidence'' analysis described in this tutorial uses a graphical model \citep{Hoehna2014b} integrating three separate likelihood components or data partitions (Fig. \ref{fig:module-gm}): one for molecular data (section \ref{subsect:Intro-GTR}), one for morphological data (section \ref{subsect:Intro-Morpho}), and one for fossil stratigraphic range data (section \ref{subsect:Intro-TipSampling}). In addition, all likelihood components are conditioned on a tree topology with divergence times, which is modeled according to a separate prior component (section \ref{subsect:Intro-FBD}).
@@ -43,26 +45,32 @@ The ``total-evidence'' analysis described in this tutorial uses a graphical mode
 \label{fig:module-gm}
 \end{figure}
 
-\subsection{Lineage Diversification and Sampling}\label{subsect:Intro-FBD}
-
-The joint prior distribution on tree topologies and divergence times of living and extinct species used in this tutorial is described by the \textit{fossilized birth-death} (FBD) process \citep{Stadler2010, Heath2014}. 
-This model simply treats the fossil observations as part of the process governing the tree topology and branch times (Fig.\ \ref{fig:module-gm}). 
-The fossilized birth-death process provides a model for the distribution of speciation times, tree topology, and distribution of lineage samples before the present (\IE non-contemporaneous samples like fossils or viruses). 
-This type of tree is shown in Figure \ref{fig:example-tree}. 
-Importantly, this model can be used \textit{with or without} character data for the historical samples. 
-Thus, it provides a reasonable prior distribution for analyses combining morphological or DNA data for both extant and fossil taxa---\IE the so-called ``total-evidence'' approaches described by \citet{Ronquist2012a} \citep[also see][]{Pyron2011}. 
-When matrices of discrete morphological characters for both living and fossil species are unavailable, the fossilized birth-death model imposes a time structure on the tree by \textit{marginalizing} over all possible attachment points for the fossils on the extant tree \citep{Heath2014}, therefore, some prior knowledge of phylogenetic relationships is important, much like for calibration-density approaches.
+In figure \ref{fig:example-tree} we provide an example of the type of tree estimated from a total-evidence analysis.
+This example shows the complete tree (Fig.\ \ref{fig:example-tree}A) and the sampled or reconstructed tree (Fig.\ \ref{fig:example-tree}B). 
+Importantly, we are interested in estimating the topology, divergence times, and fossil sample times of the \textit{reconstructed tree} (Fig.\ \ref{fig:example-tree}B). 
+We will describe the distinction between these two trees in section \ref{subsect:Intro-FBD}.
 \begin{figure}[h!]
 \fbox{%
 \begin{minipage}{\textwidth}\centering
-\includegraphics[width=0.55\textwidth,angle=0]{\ResourcePath figures/tree_plot_with_fossils}
-\caption{\small One possible realization of the fossilized birth-death process starting at origin time $\phi$, showing fossil sampling events (red circles) and unsampled extinct lineages (dotted lines).}
+\includegraphics[width=0.44\textwidth,angle=0]{\ResourcePath figures/tree_plot_with_fossils}\hspace{6mm}\includegraphics[width=0.44\textwidth,angle=0]{\ResourcePath figures/tree_plot_with_fossils_reconstructed}
+\caption{\small One possible realization of the fossilized birth-death process starting at origin time $\phi$, showing fossil sampling events (red circles), and 15 sampled extant taxa (black circles). (A) The complete tree shows all lineages both sampled (solid lines) and unsampled (dotted lines). (B) The reconstructed tree (also called the sampled tree) shows only the sampled lineages.}
 \end{minipage}}
 \label{fig:example-tree}
 \end{figure}
 
 
-The FBD model (Fig. \ref{fig:fbd_gm}) describes the probability of the tree and fossils conditional on the birth-death parameters: $f[\mathcal{T} \mid \lambda, \mu, \rho, \psi, \phi]$, where $\mathcal{T}$ denotes the tree topology, divergence times, fossil occurrence times, and the times at which the fossils attach to the tree.
+\subsection{Lineage Diversification and Sampling}\label{subsect:Intro-FBD}
+
+The joint prior distribution on tree topologies and divergence times of living and extinct species used in this tutorial is described by the \textit{fossilized birth-death} (FBD) process \citep{Stadler2010, Heath2014}. 
+This model simply treats the fossil observations as part of the process governing the tree topology and branch times (\IE the \textit{Time Tree Model} in Fig.\ \ref{fig:module-gm}). 
+The fossilized birth-death process provides a model for the distribution of speciation times, tree topology, and distribution of lineage samples before the present (\IE non-contemporaneous samples like fossils or viruses). 
+This type of tree is shown in figure \ref{fig:example-tree}. 
+Importantly, this model can be used \textit{with or without} character data for the historical samples. 
+Thus, it provides a reasonable prior distribution for analyses combining morphological or DNA data for both extant and fossil taxa---\IE the so-called ``total-evidence'' approaches described by \citet{Ronquist2012a} and extended by \citet{Zhang2016} and \citet{Gavryushkina2016}. 
+When matrices of discrete morphological characters for both living and fossil species are unavailable, the fossilized birth-death model imposes a time structure on the tree by \href{https://en.wikipedia.org/wiki/Marginal_distribution}{\textit{marginalizing}} over all possible attachment points for the fossils on the extant tree \citep{Heath2014}, therefore, some prior knowledge of phylogenetic relationships is important, much like for calibration-density approaches.
+
+
+The FBD model (Fig.\ \ref{fig:fbd_gm}) describes the probability of the tree and fossils conditional on the birth-death parameters: $f[\mathcal{T} \mid \lambda, \mu, \rho, \psi, \phi]$, where $\mathcal{T}$ denotes the tree topology, divergence times, fossil occurrence times, and the times at which the fossils attach to the tree.
 %The parameters of the model are:
 %\begin{center}
 %\begin{tabular}{l c r}
@@ -75,23 +83,23 @@ The FBD model (Fig. \ref{fig:fbd_gm}) describes the probability of the tree and 
 %\hline
 %\end{tabular}
 %\end{center}
-The birth-death parameters $\lambda$ and $\mu$ denote the speciation and extinction rates, respectively. The ``fossilization rate'' or ``fossil recovery rate'' is denoted $\psi$ and describes the rate at which fossils are sampled along lineages of the tree. The sampling probability parameter $\rho$ represents the fraction of extant species that are ultimately sampled, and $\phi$ represents the time at which the process originated.
+The birth-death parameters $\lambda$ and $\mu$ denote the speciation and extinction rates, respectively. The ``fossilization rate'' or ``fossil recovery rate'' is denoted $\psi$ and describes the rate at which fossils are sampled along lineages of the complete tree. The sampling probability parameter $\rho$ represents the \textit{probability} that an extant species is sampled, and $\phi$ represents the time at which the process originated.
 
 \begin{figure}[h!]
 \fbox{%
 \begin{minipage}{\textwidth}\centering
-\includegraphics[scale=0.3,angle=0]{\ResourcePath figures/tikz/fbd_gm}
-\caption{\small A graphical model of the fossilized birth-death model describing the generation of the time tree (``Time Tree Model'' in Fig.\ \ref{fig:module-gm}) used in this tutorial. The parameters of the fossilized birth-death process are labeled in orange. The speciation, extinction and fossilization rates are drawn from exponential distributions, while the origin time is uniformly distributed. The sampling probability is constant and equal to one.} %TODO write a more detailed legend
+\includegraphics[width=0.55\textwidth,angle=0]{\ResourcePath figures/tikz/fbd_gm}
+\caption{\small A graphical model of the fossilized birth-death model describing the generation of the time tree (\mi{Time Tree Model} in Fig.\ \ref{fig:module-gm}) used in this tutorial. The parameters of the fossilized birth-death process are labeled in orange. The speciation, extinction and fossilization rates are drawn from exponential distributions, while the origin time is uniformly distributed. The sampling probability is constant and equal to one.} %TODO write a more detailed legend
 \end{minipage}}
 \label{fig:fbd_gm}
 \end{figure}
 
-In the example FBD tree shown in Figure \ref{fig:example-tree}, the diversification process originates at time $\phi$, giving rise to $n=20$ species in the present.
-All of the lineages represented in Figure \ref{fig:example-tree} (both solid and dotted lines) show the \textit{complete tree}. 
+In the example FBD tree shown in figure \ref{fig:example-tree}, the diversification process originates at time $\phi$, giving rise to $n=20$ species in the present, with both sampled fossils (red circles) and extant species (black circles). 
+All of the lineages represented in figure \ref{fig:example-tree}A (both solid and dotted lines) show the \textit{complete tree}. 
 This is the tree of all extant \textit{and} extinct lineages generated by the process.
-The complete tree is distinct from the \textit{reconstructed tree} which is the tree representing only the sampled \textit{extant} lineages.
-Fossil observations (red circles in Figure \ref{fig:example-tree}) are recovered over the process along the lineages of the complete tree. 
-If a lineage does not have any descendants sampled in the present, it is lost and cannot be observed, these are the dotted lines in Figure \ref{fig:example-tree}. 
+The complete tree is distinct from the \textit{reconstructed tree} (Fig.\ \ref{fig:example-tree}B) which is the tree representing only the sampled \textit{extant} lineages.
+Fossil observations (red circles in figure \ref{fig:example-tree}) are recovered over the lifetime of the process along the lineages of the complete tree. 
+If a lineage does not have any descendants sampled in the present, it is lost and cannot be observed, these are the dotted lines in figure \ref{fig:example-tree}A. 
 The probability must be conditioned on the origin time of the process $\phi$. 
 %This can be one of two different nodes in the tree, either the origin time $x_0$ or the root age $x_1$ (Figure \ref{fig:example-tree}).
 The origin ($\phi$) of a birth-death process is the starting time of the \textit{stem} lineage, thus this conditions on a single lineage giving rise to the tree.
@@ -102,10 +110,11 @@ The origin ($\phi$) of a birth-death process is the starting time of the \textit
 An important characteristic of the FBD model is that it accounts for the probability of sampled ancestor-descendant pairs \citep{foote1996}. 
 Given that fossils are sampled from lineages in the diversification process, the probability of sampling fossils that are ancestors to taxa sampled at a later date is correlated with the turnover rate ($r=\mu/\lambda$) and the fossil recovery rate ($\psi$).
 This feature is important, particularly for datasets with many sampled fossils. 
-In the example (Figure \ref{fig:example-tree}), several of the fossils have sampled descendants. These fossils have solid black lines leading to the present. 
+In the example (Fig.\ \ref{fig:example-tree}), several of the fossils have sampled descendants. These fossils have solid black lines leading to the present. 
 %TODO more intro on this section, maybe
 
-\subsubsection{Incorporating Fossil Stratigraphic Range Data}\label{subsect:Intro-TipSampling}
+\bigskip
+\subsection{Incorporating Fossil Stratigraphic Range Data}\label{subsect:Intro-TipSampling}
 
 In order to account for uncertainty in the ages of our fossil species, we can incorporate stratigraphic range information from the fossil record.
 We do this by assuming each fossil can occur with uniform probability anywhere within its observed stratigraphic range.
@@ -121,7 +130,7 @@ We can represent this likelihood in \RevBayes using any uniform distribution tha
 \begin{figure}[h!]
 \fbox{%
 \begin{minipage}{\textwidth}\centering
-\includegraphics[scale=0.3,angle=0]{\ResourcePath figures/tikz/tipsampling_gm}
+\includegraphics[scale=0.25,angle=0]{\ResourcePath figures/tikz/tipsampling_gm}
 \caption{\small A graphical model of the fossil age likelihood model used in this tutorial. The likelihood of fossil observation $\mathcal{F}_i$ is uniform and non-zero when the inferred fossil age $t_i$ falls within the observed stratigraphic range $(a_i,b_i)$.}
 \end{minipage}}
 \label{fig:tipsampling_gm}
@@ -144,7 +153,7 @@ Another possible uncorrelated relaxed clock model is the uncorrelated lognormal 
 \begin{figure}[h!]
 \fbox{%
 \begin{minipage}{\textwidth}\centering
-\includegraphics[scale=0.3,angle=0]{\ResourcePath figures/tikz/uexp_gm}
+\includegraphics[scale=0.25,angle=0]{\ResourcePath figures/tikz/uexp_gm}
 \caption{\small A graphical model of the uncorrelated exponential relaxed clock model. In this model, the clock rate on each branch is independent and identically distributed according to an exponential density with mean drawn from an exponential hyperprior distribution. }
 \end{minipage}}
 \label{fig:uexp_gm}
@@ -175,7 +184,7 @@ Therefore, it is important to use models that can condition on the coding bias.
 \begin{figure}[h!]
 \fbox{%
 \begin{minipage}{\textwidth}\centering
-\includegraphics[scale=0.3,angle=0]{\ResourcePath figures/tikz/morpho_gm}
+\includegraphics[scale=0.25,angle=0]{\ResourcePath figures/tikz/morpho_gm}
 \caption{\small A graphical model of the beta-distributed frequencies across sites model. In this model, stationary frequencies are drawn from a discretized beta distribution and used to generate site-specific asymmetric rate matrices.}
 \end{minipage}}
 \label{fig:morpho_gm}
@@ -195,12 +204,13 @@ The strict clock is the simplest model we can construct for the morphological br
 \begin{figure}[h!]
 \fbox{%
 \begin{minipage}{\textwidth}\centering
-\includegraphics[scale=0.3,angle=0]{\ResourcePath figures/tikz/morph_clock_gm}
+\includegraphics[scale=0.25,angle=0]{\ResourcePath figures/tikz/morph_clock_gm}
 \caption{\small The graphical-model representation of the branch-rate model governing the evolution of morphological characters. This model is consistent with a strict morphological clock, where every branch has the same rate of change ($c$) and that rate is drawn from an exponential distribution with a rate parameter of $\delta_c$.}
 \end{minipage}}
 \label{fig:morph_clock_gm}
 \end{figure}
 
+\bigskip
 \section{Exercise: Estimating the Phylogeny and Divergence Times of Fossil and Extant Bears}\label{sect:Exercise}
 
 In this exercise, we will combine different types of data from 22 species of extant and extinct bears to estimate a posterior distribution of calibrated time trees for this group.
