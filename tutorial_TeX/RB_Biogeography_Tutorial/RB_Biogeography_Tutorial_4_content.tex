@@ -556,19 +556,26 @@ The ``simple'' analysis is similar to the ``epoch'' analysis, except it substitu
 
 \begin{figure}[!ht]
 \centering
-\includegraphics[width=0.45\textwidth]{figures/fig_simple_phy_RevGadgets_ase.pdf}\includegraphics[width=0.45\textwidth]{figures/fig_epoch_phy_RevGadgets_ase.pdf} 
-\caption{Joint estimate of phylogeny and biogeography. The left panel ignores paleogeography while the right panel conditions on it.}
+\includegraphics[width=0.8\textwidth]{figures/fig_simple_phy_RevGadgets_ase.pdf}
+\caption{Joint estimate of phylogeny and biogeography, ignoring paleogeography.}
+\label{fig:simple_phy}
+\end{figure}
+
+\begin{figure}[!ht]
+\centering
+\includegraphics[width=0.8\textwidth]{figures/fig_epoch_phy_RevGadgets_ase.pdf} 
+\caption{Joint estimate of phylogeny and biogeography, conditioning on paleogeography through the epoch model.}
 \label{fig:epoch_phy}
 \end{figure}
 
-We see that simple analysis (Fig \ref{fig:epoch_phy}, Left) estimates the ancestral range at the root of the clade as Maui + Mainland (MZ).
+We see that simple analysis (Fig \ref{fig:simple_phy}) estimates the ancestral range at the root of the clade as Maui + Mainland (MZ).
 This is unrealistic, both because of the extreme distance between those areas, but also the simple analysis estimates the root age to be 10.3 (HPD95\% 4.6, 15.0) Ma, well before Maui originated.
 
-The epoch analysis (Fig \ref{fig:epoch_phy}, Right) produces more sensible ancestral range estimates, with Kauai being colonized first, and younger islands only being colonized as they become available.
+The epoch analysis (Fig \ref{fig:epoch_phy}) produces more sensible ancestral range estimates, with Kauai being colonized first, and younger islands only being colonized as they become available.
 When comparing the results to the earlier fixed-phylogeny epoch results \ref{fig:epoch_RevGadgets_ase}, we recover a greater role for cladogenesis for the younger speciation events.
 These two analyses only differ in terms of whether the phylogeny is fixed or estimated, so it is likely a result of phylogenetic error in the fixed tree.
 
-\begin{figure}[!h]
+\begin{figure}[!ht]
 \centering
 \includegraphics[width=0.49\textwidth]{figures/fig_simple_ages.pdf} \includegraphics[width=0.49\textwidth]{figures/fig_epoch_ages.pdf} 
 
@@ -576,11 +583,11 @@ These two analyses only differ in terms of whether the phylogeny is fixed or est
 \label{fig:epoch_ages}
 \end{figure}
 
-In Tracer, one can look at the sampled posterior of island ages in comparison the origination time of crown silverswords (Fig \label{fig:epoch_ages}).
+In Tracer, one can look at the sampled posterior of island ages in comparison the origination time of crown silverswords (Fig \ref{fig:epoch_ages}).
 The left panel shows the simple analysis, where crown silverswords often originate before the formation of Kauai.
 The right panel shows that crown silverswords probably originated before the formation of Maui, but after the formation of Kauai.
 
-\begin{table}[!h]
+\begin{table}[!ht]
 \centering
 \begin{tabular}{c|cccc}
 Model       & $P(a_s>a_K)$ & $P(a_s>a_O)$ & $P(a_s>a_M)$ & $P(a_s>a_H)$ \\ \hline
@@ -592,6 +599,5 @@ epoch & 0.02 & 0.26 & 0.84 & 0.99 \\
 \end{table}
 
 By tabulating the results of the deterministic variable {\tt ingroup\_older\_island}, we measure the posterior probability that crown silverswords originated before or after each particular epoch in the model (Table \ref{tab:epoch_ages}).
-
 
 \newpage
