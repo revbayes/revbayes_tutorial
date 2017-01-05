@@ -18,10 +18,10 @@ The exercise provided also requires additional programs for editing text files a
 The following are very useful tools for working with \RevBayes:
 \begin{itemize}[noitemsep,topsep=0pt]
 \item A good text editor -- if you do not already have one that you like, we recommend one that has features for syntax coloring, easy navigation between different files, line numbers, etc.
-A good option is \href{http://www.sublimetext.com/}{Sublime Text}, which is available for Mac OSX, Windows, and Linux.
-\item \href{http://tree.bio.ed.ac.uk/software/tracer/}{Tracer} -- for visualizing and assessing numerical parameter samples from \RevBayes
-\item \href{http://tgvaughan.github.io/icytree/}{IcyTree} -- a web-hosted phylogenetic tree visualization tool that is supported for \href{https://www.mozilla.org/en-US/firefox/products/}{Firefox} or \href{https://www.google.com/chrome/}{Google Chrome} browsers 
-\item \href{http://tree.bio.ed.ac.uk/software/figtree/}{FigTree} -- a tree visualization prgram
+A good option is \href{http://www.sublimetext.com/}{\tt Sublime Text}, which is available for Mac OSX, Windows, and Linux.
+\item \href{http://tree.bio.ed.ac.uk/software/tracer/}{\tt Tracer} -- for visualizing and assessing numerical parameter samples from \RevBayes
+\item \href{http://tgvaughan.github.io/icytree/}{\tt IcyTree} -- a web-hosted phylogenetic tree visualization tool that is supported for \href{https://www.mozilla.org/en-US/firefox/products/}{\tt Firefox} or \href{https://www.google.com/chrome/}{\tt Google Chrome} browsers 
+\item \href{http://tree.bio.ed.ac.uk/software/figtree/}{\tt FigTree} -- a tree visualization program
 \end{itemize}
 
 \subsubsection{Prerequisite Tutorials}
@@ -497,7 +497,7 @@ moves[mvi++] = mvScale(extinction_rate, lambda=1,    weight=1)
 
 You will also notice that each move has a specified \cl{weight}. 
 This option allows you to indicate how many times you would like a given move to be performed at each MCMC cycle. 
-The way that we will run our MCMC for this tutorial will be to execute a \textit{schedule} of moves at each step in our chain instead of just one move per step, as is done in \cl{MrBayes} \citep{Ronquist2003} or \cl{BEAST} \citep{Drummond2012,Bouckaert2014}.
+The way that we will run our MCMC for this tutorial will be to execute a \textit{schedule} of moves at each step in our chain instead of just one move per step, as is done in {\tt MrBayes} \citep{Ronquist2003} or {\tt BEAST} \citep{Drummond2012,Bouckaert2014}.
 Here, if we were to run our MCMC with our current vector of 6 moves, then our move schedule would perform 6 moves at each cycle.
 Within a cycle, an individual move is chosen from the move list in proportion to its weight. 
 Therefore, each move has an equal probability of being executed and will be performed on average one time per MCMC cycle. 
@@ -1116,7 +1116,7 @@ Or click the \fbox{$+$} button on the left-hand side of the screen to add your l
 \fbox{%
 \begin{minipage}{\textwidth}\centering
 \includegraphics[width=\textwidth,angle=0]{\ResourcePath figures/tracer_load_file.png}
-\caption{\small The Tracer window. To add data, click on the ``+'' sign, highlighted in red above.}
+\caption{\small The {\tt Tracer} window. To add data, click on the ``+'' sign, highlighted in red above.}
 \end{minipage}}
 \label{fig:tracer}
 \end{figure}
@@ -1153,7 +1153,7 @@ Figure \ref{fig:tracer-post-ests} shows the marginal distribution of the \mi{Pos
 \begin{framed}
 Look through the various parameters and statistics in the list of \mi{Traces}. 
 
-\colorbox{Thistle}{\bf ?} Are there any parameters that have really low ESS? Why do you think that might be?
+\QUEST Are there any parameters that have really low ESS? Why do you think that might be?
 \end{framed}
 
 Next, we can click over to the \mi{Trace} window.
@@ -1179,7 +1179,7 @@ You can read more about MCMC tuning and improving mixing in the tutorials \href{
 \begin{framed}
 Look through the traces for your parameters. 
 
-\colorbox{Thistle}{\bf ?} Are there any parameters in your log files that show trends or large leaps? What steps might you take to solve these issues?
+\QUEST Are there any parameters in your log files that show trends or large leaps? What steps might you take to solve these issues?
 \end{framed}
 
 In {\tt Tracer} you can view the marginal probability distributions of your parameters in the \mi{Marginal Prob Distribution} window. 
@@ -1188,7 +1188,7 @@ Using this tool, you can compare the distributions of several different paramete
 \begin{framed}
 Go to the \cl{diversification} parameter in the \mi{Marginal Prob Distribution} window.
 
-\colorbox{Thistle}{\bf ?} What is the mean value estimated for the net diversification rate ($d$)? What does the marginal distribution tell you about the net diversification? (Hint: $d = \lambda - \mu$)
+\QUEST What is the mean value estimated for the net diversification rate ($d$)? What does the marginal distribution tell you about the net diversification? (Hint: $d = \lambda - \mu$)
 \end{framed}
 
 While specifying the model, remember that we created several deterministic nodes that represent parameters that we would like to estimate, including the net diversification rate. 
@@ -1197,7 +1197,7 @@ While specifying the model, remember that we created several deterministic nodes
 \begin{framed}
 Go to the \cl{age\_extant} parameter in the \mi{Estimates} window.
 
-\colorbox{Thistle}{\bf ?} What is the mean and 95\% highest posterior density of the age of the MRCA for all living bears? 
+\QUEST What is the mean and 95\% highest posterior density of the age of the MRCA for all living bears? 
 \end{framed}
 
 
@@ -1309,41 +1309,43 @@ mccTree(trace_pruned, "output/bears.mcc.tre" )
 When there are sampled ancestors present in the tree, visualizing the tree can be fairly difficult in traditional tree viewers.
 We will make use of a browser-based tree viewer called \href{http://tgvaughan.github.io/icytree/}{\tt IcyTree}, created by \href{https://github.com/tgvaughan}{Tim Vaughan}.
 {\tt IcyTree} has many unique options for visualizing phylogenetic trees and can produce publication-quality vector files (\IE svg). 
-Additionally, it correctly represents sampled ancestors on the tree as a node with only one descendant. 
+Additionally, it correctly represents sampled ancestors on the tree as a node with only one descendant (Fig.\ \ref{fig:IcyTreeSumm}). 
+\begin{figure}[h!]
+\fbox{%
+\begin{minipage}{\textwidth}\centering
+\includegraphics[width=0.85\textwidth,angle=0]{\ResourcePath figures/summary_tree.pdf}
+\caption{\small Maximum sampled ancestor clade credibility (MSACC) tree of bear species used in this tutorial. Numbers above fossil nodes indicate the posterior probability of being a sampled ancestor.}
+\end{minipage}}
+\label{fig:IcyTreeSumm}
+\end{figure}
 
 {\begin{framed}
 Navigate to \url{http://tgvaughan.github.io/icytree} and open the file \cl{output/bears.mcc.tre} in {\tt IcyTree}.
 
-\colorbox{Thistle}{\bf ?} Try to replicate Fig.\ \ref{fig:IcyTreeSumm}. Hint: Look under style, at \mi{Mark Singletons}.
+\QUEST Try to replicate Fig.\ \ref{fig:IcyTreeSumm}. (Hint: \mi{Style\textrightarrow Mark Singletons})
 Why might a node with a sampled ancestor be referred to as a singleton? 
 
-\colorbox{Thistle}{\bf ?} How can you see the names of the fossils that are putative sampled ancestors?
+\QUEST How can you see the names of the fossils that are putative sampled ancestors?
 
-\colorbox{Thistle}{\bf ?} Try clicking on a branch.
+\QUEST Try mousing over a branch (see Fig\ \ref{fig:IcyTreeScreenshort}).
 What are the fields telling you?
-Are the ages of the fossil tips the same as what was shown in Tracer? 
+Is the age of the \textit{Kretzoiarctos beatrix} fossil the same as what was shown in {\tt Tracer}? 
+
+\QUEST What is the posterior probability that \textit{Zaragocyon daamsi} is a sampled ancestor?
 \end{framed}}
 
 
 
 %TODO more here, create final tree image
 
-\begin{figure}[h!]
-\fbox{%
-\begin{minipage}{\textwidth}\centering
-\includegraphics[scale=0.5, angle=0]{\ResourcePath figures/branch_highlight.png}
-\caption{\small Screenshot of highlighting a branch in {\tt IcyTree} showing child node attributes, including the clade posterior probability and the 95\% highest posterior density (HPD) age interval.}
-\end{minipage}}
-\label{fig:IcyTreeScreenshort}
-\end{figure}
 
 \begin{figure}[h!]
 \fbox{%
 \begin{minipage}{\textwidth}\centering
-\includegraphics[width=\textwidth,angle=0]{\ResourcePath figures/summary_tree.pdf}
-\caption{\small Maximum sampled ancestor clade credibility (MSACC) tree of bear species used in this tutorial. Numbers above fossil nodes indicate the posterior probability of being a sampled ancestor.}
+\includegraphics[scale=0.45, angle=0]{\ResourcePath figures/branch_highlight.png}
+\caption{\small Screenshot of highlighting a branch in {\tt IcyTree} showing child node attributes, including the clade posterior probability and the 95\% highest posterior density (HPD) age interval.}
 \end{minipage}}
-\label{fig:IcyTreeSumm}
+\label{fig:IcyTreeScreenshort}
 \end{figure}
 
 
