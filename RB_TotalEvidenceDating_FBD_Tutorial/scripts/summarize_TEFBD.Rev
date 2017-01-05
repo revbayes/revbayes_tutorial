@@ -5,10 +5,12 @@ trace = readTreeTrace("output/bears.trees")
 
 taxa <- readTaxonData("data/bears_taxa.tsv")
 
+burn = 52
 
-for(i in 1:trace.size())
+ti = 1
+for(i in burn:trace.size())
 {
-    trees[i] = fnPruneTree(trace.getTree(i), pruneTaxa=v(taxa[17],taxa[20]))
+    trees[ti++] = fnPruneTree(trace.getTree(i), pruneTaxa=v(taxa[17],taxa[20]))
 }
 
 trace_pruned = treeTrace(trees)
