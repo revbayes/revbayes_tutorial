@@ -11,5 +11,5 @@ for(i in 1:trace.size())
     trees[i] = fnPruneTree(trace.getTree(i), pruneTaxa=v(taxa[17],taxa[20]))
 }
 
-trace_pruned = treeTrace(trees,burnin=500)
-mccTree(trace_pruned, "output/bears.mcc.tre" )
+trace_pruned = treeTrace(trees)
+mccTree(trace_pruned, file="output/bears.mcc.tre", conditionalAges=false )
