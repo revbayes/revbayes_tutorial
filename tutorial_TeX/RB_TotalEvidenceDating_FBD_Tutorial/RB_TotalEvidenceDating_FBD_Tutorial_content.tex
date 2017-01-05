@@ -1,7 +1,7 @@
 
 \section{Overview}\label{sect:Overview}
 
-This tutorial demonstrates how to specify the models used in a ``total-evidence'' phylogenetic analysis of extant and fossil species, combining morphological and molecular data as well as stratigraphic range data from the fossil record \citep[\textit{i.e.,}][]{Ronquist2012a,Zhang2016,Gavryushkina2016}.
+This tutorial demonstrates how to specify the models used in a ``total-evidence'' phylogenetic analysis of extant and fossil species, combining morphological and molecular data as well as stratigraphic range data from the fossil record \citep[\EG][]{Ronquist2012a,Zhang2016,Gavryushkina2016}.
 We begin by outlining the models used in this analysis in section \ref{sect:Introduction}, followed by a detailed exercise in section \ref{sect:Exercise} demonstrating how to apply these models in \RevBayes \citep{Hoehna2017a} using data collected from living and fossil bears (family Ursidae).
 
 \bigskip
@@ -62,8 +62,8 @@ We will describe the distinction between these two trees in section \ref{subsect
 \subsection{Lineage Diversification and Sampling}\label{subsect:Intro-FBD}
 
 The joint prior distribution on tree topologies and divergence times of living and extinct species used in this tutorial is described by the \textit{fossilized birth-death} (FBD) process \citep{Stadler2010, Heath2014}. 
-This model simply treats the fossil observations as part of the process governing the tree topology and branch times (\IE the \textit{Time Tree Model} in Fig.\ \ref{fig:module-gm}). 
-The fossilized birth-death process provides a model for the distribution of speciation times, tree topology, and distribution of lineage samples before the present (\IE non-contemporaneous samples like fossils or viruses). 
+This model simply treats the fossil observations as part of the process governing the tree topology and branch times (the \textit{Time Tree Model} node in Fig.\ \ref{fig:module-gm}). 
+The fossilized birth-death process provides a model for the distribution of speciation times, tree topology, and distribution of lineage samples before the present (\EG non-contemporaneous samples like fossils or viruses). 
 This type of tree is shown in figure \ref{fig:example-tree}. 
 Importantly, this model can be used \textit{with or without} character data for the historical samples. 
 Thus, it provides a reasonable prior distribution for analyses combining morphological or DNA data for both extant and fossil taxa---\IE the so-called ``total-evidence'' approaches described by \citet{Ronquist2012a} and extended by \citet{Zhang2016} and \citet{Gavryushkina2016}. 
@@ -196,10 +196,9 @@ Therefore, it is important to use models that can condition on the coding bias.
 
 Just like with the molecular data (section \ref{subsub:Intro-GTR-UExp}), our observations of discrete morphological characters are conditional on the rate of change along each branch in the tree. 
 This model component defines the \textit{branch rate model} of the morphological data in the generalized graphical model shown in Fig.\ \ref{fig:module-gm}.
-The branch-rate model we described for the molecular data in section \ref{subsub:Intro-GTR-UExp} varies the substitution rate across the tree (\IE a relaxed molecular clock). 
-For the morphological data, we will assume that the rate of discrete character change is constant over time and among lineages.
-This model is a ``strict clock'' like the constant-rate molecular clock described by \citet{Zuckerkandl1962}.
-The strict clock is the simplest model we can construct for the morphological branch-rate model and the graphical model is shown in Fig.\ \ref{fig:morph_clock_gm}.
+The relaxed clock model we described for the molecular data in section \ref{subsub:Intro-GTR-UExp} it allows the substitution rate to vary through time and among lineages. 
+For the morphological data, we will instead use a ``strict clock'' model \citep{Zuckerkandl1962}, in which the rate of discrete character change is assumed to be constant throughout the tree.
+The strict clock is the simplest morphological branch rate model we can construct (graphical model shown in Fig.\ \ref{fig:morph_clock_gm}).
 
 \begin{figure}[h!]
 \fbox{%
