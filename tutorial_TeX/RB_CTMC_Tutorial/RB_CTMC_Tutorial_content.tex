@@ -54,7 +54,7 @@ You may want to use your own data instead.
 In the \cl{data} folder, you will find the following files
 \begin{itemize}
 \item
-\cl{primates\_cytb.nex}: Alignment of the \textit{cytochrome b} subunit from 23 primates representing 14 of the 16 families (\textit{Indriidae} and \textit{Callitrichidae} are missing). Note that there is one outgroup species included: \emph{Galeopterus variegatus}.
+\cl{primates\_and\_galeopterus\_cytb.nex}: Alignment of the \textit{cytochrome b} subunit from 23 primates representing 14 of the 16 families (\textit{Indriidae} and \textit{Callitrichidae} are missing). Note that there is one outgroup species included: \emph{Galeopterus variegatus}.
 \end{itemize}
 
 
@@ -105,7 +105,7 @@ You will be able to complete the exercises without understanding the underlying 
 \noindent \\ \impmark The files for this example analysis are provided for you, which can easily be run using the \cl{source()} function in the \RevBayes console:
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-source("RevBayes_scripts/mcmc_JC.Rev")
+source("scripts/mcmc_JC.Rev")
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -128,7 +128,7 @@ The next steps will walk you through the full specification of the model and MCM
 First load in the sequences using the \cl{readDiscreteCharacterData()} function. 
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-data <- readDiscreteCharacterData("data/primates_cytb.nex")
+data <- readDiscreteCharacterData("data/primates_and_galeopterus_cytb.nex")
 \end{lstlisting}
 \end{snugshade*}}
 Executing these lines initializes the data matrix as the respective \Rev variables. 
@@ -138,7 +138,7 @@ To report the current value of any variable, simply type the variable name and p
 data
 |*   DNA character matrix with 23 taxa and 1141 characters
 |*   =====================================================
-|*   Origination:                      primates_cytb.nex
+|*   Origination:                      primates_and_galeopterus_cytb.nex
 |*   Number of taxa:                   23
 |*   Number of included taxa:          23
 |*   Number of characters:             1141
@@ -162,7 +162,8 @@ taxa <- data.taxa()
 Additionally, we set up a counter variable for the number of moves that we already added to our analysis.
 [Recall that moves are algorithms used to propose new parameter values during the MCMC simulation.]
 This will make it much easier if we extend the model or analysis to include additional moves or to remove some moves.
-Similarly, we set up a counter variable for the number of monitors (monitors are devices that print variable, \EG to the screen or file).
+Similarly, we set up a counter variable for the number of monitors. 
+[Monitors print the values of model parameters to the screen and/or log files during the MCMC analysis].
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 mvi = 0 
@@ -203,7 +204,7 @@ As you can see, all substitution rates are equal.
 \subsection{Tree Topology and Branch Lengths}
 
 The tree topology and branch lengths are stochastic nodes in our phylogenetic model. 
-In Figure \ref{fig:jc}, the tree topology is denoted $\Psi$ and the length of the branch leading to node $i$ is $\nu_i$.
+In Figure \ref{fig:jc}, the tree topology is denoted $\Psi$ and the length of the branch leading to node $i$ is $bl_i$.
 
 We will assume that all possible labeled, unrooted tree topologies have equal probability. 
 This is the \cl{dnUniformTopology()} distribution in \RevBayes. 
@@ -276,11 +277,11 @@ br_lens := rel_branch_lengths * TL
 
 Finally, we can create a \emph{phylogram} (a phylogeny in which the branch lengths are proportional to the expected number of substitutions/site) by combining the tree topology and branch lengths.
 We do this using the \cl{treeAssembly()} function, which applies the value of the $i^{th}$ member of the \cl{br\_lens} vector to the branch leading to the $i^{th}$ node in \cl{topology}. 
-Thus, the \cl{phylogeny} variable is a deterministic node: 
+Thus, the \cl{psi} variable is a deterministic node: 
 
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-phylogeny := treeAssembly(topology, br_lens)
+psi := treeAssembly(topology, br_lens)
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -312,7 +313,7 @@ psi ~ dnUniformTimeTree(rootAge=root_age, taxa=taxa)
 
 Some types of stochastic nodes can be updated by a number of alternative moves. 
 Different moves may explore parameter space in different ways, and it is possible to use multiple different moves for a given parameter to improve mixing (the efficiency of the MCMC simulation). 
-In the case of our rooted tree, for example, we can use both a nearest-neighbor interchange move without and with changing the node ages (\cl{mvNarrow} and \cl{mvNNI}) and a fixed-nodeheight subtree-prune and regrafting move (\cl{mvFNPR}) and its Metroploized-Gibbs variant (\cl{mvGPR}) \citep{Hoehna2008,Hoehna2012}. 
+In the case of our rooted tree, for example, we can use both a nearest-neighbor interchange move without and with changing the node ages (\cl{mvNarrow} and \cl{mvNNI}) and a fixed-nodeheight subtree-prune and regrafting move (\cl{mvFNPR}) and its Metropolized-Gibbs variant (\cl{mvGPR}) \citep{Hoehna2008,Hoehna2012}. 
 We also need moves that change the ages of the internal nodes; which are for example the \cl{mvSubtreeScale} and \cl{mvNodeTimeSlideUniform}.
 These moves do not have tuning parameters associated with them, thus you only need to pass in the \cl{psi} node and proposal \cl{weight}. 
 {\tt \begin{snugshade*}
@@ -331,7 +332,7 @@ Have a look at the MCMC tutorial for more details about moves and MCMC strategie
 
 \textbf{Molecular clock}\\
 Additionally, in the case of time-calibrated trees, we need to add a molecular clock rate parameter.
-For example, we know from empirical estimates that the molecular clock rate is about  0.01 (=1\%) per million years per site
+For example, we know from empirical estimates that the molecular clock rate is about  0.01 (=1\%) per million years per site.
 Nevertheless, we can estimate it here because we fixed the root age.
 We use a uniform prior on the log-transform clock rate.
 This specifies our lack of prior knowledge on the magnitude of the clock rate.
@@ -343,7 +344,7 @@ clock_rate := 10^log_clock_rate
 \end{lstlisting}
 \end{snugshade*}}
 
-Instead, you could also fix the clock rate and estimate the root age
+Instead, you could also fix the clock rate and estimate the root age.
 \impmark{Fore more information on molecular clocks please read the \href{https://github.com/revbayes/revbayes_tutorial/raw/master/tutorial_TeX/RB_DivergenceTime_Tutorial/RB_DivergenceTime_Tutorial.pdf}{RB\_DivergenceTime\_Tutorial}.}
 
 \end{framed}
@@ -463,7 +464,7 @@ When the analysis is complete, you will have the monitored files in your output 
 Methods for visualizing the marginal densities of parameter values are not currently available in \RevBayes itself. 
 Thus, it is important to use programs like \Tracer \citep{Rambaut2011} to evaluate mixing and non-convergence.
 
-\noindent \\ \impmark Look at the files called \cl{output/primates\_cytb\_JC\_posterior\_run\_1.log} and \\\cl{output/primates\_cytb\_JC\_posterior\_run\_2.log} in \Tracer. There you see the posterior distributions of the continuous parameters, \EG, the tree length variable \cl{TL}.
+\noindent \\ \impmark Look at the files called \cl{output/primates\_cytb\_JC\_posterior\_run\_1.log} and \\\cl{output/primates\_cytb\_JC\_posterior\_run\_2.log} in \Tracer. There you see the posterior distributions of the continuous parameters, \EG the tree length variable \cl{TL}.
 \begin{figure}[htbp!]
 \centering
 \fbox{\includegraphics[width=0.4\textwidth]{\ResourcePath figures/primates_cytb_JC_TL_Trace.pdf}
@@ -606,7 +607,7 @@ pi ~ dnDirichlet(pi_prior)
 \end{lstlisting}
 \end{snugshade*}}
 Since \cl{pi} is a stochastic variable, we need to specify a move to propose updates to it.
-A good move on variables drawn from a Dirichlet distribution is the \cl{mvSimplexElementScale}.
+A good move on variables drawn from a Dirichlet distribution is the \cl{mvBetaSimplex}.
 This move randomly takes an element from the simplex, proposes a new value for it drawn from a Beta distribution, and then rescales all values of the simplex to sum to 1 again.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
@@ -813,8 +814,8 @@ For this analysis, we will use a lognormal distribution with a mean parameter, \
 This approach for accommodating ASRV is another example of a hierarchical model (Figure \ref{fig:gtrg}).
 That is, variation in substitution rates across sites is addressed by applying a site-specific rate multiplier to each of the $j$ sites, $r_j$.
 These rate-multipliers are drawn from a discrete, mean-one gamma distribution; the shape of this prior distribution (and the corresponding degree of ASRV) is governed by the $\alpha$-shape parameter.
-The $\alpha$-shape parameter, in turn, is treated as an exponentially distributed random variable.
-Finally, the shape of the exponential prior is governed by the rate parameter, $\lambda$, which is set to a fixed value.   
+The $\alpha$-shape parameter, in turn, is treated as a lognormal distributed random variable.
+Finally, the shape of the lognormal prior is governed by the mean and standard deviation parameters, which are set to fixed values.   
 
 \begin{figure}[h!]
 \centering

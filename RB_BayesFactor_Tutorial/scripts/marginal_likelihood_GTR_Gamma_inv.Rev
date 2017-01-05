@@ -1,9 +1,7 @@
 ################################################################################
 #
-# RevBayes Example: Bayesian inference of phylogeny using a Jukes-Cantor model
-# 
-# This file: Runs the full MCMC on a single gene under the Jukes-Cantor 
-#            substitution model using a rooted (birth-death) tree model.
+# RevBayes Example: Marginal likelihood estimation under a GTR+Gamma+Inv
+#			substitution model on a single gene.
 #
 # authors: Sebastian Hoehna, Tracy A. Heath, Michael Landis and Brian R. Moore
 #
@@ -17,10 +15,11 @@
 
 ### Read in sequence data for both genes
 
-data <- readDiscreteCharacterData("data/primates_cytb.nex")
+data <- readDiscreteCharacterData("data/primates_and_galeopterus_cytb.nex")
 
 # Get some useful variables from the data. We need these later on.
 n_species <- data.ntaxa()
+n_branches <- 2 * n_species - 3
 taxa <- data.taxa()
 
 # set my move index
@@ -52,7 +51,7 @@ Q := fnGTR(er,pi)
 # Among Site Rate Variation #
 #############################
 
-alpha_prior_mean <- 5.0
+alpha_prior_mean <- ln(2.0)
 alpha_prior_sd <- 0.587405
 alpha ~ dnLognormal( alpha_prior_mean, alpha_prior_sd )
 gamma_rates := fnDiscretizeGamma( alpha, alpha, 4, false )
@@ -69,54 +68,21 @@ moves[++mvi] = mvSlide(pinvar)
 # Tree model #
 ##############
 
-### the BDP is conditioned on the root time
-### here we fix it to 90 million year ago
-root_time <- 90
+out_group = clade("Galeopterus_variegatus")
+# Prior distribution on the tree topology	
+topology ~ dnUniformTopology(taxa, outgroup=out_group)
+moves[++mvi] = mvNNI(topology, weight=5.0)
+moves[++mvi] = mvSPR(topology, weight=1.0)
 
-### the birth rate is a stochastic random variable drawn from a lognormal prior
-### MCMC samples this variable using a scale proposal
-diversification_mean <- ln( ln(450.0/2.0) / root_time )
-diversification_sd <- 0.587405
-diversification ~ dnLognormal(mean=diversification_mean,sd=diversification_sd) 
-moves[++mvi] = mvScale(diversification,lambda=1.0,tune=true,weight=3.0)
+# Branch length prior
+for (i in 1:n_branches) {
+    bl[i] ~ dnExponential(10.0)
+	moves[++mvi] = mvScale(bl[i])
+}
 
-turnover_mean <- ln( ln(450.0/2.0) / root_time )
-turnover_sd <- 0.587405*2
-turnover ~ dnLognormal(mean=turnover_mean,sd=turnover_sd) 
-moves[++mvi] = mvScale(turnover,lambda=1.0,tune=true,weight=3.0)
-
-### Transform the parameters
-birth_rate := diversification + turnover
-death_rate := turnover
-
-### rho is the probability of sampling species at the present
-### fix this to 23/450, since there are ~450 described species of primates
-### and we have sampled 23
-rho <- n_species/450
-
-### the time tree is a stochastic node modeled by the constant rate birth-death process (dnBDP)
-psi ~ dnBDP(lambda=birth_rate, mu=death_rate, rho=rho, rootAge=root_time, samplingStrategy="uniform", condition="survival", taxa=taxa)
-
-moves[++mvi] = mvNarrow(psi, weight=5.0)
-moves[++mvi] = mvNNI(psi, weight=1.0)
-moves[++mvi] = mvFNPR(psi, weight=3.0)
-moves[++mvi] = mvGPR(psi, weight=3.0)
-moves[++mvi] = mvSubtreeScale(psi, weight=3.0)
-moves[++mvi] = mvNodeTimeSlideUniform(psi, weight=15.0)
-
-
-
-
-###################
-# Molecular clock #
-###################
-
-### We know from empirical estimates a clock rate which is 0.01 (=1%) per million years per site
-### Nevertheless, we will estimate it here because we fixed the root age
-### we use a uniform prior on the log-transform clock rate
-log_clock_rate ~ dnUniform(-8,2)
-moves[++mvi] = mvSlide(log_clock_rate, weight=2.0)
-clock_rate := 10^log_clock_rate
+TL := sum(bl)
+	
+psi := treeAssembly(topology, bl)
 
 
 
@@ -125,7 +91,7 @@ clock_rate := 10^log_clock_rate
 ###################
 
 # the sequence evolution model
-seq ~ dnPhyloCTMC(tree=psi, Q=Q, branchRates=clock_rate, siteRates=gamma_rates, pInv=pinvar, type="DNA")
+seq ~ dnPhyloCTMC(tree=psi, Q=Q, siteRates=gamma_rates, pInv=pinvar, type="DNA")
 
 # attach the data
 seq.clamp(data)
@@ -148,12 +114,11 @@ mymodel = model(Q)
 
 monitors[++mni] = mnModel(filename="output/primates_cytb_GTR_Gamma_Inv.log",printgen=10, separator = TAB)
 monitors[++mni] = mnFile(filename="output/primates_cytb_GTR_Gamma_Inv.trees",printgen=10, separator = TAB, psi)
-monitors[++mni] = mnScreen(printgen=1000, clock_rate, diversification, turnover)
 
 
 
 ### Compute power posterior distributions
-pow_p = powerPosterior(mymodel, moves, monitors, "output/pow_p_JC.out", cats=127, sampleFreq=10) 
+pow_p = powerPosterior(mymodel, moves, monitors, "output/pow_p_GTR_Gamma_Inv.out", cats=127, sampleFreq=10) 
 pow_p.burnin(generations=10000,tuningInterval=250)
 pow_p.run(generations=1000)  
 
