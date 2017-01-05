@@ -1123,7 +1123,7 @@ Or click the \fbox{$+$} button on the left-hand side of the screen to add your l
 
 Immediately upon loading your file (see Fig.\ \ref{fig:tracer-post-ests}), 
 you will see the list of \mi{Trace Files} on the left-hand side (you can load multiple files).
-The bottom left section, called \mi{Traces}, provides a list of every parameter in the log file, along with the mean and the Effective Sample Size (ESS) for the posterior sample of that parameter.
+The bottom left section, called \mi{Traces}, provides a list of every parameter in the log file, along with the mean and the effective sample size (ESS) for the posterior sample of that parameter.
 The ESS statistic provides a measure of the number of independent draws in our sample for a given parameter.
 This quantity will typically be much smaller than the number of generations of the chain.
 In {\tt Tracer}, poor to fair values for the ESS will be colored red and yellow.
@@ -1200,6 +1200,11 @@ Go to the \cl{age\_extant} parameter in the \mi{Estimates} window.
 \colorbox{Thistle}{\bf ?} What is the mean and 95\% highest posterior density of the age of the MRCA for all living bears? 
 \end{framed}
 
+
+Since you have evaluated several of the parameters by viewing the trace files and the ESS values, you may be aware that the MCMC analysis you conducted for this tutorial did not sufficiently sample the joint posterior distribution of phylogenetic parameters.
+More explicitly, \textit{your run has not converged}.
+It is not advisable to base your conclusions on such a run and it will be critical to perform multiple, independent runs for many more MCMC cycles. 
+For further discussion of recommended MCMC practices in \RevBayes, please see the \href{https://github.com/revbayes/revbayes_tutorial/raw/master/tutorial_TeX/RB_MCMC_Intro_Tutorial/RB_MCMC_Intro_Tutorial.pdf}{Intro to MCMC} and \href{https://github.com/revbayes/revbayes_tutorial/raw/master/tutorial_TeX/RB_MCMC_Tutorial/RB_MCMC_Tutorial.pdf}{MCMC Algorithms} tutorials.
 
 \medskip
 \subsubsection{Summarize Tree}\label{subsub:Exercise-SummarizeTree}
