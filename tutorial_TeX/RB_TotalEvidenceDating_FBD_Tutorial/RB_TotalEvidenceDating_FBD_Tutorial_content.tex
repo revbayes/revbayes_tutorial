@@ -27,15 +27,15 @@ A good option is \href{http://www.sublimetext.com/}{\tt Sublime Text}, which is 
 \subsubsection{Prerequisite Tutorials}
 In addition to installing the software, this tutorial assumes that you have read and completed the following tutorials:
 \begin{itemize}[noitemsep,topsep=0pt]
-\item \href{https://github.com/revbayes/revbayes_tutorial/raw/master/tutorial_TeX/RB_Getting_Started/RB_Getting_Started.pdf}{Getting started}
-\item \href{https://github.com/revbayes/revbayes_tutorial/raw/master/tutorial_TeX/RB_Basics_Tutorial/RB_Basics_Tutorial.pdf}{\Rev basics}
+\item \href{https://github.com/revbayes/revbayes_tutorial/raw/master/tutorial_TeX/RB_Getting_Started/RB_Getting_Started.pdf}{\mi{Getting Started}}
+\item \href{https://github.com/revbayes/revbayes_tutorial/raw/master/tutorial_TeX/RB_Basics_Tutorial/RB_Basics_Tutorial.pdf}{\mi{\Rev Basics}}
 \end{itemize}
 
 
 \bigskip
 \section{Introduction}\label{sect:Introduction}
 
-The ``total-evidence'' analysis described in this tutorial uses a graphical model \citep{Hoehna2014b} integrating three separate likelihood components or data partitions (Fig. \ref{fig:module-gm}): one for molecular data (section \ref{subsect:Intro-GTR}), one for morphological data (section \ref{subsect:Intro-Morpho}), and one for fossil stratigraphic range data (section \ref{subsect:Intro-TipSampling}). In addition, all likelihood components are conditioned on a tree topology with divergence times, which is modeled according to a separate prior component (section \ref{subsect:Intro-FBD}).
+The ``total-evidence'' analysis described in this tutorial uses a graphical model \citep{Hoehna2014b} integrating three separate likelihood components or data partitions (Fig.\ \ref{fig:module-gm}): one for molecular data (section \ref{subsect:Intro-GTR}), one for morphological data (section \ref{subsect:Intro-Morpho}), and one for fossil stratigraphic range data (section \ref{subsect:Intro-TipSampling}). In addition, all likelihood components are conditioned on a tree topology with divergence times, which is modeled according to a separate prior component (section \ref{subsect:Intro-FBD}).
 \begin{figure}[h!]
 \fbox{%
 \begin{minipage}{\textwidth}\centering
@@ -62,7 +62,7 @@ We will describe the distinction between these two trees in section \ref{subsect
 \subsection{Lineage Diversification and Sampling}\label{subsect:Intro-FBD}
 
 The joint prior distribution on tree topologies and divergence times of living and extinct species used in this tutorial is described by the \textit{fossilized birth-death} (FBD) process \citep{Stadler2010, Heath2014}. 
-This model simply treats the fossil observations as part of the process governing the tree topology and branch times (the \textit{Time Tree Model} node in Fig.\ \ref{fig:module-gm}). 
+This model simply treats the fossil observations as part of the process governing the tree topology and branch times (the \textsf{Time Tree Model} node in Fig.\ \ref{fig:module-gm}). 
 The fossilized birth-death process provides a model for the distribution of speciation times, tree topology, and distribution of lineage samples before the present (\EG non-contemporaneous samples like fossils or viruses). 
 This type of tree is shown in figure \ref{fig:example-tree}. 
 Importantly, this model can be used \textit{with or without} character data for the historical samples. 
@@ -89,7 +89,7 @@ The birth-death parameters $\lambda$ and $\mu$ denote the speciation and extinct
 \fbox{%
 \begin{minipage}{\textwidth}\centering
 \includegraphics[width=0.55\textwidth,angle=0]{\ResourcePath figures/tikz/fbd_gm}
-\caption{\small A graphical model of the fossilized birth-death model describing the generation of the time tree (\mi{Time Tree Model} in Fig.\ \ref{fig:module-gm}) used in this tutorial. The parameters of the fossilized birth-death process are labeled in orange. The speciation, extinction and fossilization rates are stochastic nodes (circles) drawn from exponential distributions, while the origin time is uniformly distributed. The sampling probability is constant node (square) and equal to one. For more information on probabilistic graphical models and their notation, please see \citet{Hoehna2014b}.} 
+\caption{\small A graphical model of the fossilized birth-death model describing the generation of the time tree (\textsf{Time Tree Model} in Fig.\ \ref{fig:module-gm}) used in this tutorial. The parameters of the fossilized birth-death process are labeled in orange. The speciation, extinction and fossilization rates are stochastic nodes (circles) drawn from exponential distributions, while the origin time is uniformly distributed. The sampling probability is constant node (square) and equal to one. For more information on probabilistic graphical models and their notation, please see \citet{Hoehna2014b}.} 
 \end{minipage}}
 \label{fig:fbd_gm}
 \end{figure}
@@ -127,6 +127,7 @@ $$f[\mathcal{F}_i \mid a_i, b_i, t_i] = \begin{cases}
 \end{cases}$$
 In other words, we assume the likelihood is equal to one if the inferred age is consistent with the fossil record.
 We can represent this likelihood in \RevBayes using any uniform distribution that is proportional to the likelihood, \IE non-zero when the likelihood is equal to one (Fig. \ref{fig:tipsampling_gm}).
+This model component represents the observed \textsf{Fossil Occurrence Time Data} in the modular graphical model shown in figure \ref{fig:module-gm}.
 \begin{figure}[h!]
 \fbox{%
 \begin{minipage}{\textwidth}\centering
@@ -139,17 +140,17 @@ We can represent this likelihood in \RevBayes using any uniform distribution tha
 
 \subsection{Nucleotide Sequence Evolution}\label{subsect:Intro-GTR}
 
-The model component for the molecular data uses a general time-reversible model of nucleotide evolution and gamma-distributed rate heterogeneity across sites. %TODO cite GTR+G
-This model of sequence evolution is covered thoroughly in the \href{https://github.com/revbayes/revbayes_tutorial/raw/master/tutorial_TeX/RB_CTMC_Tutorial/RB_CTMC_Tutorial.pdf}{Substitution Models} tutorial.
+The model component for the molecular data uses a general time-reversible model of nucleotide evolution and gamma-distributed rate heterogeneity across sites (the \textsf{Substitution Model} and \textsf{Sites Model} in Fig.\ \ref{fig:module-gm}). %TODO cite GTR+G
+This model of sequence evolution is covered thoroughly in the \href{https://github.com/revbayes/revbayes_tutorial/raw/master/tutorial_TeX/RB_CTMC_Tutorial/RB_CTMC_Tutorial.pdf}{\mi{Substitution Models}} tutorial.
 
 
 \subsubsection{Lineage-Specific Rates of Sequence Evolution}\label{subsub:Intro-GTR-UExp}
 
 Rates of nucleotide sequence evolution can vary widely among lineages, and so models that account for this variation by relaxing the assumption of a strict molecular clock can allow for more accurate estimates of substitution rates and divergence times \citep{Drummond2006}.
 The simplest type of relaxed clock model assumes that lineage-specific substitution rates are independent or ``uncorrelated''.
-One example of such an uncorrelated relaxed model is the ``Uncorrelated exponential relaxed clock'', in which the substitution rate for each lineage is assumed to be independent and identically distributed according to an exponential density (Fig. \ref{fig:uexp_gm}).
-This is the model that we will use in this tutorial.
-Another possible uncorrelated relaxed clock model is the uncorrelated lognormal model, described in the \href{https://github.com/revbayes/revbayes_tutorial/raw/master/tutorial_TeX/RB_Dating_Tutorial/RB_Dating_Tutorial.pdf}{Relaxed Clocks} tutorial.
+One example of such an uncorrelated relaxed model is the uncorrelated \textit{exponential} relaxed clock, in which the substitution rate for each lineage is assumed to be independent and identically distributed according to an exponential density (Fig. \ref{fig:uexp_gm}).
+This is the \textsf{Branch Rates Model} for the \textsf{Molecular Data} (\IE Fig.\ \ref{fig:module-gm}) that we will use in this tutorial.
+Another possible uncorrelated relaxed clock model is the uncorrelated lognormal model, described in the \href{https://github.com/revbayes/revbayes_tutorial/raw/master/tutorial_TeX/RB_Dating_Tutorial/RB_Dating_Tutorial.pdf}{\mi{Relaxed Clocks}} tutorial.
 \begin{figure}[h!]
 \fbox{%
 \begin{minipage}{\textwidth}\centering
@@ -172,15 +173,7 @@ This assumption is equivalent to assuming that the stationary probability of bei
 
 In this tutorial, we will relax this assumption by allowing the stationary 1-state probability to take on any value between 0 and 1, drawn from a beta prior distribution.
 In addition, we will allow each morphological character to have its own substitution matrix with its own stationary frequency (Fig. \ref{fig:morpho_gm}).
-Then, similar to the way we model site-specific substitution rates using a discretized gamma distribution (described in the \href{https://github.com/revbayes/revbayes_tutorial/raw/master/tutorial_TeX/RB_CTMC_Tutorial/RB_CTMC_Tutorial.pdf}{Substitution Models} tutorial), we will model site-specific stationary frequencies using a discretized beta distribution \citep{Wright2016}.
-
-Because of the way morphological data are collected, we need to exercise caution in how we model the data. 
-Traditionally, phylogenetic trees were built from morphological data using parsimony. 
-Therefore, only parsimony informative characters were collected - that is, characters that are useful for discriminating between phylogenetic hypotheses under the maximum parsimony criterion.
-This means that many morphological datasets do not contain invariant characters or autapomorphies, as these are not parsimony informative. 
-However, by excluding these low rate of evolution characters, estimates of the branch lengths can be inflated \citep{Felsenstein1992,Lewis2001}.
-Therefore, it is important to use models that can condition on the coding bias. 
-\RevBayes has two ways of doing this: one is used for datasets in which only parsimony informative characters are observed; the other is for datasets in which parsimony informative characters and parsimony uninformative variable characters (such as autapomorphies) are observed.
+Then, similar to the way we model site-specific substitution rates using a discretized gamma distribution (described in the \href{https://github.com/revbayes/revbayes_tutorial/raw/master/tutorial_TeX/RB_CTMC_Tutorial/RB_CTMC_Tutorial.pdf}{\mi{Substitution Models}} tutorial), we will model site-specific stationary frequencies using a discretized beta distribution \citep{Wright2016}.
 \begin{figure}[h!]
 \fbox{%
 \begin{minipage}{\textwidth}\centering
@@ -190,12 +183,21 @@ Therefore, it is important to use models that can condition on the coding bias.
 \label{fig:morpho_gm}
 \end{figure}
 
+Because of the way morphological data are collected, we need to exercise caution in how we model the data. 
+Traditionally, phylogenetic trees were built from morphological data using parsimony. 
+Therefore, only parsimony informative characters were collected---that is, characters that are useful for discriminating between phylogenetic hypotheses under the maximum parsimony criterion.
+This means that many morphological datasets do not contain invariant characters or \href{https://en.wikipedia.org/wiki/Autapomorphy}{autapomorphies}, as these are not parsimony informative. 
+However, by excluding these slow-evolving characters, estimates of the branch lengths can be inflated \citep{Felsenstein1992,Lewis2001}.
+Therefore, it is important to use models that can condition on this data-acquisition bias. 
+\RevBayes has two ways of doing this: one is used for datasets in which only parsimony informative characters are observed; the other is for datasets in which parsimony informative characters and parsimony uninformative variable characters (such as autapomorphies) are observed.
+
+
 \subsubsection{The Morphological Clock}\label{subsub:Intro-MorphClock}
 
 %TODO write about the morphological clock
 
 Just like with the molecular data (section \ref{subsub:Intro-GTR-UExp}), our observations of discrete morphological characters are conditional on the rate of change along each branch in the tree. 
-This model component defines the \textit{branch rate model} of the morphological data in the generalized graphical model shown in Fig.\ \ref{fig:module-gm}.
+This model component defines the \textsf{Branch Rate Model} of the \textsf{Morphological Data} in the generalized graphical model shown in figure \ref{fig:module-gm}.
 The relaxed clock model we described for the molecular data in section \ref{subsub:Intro-GTR-UExp} it allows the substitution rate to vary through time and among lineages. 
 For the morphological data, we will instead use a ``strict clock'' model \citep{Zuckerkandl1962}, in which the rate of discrete character change is assumed to be constant throughout the tree.
 The strict clock is the simplest morphological branch rate model we can construct (graphical model shown in Fig.\ \ref{fig:morph_clock_gm}).
@@ -458,6 +460,9 @@ Open your text editor and create the fossilized birth-death model file called {\
 Enter the \Rev code provided in this section in the new model file.
 \end{framed}}
 
+This file will define the models described in sections \ref{subsect:Intro-FBD} and \ref{subsect:Intro-TipSampling} above.
+If necessary, please review the graphical models depicted for the fossilized birth-death process (Fig.\ \ref{fig:fbd_gm}) and the likelihood of the tip sampling process (Fig.\ \ref{fig:tipsampling_gm}).
+
 \subsubsection{Speciation and Extinction Rates}\label{subsub:Exercise-FBD-SpeciationExtinction}
 
 Two key parameters of the FBD process are the speciation rate (the rate at which lineages are added to the tree, denoted by $\lambda$ in Fig.\ \ref{fig:fbd_gm}) and the extinction rate (the rate at which lineages are removed from the tree, $\mu$ in Fig.\ \ref{fig:fbd_gm}). 
@@ -501,7 +506,7 @@ The way that we will run our MCMC for this tutorial will be to execute a \textit
 Here, if we were to run our MCMC with our current vector of 6 moves, then our move schedule would perform 6 moves at each cycle.
 Within a cycle, an individual move is chosen from the move list in proportion to its weight. 
 Therefore, each move has an equal probability of being executed and will be performed on average one time per MCMC cycle. 
-For more information on moves and how they are performed in \RevBayes, please refer to the \href{https://github.com/revbayes/revbayes_tutorial/blob/master/tutorial_TeX/RB_MCMC_Intro_Tutorial/RB_MCMC_Intro_Tutorial.pdf}{Introduction to MCMC} and \href{https://github.com/ssb2017/revbayes_intro/blob/master/tutorials/RB_CTMC_Tutorial.pdf}{Substitution Models} tutorials.
+For more information on moves and how they are performed in \RevBayes, please refer to the \href{https://github.com/revbayes/revbayes_tutorial/blob/master/tutorial_TeX/RB_MCMC_Intro_Tutorial/RB_MCMC_Intro_Tutorial.pdf}{\mi{Introduction to MCMC}} and \href{https://github.com/ssb2017/revbayes_intro/blob/master/tutorials/RB_CTMC_Tutorial.pdf}{\mi{Substitution Models}} tutorials.
 
 In addition to the speciation ($\lambda$) and extinction ($\mu$) rates, we may also be interested in inferring diversification ($\lambda - \mu$) and turnover ($\mu/\lambda$).
 Since these parameters can be expressed as a deterministic transformation of the speciation and extinction rates, we can monitor (that is, track the values of these parameters, and print them to a file) their values by creating two deterministic nodes using the \cl{:=} operator.
@@ -714,7 +719,7 @@ Open your text editor and create the lineage-specific branch-rate model file cal
 Enter the \Rev code provided in this section in the new model file.
 \end{framed}}
 
-For our hierarchical, uncorrelated exponential relaxed clock model, we first define the mean branch rate as an exponential random variable.
+For our hierarchical, uncorrelated exponential relaxed clock model (described in section \ref{subsub:Intro-GTR-UExp} and shown in Fig.\ \ref{fig:uexp_gm}), we first define the mean branch rate as an exponential random variable.
 Then, we specify scale proposal moves on the mean rate parameter.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
@@ -848,7 +853,7 @@ Open your text editor and create the morphological character model file called {
 Enter the \Rev code provided in this section in the new model file.
 \end{framed}}
 
-As stated in the introduction, we will use a prior on state frequencies to relax the key assumption of the Mk model. 
+As stated in the introduction (section \ref{subsect:Intro-Morpho} and Fig.\ \ref{fig:morpho_gm}), we will use a prior on state frequencies to relax the key assumption of the Mk model. 
 Because we are working with binary data, we can use a discretized beta distribution to describe the variation in stationary state frequencies across characters. 
 The beta distribution has two parameters, $\alpha$ and $\beta$ which describe its shape. 
 For simplicity, we will assume that $\alpha$ = $\beta$. 
@@ -891,8 +896,8 @@ moves[mvi++] = mvScale(alpha_morpho, lambda=1,    weight=1.0)
 \end{lstlisting}
 \end{snugshade*}}
 
-Each data partition has to have a clock rate. For simplicity, we will assume a strict clock rate drawn from an exponential distribution.
-
+The phylogenetic model also assumes that each branch has a rate of morphological character change.
+For simplicity, we will assume a strict clock rate---meaning that every branch has the same rate---drawn from an exponential distribution (section \ref{subsub:Intro-MorphClock}).
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 clock_morpho ~ dnExponential(1.0)
@@ -1174,7 +1179,7 @@ Figure \ref{fig:tracer-extinction-trace} shows the trace for the extinction rate
 The \mi{Trace} window allows us to evaluate how well our chain is sampling the target distribution.
 For a fairly short analysis, the output in figure \ref{fig:tracer-extinction-trace} shows reasonable \textit{mixing}---there is no consistent pattern or trend in the samples, nor are there long intervals where the statistic does not change.
 The presence of a trend or large leaps in a parameter value might indicate that your MCMC is not mixing well.
-You can read more about MCMC tuning and improving mixing in the tutorials \href{https://github.com/revbayes/revbayes_tutorial/raw/master/tutorial_TeX/RB_MCMC_Intro_Tutorial/RB_MCMC_Intro_Tutorial.pdf}{Intro to MCMC} and \href{https://github.com/revbayes/revbayes_tutorial/raw/master/tutorial_TeX/RB_MCMC_Tutorial/RB_MCMC_Tutorial.pdf}{MCMC Algorithms}.
+You can read more about MCMC tuning and improving mixing in the tutorials \href{https://github.com/revbayes/revbayes_tutorial/raw/master/tutorial_TeX/RB_MCMC_Intro_Tutorial/RB_MCMC_Intro_Tutorial.pdf}{\mi{Intro to MCMC}} and \href{https://github.com/revbayes/revbayes_tutorial/raw/master/tutorial_TeX/RB_MCMC_Tutorial/RB_MCMC_Tutorial.pdf}{\mi{MCMC Algorithms}}.
 
 \begin{framed}
 Look through the traces for your parameters. 
@@ -1204,7 +1209,7 @@ Go to the \cl{age\_extant} parameter in the \mi{Estimates} window.
 Since you have evaluated several of the parameters by viewing the trace files and the ESS values, you may be aware that the MCMC analysis you conducted for this tutorial did not sufficiently sample the joint posterior distribution of phylogenetic parameters.
 More explicitly, \textit{your run has not converged}.
 It is not advisable to base your conclusions on such a run and it will be critical to perform multiple, independent runs for many more MCMC cycles. 
-For further discussion of recommended MCMC practices in \RevBayes, please see the \href{https://github.com/revbayes/revbayes_tutorial/raw/master/tutorial_TeX/RB_MCMC_Intro_Tutorial/RB_MCMC_Intro_Tutorial.pdf}{Intro to MCMC} and \href{https://github.com/revbayes/revbayes_tutorial/raw/master/tutorial_TeX/RB_MCMC_Tutorial/RB_MCMC_Tutorial.pdf}{MCMC Algorithms} tutorials.
+For further discussion of recommended MCMC practices in \RevBayes, please see the \href{https://github.com/revbayes/revbayes_tutorial/raw/master/tutorial_TeX/RB_MCMC_Intro_Tutorial/RB_MCMC_Intro_Tutorial.pdf}{\mi{Intro to MCMC}} and \href{https://github.com/revbayes/revbayes_tutorial/raw/master/tutorial_TeX/RB_MCMC_Tutorial/RB_MCMC_Tutorial.pdf}{\mi{MCMC Algorithms}} tutorials.
 
 \medskip
 \subsubsection{Summarize Tree}\label{subsub:Exercise-SummarizeTree}
