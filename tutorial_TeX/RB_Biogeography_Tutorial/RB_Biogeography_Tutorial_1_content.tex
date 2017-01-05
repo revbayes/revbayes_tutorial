@@ -1,16 +1,8 @@
-\subsection*{Introduction}
-
-How did species come to live where they're found today?
-To answer this, we can leverage phylogenetic, molecular, and geographical information to model species distributions as the outcome of biogeographic processes.
-How to best model these processes requires special consideration, such as how ranges are inherited following speciation events, how geological events might influence dispersal rates, and what factors affect rates of dispersal and extirpation.
-A major technical challenge of modeling range evolution is how to translate these natural processes into stochastic processes that remain tractable for inference.
-This tutorial provides a brief background in some of these models, then describes how to perform Bayesian inference of historical biogeography using \RevBayes.
-
-\section{Overview of the Dispersal-Extinction-Cladogenesis model}
+\section{Overview of the Dispersal-Extinction-Cladogenesis model} \label{sec:bg_intro2}
 
 \subsection*{Discrete range characters}
 
-The Dispersal-Extinction-Cladogenesis (DEC) models range evolution as a discrete-valued process \citep{Ree2005, Ree2008}.
+The Dispersal-Extinction-Cladogenesis (DEC) process models range evolution as a discrete-valued process \citep{Ree2005, Ree2008}.
 DEC interprets taxon ranges as presence-absence data, that is, where a species is observed or not observed across multiple discrete areas.
 For example, say there are three areas, A, B, and C.
 If a species is present in areas A and C, then its range equals AC, which can also be encoded into the length-3 bit vector, 101.
@@ -35,8 +27,7 @@ $\emptyset$ & 000 & 0 & 0 \\
 \end{table}
 %\end{center}
 
-Decimal representation is rarely used in discussion, but it is useful to keep in mind when considering the total number of possible ranges for a species and when processing output.
-Note, \RevBayes assigns integers to ranges in order according to size.
+The decimal representation of range states is rarely used in discussion, but it is useful to keep in mind when considering the total number of possible ranges for a species and when processing output.
 
 \subsection*{Anagenetic range evolution}
 
@@ -84,7 +75,7 @@ n_areas <- 3
 \end{lstlisting}
 \end{snugshade}
 
-First, create a matrix of dispersal rates between area pairs, with rates $d_{AB} = d_{AC} = \ldots = d_{CB} = 1$
+First, create a matrix of dispersal rates between area pairs, with rates $d_{AB} = d_{AC} = \ldots = d_{CB} = 1$. The {\tt abs()} function ensures the rates are real positive values.
 
 \begin{snugshade}
 \begin{lstlisting}
@@ -150,11 +141,11 @@ Notice how the structure of the rate matrix is reflected in the transition proba
 For example, ranges that are separated by multiple dispersal and extirpation events are the most improbable: transitioning from going from A to BC takes a minimum of three events and has probability 0.005.
 
 Also note that the probability of entering or leaving the null range is zero.
-By default, the \RevBayes conditions the anagenetic range evolution process on never entering the null range when computing the transition probabilities ({\tt nullRange=CondSurv}).
+By default, the \RevBayes conditions the anagenetic range evolution process on never entering the null range when computing the transition probabilities ({\tt nullRange=``CondSurv''}).
 This allows the model to both simulate and infer using the same transition probabilities.
-\citet{Massana2015} first noted that the null range results in abnormal extirpation rate and range size estimates.
-Their proposed solution to eliminate the null range from the state space is enabled with the {\tt nullRange=Exclude} setting. 
-The {\tt nullRange=Include} setting provides no special handling of the null range, and produces the raw probabilities of \citet{Ree2005}.
+\citet{Massana2015} first noted that the null range---an unobserved absorbing state---results in abnormal extirpation rate and range size estimates.
+Their proposed solution to eliminate the null range from the state space is enabled with the {\tt nullRange=``Exclude''} setting. 
+The {\tt nullRange=``Include''} setting provides no special handling of the null range, and produces the raw probabilities of \citet{Ree2005}.
 
 \subsection*{Cladogenetic range evolution}
 
@@ -239,24 +230,14 @@ Thus, selecting the discrete areas for a DEC analysis should be done with regard
 
 {\bf \framebox{?} For the three-area DEC rate matrix above, what is the rate of leaving state AC in terms of dispersal and extinction parameters?}
 
-{\bf \framebox{?} What series of transition events might explain a lineage evolving from range $ABC$ to range $A$? From range $AB$ to range $C$?}
+{\bf \framebox{?} What series of transition events might explain a lineage evolving from range $ABC$ to range $A$? From range $AB$ to range $C$? (Hint: more than one event is needed!)}
 
 { \bf \framebox{?} Imagine a DEC rate matrix with four areas, $ABCD$. What would be the dispersal rate for $Q_{BC,BCD}$? How many states does a DEC rate matrix with four areas have? What is the relationship between the number of areas and the number of states under the DEC model? }
 
 {\bf \framebox{?} Given the state is $AB$ before cladogenesis, and allowing subset sympatry, widespread sympatry, and allopatry, what are the 7 possible states in the daughter lineages after cladogenesis?}
 
-{\bf \framebox{?} For three areas, there are three narrow, four widespread, 18 subset sympatric events and 12 allopatric cladogenesis events. What proportion of terms in the cladogenesis matrix are zero?}
+{\bf \framebox{?} For three areas, there are three narrow, four widespread, 18 subset sympatric events, and 12 allopatric cladogenesis events. What proportion of terms in the cladogenesis matrix are zero?}
 
-\subsection*{Recommended tutorials}
-
-The {\bf Historical Biogeography} tutorial will assume the reader has completed the following \RevBayes tutorials
-
-\begin{itemize}
-\item {\bf \Rev Basics}
-\item {\bf Molecular Models of Character Evolution}
-\item {\bf Running and Diagnosing an MCMC Analysis}
-\item {\bf Divergence Time Estimation and Node Calibrations}
-\end{itemize}
 
 %\begin{figure}[H]
 %\centering
