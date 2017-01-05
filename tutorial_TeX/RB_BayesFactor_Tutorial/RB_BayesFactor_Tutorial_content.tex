@@ -165,7 +165,7 @@ This requires that we provide a model and vector of moves, as well as an output 
 The \cl{cats} argument sets the number of stepping stones.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-pow_p = powerPosterior(mymodel, moves, monitors, "model1.out", cats=50) 
+pow_p = powerPosterior(mymodel, moves, monitors, "output/model1.out", cats=50) 
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -188,7 +188,7 @@ Once the power posteriors have been saved to file, create a stepping stone sampl
 This function can read any file of power posteriors and compute the marginal likelihood using stepping-stone sampling. 
 {\tt \small \begin{snugshade*}
 \begin{lstlisting}
-ss = steppingStoneSampler(file="model1.out", powerColumnName="power", likelihoodColumnName="likelihood")
+ss = steppingStoneSampler(file="output/model1.out", powerColumnName="power", likelihoodColumnName="likelihood")
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -203,7 +203,7 @@ ss.marginal()
 Path sampling is an alternative to stepping-stone sampling and also takes the same power posteriors as input. 
 {\tt \small \begin{snugshade*}
 \begin{lstlisting}
-ps = pathSampler(file="model1.out", powerColumnName="power", likelihoodColumnName="likelihood")
+ps = pathSampler(file="output/model1.out", powerColumnName="power", likelihoodColumnName="likelihood")
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -237,7 +237,7 @@ Thus, you can apply these algorithms to any	model, \EG relaxed clock models and 
 \item GTR+I+G model
 \end{itemize}
 \item Enter the marginal likelihood estimate for each model in the corresponding cell of Table~\ref{tab:ml_cytb}.
-\item Repeat the above marginal likelihood analyses for the \textit{mt-COX2 gene} and enter results in Table~\ref{tab:ml_cox2}.
+%\item Repeat the above marginal likelihood analyses for the \textit{mt-COX2 gene} and enter results in Table~\ref{tab:ml_cox2}.
 \item Which is the best fitting substitution model?
 \end{itemize}
 
@@ -285,7 +285,7 @@ The value resulting from equation \ref{LNbfFormula} can be converted to a raw Ba
 \begin{align}\label{LNbfFormula2}
 BF(M_0,M_1) = e^{\cal{K}}.
 \end{align}
-Alternatively, you can directly interpret the strength of evidence in favor of $M_0$ in log space by comparing the values of $\cal{K}$ to the appropriate scale (Table ref{bftable}, second column).
+Alternatively, you can directly interpret the strength of evidence in favor of $M_0$ in log space by comparing the values of $\cal{K}$ to the appropriate scale (Table \ref{bftable}, second column).
 In this case, we evaluate $\cal{K}$ in favor of model $M_0$ against model $M_1$ so that:
 \begin{center}
 \begin{tabular}{l}
@@ -296,7 +296,7 @@ if $\mathcal{K} < -1$, model $M_1$ is preferred.
 Thus, values of $\mathcal{K}$ around 0 indicate that there is no preference for either model. 
 
 Using the values you entered in Table \ref{tab:ml_cytb} and equation \ref{LNbfFormula}, calculate the ln-Bayes factors (using $\mathcal{K}$) for each model comparison. 
-Enter your answers in Table \ref{bfTable} using the stepping-stone and the path-sampling estimates of the marginal log-likelihoods. 
+Enter your answers in Table \ref{bfTable2} using the stepping-stone and the path-sampling estimates of the marginal log-likelihoods. 
 
 \begin{Form}
 \begin{table}[h!]
@@ -321,7 +321,7 @@ $M_6$ & \TextField[name=bf61,backgroundcolor={.85 .85 .85},color={1 0 0},height=
 \hline
 {\footnotesize{$^*$you can edit this table}}\\
 \end{tabular}}
-\label{bfTable}
+\label{bfTable2}
 \end{table}
 \end{Form}
 
