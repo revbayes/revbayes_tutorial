@@ -1099,14 +1099,14 @@ When the analysis is complete, \RevBayes will quit and you will have a new direc
 \medskip
 \subsubsection{Evaluate MCMC}\label{subsub:Exercise-EvalMCMC}
 
-In this section, we will evaluate the \textit{mixing} and \textit{convergence} of our MCMC simulation using the program Tracer.
+In this section, we will evaluate the \textit{mixing} and \textit{convergence} of our MCMC simulation using the program {\tt Tracer}.
 We can also summarize the marginal distributions for particular parameters we're interested in.
-\href{http://tree.bio.ed.ac.uk/software/tracer/}{Tracer} \citep{Rambaut2011} is a tool for visualizing parameters sampled by MCMC.
+\href{http://tree.bio.ed.ac.uk/software/tracer/}{\tt Tracer} \citep{Rambaut2011} is a tool for visualizing parameters sampled by MCMC.
 This program is limited to numerical parameters, however, and cannot be used to summarize or analyze MCMC samples of the tree topology (this will be discussed further in section \ref{subsub:Exercise-SummarizeTree}).
 
 %Import the MCMC log file into Tracer.
 \begin{framed}
-Open Tracer and import the \cl{bears.log} file in the \mi{File\textrightarrow Import New Trace File}.
+Open {\tt Tracer} and import the \cl{bears.log} file in the \mi{File\textrightarrow Import New Trace File}.
 Or click the \fbox{$+$} button on the left-hand side of the screen to add your log file (see Fig.\ \ref{fig:tracer}).
 \end{framed}
 
@@ -1114,58 +1114,71 @@ Or click the \fbox{$+$} button on the left-hand side of the screen to add your l
 \begin{figure}[h!]
 \fbox{%
 \begin{minipage}{\textwidth}\centering
-\includegraphics[width=\textwidth,angle=0]{\ResourcePath figures/tracer.png}
+\includegraphics[width=\textwidth,angle=0]{\ResourcePath figures/tracer_load_file.png}
 \caption{\small The Tracer window. To add data, click on the ``+'' sign, highlighted in red above.}
 \end{minipage}}
 \label{fig:tracer}
 \end{figure}
-Immediately upon loading your file, 
-%you will see the \mi{Estimates} window, which shows a histogram and summary statistics of the values sampled by the Markov chain.
+
+Immediately upon loading your file (see Fig.\ \ref{fig:tracer-post-ests}), 
 you will see the list of \mi{Trace Files} on the left-hand side (you can load multiple files).
 The bottom left section, called \mi{Traces}, provides a list of every parameter in the log file, along with the mean and the Effective Sample Size (ESS) for the posterior sample of that parameter.
 The ESS statistic provides a measure of the number of independent draws in our sample for a given parameter.
 This quantity will typically be much smaller than the number of generations of the chain.
-In Tracer, poor values for the ESS will be colored red.
-You will likely see a lot of red values because the MCMC runs in this exercise are too short to effectively sample the posterior distributions of most parameters.
+In {\tt Tracer}, poor to fair values for the ESS will be colored red and yellow.
+You will likely see a lot of red and yellow numbers because the MCMC runs in this exercise are too short to effectively sample the posterior distributions of most parameters.
 A much longer analysis is provided in the \cl{output} directory. 
-%The data used to make the screenshots can be found in the bears\_long.zip file in the output directory.
 
 The inspection window for your selected parameter is the \mi{Estimates} window, which shows a histogram and summary statistics of the values sampled by the Markov chain. 
-Figure \ref{fig:tracer} shows the marginal distribution of the \mi{Likelihood} statistic for the analysis provided in the \cl{output} directory.
-
+Figure \ref{fig:tracer-post-ests} shows the marginal distribution of the \mi{Posterior} statistic for the \cl{bears.log} file in the \cl{output} directory.
 \begin{figure}[h!]
 \fbox{%
 \begin{minipage}{\textwidth}\centering
-\includegraphics[width=\textwidth,angle=0]{\ResourcePath figures/samplewindow}
-\caption{\small The Estimates window. The left-hand window provides mean and ESS of the chain. The right-hand window visualizes the distribution of samples.}
+\includegraphics[width=\textwidth,angle=0]{\ResourcePath figures/tracer_fig_posterior_short.png}
+\caption{\small The \mi{Estimates} window in {\tt Tracer} showing the histogram of the \mi{Posterior}.}
 \end{minipage}}
-\label{fig:tracer}
+\label{fig:tracer-post-ests}
 \end{figure}
 
+%\begin{figure}[h!]
+%\fbox{%
+%\begin{minipage}{\textwidth}\centering
+%\includegraphics[width=\textwidth,angle=0]{\ResourcePath figures/samplewindow}
+%\caption{\small The Estimates window. The left-hand window provides mean and ESS of the chain. The right-hand window visualizes the distribution of samples.}
+%\end{minipage}}
+%\label{fig:tracer}
+%\end{figure}
+
 \begin{framed}
-Are there any parameters that have really low ESS? Why do you think that might be?
+Look through the various parameters and statistics in the list of \mi{Traces}. 
+
+\colorbox{Thistle}{\bf ?} Are there any parameters that have really low ESS? Why do you think that might be?
 \end{framed}
 
-Next, we can click over to the Trace window.
+Next, we can click over to the \mi{Trace} window.
 This window shows us the samples for a given parameter at each iteration of the MCMC.
 The left side of the chain has a shaded portion that has been excluded as ``burn-in''.
 Samples taken near the beginning of chain are often discarded or ``burned'' because the MCMC may not immediately begin sampling from the target posterior distribution, particularly if the starting condition of the chain is far from the region of highest posterior density.
+Figure \ref{fig:tracer-extinction-trace} shows the trace for the extinction rate.
 
 \begin{figure}[h!]
 \fbox{%
 \begin{minipage}{\textwidth}\centering
-\includegraphics[width=\textwidth,angle=0]{\ResourcePath figures/trace}
-\caption{\small The trace window. The vertical axis is the sampled value of highlighted parameter (in this case likelihood score) and the horizontal axis is the iteration of the MCMC.}
+\includegraphics[width=\textwidth,angle=0]{\ResourcePath figures/tracer_extinction_rate_trace_short.png}
+\caption{\small The \mi{Trace} window in {\tt Tracer}. This window shows a line plot of every sampled value for the extinction rate that was saved to file. The lighter shaded portion is the set of samples discarded as ``burn-in'' and are not used to compute the summary statistics found in the \mi{Estimates} window. }
 \end{minipage}}
-\label{fig:tracer}
+\label{fig:tracer-extinction-trace}
 \end{figure}
-The trace window allows us to evaluate how well our chain is sampling parameter space.
-The output in figure \ref{fig:tracer} shows fairly good \textit{mixing}--there is no consistent pattern or trend in the samples, nor are there long intervals where the statistic does not change.
+
+The \mi{Trace} window allows us to evaluate how well our chain is sampling the target distribution.
+For a fairly short analysis, the output in figure \ref{fig:tracer-extinction-trace} shows reasonable \textit{mixing}---there is no consistent pattern or trend in the samples, nor are there long intervals where the statistic does not change.
 The presence of a trend or large leaps in a parameter value might indicate that your MCMC is not mixing well.
 You can read more about MCMC tuning and improving mixing in the tutorials \href{https://github.com/revbayes/revbayes_tutorial/raw/master/tutorial_TeX/RB_MCMC_Intro_Tutorial/RB_MCMC_Intro_Tutorial.pdf}{Intro to MCMC} and \href{https://github.com/revbayes/revbayes_tutorial/raw/master/tutorial_TeX/RB_MCMC_Tutorial/RB_MCMC_Tutorial.pdf}{MCMC Algorithms}.
 
 \begin{framed}
-Are there any parameters in your log files that show trends or large leaps? What steps might you take to solve these issues?
+Look through the traces for your parameters. 
+
+\colorbox{Thistle}{\bf ?} Are there any parameters in your log files that show trends or large leaps? What steps might you take to solve these issues?
 \end{framed}
 
 \medskip
