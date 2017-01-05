@@ -1048,12 +1048,11 @@ You made it! Save all of your files.
 With all the parameters specified and all analysis components in place, you are now ready to run your analysis. 
 The \Rev scripts you just created will all be used by \RevBayes and loaded in the appropriate order.
 
-Begin by running the \RevBayes executable.
-{\tt \begin{snugshade*}
-\begin{lstlisting}
-./rb
-\end{lstlisting}
-\end{snugshade*}}
+{\begin{framed}
+Begin by running the \RevBayes executable. In Unix systems, type the following in your terminal (if the \RevBayes binary is in your path):
+
+\colorbox{black}{\strut\hspace{1mm}\textcolor[rgb]{0,1,1}{\cl{rb}}\hspace{0.925\textwidth}}
+\end{framed}}
 
 Provided that you started \RevBayes from the correct directory (\cl{RB\_TotalEvidenceDating\_FBD\_Tutorial}), you can then use the \cl{source()} function to feed \RevBayes your master script file (\cl{mcmc\_TEFBD.Rev}).
 {\tt \begin{snugshade*}
