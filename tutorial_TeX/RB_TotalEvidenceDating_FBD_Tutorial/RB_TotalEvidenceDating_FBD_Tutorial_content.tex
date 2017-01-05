@@ -1230,7 +1230,6 @@ trace = readTreeTrace("output/bears.trees")
 \end{lstlisting}
 \end{snugshade*}}
 
-
 The first thing we need to do is remove taxa for which we did not have any molecular or morphological data.
 The phylogenetic placement of these taxa is based only on their occurrence times and any clade constraints we applied (section \ref{subsub:Exercise-FBD-Constraints}). 
 Because no data are available to resolve their relationships to other lineages, we will treat their placement as \href{https://en.wikipedia.org/wiki/Nuisance_parameter}{\textit{nuisance parameters}} and remove them from the summary tree.
@@ -1258,38 +1257,36 @@ taxa
 \end{lstlisting}
 \end{snugshade*}}
 
-If you use the size function of the \cl{trace} variable by typing the command \colorbox{shadecolor}{\cl{trace.size()}}, you will see that our MCMC sampled 1001 trees. 
-We will first disregard the first 51 trees in our trace by setting the setting the starting value of the iterator we'll use to \cl{52}. 
-This burn-in value will be stored in the variable called \cl{burn}.
-{\tt \begin{snugshade*}
-\begin{lstlisting}
-burn = 52
-\end{lstlisting}
-\end{snugshade*}}
-
 Use the \cl{fnPruneTree()} function to prune taxon \cl{17} and taxon \cl{20} from each tree using a \cl{for} loop.
 We'll store each new tree in the vector called \cl{trees}.
-However, since that vector will be a different length than \cl{trace} we then need another iterator to index \cl{trees}.
-Call the \cl{trees} index \cl{ti} and increment its value in after it is used using the \cl{++} operator.
+
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-ti = 1
-for(i in burn:trace.size())
+for(i in 1:trace.size())
 {
-    trees[ti++] = fnPruneTree(trace.getTree(i), pruneTaxa=v(taxa[17],taxa[20]))
+    trees[i] = fnPruneTree(trace.getTree(i), pruneTaxa=v(taxa[17],taxa[20]))
 }
 \end{lstlisting}
 \end{snugshade*}}
 
-Now if you view the size of the \cl{trees} vector (use \cl{trees.size()}), you will see that this list of trees has \cl{950} elements.
+Then we create a second tree trace containing the pruned trees using the \cl{treeTrace} function.
+
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+trace_pruned = treeTrace(trees)
+\end{lstlisting}
+\end{snugshade*}}
+
+If you use the size function of the \cl{trace\_pruned} variable by typing the command \colorbox{shadecolor}{\cl{trace\_pruned.size()}}, you will see that our MCMC sampled 1001 trees. 
+By default, a burn-in of 25\% is used when creating the tree trace (250 trees in our case). You can specify a different burn-in fraction, say 50\%, by typing the command \colorbox{shadecolor}{\cl{trace\_pruned.setBurnin(0.5)}}.
 
 Then we will use the \cl{mccTree} function to return a maximum clade credibility (MCC) tree.
 The MCC tree is the tree with the maximum product of the posterior clade probabilities.
 When considering trees with sampled ancestors, we refer to the maximum sampled ancestor clade credibility (MSACC) tree \citep{Gavryushkina2016}.
+We also use the option \cl{conditionalAges=false} to indicate that the node ages of the output tree should not be summarized conditional on the MCC topology.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-trace_pruned = treeTrace(trees)
-mccTree(trace_pruned, "output/bears.mcc.tre" )
+mccTree(trace_pruned, file="output/bears.mcc.tre", conditionalAges=false )
 \end{lstlisting}
 \end{snugshade*}}
 
