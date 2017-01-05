@@ -89,7 +89,9 @@ The birth-death parameters $\lambda$ and $\mu$ denote the speciation and extinct
 \fbox{%
 \begin{minipage}{\textwidth}\centering
 \includegraphics[width=0.55\textwidth,angle=0]{\ResourcePath figures/tikz/fbd_gm}
-\caption{\small A graphical model of the fossilized birth-death model describing the generation of the time tree (\textsf{Time Tree Model} in Fig.\ \ref{fig:module-gm}) used in this tutorial. The parameters of the fossilized birth-death process are labeled in orange. The speciation, extinction and fossilization rates are stochastic nodes (circles) drawn from exponential distributions, while the origin time is uniformly distributed. The sampling probability is constant node (square) and equal to one. For more information on probabilistic graphical models and their notation, please see \citet{Hoehna2014b}.} 
+\caption{\small A graphical model of the fossilized birth-death model describing the generation of the time tree (\textsf{Time Tree Model} in Fig.\ \ref{fig:module-gm}) used in this tutorial. The parameters of the fossilized birth-death process are labeled in orange. The speciation, extinction and fossilization rates are stochastic nodes (circles) drawn from exponential distributions, while the origin time is uniformly distributed. The sampling probability is constant node (square) and equal to one. 
+The \textsf{phyloCTMC} represents the phylogenetic continuous-time Markov chain that links the tree model to the other model components and the observed sequence data.
+For more information on probabilistic graphical models and their notation, please see \citet{Hoehna2014b}.} 
 \end{minipage}}
 \label{fig:fbd_gm}
 \end{figure}
@@ -855,14 +857,12 @@ Enter the \Rev code provided in this section in the new model file.
 
 As stated in the introduction (section \ref{subsect:Intro-Morpho} and Fig.\ \ref{fig:morpho_gm}), we will use a prior on state frequencies to relax the key assumption of the Mk model. 
 Because we are working with binary data, we can use a discretized beta distribution to describe the variation in stationary state frequencies across characters. 
-The beta distribution has two parameters, $\alpha$ and $\beta$ which describe its shape. 
+The \href{https://en.wikipedia.org/wiki/Beta_distribution}{beta distribution} has two parameters, $\alpha$ and $\beta$ which describe its shape. 
 For simplicity, we will assume that $\alpha$ = $\beta$. 
-The below code draws a value for $\beta$ from an exponential distribution and places a move on it.
-
+The following code draws a value for $\beta$ from an exponential distribution and assigns a move on that parameter.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 beta_hp ~ dnExponential( 1.0 )
-
 moves[mvi++] = mvScale(beta_hp, lambda=1,    weight=1.0 )
 moves[mvi++] = mvScale(beta_hp, lambda=0.1,  weight=1.0 )
 moves[mvi++] = mvScale(beta_hp, lambda=0.01, weight=1.0 )
@@ -871,8 +871,7 @@ moves[mvi++] = mvScale(beta_hp, lambda=0.01, weight=1.0 )
 
 Next, we'll create a vector containing four different site stationary state frequencies. 
 This is similar to allowing gamma-distributed rate variation across sites. 
-We will then use these stationary frequencies to generate a set of new substitution matrices which do not enforce the assumptions of the same transition rates at every site and equal forward and backwards transition rates.
-
+We will use these stationary frequencies to generate a set of new substitution matrices which do not enforce the assumptions of the same transition rates at every site and equal forward and backwards transition rates.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 beta_cats := fnDiscretizeBeta( beta_hp, beta_hp, 4)
@@ -897,18 +896,19 @@ moves[mvi++] = mvScale(alpha_morpho, lambda=1,    weight=1.0)
 \end{snugshade*}}
 
 The phylogenetic model also assumes that each branch has a rate of morphological character change.
-For simplicity, we will assume a strict clock rate---meaning that every branch has the same rate---drawn from an exponential distribution (section \ref{subsub:Intro-MorphClock}).
+For simplicity, we will assume a strict exponential clock---meaning that every branch has the same rate drawn from an exponential distribution (section \ref{subsub:Intro-MorphClock}).
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 clock_morpho ~ dnExponential(1.0)
-
 moves[mvi++] = mvScale(clock_morpho, lambda=0.01, weight=4.0)
 moves[mvi++] = mvScale(clock_morpho, lambda=0.1,  weight=4.0)
 moves[mvi++] = mvScale(clock_morpho, lambda=1,    weight=4.0)
 \end{lstlisting}
 \end{snugshade*}}
 
-As in our molecular data partition, we now combine our data and our model. There are some unique aspects to doing this for morphology. \par
+As in our molecular data partition, we now combine our data and our model in the phylogenetic CTMC distribution. 
+There are some unique aspects to doing this for morphology. 
+
 You will notice that we have an option called \cl{coding}. This option allows us to condition on biases in the way the morphological data were collected (ascertainment bias).
 The option \cl{coding=variable} specifies that we should correct for coding only variable characters (discussed in \ref{subsect:Intro-Morpho}). \par
 
