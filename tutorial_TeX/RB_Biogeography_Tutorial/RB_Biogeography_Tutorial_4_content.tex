@@ -6,32 +6,26 @@
 
 This analysis will jointly estimate phylogeny and biogeography.
 One benefit is that the biogeographic analysis will intrinsically accommodate phylogenetic uncertainty, both in terms of topology and branch lengths.
-Another is that paleogeographic evidence has the potential provide information about the geological timing of speciation events in the phylogeny \citep{Landis2016}.
+Another is that paleogeographic evidence has the potential provide information about the geological timing of speciation events in the phylogeny \citep{Ho2015}.
 Finally, biogeographic data may lend support to certain phylogenetic relationships that have poor resolution otherwise.
 
 As mentioned in Section \ref{sec:bg_simple}, Hawaiian silverswords are nested in a larger group of plants, the tarweeds.
 Fossil pollen evidence indicates that tarweeds diversified during a period of aridification from 15--5 Ma in the western regions of North America \citep{Baldwin1991}.
 Although the oldest Hawaiian island that silverswords inhabit is Kauai, it is possible that silverswords first colonized older islands in the Emperor Island chain that predate the formation of Kauai at about 5.1 Ma.
 
-This makes traditional node-based biogeographic calibrations challenging, because it would require a strong assumption about when and how many times the oldest silversword lineages colonized Kauai.
-Did silverswords colonize Kauai once directly from the California coast? Or did the colonize the younger islands multiple times from older islands in the chain? And did the event occur immediately after Kauai surfaced or much later? Because we cannot observe the timing and nature of this event directly, this process-based biogeographic dating approach does so through probabilistic inference.
+This makes the application of standard node-based biogeographic calibrations challenging, because it would require a strong assumption about when and how many times the oldest silversword lineages colonized Kauai.
+Did silverswords colonize Kauai once directly from the California coast? Or did the colonize the younger islands multiple times from older islands in the chain? And did the event occur immediately after Kauai surfaced or much later? Because we cannot observe the timing and nature of this event directly, we will integrate over all possible evolutionary histories using process-based biogeographic dating method described in \citet{Landis2016}.
 
-\begin{figure}[!ht]
+\begin{figure}[!h]
 \centering
-\includegraphics[width=\textwidth]{figures/fig_biogeo_dating.png}
+\includegraphics[width=0.8\textwidth]{figures/fig_biogeo_dating.png}
 \caption{Cartoon of biogeographic transition probabilities as functions of geological time, and how that relates to speciation times. (a) Areas split, dispersal before split, positive probability; (b) Areas split, dispersal after split, zero probability; (c) Areas merge, dispersal after merge, positive probability; (d) Areas merge, dispersal before merge, zero probabilty. Figure from \citet{Landis2016}.}
 \label{fig:biogeo_dating_cartoon}
 \end{figure}
 
-To address these issues, it is necessary that we transition from our simpler 4-area model to a richer 6-area model (see Figure \ref{fig:hawaii_areas}).
-The mainland area (Z) is necessary to force the silversword and tarweed clade to originate apart from the islands.
-The area corresponding to the older island chain (R) is necessary because we do not know {\it a priori} whether silverswords colonized the modern islands directly from Z, or first colonized R and only later dispersed into the younger islands any number of times.
-This permits the silversword origin time to precede the formation of Kauai when the dispersal rate is large.
-
-Additionally, we will add three tarweed taxa to our dataset, increasing the total number of taxa to 38.
-We'll use internal transcribed spacer (ITS) to estimate the phylogeny, which is a 600 bp non-coding locus that is historically important for plant systematics.
-Because the locus is relatively short, it will also leave us with a fair amount of phylogenetic uncertainty in branch length and topology estimates.
-However, because we're estimating phylogeny and biogeography, it will be correctly incorporated into our ancestral range estimates.
+The basic idea is that an empirically informed epoch model is capable of creating conditions that favor key evolutionary transitions to occur during one time interval over another.
+Unlike the time-homogeneous probabilities that arise from, say, a molecular substitution process, these age-dependent transition probabilities may identify rate from time, and thus generate information about branch lengths in units of absolute time (Figure \ref{fig:biogeo_dating_cartoon}).
+A biogeographic process that is constrained by paleogeographic connectivity is well-suited to this purpose.
 
 Note: like all dating methods, including node calibration methods, tip dating methods, and fossilized birth death dating methods, process-based biogeographic dating estimates are prior sensitive and dataset dependent.
 Applying this model to alternative data sets should be done with care!
@@ -40,7 +34,17 @@ Much of this tutorial will be similar to the previous sections, except we are ad
 
 \subsection*{Analysis}
 
-Create the necessary input/output variables.
+To use date the silversword radiation using biogeography, it is necessary that we transition from our simpler 4-area model to a richer 6-area model (see Figure \ref{fig:hawaii_areas}).
+The mainland area (Z) is necessary to force the silversword and tarweed clade to originate apart from the islands.
+The area corresponding to the older island chain (R) is necessary because we do not know {\it a priori} whether silverswords colonized the modern islands directly from the mainland (Z $\rightarrow$ K), or first colonized R and only later dispersed into the younger islands any number of times (Z $\rightarrow$ R $\rightarrow$ K).
+Thus, adding these two areas allows the silversword origin time to precede the formation of Kauai when the dispersal rate is large.
+
+Additionally, we will add three tarweed taxa to our dataset, increasing the total number of taxa to 38.
+We'll use a molecular alignment for the internal transcribed spacer (ITS) to estimate the phylogeny, which is a 657bp non-coding locus that is historically important for plant systematics.
+Because the locus is relatively short, it will also leave us with a fair amount of phylogenetic uncertainty in branch length and topology estimates.
+However, because we're estimating phylogeny and biogeography, it will be correctly incorporated into our ancestral range estimates.
+
+As usual, we'll begin by creating variables to manage our input and output files
 
 \begin{snugshade}
 \begin{lstlisting}
@@ -74,21 +78,19 @@ dat_mol = readDiscreteCharacterData(mol_fn)
 \end{snugshade}
 
 
-Impose limits to the maximum range size, both to prohibit widespread species ranges and to improve the computational efficiency of the method.
+Read in the species ranges for six areas
 
-First, get the number of areas
 \begin{snugshade}
 \begin{lstlisting}
 dat_range_01 = readDiscreteCharacterData(range_fn)
-n_areas <- dat_range_01.nchar()
 \end{lstlisting}
 \end{snugshade}
 
-Suppose we wanted to forbid ranges from being three or more areas in size.
-The total number of ranges is $\sum_{k=0}^m {{n}\choose{k}}$ where $n$ is the total number of areas, $m$ is the maximum number of permissible areas, and ${{n}\choose{k}}$ is the number of ways to sample $k$ unordered areas from a pool of $n$ areas.
+Compute the number of ranges when ranges may only be one or two areas in size
 
 \begin{snugshade}
 \begin{lstlisting}
+n_areas <- dat_range_01.nchar()
 max_areas <- 2
 n_states <- 0
 for (k in 0:max_areas) n_states += choose(n_areas, k)
@@ -103,10 +105,7 @@ dat_range_n = formatDiscreteCharacterData(dat_range_01, "DEC", n_states)
 \end{lstlisting}
 \end{snugshade}
 
-
-% read in some geography data
-
-Read in the list of minimum and maximum ages of island formation
+Read the minimum and maximum ages of the island complexes
 
 \begin{snugshade}
 \begin{lstlisting}
@@ -115,8 +114,7 @@ n_epochs <- time_bounds.size()
 \end{lstlisting}
 \end{snugshade}
 
-Read in a vector of matrices that describe the connectivity between areas over time.
-Note, there is one connectivity matrix per epoch, ordered from oldest to youngest.
+Read in the connectivity matrices between the six areas
 
 \begin{snugshade}
 \begin{lstlisting}
@@ -127,7 +125,7 @@ for (i in 1:n_epochs) {
 \end{lstlisting}
 \end{snugshade}
 
-Read in the matrix of distances between all pairs of areas (km). For simplicity, we will assume that distances remain constant over time, even though they certainly vary.
+Read the geographical distances between areas
 
 \begin{snugshade}
 \begin{lstlisting}
@@ -135,12 +133,10 @@ distances <- readDataDelimitedFile(file=dist_fn, delimiter=" ")
 \end{lstlisting}
 \end{snugshade}
 
-
-For this analysis, all starting trees should have a non-zero probability.
-However, in general, it is possible that certain combinations of phylogeny, biogeography, and paleogeography have zero-valued likelihoods should the epoch model introduce reducible rate matrix structures.
-In addition, the initial MCMC state must have a non-zero probability for it to work properly.
-For MCMC to operate correctly, it must be initialized with a state with non-zero probability.
-See the supplemental of \citet{Buerki2011} for an explanation.
+Remember that we are estimating the phylogeny as part of this analysis.
+In general, it is possible that certain combinations of phylogeny, biogeography, and paleogeography have zero-valued likelihoods should the epoch model introduce reducible rate matrix structures \citep[][see the supplemental of]{Buerki2011}.
+The initial MCMC state, however, must have a non-zero probability for it to work properly.
+Although it may not be needed, we will provide {\tt tree\_init} as a starting tree for the {\tt tree} variable that we will create to be safe.
 
 \begin{snugshade}
 \begin{lstlisting}
@@ -148,8 +144,7 @@ tree_init = readTrees(tree_fn)[1]
 \end{lstlisting}
 \end{snugshade}
 
-
-Store some basic information about the taxon set, the number of taxa, and the number of branches in the tree
+We will record some basic information about the taxon set, the number of taxa, and the number of branches in the tree
 
 \begin{snugshade}
 \begin{lstlisting}
@@ -161,10 +156,10 @@ n_branches = 2 * n_taxa - 2
 
 \subsubsection{The tree model}
 
-In this exercise we will also be estimating the phylogeny (topology and branch lengths), meaning our tree will be a stochastic node with a prior distribution.
+Because we will also be estimating topology and branch lengths of the silversword phylogeny, the {\tt tree} variable will be a stochastic node with a prior distribution.
 For this, we'll use a constant rate birth-death process.
 
-Assign root age with a maximum age of 15Ma to reflect the fossil pollen record for Californian tarweeds [cite].
+Assign root age with a maximum age of 15Ma to reflect the fossil pollen record for Californian tarweeds \citep{Baldwin1998}.
 
 \begin{snugshade}
 \begin{lstlisting}
@@ -174,6 +169,7 @@ moves[mvi++] = mvScale(root_age, weight=2)
 \end{snugshade}
 
 Assign the proportion of sampled taxa (we have a non-uniform sampling scheme, but this should suffice).
+
 \begin{snugshade}
 \begin{lstlisting}
 rho <- 35/50
@@ -209,7 +205,7 @@ moves[mvi++] = mvNodeTimeSlideUniform(tree, weight=n_branches/2)
 \end{lstlisting}
 \end{snugshade}
 
-Provide a starting tree (improves mixing, not essential)
+Provide a starting tree to ensure the biogeographic model has non-zero likelihood
 
 \begin{snugshade}
 \begin{lstlisting}
@@ -221,10 +217,11 @@ root_age.setValue(tree_init.rootAge())
 
 \subsubsection{The molecular model}
 
-In addition, to inform our branch lengths (in relative time units) and our topology, we will specify a simple HKY+$\Gamma4$+UCLN model of molecular substitution.
+To inform our branch lengths (in relative time units) and our topology, we will specify a simple HKY+$\Gamma4$+UCLN model of molecular substitution \citep{Hasegawa1985,Yang1998,Drummond2006}.
 
+First specify a base rate for the molecular clock.
+This prior is uniform over orders of magnitude, between $10^{-6}$ and $10^3$, and was chosen to minimize its influence on the tree height.
 
-First specify a base rate for the molecular clock. This prior is uniform over orders of magnitude, between $10^-6$ and $10^3$
 \begin{snugshade}
 \begin{lstlisting}
 log10_rate_mol ~ dnUniform(-6, 3)
@@ -234,7 +231,8 @@ rate_mol := 10^log10_rate_mol
 \end{lstlisting}
 \end{snugshade}
 
-Assign log-normal relaxed clock rate multipliers to each branch in the tree. These priors have a mean of 1 so each branch prefers a strict clock model in the absence of data.
+Assign log-normal relaxed clock rate multipliers to each branch in the tree.
+These priors have a mean of 1 so each branch prefers a strict clock model in the absence of data.
 \begin{snugshade}
 \begin{lstlisting}
 branch_sd <- 1.0
@@ -247,7 +245,8 @@ for (i in 1:n_branches) {
 \end{lstlisting}
 \end{snugshade}
 
-Now we'll create an HKY rate matrix. First the transition-transversion rate ratio (with prior with mean=1)
+Now we'll create an HKY rate matrix.
+First, we create a Gamma-distributed transition-transversion (Ts/Tv) rate ratio with prior with mean equal to one
 
 \begin{snugshade}
 \begin{lstlisting}
@@ -256,7 +255,7 @@ moves[mvi++] = mvScale(kappa)
 \end{lstlisting}
 \end{snugshade}
 
-the base frequencies over A, C, G, and T
+then create a flat Dirichlet prior on the base frequencies over A, C, G, and T
 
 \begin{snugshade}
 \begin{lstlisting}
@@ -265,7 +264,7 @@ moves[mvi++] = mvSimplexElementScale(bf, alpha=10, weight=2)
 \end{lstlisting}
 \end{snugshade}
 
-then using the base frequencies and TsTv rate ratio to build the matrix
+and, finally, combine the base frequencies and Ts/Tv rate ratio to build the rate matrix
 
 \begin{snugshade}
 \begin{lstlisting}
@@ -273,8 +272,8 @@ Q_mol := fnHKY(kappa, bf)
 \end{lstlisting}
 \end{snugshade}
 
-Next, we'll create a $+\Gamma4$ across site rate variation model.
-This requires a parameter to control how much site rate heterogeneity there is.
+Next, we'll create a $+\Gamma4$ across-site rate variation model.
+First, we need a parameter to control the amount of site rate variation
 
 \begin{snugshade}
 \begin{lstlisting}
@@ -283,7 +282,7 @@ moves[mvi++] = mvScale(alpha)
 \end{lstlisting}
 \end{snugshade}
 
-and a discretized Gamma distribution with 4 categories
+and a discretized Gamma distribution with four categories
 
 \begin{snugshade}
 \begin{lstlisting}
@@ -291,8 +290,9 @@ site_rates := fnDiscretizeGamma(alpha, alpha, 4)
 \end{lstlisting}
 \end{snugshade}
 
-When {\tt alpha} is large, then the Gamma distribution centers its density around the rate multiplier of 1, meaning that all sites evolve at similar rates.
-When {\tt alpha} is small, the Gamma distribution presents more site rate heterogeneity.
+The distribution of site rates categories has mean equal to one and variance equal to $1/\alpha$.
+When {\tt alpha} grows small, the amount of site rate heterogeneity increases.
+When {\tt alpha} is large, the variance shrinks to zero, and the site rate multipliers of {\tt site\_rates} converge to the value 1.
 
 Finally, we'll create our molecular model of substitution
 
@@ -302,7 +302,7 @@ m_mol ~ dnPhyloCTMC(Q=Q_mol, tree=tree, branchRates=branch_rates, siteRates=site
 \end{lstlisting}
 \end{snugshade}
 
-and attach the ETS dataset
+and attach the ITS alignment
 
 \begin{snugshade}
 \begin{lstlisting}
@@ -314,9 +314,9 @@ m_mol.clamp(dat_mol)
 \subsubsection{The biogeographic model}
 % distances between areas
 
-The biogeographic model is identical to that described in Section \ref{sec:bg_epoch}.
+The biogeographic model is identical to that described in Section \ref{sec:bg_epoch}, so redundant details are omitted here.
 
-First, create biogeographic rate parameter.
+First, create the biogeographic rate parameter.
 
 \begin{snugshade}
 \begin{lstlisting}
@@ -347,7 +347,7 @@ moves[mvi++] = mvScale(distance_scale, weight=3)
 \end{snugshade}
 
 
-Now we can assign rates that are functions of distance between all pairs of areas
+Next, create dispersal rates that are functions of distance between all pairs of areas, but between areas that exist during epoch {\tt i}!
 
 %dr[i][j][k] := (a * exp( -b * distances[j][k] ))
 \begin{snugshade}
@@ -369,8 +369,7 @@ for (i in 1:n_epochs) {
 % extirpation penalized ranges
 % ... they can exist, but not persist
 
-It is unlikely that widespread ranges persist across disjunct areas for long periods of time.
-Extirpation is more likely to occur in fragmented ranges than well-connected ranges, where peripheral populations are continuously reinforced from the center.
+Create the extirpation rates
 
 \begin{snugshade}
 \begin{lstlisting}
@@ -404,11 +403,7 @@ for (i in 1:n_epochs) {
 \end{snugshade}
 
 
-
-% uncertainty in paleogeographic events
-
-Treat epoch times as random variables. The present is always the present.
-
+Treat epoch times as random variables, except the present is always the present (or is it?).
 
 \begin{snugshade}
 \begin{lstlisting}
@@ -425,11 +420,8 @@ for (i in 1:n_epochs) {
 \end{lstlisting}
 \end{snugshade}
 
+Wrap the vector of rate matrices with the {\tt fnEpoch} rate generator function
 
-% epoch model for anagenetic change
-
-
-Create the epoch rate generator object
 \begin{snugshade}
 \begin{lstlisting}
 Q_DEC_epoch := fnEpoch(Q=Q_DEC, times=epoch_times, rates=rep(1, n_epochs))
@@ -454,9 +446,7 @@ P_DEC := fnDECCladoProbs(eventProbs=clado_event_probs,
 \end{lstlisting}
 \end{snugshade}
 
-For this dataset, we assume cladogenetic probabilities are constant with respect to geological time.
-
-
+Based on fossil pollen evidence, force range state and the root of the tree to be the mainland area (Z)
 
 \begin{snugshade}
 \begin{lstlisting}
@@ -467,7 +457,8 @@ rf_DEC <- simplex(rf_DEC)
 \end{snugshade}
 
 
-Create the phylogenetic model
+Create the phylogenetic model of range evolution
+
 \begin{snugshade}
 \begin{lstlisting}
 m_bg ~ dnPhyloCTMCClado(tree=tree,
@@ -481,7 +472,8 @@ m_bg ~ dnPhyloCTMCClado(tree=tree,
 \end{snugshade}
 
 
-Attach the dataset
+Attach the species range dataset to the model
+
 \begin{snugshade}
 \begin{lstlisting}
 m_bg.clamp(dat_range_n)
@@ -489,7 +481,8 @@ m_bg.clamp(dat_range_n)
 \end{snugshade}
 
 
-Add a deterministic node to monitor the crown age of the silversword radiation
+To quickly identify interactions between island ages and divergence times, we'll create a deterministic node to monitor the age of the silversword radiation.
+First, create a deterministic node to monitor the crown age of the silversword radiation
 
 \begin{snugshade}
 \begin{lstlisting}
@@ -502,8 +495,7 @@ ingroup_age := tmrca(tree, ingroup_clade)
 \end{lstlisting}
 \end{snugshade}
 
-
-Add add nodes that report the posterior probability that the clade originates before or after a given island.
+Next, create a vector of variables to report the posterior probability that the clade originates {\it before} a given island.
 When the first argument in of the {\tt ifelse} function returns {\tt true}, the node has value {\tt 1} and {\tt 0} otherwise.
 Thus, the mean of this variable gives the posterior probability that the inequality is satisfied.
 
@@ -515,7 +507,8 @@ for (i in 1:n_epochs) {
 \end{lstlisting}
 \end{snugshade}
 
-
+Create the standard monitors.
+One difference is that the {\tt mnFile} monitor will now record the posterior distribution for the {\tt tree} variable, whereas the previous two tutorials assumed {\tt tree} was fixed.
 
 \begin{snugshade}
 \begin{lstlisting}
@@ -533,9 +526,8 @@ monitors[mni++] = mnJointConditionalAncestralState(tree=tree,
 \end{snugshade}
 
 
-
-Compose the model object.
 Because {\tt ingroup\_older\_island} does not contribute to the model likelihood, it must be manually introduced to the model object.
+Compose the model object.
 
 \begin{snugshade}
 \begin{lstlisting}
@@ -543,6 +535,7 @@ mymodel = model(m_bg, ingroup_older_island)
 \end{lstlisting}
 \end{snugshade}
 
+Create the MCMC object and run the analysis.
 
 \begin{snugshade}
 \begin{lstlisting}
