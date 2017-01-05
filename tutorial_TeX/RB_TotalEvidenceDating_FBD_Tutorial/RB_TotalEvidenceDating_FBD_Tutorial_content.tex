@@ -504,7 +504,7 @@ Therefore, each move has an equal probability of being executed and will be perf
 For more information on moves and how they are performed in \RevBayes, please refer to the \href{https://github.com/revbayes/revbayes_tutorial/blob/master/tutorial_TeX/RB_MCMC_Intro_Tutorial/RB_MCMC_Intro_Tutorial.pdf}{Introduction to MCMC} and \href{https://github.com/ssb2017/revbayes_intro/blob/master/tutorials/RB_CTMC_Tutorial.pdf}{Substitution Models} tutorials.
 
 In addition to the speciation ($\lambda$) and extinction ($\mu$) rates, we may also be interested in inferring diversification ($\lambda - \mu$) and turnover ($\mu/\lambda$).
-Since these parameters can be expressed as a deterministic transformation of the speciation and extinction rates, we can monitor their values by creating two deterministic nodes using the \cl{:=} operator.
+Since these parameters can be expressed as a deterministic transformation of the speciation and extinction rates, we can monitor (that is, track the values of these parameters, and print them to a file) their values by creating two deterministic nodes using the \cl{:=} operator.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 diversification := speciation_rate - extinction_rate
@@ -625,7 +625,8 @@ intervals = readDataDelimitedFile(file="data/bears_fossil_intervals.tsv", header
 \end{lstlisting}
 \end{snugshade*}}
 
-Next, we loop over this matrix and for each fossil observation create a uniform random variable representing the likelihood.
+Next, we loop over this matrix.
+For each fossil observation, we create a uniform random variable representing the likelihood.
 Remember, we can represent the fossil likelihood using any uniform distribution that is non-zero when the likelihood is equal to one (Sect.\ \ref{subsect:Intro-TipSampling}).
 
 For example, if $t_i$ is the inferred fossil age and $(a_i,b_i)$ is the observed stratigraphic interval, we know the likelihood is equal to one when $a_i < t_i < b_i$, or equivalently $t_i - b_i < 0 < t_i - a_i$.
