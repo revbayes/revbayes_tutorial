@@ -1,8 +1,8 @@
 
 \section{Overview}\label{sect:Overview}
 
-This tutorial demonstrates how to specify the models used in a Bayesian ``total-evidence'' phylogenetic analysis of extant and fossil species, combining morphological and molecular data as well as stratigraphic range data from the fossil record \citep[\textit{i.e.,}][]{Ronquist2012a,Zhang2016,Gavryushkina2016}.
-We begin by outlining the models used in this analysis in section \ref{sect:Introduction}, followed by a detailed exercise in section \ref{sect:Exercise} demonstrating how to apply these models in \RevBayes \citep{Hoehna2017a} and use Markov chain Monte Carlo (MCMC) to estimate the posterior distribution of dated phylogenies for data collected from living and fossil bears (family Ursidae).
+This tutorial demonstrates how to specify the models used in a Bayesian ``total-evidence'' phylogenetic analysis of extant and fossil species, combining morphological and molecular data as well as stratigraphic range data from the fossil record \citep[\EG][]{Ronquist2012a,Zhang2016,Gavryushkina2016}.
+We begin by outlining the models used in this analysis in section \ref{sect:Introduction}, followed by a detailed example analysis in section \ref{sect:Exercise} demonstrating how to apply these models in \RevBayes \citep{Hoehna2017a} and use Markov chain Monte Carlo (MCMC) to estimate the posterior distribution of dated phylogenies for data collected from living and fossil bears (family Ursidae).
 
 \bigskip
 \subsection{Requirements}\label{subsect:Overview-Requirements}
@@ -18,10 +18,10 @@ The exercise provided also requires additional programs for editing text files a
 The following are very useful tools for working with \RevBayes:
 \begin{itemize}[noitemsep,topsep=0pt]
 \item A good text editor -- if you do not already have one that you like, we recommend one that has features for syntax coloring, easy navigation between different files, line numbers, etc.
-A good option is \href{http://www.sublimetext.com/}{Sublime Text}, which is available for Mac OSX, Windows, and Linux.
-\item \href{http://tree.bio.ed.ac.uk/software/tracer/}{Tracer} -- for visualizing and assessing numerical parameter samples from \RevBayes
-\item \href{http://tgvaughan.github.io/icytree/}{IcyTree} -- a web-hosted phylogenetic tree visualization tool that is supported for \href{https://www.mozilla.org/en-US/firefox/products/}{Firefox} or \href{https://www.google.com/chrome/}{Google Chrome} browsers 
-\item \href{http://tree.bio.ed.ac.uk/software/figtree/}{FigTree} -- a tree visualization prgram
+A good option is \href{http://www.sublimetext.com/}{\tt Sublime Text}, which is available for Mac OSX, Windows, and Linux.
+\item \href{http://tree.bio.ed.ac.uk/software/tracer/}{\tt Tracer} -- for visualizing and assessing numerical parameter samples from \RevBayes
+\item \href{http://tgvaughan.github.io/icytree/}{\tt IcyTree} -- a web-hosted phylogenetic tree visualization tool that is supported for \href{https://www.mozilla.org/en-US/firefox/products/}{\tt Firefox} or \href{https://www.google.com/chrome/}{\tt Google Chrome} browsers 
+\item \href{http://tree.bio.ed.ac.uk/software/figtree/}{\tt FigTree} -- a tree visualization program
 \end{itemize}
 
 \subsubsection{Prerequisite Tutorials}
@@ -62,8 +62,8 @@ We will describe the distinction between these two trees in section \ref{subsect
 \subsection{Lineage Diversification and Sampling}\label{subsect:Intro-FBD}
 
 The joint prior distribution on tree topologies and divergence times of living and extinct species used in this tutorial is described by the \textit{fossilized birth-death} (FBD) process \citep{Stadler2010, Heath2014}. 
-This model simply treats the fossil observations as part of the process governing the tree topology and branch times (\IE the \textit{Time Tree Model} in Fig.\ \ref{fig:module-gm}). 
-The fossilized birth-death process provides a model for the distribution of speciation times, tree topology, and distribution of lineage samples before the present (\IE non-contemporaneous samples like fossils or viruses). 
+This model simply treats the fossil observations as part of the process governing the tree topology and branch times (the \textit{Time Tree Model} node in Fig.\ \ref{fig:module-gm}). 
+The fossilized birth-death process provides a model for the distribution of speciation times, tree topology, and distribution of lineage samples before the present (\EG non-contemporaneous samples like fossils or viruses). 
 This type of tree is shown in figure \ref{fig:example-tree}. 
 Importantly, this model can be used \textit{with or without} character data for the historical samples. 
 Thus, it provides a reasonable prior distribution for analyses combining morphological or DNA data for both extant and fossil taxa---\IE the so-called ``total-evidence'' approaches described by \citet{Ronquist2012a} and extended by \citet{Zhang2016} and \citet{Gavryushkina2016}. 
@@ -196,10 +196,9 @@ Therefore, it is important to use models that can condition on the coding bias.
 
 Just like with the molecular data (section \ref{subsub:Intro-GTR-UExp}), our observations of discrete morphological characters are conditional on the rate of change along each branch in the tree. 
 This model component defines the \textit{branch rate model} of the morphological data in the generalized graphical model shown in Fig.\ \ref{fig:module-gm}.
-The branch-rate model we described for the molecular data in section \ref{subsub:Intro-GTR-UExp} varies the substitution rate across the tree (\IE a relaxed molecular clock). 
-For the morphological data, we will assume that the rate of discrete character change is constant over time and among lineages.
-This model is a ``strict clock'' like the constant-rate molecular clock described by \citet{Zuckerkandl1962}.
-The strict clock is the simplest model we can construct for the morphological branch-rate model and the graphical model is shown in Fig.\ \ref{fig:morph_clock_gm}.
+The relaxed clock model we described for the molecular data in section \ref{subsub:Intro-GTR-UExp} it allows the substitution rate to vary through time and among lineages. 
+For the morphological data, we will instead use a ``strict clock'' model \citep{Zuckerkandl1962}, in which the rate of discrete character change is assumed to be constant throughout the tree.
+The strict clock is the simplest morphological branch rate model we can construct (graphical model shown in Fig.\ \ref{fig:morph_clock_gm}).
 
 \begin{figure}[h!]
 \fbox{%
@@ -211,7 +210,7 @@ The strict clock is the simplest model we can construct for the morphological br
 \end{figure}
 
 \bigskip
-\section{Exercise: Estimating the Phylogeny and Divergence Times of Fossil and Extant Bears}\label{sect:Exercise}
+\section{Example: Estimating the Phylogeny and Divergence Times of Fossil and Extant Bears}\label{sect:Exercise}
 
 In this exercise, we will combine different types of data from 22 species of extant and extinct bears to estimate a posterior distribution of calibrated time trees for this group.
 %The analysis in this tutorial includes data from several different sources (see Fig.\ \ref{fig:module-gm}).
@@ -498,14 +497,14 @@ moves[mvi++] = mvScale(extinction_rate, lambda=1,    weight=1)
 
 You will also notice that each move has a specified \cl{weight}. 
 This option allows you to indicate how many times you would like a given move to be performed at each MCMC cycle. 
-The way that we will run our MCMC for this tutorial will be to execute a \textit{schedule} of moves at each step in our chain instead of just one move per step, as is done in \cl{MrBayes} \citep{Ronquist2003} or \cl{BEAST} \citep{Drummond2012,Bouckaert2014}.
+The way that we will run our MCMC for this tutorial will be to execute a \textit{schedule} of moves at each step in our chain instead of just one move per step, as is done in {\tt MrBayes} \citep{Ronquist2003} or {\tt BEAST} \citep{Drummond2012,Bouckaert2014}.
 Here, if we were to run our MCMC with our current vector of 6 moves, then our move schedule would perform 6 moves at each cycle.
 Within a cycle, an individual move is chosen from the move list in proportion to its weight. 
 Therefore, each move has an equal probability of being executed and will be performed on average one time per MCMC cycle. 
 For more information on moves and how they are performed in \RevBayes, please refer to the \href{https://github.com/revbayes/revbayes_tutorial/blob/master/tutorial_TeX/RB_MCMC_Intro_Tutorial/RB_MCMC_Intro_Tutorial.pdf}{Introduction to MCMC} and \href{https://github.com/ssb2017/revbayes_intro/blob/master/tutorials/RB_CTMC_Tutorial.pdf}{Substitution Models} tutorials.
 
 In addition to the speciation ($\lambda$) and extinction ($\mu$) rates, we may also be interested in inferring diversification ($\lambda - \mu$) and turnover ($\mu/\lambda$).
-Since these parameters can be expressed as a deterministic transformation of the speciation and extinction rates, we can monitor their values by creating two deterministic nodes using the \cl{:=} operator.
+Since these parameters can be expressed as a deterministic transformation of the speciation and extinction rates, we can monitor (that is, track the values of these parameters, and print them to a file) their values by creating two deterministic nodes using the \cl{:=} operator.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 diversification := speciation_rate - extinction_rate
@@ -626,7 +625,8 @@ intervals = readDataDelimitedFile(file="data/bears_fossil_intervals.tsv", header
 \end{lstlisting}
 \end{snugshade*}}
 
-Next, we loop over this matrix and for each fossil observation create a uniform random variable representing the likelihood.
+Next, we loop over this matrix.
+For each fossil observation, we create a uniform random variable representing the likelihood.
 Remember, we can represent the fossil likelihood using any uniform distribution that is non-zero when the likelihood is equal to one (Sect.\ \ref{subsect:Intro-TipSampling}).
 
 For example, if $t_i$ is the inferred fossil age and $(a_i,b_i)$ is the observed stratigraphic interval, we know the likelihood is equal to one when $a_i < t_i < b_i$, or equivalently $t_i - b_i < 0 < t_i - a_i$.
@@ -1100,14 +1100,14 @@ When the analysis is complete, \RevBayes will quit and you will have a new direc
 \medskip
 \subsubsection{Evaluate MCMC}\label{subsub:Exercise-EvalMCMC}
 
-In this section, we will evaluate the \textit{mixing} and \textit{convergence} of our MCMC simulation using the program Tracer.
+In this section, we will evaluate the \textit{mixing} and \textit{convergence} of our MCMC simulation using the program {\tt Tracer}.
 We can also summarize the marginal distributions for particular parameters we're interested in.
-\href{http://tree.bio.ed.ac.uk/software/tracer/}{Tracer} \citep{Rambaut2011} is a tool for visualizing parameters sampled by MCMC.
+\href{http://tree.bio.ed.ac.uk/software/tracer/}{\tt Tracer} \citep{Rambaut2011} is a tool for visualizing parameters sampled by MCMC.
 This program is limited to numerical parameters, however, and cannot be used to summarize or analyze MCMC samples of the tree topology (this will be discussed further in section \ref{subsub:Exercise-SummarizeTree}).
 
 %Import the MCMC log file into Tracer.
 \begin{framed}
-Open Tracer and import the \cl{bears.log} file in the \mi{File\textrightarrow Import New Trace File}.
+Open {\tt Tracer} and import the \cl{bears.log} file in the \mi{File\textrightarrow Import New Trace File}.
 Or click the \fbox{$+$} button on the left-hand side of the screen to add your log file (see Fig.\ \ref{fig:tracer}).
 \end{framed}
 
@@ -1115,59 +1115,96 @@ Or click the \fbox{$+$} button on the left-hand side of the screen to add your l
 \begin{figure}[h!]
 \fbox{%
 \begin{minipage}{\textwidth}\centering
-\includegraphics[width=\textwidth,angle=0]{\ResourcePath figures/tracer.png}
-\caption{\small The Tracer window. To add data, click on the ``+'' sign, highlighted in red above.}
+\includegraphics[width=\textwidth,angle=0]{\ResourcePath figures/tracer_load_file.png}
+\caption{\small The {\tt Tracer} window. To add data, click on the ``+'' sign, highlighted in red above.}
 \end{minipage}}
 \label{fig:tracer}
 \end{figure}
-Immediately upon loading your file, 
-%you will see the \mi{Estimates} window, which shows a histogram and summary statistics of the values sampled by the Markov chain.
+
+Immediately upon loading your file (see Fig.\ \ref{fig:tracer-post-ests}), 
 you will see the list of \mi{Trace Files} on the left-hand side (you can load multiple files).
-The bottom left section, called \mi{Traces}, provides a list of every parameter in the log file, along with the mean and the Effective Sample Size (ESS) for the posterior sample of that parameter.
+The bottom left section, called \mi{Traces}, provides a list of every parameter in the log file, along with the mean and the effective sample size (ESS) for the posterior sample of that parameter.
 The ESS statistic provides a measure of the number of independent draws in our sample for a given parameter.
 This quantity will typically be much smaller than the number of generations of the chain.
-In Tracer, poor values for the ESS will be colored red.
-You will likely see a lot of red values because the MCMC runs in this exercise are too short to effectively sample the posterior distributions of most parameters.
+In {\tt Tracer}, poor to fair values for the ESS will be colored red and yellow.
+You will likely see a lot of red and yellow numbers because the MCMC runs in this exercise are too short to effectively sample the posterior distributions of most parameters.
 A much longer analysis is provided in the \cl{output} directory. 
-%The data used to make the screenshots can be found in the bears\_long.zip file in the output directory.
 
 The inspection window for your selected parameter is the \mi{Estimates} window, which shows a histogram and summary statistics of the values sampled by the Markov chain. 
-Figure \ref{fig:tracer} shows the marginal distribution of the \mi{Likelihood} statistic for the analysis provided in the \cl{output} directory.
-
+Figure \ref{fig:tracer-post-ests} shows the marginal distribution of the \mi{Posterior} statistic for the \cl{bears.log} file in the \cl{output} directory.
 \begin{figure}[h!]
 \fbox{%
 \begin{minipage}{\textwidth}\centering
-\includegraphics[width=\textwidth,angle=0]{\ResourcePath figures/samplewindow}
-\caption{\small The Estimates window. The left-hand window provides mean and ESS of the chain. The right-hand window visualizes the distribution of samples.}
+\includegraphics[width=\textwidth,angle=0]{\ResourcePath figures/tracer_fig_posterior_short.png}
+\caption{\small The \mi{Estimates} window in {\tt Tracer} showing the histogram of the \mi{Posterior}.}
 \end{minipage}}
-\label{fig:tracer}
+\label{fig:tracer-post-ests}
 \end{figure}
+
+%\begin{figure}[h!]
+%\fbox{%
+%\begin{minipage}{\textwidth}\centering
+%\includegraphics[width=\textwidth,angle=0]{\ResourcePath figures/samplewindow}
+%\caption{\small The Estimates window. The left-hand window provides mean and ESS of the chain. The right-hand window visualizes the distribution of samples.}
+%\end{minipage}}
+%\label{fig:tracer}
+%\end{figure}
 
 \begin{framed}
-Are there any parameters that have really low ESS? Why do you think that might be?
+Look through the various parameters and statistics in the list of \mi{Traces}. 
+
+\QUEST Are there any parameters that have really low ESS? Why do you think that might be?
 \end{framed}
 
-Next, we can click over to the Trace window.
+Next, we can click over to the \mi{Trace} window.
 This window shows us the samples for a given parameter at each iteration of the MCMC.
 The left side of the chain has a shaded portion that has been excluded as ``burn-in''.
-Samples taken near the beginning of chain are often discarded or ``burned'' because the MCMC may not immediately begin sampling from the target posterior distribution, particularly if the starting condition of the chain is far from the region of highest likelihood.
+Samples taken near the beginning of chain are often discarded or ``burned'' because the MCMC may not immediately begin sampling from the target posterior distribution, particularly if the starting condition of the chain is far from the region of highest posterior density.
+Figure \ref{fig:tracer-extinction-trace} shows the trace for the extinction rate.
 
 \begin{figure}[h!]
 \fbox{%
 \begin{minipage}{\textwidth}\centering
-\includegraphics[width=\textwidth,angle=0]{\ResourcePath figures/trace}
-\caption{\small The trace window. The vertical axis is the sampled value of highlighted parameter (in this case likelihood score) and the horizontal axis is the iteration of the MCMC.}
+\includegraphics[width=\textwidth,angle=0]{\ResourcePath figures/tracer_extinction_rate_trace_short.png}
+\caption{\small The \mi{Trace} window in {\tt Tracer}. This window shows a line plot of every sampled value for the extinction rate that was saved to file. The lighter shaded portion is the set of samples discarded as ``burn-in'' and are not used to compute the summary statistics found in the \mi{Estimates} window. }
 \end{minipage}}
-\label{fig:tracer}
+\label{fig:tracer-extinction-trace}
 \end{figure}
-The trace window allows us to evaluate how well our chain is sampling parameter space.
-The output in figure \ref{fig:tracer} shows fairly good \textit{mixing}--there is no consistent pattern or trend in the samples, nor are there long intervals where the statistic does not change.
+
+The \mi{Trace} window allows us to evaluate how well our chain is sampling the target distribution.
+For a fairly short analysis, the output in figure \ref{fig:tracer-extinction-trace} shows reasonable \textit{mixing}---there is no consistent pattern or trend in the samples, nor are there long intervals where the statistic does not change.
 The presence of a trend or large leaps in a parameter value might indicate that your MCMC is not mixing well.
 You can read more about MCMC tuning and improving mixing in the tutorials \href{https://github.com/revbayes/revbayes_tutorial/raw/master/tutorial_TeX/RB_MCMC_Intro_Tutorial/RB_MCMC_Intro_Tutorial.pdf}{Intro to MCMC} and \href{https://github.com/revbayes/revbayes_tutorial/raw/master/tutorial_TeX/RB_MCMC_Tutorial/RB_MCMC_Tutorial.pdf}{MCMC Algorithms}.
 
 \begin{framed}
-Are there any parameters in your log files that show trends or large leaps? What steps might you take to solve these issues?
+Look through the traces for your parameters. 
+
+\QUEST Are there any parameters in your log files that show trends or large leaps? What steps might you take to solve these issues?
 \end{framed}
+
+In {\tt Tracer} you can view the marginal probability distributions of your parameters in the \mi{Marginal Prob Distribution} window. 
+Using this tool, you can compare the distributions of several different parameters (by selecting them both).
+
+\begin{framed}
+Go to the \cl{diversification} parameter in the \mi{Marginal Prob Distribution} window.
+
+\QUEST What is the mean value estimated for the net diversification rate ($d$)? What does the marginal distribution tell you about the net diversification? (Hint: $d = \lambda - \mu$)
+\end{framed}
+
+While specifying the model, remember that we created several deterministic nodes that represent parameters that we would like to estimate, including the net diversification rate. 
+{\tt Tracer} allows us to view the summaries of these parameters since they appear in our log files.
+
+\begin{framed}
+Go to the \cl{age\_extant} parameter in the \mi{Estimates} window.
+
+\QUEST What is the mean and 95\% highest posterior density of the age of the MRCA for all living bears? 
+\end{framed}
+
+
+Since you have evaluated several of the parameters by viewing the trace files and the ESS values, you may be aware that the MCMC analysis you conducted for this tutorial did not sufficiently sample the joint posterior distribution of phylogenetic parameters.
+More explicitly, \textit{your run has not converged}.
+It is not advisable to base your conclusions on such a run and it will be critical to perform multiple, independent runs for many more MCMC cycles. 
+For further discussion of recommended MCMC practices in \RevBayes, please see the \href{https://github.com/revbayes/revbayes_tutorial/raw/master/tutorial_TeX/RB_MCMC_Intro_Tutorial/RB_MCMC_Intro_Tutorial.pdf}{Intro to MCMC} and \href{https://github.com/revbayes/revbayes_tutorial/raw/master/tutorial_TeX/RB_MCMC_Tutorial/RB_MCMC_Tutorial.pdf}{MCMC Algorithms} tutorials.
 
 \medskip
 \subsubsection{Summarize Tree}\label{subsub:Exercise-SummarizeTree}
@@ -1176,7 +1213,7 @@ Are there any parameters in your log files that show trends or large leaps? What
 
 In addition to evaluating the performance and sampling of an MCMC run using numerical parameters, it is also important to inspect the sampled topology and tree parameters. 
 This is a difficult endeavor, however. 
-One tool for evaluating convergence and mixing of the tree samples is \href{https://github.com/danlwarren/RWTY}{RWTY} \citep{Warren2016}. 
+One tool for evaluating convergence and mixing of the tree samples is \href{https://github.com/danlwarren/RWTY}{\tt RWTY} \citep{Warren2016}. 
 In this tutorial, we will only summarize the sampled trees, but we encourage you to consider approaches for assessing the performance of the MCMC with respect to the tree topology.
 
 Ultimately, we are interested in summarizing the sampled trees and branch times, given that our MCMC has sampled all of the important parameters in proportion to their posterior probabilities. 
@@ -1197,7 +1234,6 @@ Read in the MCMC sample of trees from file.
 trace = readTreeTrace("output/bears.trees")
 \end{lstlisting}
 \end{snugshade*}}
-
 
 The first thing we need to do is remove taxa for which we did not have any molecular or morphological data.
 The phylogenetic placement of these taxa is based only on their occurrence times and any clade constraints we applied (section \ref{subsub:Exercise-FBD-Constraints}). 
@@ -1226,69 +1262,90 @@ taxa
 \end{lstlisting}
 \end{snugshade*}}
 
-If you use the size function of the \cl{trace} variable by typing the command \colorbox{shadecolor}{\cl{trace.size()}}, you will see that our MCMC sampled 1001 trees. 
-We will first disregard the first 51 trees in our trace by setting the setting the starting value of the iterator we'll use to \cl{52}. 
-This burn-in value will be stored in the variable called \cl{burn}.
-{\tt \begin{snugshade*}
-\begin{lstlisting}
-burn = 52
-\end{lstlisting}
-\end{snugshade*}}
+%If you use the size function of the \cl{trace} variable by typing the command \colorbox{shadecolor}{\cl{trace.size()}}, you will see that our MCMC sampled 1001 trees. 
+%We will first disregard the first 51 trees in our trace by setting the setting the starting value of the iterator we'll use to \cl{52}. 
+%This burn-in value will be stored in the variable called \cl{burn}.
+%{\tt \begin{snugshade*}
+%\begin{lstlisting}
+%burn = 52
+%\end{lstlisting}
+%\end{snugshade*}}
 
 Use the \cl{fnPruneTree()} function to prune taxon \cl{17} and taxon \cl{20} from each tree using a \cl{for} loop.
 We'll store each new tree in the vector called \cl{trees}.
-However, since that vector will be a different length than \cl{trace} we then need another iterator to index \cl{trees}.
-Call the \cl{trees} index \cl{ti} and increment its value in after it is used using the \cl{++} operator.
+%However, since that vector will be a different length than \cl{trace} we then need another iterator to index \cl{trees}.
+%Call the \cl{trees} index \cl{ti} and increment its value in after it is used using the \cl{++} operator.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-ti = 1
 for(i in burn:trace.size())
 {
-    trees[ti++] = fnPruneTree(trace.getTree(i), pruneTaxa=v(taxa[17],taxa[20]))
+    trees[i] = fnPruneTree(trace.getTree(i), pruneTaxa=v(taxa[17],taxa[20]))
 }
 \end{lstlisting}
 \end{snugshade*}}
 
-Now if you view the size of the \cl{trees} vector (use \cl{trees.size()}), you will see that this list of trees has \cl{950} elements.
+%Now if you view the size of the \cl{trees} vector (use \cl{trees.size()}), you will see that this list of trees has \cl{950} elements.
+Before creating the summary tree, we must first convert the vector of pruned trees to a tree-trace object and specify a burn-in value. 
+We do this using the \cl{treeTrace()} function.
+The burn-in value is an option of \cl{treeTrace()} that specifies the number of samples you wish to discard. 
+By default, \cl{treeTrace()} will remove the first 25\% of the samples, but we may wish to increase the burn-in to 50\%. 
+If you view the size of the \cl{trees} vector (use \cl{trees.size()}), you will see that this list of trees has \cl{1001} elements, thus we will set the burn-in to \cl{500}.
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+trace_pruned = treeTrace(trees,burnin=500)
+\end{lstlisting}
+\end{snugshade*}}
 
-Then we will use the \cl{mccTree} function to return a maximum clade credibility (MCC) tree.
+Now we will use the \cl{mccTree()} function to return a maximum clade credibility (MCC) tree.
 The MCC tree is the tree with the maximum product of the posterior clade probabilities.
 When considering trees with sampled ancestors, we refer to the maximum sampled ancestor clade credibility (MSACC) tree \citep{Gavryushkina2016}.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-trace_pruned = treeTrace(trees)
 mccTree(trace_pruned, "output/bears.mcc.tre" )
 \end{lstlisting}
 \end{snugshade*}}
 
 
 When there are sampled ancestors present in the tree, visualizing the tree can be fairly difficult in traditional tree viewers.
-We will make use of a browser-based tree viewer called \href{http://tgvaughan.github.io/icytree/}{IcyTree}, created by \href{https://github.com/tgvaughan}{Tim Vaughan}.
-IcyTree has many unique options for visualizing phylogenetic trees and can produce publication-quality vector files (\IE svg). 
-Additionally, it correctly represents sampled ancestors on the tree as a node with only one descendant. 
+We will make use of a browser-based tree viewer called \href{http://tgvaughan.github.io/icytree/}{\tt IcyTree}, created by \href{https://github.com/tgvaughan}{Tim Vaughan}.
+{\tt IcyTree} has many unique options for visualizing phylogenetic trees and can produce publication-quality vector files (\IE svg). 
+Additionally, it correctly represents sampled ancestors on the tree as a node with only one descendant (Fig.\ \ref{fig:IcyTreeSumm}). 
+\begin{figure}[h!]
+\fbox{%
+\begin{minipage}{\textwidth}\centering
+\includegraphics[width=0.85\textwidth,angle=0]{\ResourcePath figures/summary_tree.pdf}
+\caption{\small Maximum sampled ancestor clade credibility (MSACC) tree of bear species used in this tutorial. Numbers above fossil nodes indicate the posterior probability of being a sampled ancestor.}
+\end{minipage}}
+\label{fig:IcyTreeSumm}
+\end{figure}
 
 {\begin{framed}
-Navigate to \url{http://tgvaughan.github.io/icytree} and open the file \cl{output/bears.mcc.tre} in IcyTree.
+Navigate to \url{http://tgvaughan.github.io/icytree} and open the file \cl{output/bears.mcc.tre} in {\tt IcyTree}.
 
-Try to replicate Fig.\ \ref{fig:IcyTreeSumm}. Hint: Look under style, at \mi{Mark Singletons}.
-Why might a node with a sampled ancestor be referred to as a singleton?
+\QUEST Try to replicate Fig.\ \ref{fig:IcyTreeSumm}. (Hint: \mi{Style\textrightarrow Mark Singletons})
+Why might a node with a sampled ancestor be referred to as a singleton? 
 
-Try clicking on a branch.
+\QUEST How can you see the names of the fossils that are putative sampled ancestors?
+
+\QUEST Try mousing over a branch (see Fig\ \ref{fig:IcyTreeScreenshort}).
 What are the fields telling you?
-Are the ages of the fossil tips the same as what was shown in Tracer? 
+Is the age of the \textit{Kretzoiarctos beatrix} fossil the same as what was shown in {\tt Tracer}? 
+
+\QUEST What is the posterior probability that \textit{Zaragocyon daamsi} is a sampled ancestor?
 \end{framed}}
 
 
 
 %TODO more here, create final tree image
 
+
 \begin{figure}[h!]
 \fbox{%
 \begin{minipage}{\textwidth}\centering
-\includegraphics[width=\textwidth,angle=0]{\ResourcePath figures/summary_tree.pdf}
-\caption{\small Maximum sampled ancestor clade credibility (MSACC) tree of bear species used in this tutorial. Numbers above fossil nodes indicate the posterior probability of being a sampled ancestor.}
+\includegraphics[scale=0.45, angle=0]{\ResourcePath figures/branch_highlight.png}
+\caption{\small Screenshot of highlighting a branch in {\tt IcyTree} showing child node attributes, including the clade posterior probability and the 95\% highest posterior density (HPD) age interval.}
 \end{minipage}}
-\label{fig:IcyTreeSumm}
+\label{fig:IcyTreeScreenshort}
 \end{figure}
 
 
