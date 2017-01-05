@@ -1,8 +1,29 @@
 \section{Overview of the Dispersal-Extinction-Cladogenesis model} \label{sec:bg_intro2}
 
+The Dispersal-Extinction-Cladogenesis (DEC) process models range evolution as a discrete-valued process \citep{Ree2005, Ree2008}.
+There are three key components to understanding the DEC model: range characters, anagenetic range evolution, and cladogenetic range evolution (Fig \ref{fig:dec_cartoon}).
+
+\begin{figure}[!h]
+\centering
+\includegraphics[width=0.8\textwidth]{figures/fig_range_evol_events.pdf}
+\caption{
+Cartoon of behavior of the DEC model.
+Two anagenetic events (a,b) and five cladogenetic (c--g) events are shown for a system with two areas.
+Time proceeds from left to right.
+(a) Dispersal: a new area to be added to the species range.
+(b) Extirpation (or local extinction): the species range loses a previously inhabited area.
+(c) Narrow sympatry: When the ancestral range contains one area, both daughter lineages inherit that area.
+(d) Subset sympatry: When the ancestral range is widespread, one daughter inherits the ancestral range and the other daughter inherits only one area.
+(e) Allopatry (or vicariance): When the ancestral range is widespread, one daughter lineage a subset of the ancestral areas while the other daughter inherits all remaining ancestral areas.
+(f) Widespread sympatry: When the ancestral range is widespread, both daughters inherit the ancestral range.
+(g) Jump dispersal (or founder speciation): One daughter inherits the ancestral range while the other daughter inherits a new unoccupied area.
+}
+\label{fig:dec_cartoon}
+\end{figure}
+
 \subsection*{Discrete range characters}
 
-The Dispersal-Extinction-Cladogenesis (DEC) process models range evolution as a discrete-valued process \citep{Ree2005, Ree2008}.
+
 DEC interprets taxon ranges as presence-absence data, that is, where a species is observed or not observed across multiple discrete areas.
 For example, say there are three areas, A, B, and C.
 If a species is present in areas A and C, then its range equals AC, which can also be encoded into the length-3 bit vector, 101.
@@ -32,7 +53,7 @@ The decimal representation of range states is rarely used in discussion, but it 
 \subsection*{Anagenetic range evolution}
 
 
-Anagenesis refers to range evolution that occurs between speciation events within lineages.
+Anagenesis refers to range evolution that occurs between speciation events within lineages (Fig \ref{fig:dec_cartoon}ab).
 Because DEC uses discrete-valued ranges, anagenesis is modeled using a continuous-time Markov chain.
 This, in turn, allows us to compute transition probability of a character changing from $i$ to $j$ in time $t$ through matrix exponentiation
 \[
@@ -149,18 +170,18 @@ The {\tt nullRange=``Include''} setting provides no special handling of the null
 
 \subsection*{Cladogenetic range evolution}
 
-The cladogenetic component of the DEC model describes evolutionary change accompanying speciation events.
+The cladogenetic component of the DEC model describes evolutionary change accompanying speciation events (Fig \ref{fig:dec_cartoon}c--g).
 In the context of range evolution, daughter species do not necessarily inherit their ancestral range in an identical manner.
 For each internal node in the reconstructed tree, one of several cladogenetic events can occur, some of which are described below.
 
 Beginning with the simplest case first, suppose the range of a species is $A$ the moment before speciation occurs at an internal phylogenetic node.
 Since the species range is size one, both daughter lineages necessarily inherit the ancestral species range ($A$).
-In DEC parlance, this is called a narrow sympatry event.
+In DEC parlance, this is called a narrow sympatry event (Fig \ref{fig:dec_cartoon}c).
 Now, suppose the ancestral range is $ABC$.
-Under subset sympatry, one lineage identically inherits the ancestral species range, $ABC$, while the other lineage inherits only a single area, i.e. only $A$ or $B$ or $C$.
-For widspread sympatric cladogenesis, both lineages inherit the ancestral range, $ABC$.
-Under allopatric cladogenesis, the ancestral range is split evenly among daughter lineages, e.g. one lineage may inherit $AB$ and the other inherits $C$.
-Finally, supposing the ancestral range is $A$, jump dispersal cladogenesis results in one daughter lineage inheriting the ancestral range $A$, and the other daughter lineage inheriting a previously uninhabited area, $B$ or $C$.
+Under subset sympatry, one lineage identically inherits the ancestral species range, $ABC$, while the other lineage inherits only a single area, i.e. only $A$ or $B$ or $C$ (Fig \ref{fig:dec_cartoon}d).
+Under allopatric cladogenesis, the ancestral range is split evenly among daughter lineages, e.g. one lineage may inherit $AB$ and the other inherits $C$ (Fig \ref{fig:dec_cartoon}e).
+For widespread sympatric cladogenesis, both lineages inherit the ancestral range, $ABC$ (Fig \ref{fig:dec_cartoon}f).
+Finally, supposing the ancestral range is $A$, jump dispersal cladogenesis results in one daughter lineage inheriting the ancestral range $A$, and the other daughter lineage inheriting a previously uninhabited area, $B$ or $C$ (Fig \ref{fig:dec_cartoon}g).
 See \citet{Matzke2012} for an excellent overview of the cladogenetic state transitions described in the literature.
 
 Make the cladogenetic probability event matrix
