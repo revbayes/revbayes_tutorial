@@ -69,7 +69,7 @@ The choice of partitioning scheme is up to the investigator and many possible pa
 
 In this exercise, we assume that each data subset evolved under an independent general-time reversible model with gamma-distributed rates across sites (GTR+$\Gamma$). 
 Under this model the observed data are conditionally dependent on the exchangeability rates ($\theta$), stationary base frequencies ($\pi$), and the degree of gamma-distributed among-site rate variation ($\alpha$), as well as the rooted tree ($\Psi$) and branch lengths.
-We show the graphical model representation of the GTR+$\Gamma$ mode in Figure \ref{fig:pipeline}. 
+%We show the graphical model representation of the GTR+$\Gamma$ model in Figure \ref{fig:pipeline}. 
 When we assume different GTR+$\Gamma$ models for each data subset, this results in a composite model, in which all sites are assumed to share a common, rooted tree topology and proportional branch lengths, but subsets of sites are assumed to have independent substitution model parameters.
 Finally, we perform a separate MCMC simulation to approximate the joint posterior probability density of the phylogeny and other parameters. 
 
@@ -83,7 +83,7 @@ The analysis pipeline that we will use in this tutorial is depicted in Figure \r
 \caption{\small The analysis pipeline for Exercise 1. We will explore three partition schemes for the primates dataset.
 The first model (the `uniform model', $M_0$) assumes that all sites evolved under a common GTR+$\Gamma$ substitution model.
 The second model (the `moderately partitioned' model, $M_1$) invokes two data subsets corresponding to the two gene regions (cytB and cox2), and assumes each subset of sites evolved under an independent GTR+$\Gamma$ model.
-The final partition model (the `highly partitioned' model, $M_2$) invokes four data subsets---the first two subsets corresponds to the cytB gene region, where the first and second codon position sites are combined into one subset distinct from the third codon position sites, and the cox2 has two subsets of its own, partitioned by codon positions in the same way---and each data subset is assumed evolved under an independent GTR+$\Gamma$ substitution model.
+The final partition model (the `highly partitioned' model, $M_2$) invokes four data subsets---the first two subsets corresponds to the cytB gene region, where the first and second codon position sites are combined into one subset distinct from the third codon position sites, and the cox2 gene has two subsets of its own, partitioned by codon positions in the same way---and each data subset is assumed evolved under an independent GTR+$\Gamma$ substitution model.
 Note that we assume that all sites share a common tree topology, $\Psi$, and branch-length proportions, for each of the candidate partition schemes.
 We perform two separate sets of analyses for each partition model---a MCMC simulation to approximate the joint posterior probability density of the partition-model parameters, and a `power-posterior' MCMC simulation to approximate the marginal likelihood for each mixed model.
 The resulting marginal-likelihood estimates are then evaluated using Bayes factors to assess the fit of the data to the three candidate partition models.  
@@ -183,7 +183,7 @@ pi ~ dnDirichlet( pi_prior )
 \end{lstlisting}
 \end{snugshade*}}
 
-The node \cl{pi} represents the $\pi$ node in Figure \ref{pipeline}.
+%The node \cl{pi} represents the $\pi$ node in Figure \ref{pipeline}.
 Now add the simplex scale move on the stationary frequencies to the moves vector
 
 {\tt \small \begin{snugshade*}
@@ -206,7 +206,8 @@ Q := fnGTR(er,pi)
 
 We will also assume that the substitution rates vary among sites according to an one-parametric gamma distribution, \IE where the shape equals the rate ($\alpha=\beta$) and thus with mean 1.0 \citep{Yang1994a}. 
 Since we do not have good prior knowledge about the variance in site rates, thus we can place a relative diffuse lognormal prior on the shape parameter.
-Create a constant node called \cl{alpha\_prior\_mean} for the mean parameter and a constant node called \cl{alpha\_prior\_sd} for the standard deviation of the lognormal prior on the gamma-shape parameter (this is represented as the constant $m_\alpha$ and $sd_\alpha$ parameters in Figure \ref{fig:gtrg}):
+Create a constant node called \cl{alpha\_prior\_mean} for the mean parameter and a constant node called \cl{alpha\_prior\_sd} for the standard deviation of the lognormal prior on the gamma-shape parameter:
+%(this is represented as the constant $m_\alpha$ and $sd_\alpha$ parameters in Figure \ref{fig:gtrg}):
 {\tt\begin{snugshade*}
 \begin{lstlisting}
 alpha_prior_mean <- ln(2.0)
@@ -262,7 +263,7 @@ moves[++mvi] = mvSlide(pinvar, delta=10.0, tune=false, weight=2.0)
 \subsubsection{Tree prior}
 
 The tree topology and branch lengths are also stochastic nodes in our model. 
-In Figure \ref{pipeline}, the tree topology is denoted $\Psi$ and the length of the branch leading to node $i$ is $\nu_i$.
+%In Figure \ref{pipeline}, the tree topology is denoted $\Psi$ and the length of the branch leading to node $i$ is $\nu_i$.
 
 For simplicity, we will use the same prior distribution on the tree topology, a uniform topology prior, and branch lengths, independent exponential prior distributions, as done in the \href{https://github.com/revbayes/revbayes_tutorial/raw/master/tutorial_TeX/RB_CTMC_Tutorial/RB_CTMC_Tutorial.pdf}{substitution model tutorial}.
 
@@ -313,10 +314,10 @@ TL := sum(br_lens)
 
 Finally, we can create a \emph{phylogram} (a phylogeny in which the branch lengths are proportional to the expected number of substitutions/site) by combining the tree topology and branch lengths.
 We do this using the \cl{treeAssembly()} function, which applies the value of the $i^{th}$ member of the \cl{br\_lens} vector to the branch leading to the $i^{th}$ node in \cl{topology}. 
-Thus, the \cl{phylogeny} variable is a deterministic node: 
+Thus, the \cl{psi} variable is a deterministic node: 
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-phylogeny := treeAssembly(topology, br_lens)
+psi := treeAssembly(topology, br_lens)
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -466,6 +467,8 @@ This does require, however, that both of our alignments have the same number of 
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 taxa <- data[1].taxa()
+n_species <- data[1].ntaxa()
+n_branches <- 2 * n_species - 3
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -636,7 +639,7 @@ These two nodes are linked by the \cl{psi} node and their log-likelihoods are ad
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 for (i in 1:n_data_subsets) {
-  phyloSeq[i] ~ dnPhyloCTMC(tree=psi, Q=Q[i], branchRates=part_rate_mult[i], siteRates=norm_gamma_rates[i], pInv=pinvar[i], type="DNA")
+  phyloSeq[i] ~ dnPhyloCTMC(tree=psi, Q=Q[i], branchRates=part_rate_mult[i], siteRates=gamma_rates[i], pInv=pinvar[i], type="DNA")
   phyloSeq[i].clamp(data[i])
 }
 \end{lstlisting}
@@ -735,7 +738,7 @@ data[4].setCodonPartition( 3 )
 \end{lstlisting}
 \end{snugshade*}}
 
-Now we have a data vector containing for subset.
+Now we have a data vector containing each subset.
 We can then specify the independent substitution models per data subset.
 The remaining parts of the model are identical to the previous exercise where we partitioned by gene.
 
