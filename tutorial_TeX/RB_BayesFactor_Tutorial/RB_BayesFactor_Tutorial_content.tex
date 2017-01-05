@@ -117,9 +117,9 @@ We will estimate the marginal likelihood of a given model using a `stepping-ston
 These algorithms are similar to the familiar MCMC algorithms, which are intended to sample from (and estimate) the joint posterior probability of the model parameters.
 Stepping-stone algorithms are like a series of MCMC simulations that iteratively sample from a specified number of discrete steps between the posterior and the prior probability distributions.
 The basic idea is to estimate the probability of the data for all points between the posterior and the prior---effectively summing the probability of the data over the prior probability of the parameters to estimate the marginal likelihood. 
-Technically, the steps correspond to a series of \cl{powerPosteriors()}: a series of numbers between 1 and 0 that are iteratively applied to the posterior.
-When the posterior probability is raised to the power of 1 (typically the first stepping stone), samples are drawn from the (untransformed) posterior.
-By contrast, when the posterior probability is raised to the power of 0 (typically the last stepping stone), samples are drawn from the prior.
+Technically, the steps correspond to a series of \cl{powerPosteriors()}: where the likelihood is iteratively raised to a series of numbers between 1 and 0.
+When the likelihood is raised to the power of 1 (typically the first stepping stone), samples are drawn from the (untransformed) posterior.
+By contrast, when the likelihood is raised to the power of 0 (typically the last stepping stone), samples are drawn from the prior.
 To perform a stepping-stone simulation, we need to specify (1) the number of stepping stones (power posteriors) that we will use to traverse the path between the posterior and the prior (\EG we specify 50 or 100 stones), (2) the spacing of the stones between the posterior and prior (\EG we may specify that the stones are distributed according to a beta distribution), (3) the number of samples to (and thinning) of samples to be drawn from each stepping stone, and (4) the direction we will take (\IE from the posterior to the prior or vice versa).
 
 
