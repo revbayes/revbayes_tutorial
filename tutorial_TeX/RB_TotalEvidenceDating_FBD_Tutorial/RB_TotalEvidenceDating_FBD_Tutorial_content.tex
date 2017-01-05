@@ -1208,7 +1208,7 @@ Go to the \cl{age\_extant} parameter in the \mi{Estimates} window.
 
 In addition to evaluating the performance and sampling of an MCMC run using numerical parameters, it is also important to inspect the sampled topology and tree parameters. 
 This is a difficult endeavor, however. 
-One tool for evaluating convergence and mixing of the tree samples is \href{https://github.com/danlwarren/RWTY}{RWTY} \citep{Warren2016}. 
+One tool for evaluating convergence and mixing of the tree samples is \href{https://github.com/danlwarren/RWTY}{\tt RWTY} \citep{Warren2016}. 
 In this tutorial, we will only summarize the sampled trees, but we encourage you to consider approaches for assessing the performance of the MCMC with respect to the tree topology.
 
 Ultimately, we are interested in summarizing the sampled trees and branch times, given that our MCMC has sampled all of the important parameters in proportion to their posterior probabilities. 
@@ -1258,49 +1258,57 @@ taxa
 \end{lstlisting}
 \end{snugshade*}}
 
-If you use the size function of the \cl{trace} variable by typing the command \colorbox{shadecolor}{\cl{trace.size()}}, you will see that our MCMC sampled 1001 trees. 
-We will first disregard the first 51 trees in our trace by setting the setting the starting value of the iterator we'll use to \cl{52}. 
-This burn-in value will be stored in the variable called \cl{burn}.
-{\tt \begin{snugshade*}
-\begin{lstlisting}
-burn = 52
-\end{lstlisting}
-\end{snugshade*}}
+%If you use the size function of the \cl{trace} variable by typing the command \colorbox{shadecolor}{\cl{trace.size()}}, you will see that our MCMC sampled 1001 trees. 
+%We will first disregard the first 51 trees in our trace by setting the setting the starting value of the iterator we'll use to \cl{52}. 
+%This burn-in value will be stored in the variable called \cl{burn}.
+%{\tt \begin{snugshade*}
+%\begin{lstlisting}
+%burn = 52
+%\end{lstlisting}
+%\end{snugshade*}}
 
 Use the \cl{fnPruneTree()} function to prune taxon \cl{17} and taxon \cl{20} from each tree using a \cl{for} loop.
 We'll store each new tree in the vector called \cl{trees}.
-However, since that vector will be a different length than \cl{trace} we then need another iterator to index \cl{trees}.
-Call the \cl{trees} index \cl{ti} and increment its value in after it is used using the \cl{++} operator.
+%However, since that vector will be a different length than \cl{trace} we then need another iterator to index \cl{trees}.
+%Call the \cl{trees} index \cl{ti} and increment its value in after it is used using the \cl{++} operator.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-ti = 1
 for(i in burn:trace.size())
 {
-    trees[ti++] = fnPruneTree(trace.getTree(i), pruneTaxa=v(taxa[17],taxa[20]))
+    trees[i] = fnPruneTree(trace.getTree(i), pruneTaxa=v(taxa[17],taxa[20]))
 }
 \end{lstlisting}
 \end{snugshade*}}
 
-Now if you view the size of the \cl{trees} vector (use \cl{trees.size()}), you will see that this list of trees has \cl{950} elements.
+%Now if you view the size of the \cl{trees} vector (use \cl{trees.size()}), you will see that this list of trees has \cl{950} elements.
+Before creating the summary tree, we must first convert the vector of pruned trees to a tree-trace object and specify a burn-in value. 
+We do this using the \cl{treeTrace()} function.
+The burn-in value is an option of \cl{treeTrace()} that specifies the number of samples you wish to discard. 
+By default, \cl{treeTrace()} will remove the first 25\% of the samples, but we may wish to increase the burn-in to 50\%. 
+If you view the size of the \cl{trees} vector (use \cl{trees.size()}), you will see that this list of trees has \cl{1001} elements, thus we will set the burn-in to \cl{500}.
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+trace_pruned = treeTrace(trees,burnin=500)
+\end{lstlisting}
+\end{snugshade*}}
 
-Then we will use the \cl{mccTree} function to return a maximum clade credibility (MCC) tree.
+Now we will use the \cl{mccTree()} function to return a maximum clade credibility (MCC) tree.
 The MCC tree is the tree with the maximum product of the posterior clade probabilities.
 When considering trees with sampled ancestors, we refer to the maximum sampled ancestor clade credibility (MSACC) tree \citep{Gavryushkina2016}.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-trace_pruned = treeTrace(trees)
 mccTree(trace_pruned, "output/bears.mcc.tre" )
 \end{lstlisting}
 \end{snugshade*}}
 
 
 When there are sampled ancestors present in the tree, visualizing the tree can be fairly difficult in traditional tree viewers.
-We will make use of a browser-based tree viewer called \href{http://tgvaughan.github.io/icytree/}{IcyTree}, created by \href{https://github.com/tgvaughan}{Tim Vaughan}.
-IcyTree has many unique options for visualizing phylogenetic trees and can produce publication-quality vector files (\IE svg). 
+We will make use of a browser-based tree viewer called \href{http://tgvaughan.github.io/icytree/}{\tt IcyTree}, created by \href{https://github.com/tgvaughan}{Tim Vaughan}.
+{\tt IcyTree} has many unique options for visualizing phylogenetic trees and can produce publication-quality vector files (\IE svg). 
 Additionally, it correctly represents sampled ancestors on the tree as a node with only one descendant. 
 
 {\begin{framed}
-Navigate to \url{http://tgvaughan.github.io/icytree} and open the file \cl{output/bears.mcc.tre} in IcyTree.
+Navigate to \url{http://tgvaughan.github.io/icytree} and open the file \cl{output/bears.mcc.tre} in {\tt IcyTree}.
 
 Try to replicate Fig.\ \ref{fig:IcyTreeSumm}. Hint: Look under style, at \mi{Mark Singletons}.
 Why might a node with a sampled ancestor be referred to as a singleton?
@@ -1318,7 +1326,7 @@ Are the ages of the fossil tips the same as what was shown in Tracer?
 \fbox{%
 \begin{minipage}{\textwidth}\centering
 \includegraphics[scale=0.5, angle=0]{\ResourcePath figures/branch_highlight.png}
-\caption{\small Screenshot of highlighting a branch in IcyTree showing child node attributes, including the clade posterior probability and the 95\% highest posterior density (HPD) age interval.}
+\caption{\small Screenshot of highlighting a branch in {\tt IcyTree} showing child node attributes, including the clade posterior probability and the 95\% highest posterior density (HPD) age interval.}
 \end{minipage}}
 \label{fig:IcyTreeScreenshort}
 \end{figure}
