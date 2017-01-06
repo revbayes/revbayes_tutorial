@@ -30,13 +30,15 @@ morpho.addMissingTaxa( taxa )
 mvi = 1
 n_taxa <- taxa.size()
 
-source("scripts/model_FBDP_TEFBD.Rev")
+# Load the model files
 
-source("scripts/model_UExp_TEFBD.Rev")
+source("scripts/model_FBDP_TEFBD.Rev") # FBD tree prior
 
-source("scripts/model_GTRG_TEFBD.Rev")
+source("scripts/model_UExp_TEFBD.Rev") # UExp relaxed clock
 
-source("scripts/model_Morph_TEFBD.Rev")
+source("scripts/model_GTRG_TEFBD.Rev") # Molecular substitution model (GTR+G)
+
+source("scripts/model_Morph_TEFBD.Rev") # Morphological character change model
 
 
 ########
