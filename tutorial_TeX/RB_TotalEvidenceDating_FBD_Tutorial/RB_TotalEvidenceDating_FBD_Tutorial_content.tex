@@ -175,7 +175,8 @@ This assumption is equivalent to assuming that the stationary probability of bei
 
 In this tutorial, we will relax this assumption by allowing the stationary 1-state probability to take on any value between 0 and 1, drawn from a beta prior distribution.
 In addition, we will allow each morphological character to have its own substitution matrix with its own stationary frequency (Fig. \ref{fig:morpho_gm}).
-Then, similar to the way we model site-specific substitution rates using a discretized gamma distribution (described in the \href{https://github.com/revbayes/revbayes_tutorial/raw/master/tutorial_TeX/RB_CTMC_Tutorial/RB_CTMC_Tutorial.pdf}{\mi{Substitution Models}} tutorial), we will model site-specific stationary frequencies using a discretized beta distribution \citep{Wright2016}.
+Then, similar to the way we model site-specific substitution rates using a discretized gamma distribution, %(see the \href{https://github.com/revbayes/revbayes_tutorial/raw/master/tutorial_TeX/RB_CTMC_Tutorial/RB_CTMC_Tutorial.pdf}{\mi{Substitution Models}} tutorial), 
+we will model site-specific stationary frequencies using a discretized beta distribution \citep{Wright2016}.
 \begin{figure}[h!]
 \fbox{%
 \begin{minipage}{\textwidth}\centering
@@ -197,7 +198,14 @@ Therefore, it is important to use models that can condition on this data-acquisi
 \subsubsection{The Morphological Clock}\label{subsub:Intro-MorphClock}
 
 %TODO write about the morphological clock
-\begin{figure}[b!]
+
+
+Just like with the molecular data (section \ref{subsub:Intro-GTR-UExp}), our observations of discrete morphological characters are conditional on the rate of change along each branch in the tree. 
+This model component defines the \textsf{Branch Rate Model} of the \textsf{Morphological Data} in the generalized graphical model shown in figure \ref{fig:module-gm}.
+The relaxed clock model we described for the molecular data in section \ref{subsub:Intro-GTR-UExp} it allows the substitution rate to vary through time and among lineages. 
+For the morphological data, we will instead use a ``strict clock'' model \citep{Zuckerkandl1962}, in which the rate of discrete character change is assumed to be constant throughout the tree.
+The strict clock is the simplest morphological branch rate model we can construct (graphical model shown in Fig.\ \ref{fig:morph_clock_gm}).
+\begin{figure}[h!]
 \fbox{%
 \begin{minipage}{\textwidth}\centering
 \includegraphics[scale=0.25,angle=0]{\ResourcePath figures/tikz/morph_clock_gm}
@@ -206,14 +214,7 @@ Therefore, it is important to use models that can condition on this data-acquisi
 \label{fig:morph_clock_gm}
 \end{figure} 
 
-Just like with the molecular data (section \ref{subsub:Intro-GTR-UExp}), our observations of discrete morphological characters are conditional on the rate of change along each branch in the tree. 
-This model component defines the \textsf{Branch Rate Model} of the \textsf{Morphological Data} in the generalized graphical model shown in figure \ref{fig:module-gm}.
-The relaxed clock model we described for the molecular data in section \ref{subsub:Intro-GTR-UExp} it allows the substitution rate to vary through time and among lineages. 
-For the morphological data, we will instead use a ``strict clock'' model \citep{Zuckerkandl1962}, in which the rate of discrete character change is assumed to be constant throughout the tree.
-The strict clock is the simplest morphological branch rate model we can construct (graphical model shown in Fig.\ \ref{fig:morph_clock_gm}).
 
-
-\bigskip
 \bigskip
 \section{Example: Estimating the Phylogeny and Divergence Times of Fossil and Extant Bears}\label{sect:Exercise}
 
