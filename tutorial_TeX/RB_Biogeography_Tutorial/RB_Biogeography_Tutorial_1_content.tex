@@ -9,6 +9,7 @@ There are three key components to understanding the DEC model: range characters,
 \caption{
 Cartoon of behavior of the DEC model.
 Two anagenetic events (a,b) and five cladogenetic (c--g) events are shown for a system with two areas.
+Areas are shaded when inhabited by a given lineage and left blank when uninhabited.
 Time proceeds from left to right.
 (a) Dispersal: a new area to be added to the species range.
 (b) Extirpation (or local extinction): the species range loses a previously inhabited area.
@@ -21,7 +22,7 @@ Time proceeds from left to right.
 \label{fig:dec_cartoon}
 \end{figure}
 
-\subsection*{Discrete range characters}
+\subsection{Discrete range characters}
 
 
 DEC interprets taxon ranges as presence-absence data, that is, where a species is observed or not observed across multiple discrete areas.
@@ -50,10 +51,11 @@ $\emptyset$ & 000 & 0 & 0 \\
 
 The decimal representation of range states is rarely used in discussion, but it is useful to keep in mind when considering the total number of possible ranges for a species and when processing output.
 
-\subsection*{Anagenetic range evolution}
+\subsection{Anagenetic range evolution}
 
 
-Anagenesis refers to range evolution that occurs between speciation events within lineages (Fig \ref{fig:dec_cartoon}ab).
+In the context of the DEC model, anagenesis refers to range evolution that occurs between speciation events within lineages.
+There are two types of anagenetic events, dispersal (Fig \ref{fig:dec_cartoon}a) and (local) extinction or exitrpation (Fig \ref{fig:dec_cartoon}b).
 Because DEC uses discrete-valued ranges, anagenesis is modeled using a continuous-time Markov chain.
 This, in turn, allows us to compute transition probability of a character changing from $i$ to $j$ in time $t$ through matrix exponentiation
 \[
@@ -61,12 +63,11 @@ This, in turn, allows us to compute transition probability of a character changi
 \]
 where $\textbf{Q}$ is the instantaneous rate matrix defining the rates of change between all pairs of characters, and $\textbf{P}$ is the transition probability rate matrix.
 The indices $i$ and $j$ represent different ranges, each of which is encoded as the set of areas occupied by the species.
-The probability has integrated over all possible scenarios of character transitions that could occur during $t$ so long as the chain begins in state $i$ and ends in state $j$.
-
+The probability has integrated over all possible scenarios of character transitions that could occur during $t$ so long as the chain begins in range $i$ and ends in range $j$.
 We can then encode ${\bf Q}$ to reflect the allowable classes of range evolution events with biologically meaningful parameters.
-We'll take a simple model of range expansion (e.g. $BC \rightarrow ABC$) and range contraction (e.g. $BC \rightarrow C$).
-Range expansion may also be referred to as dispersal or area gain and range contraction as extirpation, (local) extinction, or area loss.
-The rates in the transition matrix for three areas might appear as
+%We'll take a simple model of range expansion (e.g. $BC \rightarrow ABC$) and range contraction (e.g. $BC \rightarrow C$).
+%Range expansion may also be referred to as dispersal or area gain and range contraction as extirpation, (local) extinction, or area loss.
+For three areas, the rates in the anagenetic rate matrix are
 
 \[
 \textbf{Q} = 
@@ -87,7 +88,7 @@ The rates in the transition matrix for three areas might appear as
 where $e = ( e_A, e_B, e_C )$ are the (local) extinction rates per area, and $d = ( d_{AB}, d_{AC}, d_{BC}, d_{BA}, d_{CA}, d_{CB})$ are the dispersal rates between areas.
 Notice that the sum of rates leaving the null range ($\emptyset$) is zero, meaning any lineage that loses all areas in its range remains that way permanently.
 
-To build our intuition, let's build a DEC rate matrix.
+To build our intuition, let's construct a DEC rate matrix in \RevBayes.
 Assume you have three areas
 
 \begin{snugshade}
@@ -130,14 +131,14 @@ To continue, create the DEC rate matrix from the dispersal rates ({\tt dr}) and 
 \begin{lstlisting}
 Q_DEC := fnDECRateMatrix(dispersalRates=dr, extirpationRates=er)
 Q_DEC
-[ [ 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000 ] ,
-     1.0000, -3.0000, 0.0000, 0.0000, 1.0000, 1.0000, 0.0000, 0.0000 ] ,
-     1.0000, 0.0000, -3.0000, 0.0000, 1.0000, 0.0000, 1.0000, 0.0000 ] ,
-     1.0000, 0.0000, 0.0000, -3.0000, 0.0000, 1.0000, 1.0000, 0.0000 ] ,
-     0.0000, 1.0000, 1.0000, 0.0000, -4.0000, 0.0000, 0.0000, 2.0000 ] ,
-     0.0000, 1.0000, 0.0000, 1.0000, 0.0000, -4.0000, 0.0000, 2.0000 ] ,
-     0.0000, 0.0000, 1.0000, 1.0000, 0.0000, 0.0000, -4.0000, 2.0000 ] ,
-     0.0000, 0.0000, 0.0000, 0.0000, 1.0000, 1.0000, 1.0000, -3.0000 ] ]
+|*[ [ 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000 ] ,
+|*    1.0000, -3.0000, 0.0000, 0.0000, 1.0000, 1.0000, 0.0000, 0.0000 ] ,
+|*    1.0000, 0.0000, -3.0000, 0.0000, 1.0000, 0.0000, 1.0000, 0.0000 ] ,
+|*    1.0000, 0.0000, 0.0000, -3.0000, 0.0000, 1.0000, 1.0000, 0.0000 ] ,
+|*    0.0000, 1.0000, 1.0000, 0.0000, -4.0000, 0.0000, 0.0000, 2.0000 ] ,
+|*    0.0000, 1.0000, 0.0000, 1.0000, 0.0000, -4.0000, 0.0000, 2.0000 ] ,
+|*    0.0000, 0.0000, 1.0000, 1.0000, 0.0000, 0.0000, -4.0000, 2.0000 ] ,
+|*    0.0000, 0.0000, 0.0000, 0.0000, 1.0000, 1.0000, 1.0000, -3.0000 ] ]
 \end{lstlisting}
 \end{snugshade}
 
@@ -147,14 +148,14 @@ Compute the anagenetic transition probabilities for a branch of length {\tt 0.2}
 \begin{lstlisting}
 tp_DEC <- Q_DEC.getTransitionProbabilities(rate=0.2)
 tp_DEC
-[ [ 1.000, 0.000, 0.000, 0.000, 0.000, 0.000, 0.000, 0.000],
-  [ 0.000, 0.673, 0.013, 0.013, 0.123, 0.123, 0.005, 0.050],
-  [ 0.000, 0.013, 0.673, 0.013, 0.123, 0.005, 0.123, 0.050],
-  [ 0.000, 0.013, 0.013, 0.673, 0.005, 0.123, 0.123, 0.050],
-  [ 0.000, 0.107, 0.107, 0.004, 0.502, 0.031, 0.031, 0.218],
-  [ 0.000, 0.107, 0.004, 0.107, 0.031, 0.502, 0.031, 0.218],
-  [ 0.000, 0.004, 0.107, 0.107, 0.031, 0.031, 0.502, 0.218],
-  [ 0.000, 0.021, 0.021, 0.021, 0.107, 0.107, 0.107, 0.616]]
+|*[ [ 1.000, 0.000, 0.000, 0.000, 0.000, 0.000, 0.000, 0.000],
+|*  [ 0.000, 0.673, 0.013, 0.013, 0.123, 0.123, 0.005, 0.050],
+|*  [ 0.000, 0.013, 0.673, 0.013, 0.123, 0.005, 0.123, 0.050],
+|*  [ 0.000, 0.013, 0.013, 0.673, 0.005, 0.123, 0.123, 0.050],
+|*  [ 0.000, 0.107, 0.107, 0.004, 0.502, 0.031, 0.031, 0.218],
+|*  [ 0.000, 0.107, 0.004, 0.107, 0.031, 0.502, 0.031, 0.218],
+|*  [ 0.000, 0.004, 0.107, 0.107, 0.031, 0.031, 0.502, 0.218],
+|*  [ 0.000, 0.021, 0.021, 0.021, 0.107, 0.107, 0.107, 0.616]]
 \end{lstlisting}
 \end{snugshade}
 
@@ -168,7 +169,7 @@ This allows the model to both simulate and infer using the same transition proba
 Their proposed solution to eliminate the null range from the state space is enabled with the {\tt nullRange=``Exclude''} setting. 
 The {\tt nullRange=``Include''} setting provides no special handling of the null range, and produces the raw probabilities of \citet{Ree2005}.
 
-\subsection*{Cladogenetic range evolution}
+\subsection{Cladogenetic range evolution}
 
 The cladogenetic component of the DEC model describes evolutionary change accompanying speciation events (Fig \ref{fig:dec_cartoon}c--g).
 In the context of range evolution, daughter species do not necessarily inherit their ancestral range in an identical manner.
@@ -206,15 +207,15 @@ Print the cladogenetic transition probabilities
 \begin{snugshade}
 \begin{lstlisting}
 P_DEC
-   [
-     ( 1 -> 1, 1 ) = 1.0000,
-     ( 2 -> 2, 2 ) = 1.0000,
-     ( 3 -> 3, 3 ) = 1.0000,
-     ...
-     ( 7 -> 7, 1 ) = 0.0833,
-     ( 7 -> 7, 2 ) = 0.0833,
-     ( 7 -> 7, 3 ) = 0.0833
-   ]
+|*   [
+|*     ( 1 -> 1, 1 ) = 1.0000,
+|*     ( 2 -> 2, 2 ) = 1.0000,
+|*     ( 3 -> 3, 3 ) = 1.0000,
+|*     ...
+|*     ( 7 -> 7, 1 ) = 0.0833,
+|*     ( 7 -> 7, 2 ) = 0.0833,
+|*     ( 7 -> 7, 3 ) = 0.0833
+|*   ]
 \end{lstlisting}
 \end{snugshade}
 
@@ -222,7 +223,7 @@ The cladogenetic probability matrix becomes very sparse for large numbers of are
 Each row reports a triplet of states---the ancestral state and the two daughter states---with the probability associated with that event.
 Since these are proper probabilities, the sum of probabilities for a given ancestral state over all possible cladogenetic outcomes equals one.
 
-\subsection*{Things to consider}
+\subsection{Things to consider}
 
 The probabilities of anagenetic change along lineages must account for all combinations of starting states and ending states.
 For 3 areas, there are 8 states, and thus $8 \times 8 = 64$ probability terms for pairs of states.
@@ -238,7 +239,6 @@ Thus, selecting the discrete areas for a DEC analysis should be done with regard
 
 
 
-
 %Methods to permit are available in \RevBayes, but require complicated inference algorithms and 
 %\citep{Landis13}
 
@@ -247,7 +247,7 @@ Thus, selecting the discrete areas for a DEC analysis should be done with regard
 %Unfortunately, since the numerical method for SSE models scale poorly, and DEC models remain the only option when the geography has more than two or three areas.
 %For more than ten areas, data augmentation may be used to infer ancestral ranges, as described in Section \ref{sec:bayarea}.
 
-\subsection*{Some questions}
+\subsection{Some questions}
 
 {\bf \framebox{?} For the three-area DEC rate matrix above, what is the rate of leaving state AC in terms of dispersal and extinction parameters?}
 
