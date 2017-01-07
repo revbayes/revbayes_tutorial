@@ -1,4 +1,4 @@
-stable = !T
+stable = T
 if (stable) {
     library(RevGadgets)
 } else {
@@ -10,30 +10,20 @@ out_str = "output/epoch"
 #out_str = "output/simple"
 tree_fn = paste(out_str, ".ase.tre", sep="")
 
+# area labels
 st_lbl = c("K","O","M","H",
            "KO","KM","OM","KH","OH","MH",
            "KOM","KOH","KMH","OMH", 
            "KOMH")
- #        c("R","K","O","M","H","Z",
- #          "RK",
- #          "RO","KO",
- #          "RM","KM","OM",
- #          "RH","KH","OH","MH",
- #          "RZ","KZ","OZ","MZ","HZ")
 
-st_colors = c(  #"#1b9e77",
-                "#d95f02",
+# area colors
+st_colors = c(  "#d95f02",
                 "#7570b3",
                 "#e7298a",
                 "#66a61e",
-                #"#e6ab02",
-                #"#a6761d",
-                #"#666666",
                 "#66c2a5",
-                #"#fc8d62",
                 "#8da0cb",
                 "#e78ac3",
-                #"#a6d854",
                 "#ffd92f",
                 "#e5c494",
                 "#b3b3b3",
@@ -43,14 +33,7 @@ st_colors = c(  #"#1b9e77",
                 "#984ea3",
                 "#ff7f00",
                 "#e41a1c")
- #               "#377eb8",
-  #              "#4daf4a",
-   #             "#984ea3",
-    #            "#ff7f00")
-
-names(st_colors) = st_lbl
-#st_colors = rainbow(length(st_lbl))
-
+ 
 
 summary_statistic = "MAPRange"
 s = 5 / 15
