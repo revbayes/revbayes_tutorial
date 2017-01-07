@@ -1,0 +1,43 @@
+################################################################################
+#
+# RevBayes Example: Bayesian model testing using posterior predictive simulation
+#
+# authors: Lyndon M. Coghill, Sebastian Hoehna and Jeremy M. Brown
+#
+################################################################################
+
+## EMPIRICAL MCMC
+inFile = "data/8taxa_500chars_GTR.nex"
+analysis_name = "pps_example"
+data <- readDiscreteCharacterData(inFile)
+model_file_name = "scripts/JC_Model.Rev"
+source("scripts/MCMC_Simulation.Rev")
+clear()
+
+## POSTERIOR PREDICTIVE DATA SIMULATION
+inFile = "data/8taxa_500chars_GTR.nex"
+analysis_name = "pps_example"
+data <- readDiscreteCharacterData(inFile)
+model_file_name = "scripts/JC_Model.Rev"
+source("scripts/PosteriorPredictive_Simulation.Rev")
+clear()
+
+## POSTERIOR PREDICTIVE MCMC
+inFile = "data/8taxa_500chars_GTR.nex"
+analysis_name = "pps_example"
+data <- readDiscreteCharacterData(inFile)
+model_file_name = "scripts/JC_Model.Rev"
+source("scripts/PosteriorPredictive_MCMC.Rev")
+clear()
+
+## CALCULATE INFERENCE SUMMARY STATISTICS
+inFile = "data/8taxa_500chars_GTR.nex"
+analysis_name = "pps_example"
+num_post_sims = 100
+data <- readDiscreteCharacterData(inFile)
+model_file_name = "scripts/JC_Model.Rev"
+source("scripts/PosteriorPredictive_TreeSummary.Rev")
+clear()
+
+# END IT ALL
+q()
