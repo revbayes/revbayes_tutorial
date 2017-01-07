@@ -36,68 +36,48 @@ tree <- readTrees(tree_fn)[1]
 # Biogeography models #
 #######################
 
-#rate_bg <- 1
+# the biogeographic event rate multiplier
 log10_rate_bg ~ dnUniform(-4,2)
 log10_rate_bg.setValue(-2)
 rate_bg := 10^log10_rate_bg
 moves[mvi++] = mvSlide(log10_rate_bg, weight=4)
 
-#log10_dispersal_rate ~ dnUniform(-4,2)
-#log10_dispersal_rate.setValue(-2)
-#dispersal_rate := 10^log10_dispersal_rate
-#moves[mvi++] = mvSlide(log10_dispersal_rate, weight=3)
+# the relative dispersal rate
+dispersal_rate <- abs(1)
 
-# first, the dispersal rates
-#dispersal_rate ~ dnExp(1)
-#moves[mvi++] = mvScale(dispersal_rate, weight=2)
-
-
-#dispersal_rate <- abs(1)
+# build the relative dispersal rate matrix
 for (i in 1:n_areas) {
     for (j in 1:n_areas) {
-        #dr[i][j] := dispersal_rate
-        dr[i][j] <- abs(1)
+        dr[i][j] <- dispersal_rate
     }
 }
 
-
-# then extirpation rates (or per-area extinction rates)
-#log10_extirpation_rate ~ dnUniform(-4,2)
-#log10_extirpation_rate.setValue(-2)
-#extirpation_rate := 10^log10_extirpation_rate
-#moves[mvi++] = mvSlide(log10_extirpation_rate, weight=3)
-
-#extirpation_rate ~ dnExp(1)
-#moves[mvi++] = mvScale(extirpation_rate, weight=2)
-
+# then the relative extirpation rate (or per-area extinction rates)
 log_sd <- 0.5
 log_mean <- ln(1) - 0.5*log_sd^2
 extirpation_rate ~ dnLognormal(mean=log_mean, sd=log_sd)
 moves[mvi++] = mvScale(extirpation_rate, weight=2)
 
-
+# build the relative extirpation rate matrix
 for (i in 1:n_areas) {
     for (j in 1:n_areas) {
-        er[i][j] <- abs(0)    
-        
+        er[i][j] <- abs(0)        
     }
     er[i][i] := extirpation_rate
 }
 
-
-# build DEC rate matrices
+# build the DEC rate matrix
 Q_DEC := fnDECRateMatrix(dispersalRates=dr,
                          extirpationRates=er)
-                       
-    
-# build clado probs
+                           
+# build cladogenetic transition probabilities
 clado_event_types <- [ "s", "a" ]
 clado_event_probs <- simplex(1,1)
 P_DEC := fnDECCladoProbs(eventProbs=clado_event_probs,
                          eventTypes=clado_event_types,
                          numCharacters=n_areas)
 
-
+# the phylogenetic CTMC with cladogenetic events
 m_bg ~ dnPhyloCTMCClado(tree=tree,
                            Q=Q_DEC,
                            cladoProbs=P_DEC,
@@ -105,12 +85,12 @@ m_bg ~ dnPhyloCTMCClado(tree=tree,
                            type="NaturalNumbers",
                            nSites=1)
     
+# attach the range data
 m_bg.clamp(dat_range_n)
 
 ############
 # Monitors #
 ############
-
 
 monitors[mni++] = mnScreen(printgen=100, rate_bg)
 monitors[mni++] = mnModel(file=out_fn+".model.log", printgen=10)
@@ -127,10 +107,13 @@ monitors[mni++] = mnJointConditionalAncestralState(tree=tree,
 # Analysis #
 ############
 
+# build the model analysis object from the model graph
 mymodel = model(m_bg)
+
+# create the MCMC analysis object
 mymcmc = mcmc(mymodel, monitors, moves)
 
-#mymcmc.burnin(floor(n_gen/2), 10)
+# run the MCMC analysis
 mymcmc.run(n_gen)
 
 

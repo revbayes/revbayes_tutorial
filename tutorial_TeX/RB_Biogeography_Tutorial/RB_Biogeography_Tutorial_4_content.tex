@@ -9,9 +9,10 @@ One benefit is that the biogeographic analysis will intrinsically accommodate ph
 Another is that paleogeographic evidence has the potential provide information about the geological timing of speciation events in the phylogeny \citep{Ho2015}.
 Finally, biogeographic data may lend support to certain phylogenetic relationships that have poor resolution otherwise.
 
-As mentioned in Section \ref{sec:bg_simple}, Hawaiian silverswords are nested in a larger group of plants, the tarweeds.
-Fossil pollen evidence indicates that tarweeds diversified during a period of aridification from 15--5 Ma in the western regions of North America \citep{Baldwin1991}.
-Although the oldest Hawaiian island that silverswords inhabit is Kauai, it is possible that silverswords first colonized older islands in the Emperor Island chain that predate the formation of Kauai at about 5.1 Ma.
+As mentioned in Section \ref{sec:bg_simple}, Hawaiian silverswords are nested within the subtribe {\it Madiinae}, alongside the tarweeds, a clade of plants inhabiting in western North America.
+Fossil pollen evidence indicates that {\it Madiinae} diversified during a period of aridification from 15--5 Ma in the western regions of North America \citep{Baldwin1991}.
+It's clear that silverswords colonized Hawaii from western North America, but the timing of the event is difficult to estimate.
+Even though the oldest Hawaiian island they inhabit is Kauai, it is possible that silverswords first colonized older islands in the Emperor Island chain that predate the formation of Kauai (ca 5.1 Ma).
 
 This makes the application of standard node-based biogeographic calibrations challenging, because it would require a strong assumption about when and how many times the oldest silversword lineages colonized Kauai.
 Did silverswords colonize Kauai once directly from the California coast? Or did the colonize the younger islands multiple times from older islands in the chain? And did the event occur immediately after Kauai surfaced or much later? Because we cannot observe the timing and nature of this event directly, we will integrate over all possible evolutionary histories using process-based biogeographic dating method described in \citet{Landis2016}.
@@ -19,7 +20,7 @@ Did silverswords colonize Kauai once directly from the California coast? Or did 
 \begin{figure}[!h]
 \centering
 \includegraphics[width=0.8\textwidth]{figures/fig_biogeo_dating.png}
-\caption{Cartoon of biogeographic transition probabilities as functions of geological time, and how that relates to speciation times. (a) Areas split, dispersal before split, positive probability; (b) Areas split, dispersal after split, zero probability; (c) Areas merge, dispersal after merge, positive probability; (d) Areas merge, dispersal before merge, zero probabilty. Figure from \citet{Landis2016}.}
+\caption{Cartoon of biogeographic transition probabilities as functions of geological time, and how that relates to speciation times. (a) Areas split, dispersal before split, positive probability; (b) Areas split, dispersal after split, zero probability; (c) Areas merge, dispersal after merge, positive probability; (d) Areas merge, dispersal before merge, zero probabilty. Original figure and details regarding cartoon assumptions are found in \citet{Landis2016}.}
 \label{fig:biogeo_dating_cartoon}
 \end{figure}
 
@@ -32,7 +33,7 @@ Applying this model to alternative data sets should be done with care!
 
 Much of this tutorial will be similar to the previous sections, except we are adding a birth-death process and a molecular substitution process to the model graph.
 
-\subsection*{Analysis}
+\subsection{Analysis}
 
 To use date the silversword radiation using biogeography, it is necessary that we transition from our simpler 4-area model to a richer 6-area model (see Figure \ref{fig:hawaii_areas}).
 The mainland area (Z) is necessary to force the silversword and tarweed clade to originate apart from the islands.
@@ -134,7 +135,7 @@ distances <- readDataDelimitedFile(file=dist_fn, delimiter=" ")
 \end{snugshade}
 
 Remember that we are estimating the phylogeny as part of this analysis.
-In general, it is possible that certain combinations of phylogeny, biogeography, and paleogeography have zero-valued likelihoods should the epoch model introduce reducible rate matrix structures \citep[][see the supplemental of]{Buerki2011}.
+In general, it is possible that certain combinations of phylogeny, biogeography, and paleogeography have zero-valued likelihoods should the epoch model introduce reducible rate matrix structures \citep[see the supplemental of][]{Buerki2011}.
 The initial MCMC state, however, must have a non-zero probability for it to work properly.
 Although it may not be needed, we will provide {\tt tree\_init} as a starting tree for the {\tt tree} variable that we will create to be safe.
 
@@ -156,10 +157,10 @@ n_branches = 2 * n_taxa - 2
 
 \subsubsection{The tree model}
 
-Because we will also be estimating topology and branch lengths of the silversword phylogeny, the {\tt tree} variable will be a stochastic node with a prior distribution.
+Because we will estimate the topology and branch lengths parameters, the {\tt tree} variable must be declared as a stochastic node with a prior distribution.
 For this, we'll use a constant rate birth-death process.
 
-Assign root age with a maximum age of 15Ma to reflect the fossil pollen record for Californian tarweeds \citep{Baldwin1998}.
+Assign root age with a maximum age of 15Ma to reflect the fossil pollen record for Californian tarweeds \citep{Baldwin1998}. No assumption is made about the minimum root age.
 
 \begin{snugshade}
 \begin{lstlisting}
@@ -481,7 +482,7 @@ m_bg.clamp(dat_range_n)
 \end{snugshade}
 
 
-To quickly identify interactions between island ages and divergence times, we'll create a deterministic node to monitor the age of the silversword radiation.
+To easily identify interactions between the posterior estimates of island ages and divergence times, we'll create a deterministic node to monitor the age of the silversword radiation.
 First, create a deterministic node to monitor the crown age of the silversword radiation
 
 \begin{snugshade}
@@ -544,44 +545,50 @@ mymcmc.run(n_gen)
 \end{lstlisting}
 \end{snugshade}
 
-
-\subsection*{Results}
-
-{\it Example results are provided as {\tt output\_example/epoch\_phy.*} and {\tt output\_example/simple\_phy.*} }
-
-\begin{figure}[!ht]
+\begin{figure}[!h]
 \centering
 \includegraphics[width=0.8\textwidth]{figures/fig_simple_phy_RevGadgets_ase.pdf}
 \caption{Joint estimate of phylogeny and biogeography, ignoring paleogeography.}
 \label{fig:simple_phy}
 \end{figure}
 
+\subsection{Results}
+
+\begin{center}
+{\it Example results are located at \tt{output\_example/epoch\_phy.*} and \tt{output\_example/simple\_phy.*} }
+\end{center}
+
 To understand the influence of the epoch model on ancestral range and divergence time estimation, it is important to run addition analyses with alternative settings.
 Scripts to jointly estimate molecular evolution, historical biogeographic, and phylogenetic parameters are available as {\tt scripts/run\_simple\_phy.Rev} and {\tt scripts/run\_epoch\_phy.Rev}.
 The ``epoch'' analysis is identical to the analysis just described.
 The ``simple'' analysis is similar to the ``epoch'' analysis, except it substitutes the paleogeography-aware model of range evolution (see Section \ref{sec:bg_epoch}) for a paleogeography-naive model (see Section \ref{sec:bg_simple}).
 
-\begin{figure}[!ht]
+\begin{figure}[!h]
 \centering
 \includegraphics[width=0.8\textwidth]{figures/fig_epoch_phy_RevGadgets_ase.pdf} 
 \caption{Joint estimate of phylogeny and biogeography, conditioning on paleogeography through the epoch model.}
 \label{fig:epoch_phy}
 \end{figure}
 
-We see that simple analysis (Fig \ref{fig:simple_phy}) estimates the ancestral range at the root of the clade as Maui + Mainland (MZ).
+We see that simple analysis (Fig \ref{fig:simple_phy}) estimates the ancestral range at the root of the clade as Maui+Mainland (MZ).
 This is unrealistic, both because of the extreme distance between those areas, but also the simple analysis estimates the root age to be 10.3 (HPD95\% 4.6, 15.0) Ma, well before Maui originated.
+(Date estimates are reported in the {\tt simple\_phy.mcc.tre} and {\tt simple\_phy.model.log} files.)
 The simple model also infers Kauai+Maui (KM) as the ancestral range of living silverswords and a crown age of 7.2 (HPD95\% 2.5, 13.5) Ma, which is impossibly ancient given the islands' ages.
 
 The epoch analysis (Fig \ref{fig:epoch_phy}) produces more sensible ancestral range estimates, with Kauai being colonized first, and younger islands only being colonized as they become available.
+The crown age of silverswords is estimated as 2.5 (HPD95\% 0.7, 4.3) Ma.
 When comparing the results to the earlier fixed-phylogeny epoch results in Fig \ref{fig:epoch_RevGadgets_ase}, we recover a greater role for cladogenesis for the younger speciation events.
 These two analyses only differ in terms of whether the phylogeny is fixed or estimated, so it is likely a result of phylogenetic error in the fixed tree.
 
 
-\begin{figure}[!ht]
+\begin{figure}[!h]
 \centering
-\includegraphics[width=0.49\textwidth]{figures/fig_simple_ages.pdf} \includegraphics[width=0.49\textwidth]{figures/fig_epoch_ages.pdf} 
+\includegraphics[width=0.4\textwidth]{figures/fig_simple_ages.pdf} \includegraphics[width=0.4\textwidth]{figures/fig_epoch_ages.pdf} 
 
-\caption{Plot of trace for island ages and the origin time of living silverswords. The left panel ignores paleogeography, allowing silverswords to originate well before the formation of Kauai ({\tt epoch\_times[1]}). The right panel conditions of paleogeography, which prefers a silversword crown age that follows the formation of Kauai.}
+\caption{Plot of posterior samples for island ages and the origin time of living silverswords.
+The colors black, blue, red, orange, and green correspond to the origination times of Kaui, Oahu, Maui, Hawaii, and the silversword clade, respectively.
+The left panel ignores paleogeography, allowing silverswords to originate well before the formation of Kauai ({\tt epoch\_times[1]}).
+The right panel conditions of paleogeography, which prefers a silversword crown age that follows the formation of Kauai.}
 \label{fig:epoch_ages}
 \end{figure}
 
@@ -590,7 +597,7 @@ In Tracer, one can look at the sampled posterior of island ages in comparison th
 The left panel shows the simple analysis, where crown silverswords often originate before the formation of Kauai.
 The right panel shows that crown silverswords probably originated before the formation of Maui, but after the formation of Kauai.
 
-\begin{table}[!ht]
+\begin{table}[!h]
 \centering
 \begin{tabular}{c|cccc}
 Model       & $P(a_s>a_K)$ & $P(a_s>a_O)$ & $P(a_s>a_M)$ & $P(a_s>a_H)$ \\ \hline
@@ -601,9 +608,8 @@ epoch & 0.02 & 0.26 & 0.84 & 0.99 \\
 \label{tab:epoch_ages}
 \end{table}
 
-\newpage
-
 By tabulating the results of the deterministic variable {\tt ingroup\_older\_island}, we measure the posterior probability that crown silverswords originated before or after each particular epoch in the model (Table \ref{tab:epoch_ages}).
-Treating $P=0.95$ as significant support for an evolutionary outcome, the epoch model can assert that crown silverswords originated after the formation of Kauai, $P(a_s > a_K) = 0.02 < 1-0.95$, but can only provide weak support that they originated after the formation of Oahu, $P(a_s > a_O) = 0.26 > 1-0.95$.
+Treating $P=0.95$ as significant support for an evolutionary outcome, the epoch model asserts that crown silverswords originated after the formation of Kauai, $P(a_s > a_K) = 0.02 < 1-0.95$ and weak support that they originated after the formation of Oahu, $P(a_s > a_O) = 0.26 > 1-0.95$.
+
 
 \newpage

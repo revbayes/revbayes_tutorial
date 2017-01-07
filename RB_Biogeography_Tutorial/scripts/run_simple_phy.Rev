@@ -141,33 +141,22 @@ seq_mol.clamp(dat_mol)
 # Biogeography models #
 #######################
 
-rate_bg <- 1
+# the biogeographic event rate multiplier
 log10_rate_bg ~ dnUniform(-4,2)
 log10_rate_bg.setValue(-2)
 rate_bg := 10^log10_rate_bg
 moves[mvi++] = mvSlide(log10_rate_bg, weight=4)
 
-if (false) {
-log10_dispersal_rate ~ dnUniform(-4,2)
-log10_dispersal_rate.setValue(-2)
-dispersal_rate := 10^log10_dispersal_rate
-moves[mvi++] = mvSlide(log10_dispersal_rate, weight=4)
-
-log10_extirpation_rate ~ dnUnif(-6,3)
-moves[mvi++] = mvSlide(log10_extirpation_rate, weight=4)
-log10_extirpation_rate.setValue(-2)
-extirpation_rate := 10^log10_extirpation_rate
-}
-
+# the relative dispersal rate
 dispersal_rate <- abs(1)
 
+# the relative extirpation rate
 log_sd <- 0.5
 log_mean <- ln(1) - 0.5*log_sd^2
 extirpation_rate ~ dnLognormal(mean=log_mean, sd=log_sd)
 moves[mvi++] = mvScale(extirpation_rate, weight=2)
 
-
-# first, the distance function
+# the relative dispersal and extirpation rate matrices
 for (i in 1:n_areas) {
     for (j in 1:n_areas) {
         er[i][j] <- abs(0) 
@@ -180,9 +169,8 @@ for (i in 1:n_areas) {
 Q_DEC := fnDECRateMatrix(dispersalRates=dr,
                          extirpationRates=er,
                          maxRangeSize=max_areas)
-
     
-# build clado probs
+# build cladogenetic transition probabilities
 clado_event_types <- [ "s", "a" ]
 clado_event_probs <- simplex(1,1)
 P_DEC := fnDECCladoProbs(eventProbs=clado_event_probs,
@@ -190,11 +178,11 @@ P_DEC := fnDECCladoProbs(eventProbs=clado_event_probs,
                          numCharacters=n_areas,
                          maxRangeSize=max_areas)
 
-
 # root frequencies
 rf_DEC    <- rep(1, n_states)
 rf_DEC    <- simplex(rf_DEC)
 
+# the phylogenetic CTMC with cladogenetic events
 m_bg ~ dnPhyloCTMCClado(tree=phy,
                            Q=Q_DEC,
                            cladoProbs=P_DEC,
@@ -202,10 +190,12 @@ m_bg ~ dnPhyloCTMCClado(tree=phy,
                            rootFrequencies=rf_DEC,
                            type="NaturalNumbers",
                            nSites=1)
-    
+
+# attach the range data    
 m_bg.clamp(dat_range_n)
 
-# build the times
+# build the epoch times
+# NOTE: we do not use an epoch model, but we're still interested in when the islands originated
 for (i in 1:n_epochs) {
     time_max[i] <- time_bounds[i][1]
     time_min[i] <- time_bounds[i][2]
@@ -251,10 +241,14 @@ monitors[mni++] = mnJointConditionalAncestralState(tree=phy,
 # Analysis #
 ############
 
-mdl = model(m_bg, ingroup_older_island, epoch_times)
-ch = mcmc(mdl, monitors, moves)
+# build the model analysis object from the model graph
+mymodel = model(m_bg, ingroup_older_island, epoch_times)
 
-ch.run(n_gen)
+# create the MCMC analysis object
+mymcmc = mcmc(mymodel, monitors, moves)
+
+# run the MCMC analysis
+mymcmc.run(n_gen)
 
 
 quit()
