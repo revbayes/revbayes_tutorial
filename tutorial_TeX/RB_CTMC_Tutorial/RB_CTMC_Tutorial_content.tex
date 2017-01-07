@@ -867,7 +867,7 @@ moves[++mvi] = mvScale(alpha, weight=2.0)
 Remember that you need to call the \cl{PhyloCTMC} constructor to include the new site-rate parameter:
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-seq ~ dnPhyloCTMC(tree=psi, Q=Q, branchRates=clockRate, siteRates=gamma_rates, type="DNA")
+seq ~ dnPhyloCTMC(tree=psi, Q=Q, siteRates=gamma_rates, type="DNA")
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -925,7 +925,7 @@ moves[++mvi] = mvSlide(pinvar)
 Finally, that you need to call the \cl{PhyloCTMC} constructor to include the new\cl{pinvar} parameter:
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-seq ~ dnPhyloCTMC(tree=psi, Q=Q, branchRates=clockRate, siteRates=gamma_rates, pInv=pinvar, type="DNA")
+seq ~ dnPhyloCTMC(tree=psi, Q=Q, siteRates=gamma_rates, pInv=pinvar, type="DNA")
 \end{lstlisting}
 \end{snugshade*}}
 
