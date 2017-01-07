@@ -24,12 +24,12 @@ Mainland & Z & - & - & - & - & - & - & - & - \\
 \end{tabular}
 \caption{Hawaiian paleogeographic data.
 The six areas are given in Figure \ref{fig:hawaii_areas}.
-Ages $a_{max}$ and $a_{min}$ report the maximum and minimum origination times for the given island.
+Ages $a_{max}$ and $a_{min}$ report the maximum and minimum origination times for the given island \citep[adapted from][]{Neall2008}.
 Distances $g_{ij}$ report the shortest geographical distance from the coast of the row's area to the column's area (measured at present).}
 \label{tab:paleogeo}
 \end{table}
 
-\subsection*{Analysis}
+\subsection{Analysis}
 
 Start by creating variables for the tree file, the range data, and the output prefix
 
@@ -76,6 +76,8 @@ We will restrict ranges from including more than two areas.
 The total number of ranges equals $\sum_{k=0}^m {{n}\choose{k}}$ where $n$ is the total number of areas, $m$ is the maximum number of permissible areas, and ${{n}\choose{k}}$ is the number of ways to sample $k$ unordered areas from a pool of $n$ areas.
 For $n=4$ and $m=2$, this equals ${{4}\choose{0}} + {{4}\choose{1}} + {{4}\choose{2}} = 1 + 4 + 6 = 11$ states.
 
+First, compute the number of states
+
 \begin{snugshade}
 \begin{lstlisting}
 max_areas <- 2
@@ -84,7 +86,7 @@ for (k in 0:max_areas) n_states += choose(n_areas, k)
 \end{lstlisting}
 \end{snugshade}
 
-Then format the dataset for the reduced state space, as provided by {\tt n\_states}
+then use {\tt n\_states} to format the dataset for the reduced state space
 
 \begin{snugshade}
 \begin{lstlisting}
@@ -94,7 +96,7 @@ dat_range_n = formatDiscreteCharacterData(dat_range_01, "DEC", n_states)
 
 Our state space now includes only 11 states ($\emptyset$, K, O, M, H, KO, KM, OM, KH, OH, MH).
 
-As with the previous analysis, we'll assume we know the dated species phylogeny without error.
+As with the previous analysis, we'll brazenly assume we know the dated species phylogeny without error.
 
 \begin{snugshade}
 \begin{lstlisting}
@@ -125,6 +127,20 @@ for (i in 1:n_epochs) {
 \end{lstlisting}
 \end{snugshade}
 
+The area connectivity file for the third epoch (when K, O, and M exist, but not H) contains
+
+\begin{snugshade}
+\begin{lstlisting}
+|*1 1 1 0
+|*1 1 1 0
+|*1 1 1 0
+|*0 0 0 0
+\end{lstlisting}
+\end{snugshade}
+
+Dispersal events between, say, K and M will be penalized by distance rather than be forbidden by non-connectivity.
+
+
 Read in the matrix of distances between all pairs of areas (km).
 For simplicity, we will assume that distances remained constant across epochs, even though these distances certainly varied over time.
 
@@ -134,11 +150,22 @@ distances <- readDataDelimitedFile(file=dist_fn, delimiter=" ")
 \end{lstlisting}
 \end{snugshade}
 
+The distances files contains
+
+\begin{snugshade}
+\begin{lstlisting}
+|*001 145 239 419
+|*145 001 059 239
+|*239 059 001 082
+|*419 239 082 001
+\end{lstlisting}
+\end{snugshade}
+
+and, if we assume the relative distance between islands remains roughly constant over time, then one set of distances is suitable for use for all four epochs.
+
 % distances between areas
 
-Next, we'll build DEC model.
-
-Like before, we'll define the rate matrix in terms of relative rates, then rescale the entire matrix with the biogeographic rate scaling parameter {\tt rate\_bg}.
+Next, we'll build an enhanced DEC model. Like before, we'll define the rate matrix in terms of relative rates, then rescale the entire matrix with the biogeographic rate scaling parameter {\tt rate\_bg}.
 
 \begin{snugshade}
 \begin{lstlisting}
@@ -175,10 +202,10 @@ moves[mvi++] = mvScale(distance_scale, weight=3)
 
 Now we can assign rates that are functions of distance between all pairs of areas, {\it but also over all epochs}.
 To accomplish this, notice we now have an outer loop over the number of epochs, {\tt n\_epochs}.
-This will construct a vector of dispersal matrices.
-It is crucial to note that all of elements are assigned the value {\tt abs(0)} unless the if-statement {\tt if (connectivity[i][j][k] > 0) } evaluates to {\tt true}.
-That is, dispersal rates between areas {\tt j} and {\tt k} for epoch {\tt i} are non-zero if and only if the connectivity matrix {\tt connectivity[i][j][k]} has a positive value!
-When this condition is met, the dispersal rate is determined by the exponential function of distance given above.
+This is used to construct a vector of dispersal matrices, one matrix per epoch.
+It is crucial to note that all of elements are assigned the value {\tt abs(0)} unless the if-statement {\tt "if (connectivity[i][j][k] > 0)" } evaluates to {\tt true}.
+That is, dispersal rates between areas {\tt j} and {\tt k} for epoch {\tt i} are non-zero if and only if the connectivity matrix element {\tt connectivity[i][j][k]} has a positive value!
+When this condition is met, the dispersal rate is determined by the exponential function of inverse distance given above.
 
 
 \begin{snugshade}
@@ -214,7 +241,7 @@ moves[mvi++] = mvScale(extirpation_rate, weight=2)
 \end{lstlisting}
 \end{snugshade}
 
-and then provide the appropriate matrix structure
+and then provide the appropriate extirpation matrix structure
 
 \begin{snugshade}
 \begin{lstlisting}
@@ -229,7 +256,7 @@ for (i in 1:n_epochs) {
 \end{lstlisting}
 \end{snugshade}
 
-Now we have a vector of dispersal rates, {\tt dr}, and an vector of extirpation rates {\tt er} in memory.
+Now we have a vector of dispersal rates, {\tt dr}, and an vector of extirpation rates, {\tt er}, in stored in the \RevBayes workspace.
 We'll use these to create a vector of four DEC rate matrices, one for each epoch.
 
 \begin{snugshade}
@@ -266,7 +293,7 @@ for (i in 1:n_epochs) {
 Now that we have variables for the timing ({\tt epoch\_times}) and character ({\tt Q\_DEC} via {\tt connectivity}) of paleogeographic change throughout the Hawaiian archipelago, we're ready to unify these objects with the {\tt fnEpoch} function.
 This function requires a vector of rate matrices, a vector of epoch end times, and a vector of rate multipliers as arguments.
 Internally, the function computes the appropriate probabilities for state transitions along branches according under a piecewise constant continuous-time Markov chain.
-The important consequence using an epoch model is that transition probabilities for anagenetic events depend on the geological age of the branch.
+The important consequence of using an epoch model is that transition probabilities for anagenetic events depend on the geological age of the branch.
 
 \begin{snugshade}
 \begin{lstlisting}
@@ -292,19 +319,21 @@ P_DEC := fnDECCladoProbs(eventProbs=clado_type_probs,
 \end{snugshade}
 
 For this dataset, we assume cladogenetic probabilities are constant with respect to geological time.
+Using time-dependent cladogenetic probabilities ({\tt fnEpochCladoProbs}) and mixtures of cladogenetic probabilities ({\tt fnMixtureCladoProbs}) will be covered in future tutorials.
 
-Among the four areas, only K existed at the provided origination time of the clade, so will set it as the only valid starting state through the root frequency distribution.
+Among the four areas, only Kauai existed at the provided origination time of the clade, so will set it as the only valid starting state through the root frequency distribution.
 
 \begin{snugshade}
 \begin{lstlisting}
 rf_DEC <- rep(0, n_states)
-rf_DEC[2] <- 1
+rf_DEC[2] <- 1 
 rf_DEC <- simplex(rf_DEC)
 \end{lstlisting}
 \end{snugshade}
 
 We have created all the necessary model variables.
 Now we can create the phylogenetic model of anagenetic and cladogenetic character evolution.
+{\tt dnPhyloCTMCClado} will internally make use of the time-heterogeneous probabilities embedded in the epoch rate generator, {\tt Q\_DEC\_epoch}.
 \begin{snugshade}
 \begin{lstlisting}
 m_bg ~ dnPhyloCTMCClado(tree=tree,
@@ -361,26 +390,27 @@ mymcmc.run(5000)
 \end{lstlisting}
 \end{snugshade}
 
-\subsection*{Results}
+\subsection{Results}
 
-{\it Example results are provided as {\tt output\_example/epoch.*}.}
+\begin{center}
+{\it Example results are located at {\tt output\_example/epoch.*}}
+\end{center}
 
-When compared to the ancestral state estimates from the ``simple'' analysis (Figure \ref{fig:simple_RevGadgets_ase}), these results are more consonant with what we know about the origination times of the islands (Table \ref{tab:paleogeo}).
+When compared to the ancestral state estimates from the ``simple'' analysis (Figure \ref{fig:simple_RevGadgets_ase}), these results are far more consonant with what we understand about the origination times of the islands (Table \ref{tab:paleogeo}).
 First, this reconstruction asserts that the clade originated in the modern Hawaiian islands at a time when only Kauai was above sea level.
 Similarly, the {\it D. sheriffiana} and {\it D. arborea} clade no longer estimates OMH as its ancestral range, since Maui and Hawaii had not yet formed 2.4 Ma.
 The ancestral range for the {\it Agyroxiphium} clade is Maui (M) with probability 0.41 and Maui+Hawaii (MH) with probability 0.33, whereas previously it gave high support to the range KMH.
 
-It may be that these are relatively accurate historical biogeographic estimates, or they may contain spurious artifacts of assuming a fixed and errorless phylogeny.
+It may be that these are relatively accurate historical biogeographic estimates, or they may contain artifacts as a result of assuming a fixed and errorless phylogeny.
 The next tutorials discuss how to jointly estimate phylogeny and biogeography, which potentially improves the estimation of divergence times, tree topology, and ancestral ranges.
 
 
 \begin{figure}[!ht]
 \centering
-\includegraphics[width=0.75\textwidth]{figures/fig_epoch_RevGadgets_ase.pdf}
+\includegraphics[width=0.9\textwidth]{figures/fig_epoch_RevGadgets_ase.pdf}
 \caption{Tree with ancestral state estimates. Nodes are annotated with ancestral states before and after cladogenetic events. Most probable states are shown. Colors of markers indicate the range state. Sizes of markers indicate the posterior probability of that state. }
 \label{fig:epoch_RevGadgets_ase}
 \end{figure}
 
-[ Look at posterior estimates for distance. ]
 
 \newpage
