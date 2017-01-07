@@ -4,8 +4,8 @@
 \node[detnode] (offset) at ($(tree)+(2.5,0)$) {\large $t_i$};
 \node[white, fill=brnt, shape=rectangle, rounded corners] at ($(offset)+(0,-1)$) {fossil age};
 \node[obnode] (fossil) at ($(offset)+(2,0)$) {\large $\mathcal{F}_i$};
-\node[constnode] (ai) at ($(fossil)+(1.5,1.5)$) {\large $a_i$};
-\node[constnode] (bi) at ($(fossil)+(1.5,-1.5)$) {\large $b_i$};
+\node[constnode] (ai) at ($(fossil)+(1.5,1.2)$) {\large $a_i$};
+\node[constnode] (bi) at ($(fossil)+(1.5,-1.2)$) {\large $b_i$};
 \node at ($(ai)+(0,0.75)$) {\scriptsize observed min.};
 \node at ($(bi)+(0,-0.75)$) {\scriptsize observed max.};
 \draw[dtaro] (tree) -- (offset) ;
