@@ -184,8 +184,8 @@ Q_DEC := fnDECRateMatrix(dispersalRates=dr, extirpationRates=er)
 \end{snugshade}
 
 Note, {\tt fnDECRateMatrix} does not rescale its elements in any way, so transition rates share the same time scale as the underlying tree.
-In our case, the tree is measured in millions of years (Ma).
-This is in contrast to the standard molecular substitution processes that are available in \RevBayes, such as {\tt fnGTR}, whose rates are rescaled such that the process is expected to produce one event per site per unit time.
+%In our case, the tree is measured in millions of years (Ma).
+This scaling is in contrast to the standard molecular substitution processes that are available in \RevBayes, such as {\tt fnGTR}, whose rates are rescaled such that the process is expected to produce one event per site per unit time.
 
 Next, we need to create the cladogenetic probability matrix.
 Cladogenetic event probabilities are given by a transition probability matrix, not a rate matrix.
@@ -245,7 +245,7 @@ monitors[4] = mnJointConditionalAncestralState(tree=tree,
 The {\tt mnJointConditionalAncestralState} monitor samples ancestral states from the phylogeny, {\tt tree}, according to the model of evolution, {\tt m\_bg}, and stores it to the file named {\tt "simple.states.log"}.
 Each row in the states file lists the joint sample of ancestral states conditioned on the tip values for the entire tree (i.e. a {\it joint} ancestral state sample {\it conditional} on the tip states).
 Each column corresponds to the phylogenetic node index for that particular MCMC sample.
-The index is used to later correspond the state samples with the tree samples when the topology is a random variable (Section \ref{sec:bg_phylo}).
+The index is used later used to match the state samples with the tree samples when the topology is a random variable (Section \ref{sec:bg_phylo}).
 
 The remaining tasks should be familiar from previous tutorials, so we can proceed briskly.
 Prepare the model graph for analysis by creating a {\tt Model} object.
