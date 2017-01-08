@@ -478,7 +478,7 @@ Each parameter is assumed to be drawn independently from a different exponential
 Here, we will assume that $\delta_{\lambda} = \delta_{\mu} = 10$. 
 Note that an exponential distribution with $\delta = 10$ has an expected value (mean) of $1/10$. 
 
-Create the exponentially distributed stochastic nodes for the \cl{speciation\_rate} and \cl{exticntion\_rate} using the \cl{\textasciitilde} operator.
+Create the exponentially distributed stochastic nodes for the \cl{speciation\_rate} and \cl{extinction\_rate} using the \cl{\textasciitilde} operator.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 speciation_rate ~ dnExponential(10)
@@ -694,7 +694,7 @@ num_samp_anc := fbd_tree.numSampledAncestors()
 
 We are also interested in the age of the most-recent-common ancestor (MRCA) of all living bears. 
 To monitor the age of this node in our MCMC sample, we must use the \cl{clade()} function to identify the node. Importantly, since we did not include this clade in our constraints that defined \cl{fbd\_tree}, this clade will not be constrained to be monophyletic. 
-Once this clade is defined, we can instantiate a determinisstic node called \cl{age\_extant} with the \cl{tmrca()} function that will record the age of the MRCA of all living bears.
+Once this clade is defined, we can instantiate a deterministic node called \cl{age\_extant} with the \cl{tmrca()} function that will record the age of the MRCA of all living bears.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 clade_extant = clade("Ailuropoda_melanoleuca","Tremarctos_ornatus","Melursus_ursinus",
@@ -839,7 +839,7 @@ rates_cytb := fnDiscretizeGamma( alpha_cytb, alpha_cytb, 4 )
 \end{lstlisting}
 \end{snugshade*}}
 
-Finally, we can create the phylogenetic continuous time markov chain (PhyloCTMC) distribution for our sequence data, including the gamma-distributed site rate categories, as well as the branch rates defined as part of our exponential relaxed clock.
+Finally, we can create the phylogenetic continuous time Markov chain (PhyloCTMC) distribution for our sequence data, including the gamma-distributed site rate categories, as well as the branch rates defined as part of our exponential relaxed clock.
 We set the value of this distribution equal to our observed data and identify it as a static part of the likelihood using the \cl{clamp} method.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
