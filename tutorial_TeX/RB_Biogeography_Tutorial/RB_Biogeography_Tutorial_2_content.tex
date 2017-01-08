@@ -304,6 +304,7 @@ Build a maximum clade credibility tree from the posterior tree distribution, dis
 \begin{lstlisting}
 tree_trace = readTreeTrace(file=out_tree_fn, treetype="clock")
 tree_trace.setBurnin(0.25)
+n_burn = tree_trace.getBurnin()
 \end{lstlisting}
 \end{snugshade}
 
@@ -341,8 +342,7 @@ anc_tree = ancestralStateTree(tree=mcc_tree,
                               tree_trace=tree_trace,
                               include_start_states=true,
                               file=out_str+".ase.tre",
-                              burnin=0,
-                              summary_statistic="MAP",
+                              burnin=n_burn,
                               site=0)
 \end{lstlisting}
 \end{snugshade}
