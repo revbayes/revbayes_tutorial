@@ -570,14 +570,14 @@ The ``simple'' analysis is similar to the ``epoch'' analysis, except it substitu
 \label{fig:epoch_phy}
 \end{figure}
 
-We see that simple analysis (Fig \ref{fig:simple_phy}) estimates the ancestral range at the root of the clade as Maui+Mainland (MZ).
+We see that simple analysis (Figure \ref{fig:simple_phy}) estimates the ancestral range at the root of the clade as Maui+Mainland (MZ).
 This is unrealistic, both because of the extreme distance between those areas, but also the simple analysis estimates the root age to be 10.3 (HPD95\% 4.6, 15.0) Ma, well before Maui originated.
 (Date estimates are reported in the {\tt simple\_phy.mcc.tre} and {\tt simple\_phy.model.log} files.)
 The simple model also infers Kauai+Maui (KM) as the ancestral range of living silverswords and a crown age of 7.2 (HPD95\% 2.5, 13.5) Ma, which is impossibly ancient given the islands' ages.
 
-The epoch analysis (Fig \ref{fig:epoch_phy}) produces more sensible ancestral range estimates, with Kauai being colonized first, and younger islands only being colonized as they become available.
+The epoch analysis (Figure \ref{fig:epoch_phy}) produces more sensible ancestral range estimates, with Kauai being colonized first, and younger islands only being colonized as they become available.
 The crown age of silverswords is estimated as 2.5 (HPD95\% 0.7, 4.3) Ma.
-When comparing the results to the earlier fixed-phylogeny epoch results in Fig \ref{fig:epoch_RevGadgets_ase}, we recover a greater role for cladogenesis for the younger speciation events.
+When comparing the results to the earlier fixed-phylogeny epoch results in Figure \ref{fig:epoch_RevGadgets_ase}, we recover a greater role for cladogenesis for the younger speciation events.
 These two analyses only differ in terms of whether the phylogeny is fixed or estimated, so it is likely a result of phylogenetic error in the fixed tree.
 
 
@@ -593,7 +593,7 @@ The right panel conditions of paleogeography, which prefers a silversword crown 
 \end{figure}
 
 
-In Tracer, one can look at the sampled posterior of island ages in comparison the origination time of crown silverswords (Fig \ref{fig:epoch_ages}).
+In Tracer, one can look at the sampled posterior of island ages in comparison the origination time of crown silverswords (Figure \ref{fig:epoch_ages}).
 The left panel shows the simple analysis, where crown silverswords often originate before the formation of Kauai.
 The right panel shows that crown silverswords probably originated before the formation of Maui, but after the formation of Kauai.
 
@@ -609,7 +609,7 @@ epoch & 0.02 & 0.26 & 0.84 & 0.99 \\
 \end{table}
 
 By tabulating the results of the deterministic variable {\tt ingroup\_older\_island}, we measure the posterior probability that crown silverswords originated before or after each particular epoch in the model (Table \ref{tab:epoch_ages}).
-Treating $P=0.95$ as significant support for an evolutionary outcome, the epoch model asserts that crown silverswords originated after the formation of Kauai, $P(a_s > a_K) = 0.02 < 1-0.95$ and weak support that they originated after the formation of Oahu, $P(a_s > a_O) = 0.26 > 1-0.95$.
+Treating $P=0.95$ as significant support for an evolutionary outcome, the epoch model produces strong support that crown silverswords originated after the formation of Kauai, $P(a_s > a_K) = 0.02 < 1-0.95$ and weak support that they originated after the formation of Oahu, $P(a_s > a_O) = 0.26 > 1-0.95$.
 
 
 \newpage

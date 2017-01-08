@@ -1,0 +1,226 @@
+################################################################################
+#
+# RevBayes Example: Bayesian model testing using posterior predictive simulation
+# This file calculates the Tree Summary Statistics
+#
+# authors: Lyndon M. Coghill, Sebastian Hoehna and Jeremy M. Brown
+#
+################################################################################
+
+outfileName = "results/" + analysis_name + ".csv"
+write(file=outfileName, "simID", "mean_rf", "quantile25", "quantile50", "quantile75", "quantile99", "quantile999", "mean_tl", "var_tl", "entropy", sep=",", append=TRUE)  
+write(file=outfileName, "\n", sep=",", append=TRUE)  
+
+
+################### calculate the pps stats here #########################
+
+## Iterate through all of the posterior tree files from the simulation analyses
+for ( i in 1:num_post_sims) {
+
+
+inFileName = "output/posterior_predictive_sim_" + i + "/" + analysis_name + "_posterior.trees"
+## read in the trace
+sim_tree_trace = readTreeTrace(inFileName,treetype="non-clock")
+
+## set the number of trees
+numTrees = sim_tree_trace.getNumberSamples()
+
+
+## Calculate the pairwise RF distances between all trees in a single posterior
+## initializing the vector. needed to use the append function and speed up the pairwise rf calculations
+
+rf_dists <- v(0)
+for (n in 1:numTrees){ 
+ 	
+ 	for(j in 1:numTrees) {
+ 	
+ 		if (n != j) {
+ 	
+ 			if (n > 1 & j > 1) {
+ 				rf <- symmetricDifference(sim_tree_trace.getTree(n), sim_tree_trace.getTree(j)) 
+ 				rf_dists <- append(rf_dists, rf)
+ 				} else {
+ 				rf = symmetricDifference(sim_tree_trace.getTree(n), sim_tree_trace.getTree(j))  
+ 				rf_dists[1] <- rf }
+ 					}
+ 							} 
+ 	}
+
+
+## This collects the vector of tree lengths needed for mean tree length and tree length variance
+for (j in 1:numTrees) {
+ 
+	sim_tree = sim_tree_trace.getTree( j ) 
+	tree_length[j] = sim_tree.treeLength()
+}
+
+
+## This calculates the entropy statistic
+
+entropy = 0
+unique_trees = sim_tree_trace.getUniqueTrees()
+count = 1
+for (tree in unique_trees) {
+	topo_freq[count] = sim_tree_trace.getTopologyFrequency(tree)
+	count = count + 1
+    }
+    
+for (n in topo_freq) { 
+    entropy = entropy + (n * ln(n)) 
+    	
+    }
+    
+    
+
+
+
+## calculate the stuff we care about for a single pps posterior
+mean_rf = mean(rf_dists)
+quantile25 = quantile(rf_dists, 0.25)
+quantile50 = quantile(rf_dists, 0.50)
+quantile75 = quantile(rf_dists, 0.75)
+quantile99 = quantile(rf_dists, 0.99)
+quantile999 = quantile(rf_dists, 0.001)
+mean_tl = mean(tree_length)
+var_tl = var(tree_length)
+entropy = entropy + ln(unique_trees.size())
+
+## write it to a file
+write(file=outfileName, i, mean_rf, quantile25, quantile50, quantile75, quantile99, quantile999, mean_tl, var_tl, entropy, sep=",", append=TRUE)  
+write(file=outfileName, "\n", sep=",", append=TRUE)  
+clear(rf_dists)
+
+
+}
+
+################### end of pps calculations ####################################
+
+
+################### calculate the empirical stats here ###################
+
+## set the empirical output file
+outfileName = "results/empirical_" + analysis_name + ".csv"
+write(file=outfileName, "mean_rf", "quantile25", "quantile50", "quantile75", "quantile99", "quantile999", "mean_tl", "var_tl", "entropy", sep=",", append=TRUE)  
+write(file=outfileName, "\n", sep=",", append=TRUE)  
+
+## find the empirical file
+empFileName = "output" + "/" + analysis_name + "_posterior.trees"
+
+## read in the trace
+emp_tree_trace = readTreeTrace(empFileName,treetype="non-clock")
+
+## set the number of trees
+numEmpTrees = emp_tree_trace.getNumberSamples() 
+
+## Calculate the pairwise RF distances between all trees in a single posterior
+
+## initializing the vector. needed to use the append function and speed up the pairwise rf calculations
+rf_dists <- v(0)
+count = 1
+for (n in 1:numEmpTrees){ 
+
+for(j in 1:numEmpTrees) {
+
+	if (n != j) {
+
+		if (n > 1 & j > 1) {
+			rf <- symmetricDifference(emp_tree_trace.getTree(n), emp_tree_trace.getTree(j)) 
+			rf_dists <- append(rf_dists, rf)
+			count = count + 1  
+			} else {
+			rf = symmetricDifference(emp_tree_trace.getTree(n), emp_tree_trace.getTree(j))  
+			rf_dists[1] <- rf }
+				}
+						} 
+}
+
+
+## This collects the vector of tree lengths needed for mean tree length and tree length variance
+for (j in 1:numEmpTrees) {
+
+emp_tree = emp_tree_trace.getTree( j ) 
+tree_length[j] = emp_tree.treeLength()
+}
+
+
+## This calculates the entropy statistic
+entropy = 0
+ unique_trees = emp_tree_trace.getUniqueTrees()
+ count = 1
+ for (tree in unique_trees) {
+	topo_freq[count] = emp_tree_trace.getTopologyFrequency(tree)
+	count = count + 1
+ }
+ for (n in topo_freq) { 
+	entropy = entropy + (n * ln(n)) 
+	
+ }
+
+
+## calculate the stuff we care about for a single posterior
+mean_rf = mean(rf_dists)
+quantile25 = quantile(rf_dists, 0.25)
+quantile50 = quantile(rf_dists, 0.50)
+quantile75 = quantile(rf_dists, 0.75)
+quantile99 = quantile(rf_dists, 0.99)
+quantile999 = quantile(rf_dists, 0.001)
+mean_tl = mean(tree_length)
+var_tl = var(tree_length)
+entropy = entropy + ln(unique_trees.size())
+
+write(file=outfileName, mean_rf, quantile25, quantile50, quantile75, quantile99, quantile999, mean_tl, var_tl, entropy, sep=",", append=TRUE)  
+write(file=outfileName, "\n", sep=",", append=TRUE)  
+
+clear(rf_dists)
+
+
+################### end of empirical calculations ##############################
+
+
+################### start of p-value calculations ##############################
+
+## setup the pvalue output file
+outfileName = "results/pvalues_" + analysis_name + ".csv"
+write(file=outfileName, "", "Lower 1-tailed", "Upper 1-tailed", "Two-tailed", sep=",", append=TRUE)
+write(file=outfileName, "\n", sep=",", append=TRUE)  
+statID = v("", "mean_rf", "quantile25", "quantile50", "quantile75", "quantile99", "quantile999", "mean_tl", "var_tl", "entropy")
+
+## read back in csv files
+## loop through them, and calculate the 3 p-values for each dataset
+empData = readDataDelimitedFile("results/empirical_" + analysis_name + ".csv",header=TRUE,delimiter=",")
+simData = readDataDelimitedFile("results/" + analysis_name + ".csv",header=TRUE,delimiter=",")
+
+for (z in 2:simData[1].size()) {
+
+simvalues <- v(0)
+for (i in 1:simData.size()) {
+	if (i > 1) { simvalues <- append(simvalues, simData[i][z]) } else { simvalues[1] <- simData[i][z] }
+}
+
+## Lower 1-tailed
+empValue = empData[1][1]
+lowCount = 0
+for (i in simvalues) { if (i <= empValue) { lowCount <- lowCount + 1 } }
+
+if (lowCount == 0) { lowerPvalue <- 0 
+	} else { lowerPvalue <- lowCount / simvalues.size() 
+	}
+
+## Upper 1-tailed
+upperCount = 0
+for (i in simvalues) { if (i >= empValue) { upperCount <- upperCount + 1 } }
+
+if (upperCount == 0) { upperPvalue <- 0 
+	} else { upperPvalue <- upperCount / simvalues.size() 
+	}
+
+## 2-tailed
+twotailPvalue = 2 * (min(v(lowerPvalue, upperPvalue)))
+
+write(file=outfileName, statID[z], lowerPvalue, upperPvalue, twotailPvalue, sep=",", append=TRUE)
+write(file=outfileName, "\n", sep=",", append=TRUE)  
+
+
+}
+################### end of p-value calculations ##############################
+

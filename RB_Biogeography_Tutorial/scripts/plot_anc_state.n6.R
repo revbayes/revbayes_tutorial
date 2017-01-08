@@ -1,4 +1,4 @@
-stable = !T
+stable = T
 if (stable) {
     library(RevGadgets)
 } else {
@@ -7,10 +7,11 @@ if (stable) {
 library(ggtree)
 
 
-#out_str = "output/simple_phy"
-out_str = "output/epoch_phy"
+out_str = "output/simple_phy"
+#out_str = "output/epoch_phy"
 tree_fn = paste(out_str, ".ase.tre", sep="")
 
+# area labels
 st_lbl = c("R","K","O","M","H","Z",
            "RK",
            "RO","KO",
@@ -18,7 +19,7 @@ st_lbl = c("R","K","O","M","H","Z",
            "RH","KH","OH","MH",
            "RZ","KZ","OZ","MZ","HZ")
 
-
+# area colors
 st_colors = c(  "#1b9e77",
                 "#d95f02",
                 "#7570b3",
@@ -40,12 +41,8 @@ st_colors = c(  "#1b9e77",
                 "#4daf4a",
                 "#984ea3",
                 "#ff7f00")
-#,
- #               "#ffff33",
-  #              "#a65628",
-   #             "#f781bf",
-    
-names(st_colors) = st_lbl
+
+st_lbl=NULL
 
 summary_statistic = "MAPRange"
 s = 5 / 17
