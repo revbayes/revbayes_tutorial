@@ -7,8 +7,8 @@ if (stable) {
 library(ggtree)
 
 
-#out_str = "output/simple_phy"
-out_str = "output/epoch_phy"
+out_str = "output/simple_phy"
+#out_str = "output/epoch_phy"
 tree_fn = paste(out_str, ".ase.tre", sep="")
 
 # area labels
