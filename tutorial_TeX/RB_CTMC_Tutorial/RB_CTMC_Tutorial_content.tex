@@ -286,7 +286,7 @@ psi := treeAssembly(topology, br_lens)
 \end{snugshade*}}
 
 \begin{framed}
-\textbf{Prior on Time-Trees: Tree Topology and Node Ages}\\
+\textbf{Alternative Analysis\\Prior on Time-Trees: Tree Topology and Node Ages}\\
 Alternatively, you may want to specify a prior on time-trees.
 Here we will briefly indicate how to specify such an prior which will lead to inference of time trees.
 
@@ -511,11 +511,11 @@ We have rooted the tree at the outgroup \emph{Galeopterus\_variegatus}}
 \begin{Form}
 \begin{table}[h!]
 \centering
-\caption{\small Posterior probabilities of phylogenetic relationship$^*$.}
+\caption{\small Posterior probabilities of primate phylogenetic relationships$^*$.}
 \resizebox{\textwidth}{!}{%
 \begin{tabular}{l c c c c}
 \hline
-\textbf{Model} & \textit{Lemuroidea} & \textit{Lorisoidea} & \textit{Platyrrhini} & \textit{Catarrhini} \\ 
+\textbf{Model} & \textbf{Lemuroidea} & \textbf{Lorisoidea} & \textbf{Platyrrhini} & \textbf{Catarrhini} \\ 
 \hline
 \vspace{1mm}
 Jukes-Cantor & \TextField[name=pp11,backgroundcolor={.85 .85 .85},color={1 0 0},height=4ex]{}  & \TextField[name=pp12,backgroundcolor={.85 .85 .85},color={0 0 1},height=4ex]{}  & \TextField[name=pp13,backgroundcolor={.85 .85 .85},color={0 0 1},height=4ex]{}  & \TextField[name=pp14,backgroundcolor={.85 .85 .85},color={0 0 1},height=4ex]{}\\
@@ -644,6 +644,7 @@ This should be all for the HKY model.
 \subsection{Exercise 2}
 
 \begin{itemize}
+\item With figure \ref{fig:jc} as your guide, draw the probabilistic graphical model of the HKY model. 
 \item Copy the file called  \cl{mcmc\_JC.Rev} and modify it by including the necessary parameters to specify the HKY substitution model.
 \item Run an MCMC analysis to estimate the posterior distribution under the HKY substitution model.
 \item Are the resulting estimates of the base frequencies equal? 
@@ -653,7 +654,7 @@ This should be all for the HKY model.
 \item Is the inferred rate of transition substitutions higher than the rate of transversion substitutions? If so, by how much?
 \item Like the HKY model, the Felsenstein 1981 (F81) substitution model has unequal stationary frequencies, but it assumes equal transition-transversion rates \citep{Felsenstein1981}.
 	Can you set up the F81 model and run an analysis?
-\item Complete the table of the phylogenetic relationship of primates.
+\item Complete the Table \ref{tab:pp} by reporting the posterior probabilities of phylogenetic relationships.
 \end{itemize}
 
 
