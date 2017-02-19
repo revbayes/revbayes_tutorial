@@ -1,0 +1,51 @@
+\section{Overview of Discrete Morphology Models} \label{sec:dm_overview}
+
+Molecular data forms the basis of most phylogenetic analyses today. 
+However, morphological characters remain relevant: Fossils often provide our only direct observation of extinct biodiversity; DNA degradation can make it difficult or impossible to obtain sufficient molecular data from fragile museum specimens. 
+Using morphological data can help researchers include specimens in their phylogeny that might be left out of a molecular tree. \par
+To understand how morphological characters are modeled, it is important to understand how characters are collected.
+Unlike in molecular data, for which homology is algorithmically determined, homology in a character is typically assessed an expert. 
+Biologists will typically decide what characters are homologous by looking across specimens at the same structure in multiple taxa; they may also look at the developmental origin of structures in making this assessment.
+Once homology is determined, characters are broken down into states, or different forms a single character can take.
+The state `0' commonly refers to absence, meaning that character is not present.
+In some codings, absence will mean that character has not evolved in that group.
+In others, absence means that that character has not evolved in that group, and/or that that character has been lost in that group. 
+This type of coding is arbitrary, but both \textbf{non-random} and \textbf{meaningful}, and poses challenges for how we model the data. 
+\par
+
+Historically, most phylogenetic analyses using morphological characters have been performed using the maximum parsimony optimality criterion. 
+Maximum parsimony analysis involves proposing trees from the morphological data.
+Each tree is evaluated according to how many changes it implied in the data, and the tree that requires the fewest changes is preferred.
+In this way of estimating a tree, a character that does not change, or changes only in one taxon, cannot be used to discriminate between trees (i.e., it does not favor a topology).
+Therefore, workers with parsimony typically do not collect characters that are parsimony uninformative.
+\par
+
+In 2001, Paul Lewis introduced a generalization of the Jukes-Cantor model of sequence evolution for use with morphological data.
+This model, called the Mk (Markov model, assuming each character is in one of \textit{k} states) model provided a mathemetical formulation that could be used to estimate trees from morphological data in both likelihood and Bayesian frameworks. 
+While this model is a useful step forward, as a generalization of the Jukes-Cantor, it still makes fairly simplistic assumptions.
+This tutorial will guide you through estimating a phylogeny with the Mk model, and two useful extensions to the model. \par
+
+\subsection{Some math}
+
+...
+
+\subsection{Some RevBayes}
+
+\begin{snugshade}
+\begin{lstlisting}
+n_areas <- 3
+\end{lstlisting}
+\end{snugshade}
+
+
+\subsection{Things to consider}
+
+...
+
+
+\section{Overview of Discrete Morphology Models} \label{sec:dm_simple}
+
+\section{Overview of Discrete Morphology Models} \label{sec:dm_complex}
+{\bf \framebox{?} Alright, who did it?}
+
+\newpage
