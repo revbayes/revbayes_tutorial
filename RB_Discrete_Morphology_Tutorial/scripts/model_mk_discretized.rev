@@ -1,0 +1,56 @@
+###########################################
+# Binary morphological substitution model #
+###########################################
+#Obtain a list of names from the Nexus file. We will use this to add tips to the tree
+names <- morpho.names()
+
+# Set up branch length moves
+nbr <- 2*names.size() - 3
+for (i in 1:nbr){
+    br_lens[i] ~ dnExponential(5.0)
+    moves[mvi++] = mvScale(br_lens[i]) 
+}
+
+#Create the Q matrix. These data are binary, so we initialize the Jukes-Cantor matrix with
+# two states
+n_cats = 4
+alpha_ofbeta ~ dnExponential( 1 )
+beta_ofbeta ~ dnExponential( 1 )
+moves[mvi++] = mvScale(beta_ofbeta, lambda=1,    weight=1.0 )
+moves[mvi++] = mvScale(beta_ofbeta, lambda=0.1,  weight=1.0 )
+moves[mvi++] = mvScale(beta_ofbeta, lambda=0.01, weight=1.0 )
+moves[mvi++] = mvScale(alpha_ofbeta, lambda=1,    weight=1.0 )
+moves[mvi++] = mvScale(alpha_ofbeta, lambda=0.1,  weight=1.0 )
+moves[mvi++] = mvScale(alpha_ofbeta, lambda=0.01, weight=1.0 )
+
+cats := fnDiscretizeBeta(alpha_ofbeta, beta_ofbeta,4)
+for (i in 1:cats.size())
+{
+Q[i] := fnFreeBinary(v(1-cats[i], cats[i]), false)
+cats[i]
+}
+matrix_probs ~ dnDirichlet(v(1,1,1,1))
+moves[mvi++] = mvSimplexElementScale(matrix_probs, alpha=10, weight=1.0) 
+
+
+#Set up Gamma-distributed rate variation.
+alpha_morpho ~ dnExponential( 1.0 )
+rates_morpho := fnDiscretizeGamma( alpha_morpho, alpha_morpho, 4 )
+
+#Moves on the parameters to the Gamma distribution.
+moves[mvi++] = mvScale(alpha_morpho, lambda=0.01, weight=1.0)
+moves[mvi++] = mvScale(alpha_morpho, lambda=0.1,  weight=1.0)
+moves[mvi++] = mvScale(alpha_morpho, lambda=1,    weight=1.0)
+
+#Create a starting tree and place moves on it.
+tau ~ dnUniformTopology(names)
+phylogeny := treeAssembly(tau, br_lens)
+moves[mvi++] = mvSPR(tau)
+
+#Combine all of our elements into a CTMC. Because we have not observed any invariant sites, 
+# we specify the coding is 'variable'.
+
+phyMorpho ~ dnPhyloCTMC(tree=phylogeny, siteRates=rates_morpho, Q=Q_morpho, type="Standard", coding="variable")
+phyMorpho.clamp(morpho)
+
+
