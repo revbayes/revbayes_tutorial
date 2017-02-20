@@ -25,11 +25,89 @@ This model, called the Mk (Markov model, assuming each character is in one of \t
 While this model is a useful step forward, as a generalization of the Jukes-Cantor, it still makes fairly simplistic assumptions.
 This tutorial will guide you through estimating a phylogeny with the Mk model, and two useful extensions to the model. \par
 
-\subsection{Some math}
+\subsection{The Mk Model}
 
-...
+The Mk model is a generalization of the Jukes-Cantor model of nucleotide sequence evolution, which we discussed in \textbf{Molecular Models of Character Evolution}. 
+The Q matrix for a two-state Mk model looks like so:
 
-\subsection{Some RevBayes}
+\begin{equation*}
+Q = \begin{pmatrix} -\mu_0 & \mu_{01} \\
+\mu_{10} & -\mu_1  &\\
+\end{pmatrix} \mbox{  ,}
+\end{equation*}
+
+This matrix can be expanded to accommodate multi-state data, as well:
+
+\begin{equation*}
+Q = \begin{pmatrix} -\mu_0 & \mu_{01} & \mu_{02} & \mu_{03} \\
+\mu_{10} & -\mu_1  & \mu_{12} & \mu_{13} \\
+\mu_{20} & \mu_{21} & -\mu_2  & \mu_{23} \\
+\mu_{30} & \mu_{31} & \mu_{32} & -\mu_3 
+\end{pmatrix} \mbox{  ,}
+\end{equation*}
+
+However, the Mk model sets transitions to be equal from any state to any other state. 
+In that sense, our multistate matrix really looks like this:
+
+\begin{equation*}
+Q = \begin{pmatrix} -\mu_0 & \mu & \mu & \mu \\
+\mu & -\mu_1  & \mu & \mu \\
+\mu & \mu & -\mu_2  & \mu \\
+\mu & \mu & \mu & -\mu_3 \\
+\end{pmatrix} \mbox{  ,}
+\end{equation*}
+
+Because this is a Jukes-Cantor-like model, state frequencies do not vary as a model parameter.
+These assumptions may seem unrealistic.
+However, all models are a compromise between reality and generalizability.
+Because morphological characters do not carry common meaning across sites in a matrix in the way that nucleotide characters do, making assumptions that fit all characters is challenging. \par
+
+We will first perform a phylogenetic analysis using the Mk model.
+In further sections, we will explore how to relax key assumptions of the Mk model. \par
+
+\subsection{Ascertainment Bias}
+
+When Lewis first introduced the Mk model, he observed that branch lengths on the trees were greatly inflated.
+The reason for this is that when morphological characters are collected, characters that do not vary, or vary in a non-parsimony-informative way (such as autapomorphies) are excluded.
+Excluding these low-rate characters causes the overall amount of evolution to be over-estimated.
+This causes an inflation in the branch lengths. \par
+
+Therefore, when performing a morphological phylogenetic analysis, it is important to correct for this bias.
+Original corrections simulated invariant and non-parsimony informative characters along the proposed tree.
+The likelihood of these characters would then be calculated and used to normalize the total likelihood value.
+RevBayes implements a dynamic programming approach that calculates the same likelihood, but  does so faster. \par
+
+\section{Example: Inferring a Phylogeny of Fossil Bears Using the Mk Model}
+
+In this example, we will use morphological character data from 18 taxa of extinct bears. 
+The dataset contains 62 binary characters, a fairly typical dataset size for morphological characters. \par
+
+\medskip
+\subsection{Tutorial Format}\label{subsect:Exercise-Format}
+
+This tutorial follows a specific format for issuing instructions and information.
+
+{\begin{framed}
+The boxed instructions guide you to complete tasks that are not part of the \RevBayes syntax, but rather direct you to create directories or files or similar.
+\end{framed}}
+
+
+Information describing the commands and instructions will be written in paragraph-form before or after they are issued.
+
+All command-line text, including all \Rev syntax, are given in \cl{monotype font}. 
+Furthermore, blocks of \Rev code that are needed to build the model, specify the analysis, or execute the run are given in separate shaded boxes.
+For example, we will instruct you to create a constant node called \cl{rho} that is equal to \cl{1.0} using the \cl{<-} operator like this:
+%Load the cytochrome-b sequences from file and assign the data matrix to a variable called \cl{cytb}.
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+rho <- 1.0
+\end{lstlisting}
+\end{snugshade*}
+
+It is important to be aware that some PDF viewers may render some characters given as \colorbox{shadecolor}{\tt{Rev commands}} differently. 
+Thus, if you copy and paste text from this PDF, you may introduce some incorrect characters. 
+Because of this, we recommend that you type the instructions in this tutorial or copy them from the scripts provided. 
+
 
 \begin{snugshade}
 \begin{lstlisting}
