@@ -7,9 +7,9 @@
 #
 ################################################################################
 
-outfileName = "results/" + analysis_name + ".csv"
-write(file=outfileName, "simID", "mean_rf", "quantile25", "quantile50", "quantile75", "quantile99", "quantile999", "mean_tl", "var_tl", "entropy", sep=",", append=TRUE)  
-write(file=outfileName, "\n", sep=",", append=TRUE)  
+outfileName = "results/" + analysis_name + ".tsv"
+write(file=outfileName, "simID", "mean_rf", "quantile25", "quantile50", "quantile75", "quantile99", "quantile999", "mean_tl", "var_tl", "entropy", sep="\t", append=TRUE)  
+write(file=outfileName, "\n", sep="\t", append=TRUE)  
 
 
 ################### calculate the pps stats here #########################
@@ -86,8 +86,10 @@ var_tl = var(tree_length)
 entropy = entropy + ln(unique_trees.size())
 
 ## write it to a file
-write(file=outfileName, i, mean_rf, quantile25, quantile50, quantile75, quantile99, quantile999, mean_tl, var_tl, entropy, sep=",", append=TRUE)  
-write(file=outfileName, "\n", sep=",", append=TRUE)  
+
+place_holder = ""
+write(file=outfileName, i, mean_rf, quantile25, quantile50, quantile75, quantile99, quantile999, mean_tl, var_tl, entropy, place_holder, sep="\t", append=TRUE)  
+write(file=outfileName, "\n", sep="\t", append=TRUE)  
 clear(rf_dists)
 
 
@@ -99,9 +101,9 @@ clear(rf_dists)
 ################### calculate the empirical stats here ###################
 
 ## set the empirical output file
-outfileName = "results/empirical_" + analysis_name + ".csv"
-write(file=outfileName, "mean_rf", "quantile25", "quantile50", "quantile75", "quantile99", "quantile999", "mean_tl", "var_tl", "entropy", sep=",", append=TRUE)  
-write(file=outfileName, "\n", sep=",", append=TRUE)  
+outfileName = "results/empirical_" + analysis_name + ".tsv"
+write(file=outfileName, "mean_rf", "quantile25", "quantile50", "quantile75", "quantile99", "quantile999", "mean_tl", "var_tl", "entropy", sep="\t", append=TRUE)  
+write(file=outfileName, "\n", sep="\t", append=TRUE)  
 
 ## find the empirical file
 empFileName = "output" + "/" + analysis_name + "_posterior.trees"
@@ -168,8 +170,8 @@ mean_tl = mean(tree_length)
 var_tl = var(tree_length)
 entropy = entropy + ln(unique_trees.size())
 
-write(file=outfileName, mean_rf, quantile25, quantile50, quantile75, quantile99, quantile999, mean_tl, var_tl, entropy, sep=",", append=TRUE)  
-write(file=outfileName, "\n", sep=",", append=TRUE)  
+write(file=outfileName, mean_rf, quantile25, quantile50, quantile75, quantile99, quantile999, mean_tl, var_tl, entropy, sep="\t", append=TRUE)  
+write(file=outfileName, "\n", sep="\t", append=TRUE)  
 
 clear(rf_dists)
 
@@ -177,18 +179,61 @@ clear(rf_dists)
 ################### end of empirical calculations ##############################
 
 
+################### start of effect size calculations ########################
+
+empData = readDataDelimitedFile("results/empirical_" + analysis_name + ".tsv",header=TRUE,delimiter="\t")
+simData = readDataDelimitedFile("results/" + analysis_name + ".tsv",header=TRUE,delimiter="\t")
+
+effect_sizes = ["Effect Size"]
+
+for (x in 2:simData[1].size()) {
+count = 1
+## transform the data for easily manipulation
+	for (n in 1:simData.size()) {
+
+			value = simData[n][x]
+			numbers_unsorted[n] = value
+		
+		}
+
+
+## calculate median value of PPD here
+		numbers_unsorted = numbers_unsorted + 0
+		numbers <- numbers_unsorted
+		numbers.sort()
+		if (numbers.size() % 2 > 0) {
+
+			firstHalf = round(numbers.size() / 2) - 1
+			median = numbers[firstHalf]
+
+		} else {
+
+			value1 <- (numbers[numbers.size() / 2])
+			value2 <- numbers[(numbers.size() / 2) + 1]
+			median = ((value1 + 0) + (value2 + 0)) / 2
+
+		}
+
+## calculate effect size here
+		empValue = empData[1][x-1]
+		effectSize = abs((median - empValue) / stdev(numbers))
+		## write to file here
+		effect_sizes[x] = effectSize
+}
+################### end of effect size calculations ##########################
+
 ################### start of p-value calculations ##############################
 
 ## setup the pvalue output file
-outfileName = "results/pvalues_" + analysis_name + ".csv"
-write(file=outfileName, "", "Lower 1-tailed", "Upper 1-tailed", "Two-tailed", sep=",", append=TRUE)
+outfileName = "results/pvalues_effectsizes_" + analysis_name + ".tsv"
+write(file=outfileName, "Statistic", "Lower 1-tailed", "Upper 1-tailed", "Two-tailed", "Effect Size", sep="\t", append=TRUE)
 write(file=outfileName, "\n", sep=",", append=TRUE)  
 statID = v("", "mean_rf", "quantile25", "quantile50", "quantile75", "quantile99", "quantile999", "mean_tl", "var_tl", "entropy")
 
 ## read back in csv files
 ## loop through them, and calculate the 3 p-values for each dataset
-empData = readDataDelimitedFile("results/empirical_" + analysis_name + ".csv",header=TRUE,delimiter=",")
-simData = readDataDelimitedFile("results/" + analysis_name + ".csv",header=TRUE,delimiter=",")
+empData = readDataDelimitedFile("results/empirical_" + analysis_name + ".tsv",header=TRUE,delimiter="\t")
+simData = readDataDelimitedFile("results/" + analysis_name + ".tsv",header=TRUE,delimiter="\t")
 
 for (z in 2:simData[1].size()) {
 
@@ -217,10 +262,9 @@ if (upperCount == 0) { upperPvalue <- 0
 ## 2-tailed
 twotailPvalue = 2 * (min(v(lowerPvalue, upperPvalue)))
 
-write(file=outfileName, statID[z], lowerPvalue, upperPvalue, twotailPvalue, sep=",", append=TRUE)
-write(file=outfileName, "\n", sep=",", append=TRUE)  
+write(file=outfileName, statID[z], lowerPvalue, upperPvalue, twotailPvalue, effect_sizes[z], sep="\t", append=TRUE)
+write(file=outfileName, "\n", sep="\t", append=TRUE)  
 
 
 }
 ################### end of p-value calculations ##############################
-
