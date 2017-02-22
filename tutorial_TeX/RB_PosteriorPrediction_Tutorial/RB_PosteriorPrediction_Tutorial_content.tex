@@ -1,3 +1,5 @@
+\newcommand{\sur}[1]{\ensuremath{^{\textrm{#1}}}}
+\newcommand{\sous}[1]{\ensuremath{_{\textrm{#1}}}}
 \newenvironment{Snugshade}[1][236,236,236]{
   \definecolor{shadecolor}{RGB}{#1}%
   \begin{snugshade}%
@@ -68,12 +70,11 @@ meaningful way, the model is failing to capture some salient feature of the evol
 \begin{figure}[h!]
 \centering
 \includegraphics[width=\textwidth,angle=0]{figures/pps.png}
-\caption{\small A cartoon schematic comparing data and inference based approaches to assessing model
-plausibility with posterior predictive simulation \citep{Brown2014-mb}. \label{"Figure 1"}}
+\caption{\small A cartoon schematic showing the process of assessing model fit with posterior predictive simulation built into P\sur{3} and \RevBayes. \label{"Figure 1"}}
 \end{figure}
 \end{centering}
 The framework to construct posterior predictive distributions, and compare them to the posterior distribution is 
-conviently built in to \RevBayes. In this tutorial we will walk you through using this functionality to perform
+conveniently built in to \RevBayes. In this tutorial we will walk you through using this functionality to perform
 a complete posterior predictive simulation on an example dataset.  
 
 
@@ -557,12 +558,12 @@ source("scripts/PosteriorPredictive_TreeSummary.Rev")
 Depending on your computer this process should take around 10-15 minutes to complete. 
 
 Once execution of the script is complete, you should see 3 files in your output directory that were not 
-there before. Each of these is a simple CSV file containing the test statistic calculation output.
+there before. Each of these is a simple tab-delimited (TSV) file containing the test statistic calculation output.
 
 \begin{itemize}
-\item empirical\_pps\_example.csv
-\item pps\_example.csv
-\item pvalues\_pps\_example.csv
+\item empirical\_pps\_example.tsv
+\item pps\_example.tsv
+\item pvalues\_pps\_example.tsv
 \end{itemize}
 
 If you have these 3 files, and there are results in them, you can go ahead and clear() \RevBayes.
@@ -574,7 +575,7 @@ clear()
 \end{Snugshade}}
 
 You can get an estimate of how the model performed by examining the \textit{P}\-values in the 
-\textbf{pvalues\_pps\_example.csv} file. In this example, a quick view shows us that the two-tailed \textit{P}\-values
+\textbf{pvalues\_pps\_example.tsv} file. In this example, a quick view shows us that the two-tailed \textit{P}\-values
 for most of the statistics show a value less than 0.05. This leads to a rejection of the model, suggesting 
 that the model employed is not a good fit for the data. This is the result we expected given we chose a very 
 simplistic model that would likely be a poor fit for our data. However, it's a good example 
@@ -582,11 +583,10 @@ of the sensitivity of this method, showing how relatively short runtimes and a l
 still detect poor fit. 
 
 Another way that you can calculate the magnitude of the discrepancy between the empirical and PP datasets is by
-calculating the effect size of each test statistic. This feature isn't implemented in \RevBayes or RevScript yet, 
-but will be available soon. Effect sizes are useful in quantifying the magnitude of the difference between the 
-empirical value and the distribution of posterior predictive values. Effect size can be calculated by taking the 
+calculating the effect size of each test statistic. Effect sizes are useful in quantifying the magnitude of the difference between the 
+empirical value and the distribution of posterior predictive values. The test statistic effect size can be calculated by taking the 
 absolute value of the difference between the median posterior predictive value and the empirical value divided by 
-the standard deviation of the posterior predictive distribution \citep{Doyle2015-qb}.
+the standard deviation of the posterior predictive distribution \citep{Doyle2015-qb}. Effect sizes are calculated automatically for the inference based test statistics in the P\sur{3} analysis. The effect sizes for each test statistics are stored in the same output file as the \textit{P}\-values. 
 
 \subsection{Additional Exercises}
 
