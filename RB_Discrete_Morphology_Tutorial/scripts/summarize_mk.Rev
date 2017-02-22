@@ -1,0 +1,6 @@
+
+# Read in the tree trace and construct the maximum clade credibility (MCC) tree #
+trace = readTreeTrace("output/mk_simple.trees")
+
+# Summarize tree trace and save MCC tree to file
+mccTree(trace, file="output/mk.mcc.tre")

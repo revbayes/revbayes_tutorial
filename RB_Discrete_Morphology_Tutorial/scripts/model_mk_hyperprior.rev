@@ -2,6 +2,7 @@
 # Binary morphological substitution model #
 ###########################################
 #Obtain a list of names from the Nexus file. We will use this to add tips to the tree
+
 names <- morpho.names()
 
 # Set up branch length moves
@@ -13,29 +14,31 @@ for (i in 1:nbr){
 
 #Specify the number of categories we would like to use to describe our data. For simplicity,
 # we will use 4.
+
 n_cats = 4
-#Specify the two parameters to the Beta distribution, and the moves on these parameters.
-alpha_ofbeta ~ dnExponential( 1 )
-beta_ofbeta ~ dnExponential( 1 )
-moves[mvi++] = mvScale(beta_ofbeta, lambda=1,    weight=1.0 )
-moves[mvi++] = mvScale(beta_ofbeta, lambda=0.1,  weight=1.0 )
-moves[mvi++] = mvScale(beta_ofbeta, lambda=0.01, weight=1.0 )
-moves[mvi++] = mvScale(alpha_ofbeta, lambda=1,    weight=1.0 )
-moves[mvi++] = mvScale(alpha_ofbeta, lambda=0.1,  weight=1.0 )
-moves[mvi++] = mvScale(alpha_ofbeta, lambda=0.01, weight=1.0 )
 
-#Create the Beta distribution, according to the two parameters and the number of categories.
+#Specify the hyperparameter to the distribution from which we will draw our state frequencies.
 
-cats := fnDiscretizeBeta(alpha_ofbeta, beta_ofbeta,4)
+dir_alpha ~ dnExponential(1)
+moves[mvi++] = mvScale(dir_alpha, lambda=1,    weight=1.0 )
+moves[mvi++] = mvScale(dir_alpha, lambda=0.1,  weight=1.0 )
+moves[mvi++] = mvScale(dir_alpha, lambda=0.01, weight=1.0 )
 
-#Create the Q matrices. These data are binary, so we initialize the Jukes-Cantor matrix with
-# two states. The matrix is initialized from the median values of out four quantiles from
-# the Beta.
+# Create a vector of how many different state frequencies we will need. We are working with
+# binary data and will only need two. If you were working with multistate data, you could
+# repeat the dir_alpha value for as many states as you need.
 
-for (i in 1:cats.size())
+pi_prior := v(dir_alpha,dir_alpha) 
+	
+# Loop over the categories. For each category, draw state frequencies from a Dirichlet. Use
+# those state values to initialize the Q matrix.
+
+for(i in 1:n_cats)
 {
-Q[i] := fnFreeBinary(v(1-cats[i], cats[i]), false)
-cats[i]
+	pi[i] ~ dnDirichlet(pi_prior)
+    moves[mvi++] = mvSimplexElementScale(pi[i], alpha=10, weight=1.0) 
+    
+    Q_morpho[i] := fnF81(pi[i])
 }
 
 # Tell the model what the probability of a character going into any particular category. 
@@ -45,16 +48,19 @@ matrix_probs ~ dnDirichlet(v(1,1,1,1))
 moves[mvi++] = mvSimplexElementScale(matrix_probs, alpha=10, weight=1.0) 
 
 
-#Set up Gamma-distributed rate variation.
+# We also use a discretized gamma distribution of rate categories #
+# again, the shape parameter is drawn from an exponential prior #
 alpha_morpho ~ dnExponential( 1.0 )
 rates_morpho := fnDiscretizeGamma( alpha_morpho, alpha_morpho, 4 )
 
 #Moves on the parameters to the Gamma distribution.
+
 moves[mvi++] = mvScale(alpha_morpho, lambda=0.01, weight=1.0)
 moves[mvi++] = mvScale(alpha_morpho, lambda=0.1,  weight=1.0)
 moves[mvi++] = mvScale(alpha_morpho, lambda=1,    weight=1.0)
 
 #Create a starting tree and place moves on it.
+
 
 tau ~ dnUniformTopology(names)
 phylogeny := treeAssembly(tau, br_lens)
@@ -63,7 +69,8 @@ moves[mvi++] = mvSPR(tau)
 #Combine all of our elements into a CTMC. Because we have not observed any invariant sites, 
 # we specify the coding is 'variable'. Note that we are now feeding the site matrices to the CTMC.
 
-phyMorpho ~ dnPhyloCTMC(tree=phylogeny, siteRates=rates_morpho, Q=Q, type="Standard", coding="variable", siteMatrices=matrix_probs)
+
+phyMorpho ~ dnPhyloCTMC(tree=phylogeny, siteRates=rates_morpho, Q=Q_morpho, type="Standard", coding="variable", siteMatrices=matrix_probs)
 phyMorpho.clamp(morpho)
 
 

@@ -23,7 +23,8 @@ n_taxa <- taxa.size()
 n_branches <- 2 * n_taxa - 2
 # Load the model files
 
-source("scripts/model_mk.rev") # Morphological character change model
+source("scripts/model_mk_hyperprior.rev") # Morphological character change model
+
 
 ########
 # MCMC #
@@ -33,17 +34,17 @@ source("scripts/model_mk.rev") # Morphological character change model
 mymodel = model(phylogeny)
 # Create a vector of monitors #
 # 1. for the full model #
-monitors[mni++] = mnModel(filename="output/mk_simple.log", printgen=10)
+monitors[mni++] = mnModel(filename="output/mk_hyperprior.log", printgen=10)
 # 2. the tree #
-monitors[mni++] = mnFile(filename="output/mk_simple.trees", printgen=10, phylogeny)
+monitors[mni++] = mnFile(filename="output/mk_hyperprior.trees", printgen=10, phylogeny)
 # 3. and a few select parameters to be printed to the screen #
-monitors[mni++] = mnScreen(printgen=10)
+monitors[mni++] = mnScreen(printgen=10, Q_morpho, pi)
 # Initialize the MCMC object #
 mymcmc = mcmc(mymodel, monitors, moves)
 
 # Run the MCMC #
 mymcmc.run(generations=100000)
-source("scripts/summarize_mk.Rev")
+source("scripts/summarize_mk_hyperprior.Rev")
 
 # Quit RevBayes #
 q()
