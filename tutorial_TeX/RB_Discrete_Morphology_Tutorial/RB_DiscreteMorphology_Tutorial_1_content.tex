@@ -12,11 +12,11 @@ However, morphological characters remain relevant: Fossils often provide our onl
 Using morphological data can help researchers include specimens in their phylogeny that might be left out of a molecular tree. \par
 To understand how morphological characters are modeled, it is important to understand how characters are collected.
 Unlike in molecular data, for which homology is algorithmically determined, homology in a character is typically assessed an expert. 
-Biologists will typically decide what characters are homologous by looking across specimens at the same structure in multiple taxa; they may also look at the developmental origin of structures in making this assessment.
+Biologists will typically decide what characters are homologous by looking across specimens at the same structure in multiple taxa; they may also look at the developmental origin of structures in making this assessment \citep{Phillips06}.
 Once homology is determined, characters are broken down into states, or different forms a single character can take.
 The state `0' commonly refers to absence, meaning that character is not present.
 In some codings, absence will mean that character has not evolved in that group.
-In others, absence means that that character has not evolved in that group, and/or that that character has been lost in that group. 
+In others, absence means that that character has not evolved in that group, and/or that that character has been lost in that group \citep{freudenstein05}. 
 This type of coding is arbitrary, but both \textbf{non-random} and \textbf{meaningful}, and poses challenges for how we model the data. 
 \par
 
@@ -27,7 +27,7 @@ In this way of estimating a tree, a character that does not change, or changes o
 Therefore, workers with parsimony typically do not collect characters that are parsimony uninformative.
 \par
 
-In 2001, Paul Lewis introduced a generalization of the Jukes-Cantor model of sequence evolution for use with morphological data.
+In 2001, Paul Lewis \citep{lewis01} introduced a generalization of the Jukes-Cantor model of sequence evolution for use with morphological data.
 This model, called the Mk (Markov model, assuming each character is in one of \textit{k} states) model provided a mathemetical formulation that could be used to estimate trees from morphological data in both likelihood and Bayesian frameworks. 
 While this model is a useful step forward, as a generalization of the Jukes-Cantor, it still makes fairly simplistic assumptions.
 This tutorial will guide you through estimating a phylogeny with the Mk model, and two useful extensions to the model. \par
@@ -72,6 +72,7 @@ Q = \begin{pmatrix} -\mu_0 & \mu & \mu & \mu \\
 Because this is a Jukes-Cantor-like model, state frequencies do not vary as a model parameter.
 These assumptions may seem unrealistic.
 However, all models are a compromise between reality and generalizability.
+Prior work has demonstrated that, in many conditions, the model does perform adequately \citep{wright14}.
 Because morphological characters do not carry common meaning across sites in a matrix in the way that nucleotide characters do, making assumptions that fit all characters is challenging. 
 A visualization of this simple model can be seen in Fig. 1.\par
 
@@ -83,16 +84,18 @@ In further sections, we will explore how to relax key assumptions of the Mk mode
 When Lewis first introduced the Mk model, he observed that branch lengths on the trees were greatly inflated.
 The reason for this is that when morphological characters are collected, characters that do not vary, or vary in a non-parsimony-informative way (such as autapomorphies) are excluded.
 Excluding these low-rate characters causes the overall amount of evolution to be over-estimated.
-This causes an inflation in the branch lengths. \par
+This causes an inflation in the branch lengths \cite{lewis01}.
+\par
 
 Therefore, when performing a morphological phylogenetic analysis, it is important to correct for this bias.
+There are numerous statistically valid ways to perform this correction \cite{allman08b}.
 Original corrections simulated invariant and non-parsimony informative characters along the proposed tree.
 The likelihood of these characters would then be calculated and used to normalize the total likelihood value.
 RevBayes implements a dynamic programming approach that calculates the same likelihood, but  does so faster. \par
 
 \section{Example: Inferring a Phylogeny of Fossil Bears Using the Mk Model}\label{sec:dm_simple}
 
-In this example, we will use morphological character data from 18 taxa of extinct bears. 
+In this example, we will use morphological character data from 18 taxa of extinct bears \citep{abella2011}. 
 The dataset contains 62 binary characters, a fairly typical dataset size for morphological characters. \par
 
 \medskip
@@ -466,7 +469,7 @@ These will contain the new model parameters and models. \par
 \begin{figure}[h!]
 \fbox{%
 \begin{minipage}{\textwidth}\centering
-\includegraphics[width=0.92\textwidth,angle=0]{\ResourcePath figures/tikz/morpho_gm-eps-converted-to}
+\includegraphics[width=0.5\textwidth,angle=0]{\ResourcePath figures/tikz/morpho_gm-eps-converted-to}
 \caption{\small Graphical model demonstrating the discretized Beta distribution for allowing variable state frequencies.}
 \end{minipage}}
 \label{fig:module-gm}
@@ -480,10 +483,11 @@ Remember from the \cl{RB\_CTMC} lesson that stationary frequencies impact how li
 For example, it may be very likely, in a character, to change from 0 to 1.
 But if the frequency of 0 is very low, we will still seldom see this change. \par
 We can exploit the relationship between state frequencies and observed changes to allow for variable Q matrices across characters (Fig. 2).
-To do this, we generate a Beta distribution on state frequencies, and use the state frequencies from that Beta distribution to generate a series of Q-matrices to use to evaluate our data. \par
+To do this, we generate a Beta distribution on state frequencies \citep{huelsenbeck01c}, and use the state frequencies from that Beta distribution to generate a series of Q-matrices to use to evaluate our data. \par
 This type of model is called a \textbf{mixture model}.
 There are assumed to be subdivisions in the data, which may require different parameters (in this case, state frequencies).
-These subdivisions are not defined \textit{a priori}. \par
+These subdivisions are not defined \textit{a priori}. 
+This model has previously been shown to be effective for a range of empirical and simulated datasets \citep{wright16}.\par
 
 
 
@@ -595,7 +599,7 @@ This is an excellent start for allowing more complex models for morphology.
 But this approach also has several shortcomings.
 First, because we use a Beta distribution, this model really only works for binary data.
 Secondly, oftentimes, we will not have a good idea of the shape of the distribution from which we expect state frequencies to be drawn. \par
-To accommodate for these concerns, \cl{RevBayes} also has a model that is similar to the CAT model. \par
+To accommodate for these concerns, \cl{RevBayes} also has a model that is similar to the CAT model \citep{lartillot04}. \par
 The site-heterogeneous discrete morphology model (SHDM) uses a hyperprior on the prior on state frequencies to mix over different possible combinations state frequencies.
 In this mixture model, F81 Q-matrices (an extension of the Jukes-Cantor which allows for different state frequencies between characters) is initialized from a set of state frequencies.
 The number of Q-matrices initialized is equal to the number of user-defined categories, as in the discretized Beta model.
