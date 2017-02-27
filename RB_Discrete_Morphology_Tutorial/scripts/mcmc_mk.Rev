@@ -23,7 +23,7 @@ n_taxa <- taxa.size()
 n_branches <- 2 * n_taxa - 2
 # Load the model files
 
-source("scripts/model_mk.rev") # Morphological character change model
+source("scripts/model_mk_discretized.rev") # Morphological character change model
 
 ########
 # MCMC #
@@ -39,16 +39,10 @@ monitors[mni++] = mnFile(filename="output/mk_simple.trees", printgen=10, phyloge
 # 3. and a few select parameters to be printed to the screen #
 monitors[mni++] = mnScreen(printgen=10)
 # Initialize the MCMC object #
-#mymcmc = mcmc(mymodel, monitors, moves)
-pow_p = powerPosterior(model=mymodel, moves=moves, monitors=monitors, filename="output", cats=50)
+mymcmc = mcmc(mymodel, monitors, moves)
 
 # Run the MCMC #
-#mymcmc.run(generations=50000)
-pow_p.burnin(generations=1000,tuningInterval=250)
-pow_p.run(generations=10000)
-ss <- steppingStoneSampler(file="model1.out", powerColumnName="power", likelihoodColumnName="
-likelihood")
-ss.marginal()
+mymcmc.run(generations=50000)
 # Read in the tree trace and construct the consensus tree tree #
 trace = readTreeTrace("output/mk_simple.trees")
 

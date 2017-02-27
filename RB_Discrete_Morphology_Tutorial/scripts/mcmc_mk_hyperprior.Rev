@@ -43,8 +43,13 @@ monitors[mni++] = mnScreen(printgen=10, Q_morpho, pi)
 mymcmc = mcmc(mymodel, monitors, moves)
 
 # Run the MCMC #
-mymcmc.run(generations=100000)
-source("scripts/summarize_mk_hyperprior.Rev")
+mymcmc.run(generations=50000)
+
+# Read in the tree trace and construct the consensus tree tree #
+trace = readTreeTrace("output/mk_hyperprior.trees")
+
+# Summarize tree trace and the consensus tree to file
+consensusTree(trace, file="output/mk_hyperprior.majrule.tre")
 
 # Quit RevBayes #
 q()
