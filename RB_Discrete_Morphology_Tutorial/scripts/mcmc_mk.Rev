@@ -23,7 +23,7 @@ n_taxa <- taxa.size()
 n_branches <- 2 * n_taxa - 2
 # Load the model files
 
-source("scripts/model_mk_discretized.rev") # Morphological character change model
+source("scripts/model_mk.rev") # Morphological character change model
 
 ########
 # MCMC #
