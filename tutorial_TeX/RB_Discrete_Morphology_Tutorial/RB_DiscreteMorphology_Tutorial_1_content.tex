@@ -1,5 +1,12 @@
 \section{Overview of Discrete Morphology Models} \label{sec:dm_overview}
-
+\begin{figure}[h!]
+\fbox{%
+\begin{minipage}{\textwidth}\centering
+\includegraphics[width=0.92\textwidth,angle=0]{\ResourcePath figures/tikz/Mk_model}
+\caption{\small Graphical model showing the Mk model (left panel). Rev code specifying the Mk model is on the right-hand panel.}
+\end{minipage}}
+\label{fig:module-gm}
+\end{figure}
 Molecular data forms the basis of most phylogenetic analyses today. 
 However, morphological characters remain relevant: Fossils often provide our only direct observation of extinct biodiversity; DNA degradation can make it difficult or impossible to obtain sufficient molecular data from fragile museum specimens. 
 Using morphological data can help researchers include specimens in their phylogeny that might be left out of a molecular tree. \par
@@ -26,6 +33,11 @@ While this model is a useful step forward, as a generalization of the Jukes-Cant
 This tutorial will guide you through estimating a phylogeny with the Mk model, and two useful extensions to the model. \par
 
 \subsection{The Mk Model}
+{\begin{framed}
+Make a copy of the MCMC and model files you just made. 
+Call them \cl{mcmc\_mk\_dicretized.Rev} and \cl{model\_mk\_discretized.Rev}. 
+These will contain the new model parameters and models. \par 
+\end{framed}}
 
 The Mk model is a generalization of the Jukes-Cantor model of nucleotide sequence evolution, which we discussed in \textbf{Molecular Models of Character Evolution}. 
 The Q matrix for a two-state Mk model looks like so:
@@ -60,7 +72,8 @@ Q = \begin{pmatrix} -\mu_0 & \mu & \mu & \mu \\
 Because this is a Jukes-Cantor-like model, state frequencies do not vary as a model parameter.
 These assumptions may seem unrealistic.
 However, all models are a compromise between reality and generalizability.
-Because morphological characters do not carry common meaning across sites in a matrix in the way that nucleotide characters do, making assumptions that fit all characters is challenging. \par
+Because morphological characters do not carry common meaning across sites in a matrix in the way that nucleotide characters do, making assumptions that fit all characters is challenging. 
+A visualization of this simple model can be seen in Fig. 1.\par
 
 We will first perform a phylogenetic analysis using the Mk model.
 In further sections, we will explore how to relax key assumptions of the Mk model. \par
@@ -77,7 +90,7 @@ Original corrections simulated invariant and non-parsimony informative character
 The likelihood of these characters would then be calculated and used to normalize the total likelihood value.
 RevBayes implements a dynamic programming approach that calculates the same likelihood, but  does so faster. \par
 
-\section{Example: Inferring a Phylogeny of Fossil Bears Using the Mk Model}
+\section{Example: Inferring a Phylogeny of Fossil Bears Using the Mk Model}\label{sec:dm_simple}
 
 In this example, we will use morphological character data from 18 taxa of extinct bears. 
 The dataset contains 62 binary characters, a fairly typical dataset size for morphological characters. \par
@@ -338,7 +351,7 @@ monitors[mni++] = mnModel(filename="output/mk_simple.log", printgen=10)
 
 The \cl{mnFile} monitor writes any parameter we specify to file.
 Thus, if we only cared about the branch lengths and nothing else (this is not a typical or recommended attitude for an analysis this complex) we wouldn't use the \cl{mnModel} monitor above and just use the \cl{mnFile} monitor to write a smaller and simpler output file.
-Since the tree topology is not included in the \cl{mnModel} monitor (because it is not numerical), we will use \cl{mnFile} to write the tree to file by specifying our \cl{fbd\_tree} variable in the arguments.
+Since the tree topology is not included in the \cl{mnModel} monitor (because it is not numerical), we will use \cl{mnFile} to write the tree to file by specifying our \cl{phylogeny} variable in the arguments.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 monitors[mni++] = mnFile(filename="output/mk_simple.trees", printgen=10, phylogeny)
@@ -395,10 +408,10 @@ Begin by running the \RevBayes executable. In Unix systems, type the following i
 \colorbox{black}{\strut\hspace{1mm}\textcolor[rgb]{0,1,1}{\cl{rb}}\hspace{0.925\textwidth}}
 \end{framed}}
 
-Provided that you started \RevBayes from the correct directory (\cl{RB\_TotalEvidenceDating\_FBD\_Tutorial}), you can then use the \cl{source()} function to feed \RevBayes your master script file (\cl{mcmc\_mk.Rev}).
+Provided that you started \RevBayes from the correct directory (\cl{RB\_DiscreteMorphology\_Tutorial}), you can then use the \cl{source()} function to feed \RevBayes your master script file (\cl{mcmc\_mk.Rev}).
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-source("scripts/mcmc_TEFBD.Rev")
+source("scripts/mcmc_mk.Rev")
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -442,14 +455,22 @@ This will execute the analysis and you should see the following output (though n
 When the analysis is complete, \RevBayes will quit and you will have a new directory called \cl{output} that will contain all of the files you specified with the monitors (Sect.\ \ref{subsub:Exercise-Monitors}).
 
 
-\section{Example: Relaxing the Assumption of Equal Transition Probabilities }
+\section{Example: Relaxing the Assumption of Equal Transition Probabilities }\label{sec:dm_disc}
+
 
 {\begin{framed}
 Make a copy of the MCMC and model files you just made. 
 Call them \cl{mcmc\_mk\_dicretized.Rev} and \cl{model\_mk\_discretized.Rev}. 
 These will contain the new model parameters and models. \par 
 \end{framed}}
-
+\begin{figure}[h!]
+\fbox{%
+\begin{minipage}{\textwidth}\centering
+\includegraphics[width=0.92\textwidth,angle=0]{\ResourcePath figures/tikz/morpho_gm-eps-converted-to}
+\caption{\small Graphical model demonstrating the discretized Beta distribution for allowing variable state frequencies.}
+\end{minipage}}
+\label{fig:module-gm}
+\end{figure}
 The Mk model makes a number of assumptions, but one that may strike you as unrealistic is the assumption that characters are equally likely to change from any one state to any other state.
 That means that a trait is as likely to be gained as lost.
 While this may hold true for some traits, we expect that it may be untrue for many others. \par
@@ -458,8 +479,14 @@ We do this by specifying a Beta prior on state frequencies.
 Remember from the \cl{RB\_CTMC} lesson that stationary frequencies impact how likely we are to see changes in a character.
 For example, it may be very likely, in a character, to change from 0 to 1.
 But if the frequency of 0 is very low, we will still seldom see this change. \par
-We can exploit the relationship between state frequencies and observed changes to allow for variable Q matrices across characters.
+We can exploit the relationship between state frequencies and observed changes to allow for variable Q matrices across characters (Fig. 2).
 To do this, we generate a Beta distribution on state frequencies, and use the state frequencies from that Beta distribution to generate a series of Q-matrices to use to evaluate our data. \par
+This type of model is called a \textbf{mixture model}.
+There are assumed to be subdivisions in the data, which may require different parameters (in this case, state frequencies).
+These subdivisions are not defined \textit{a priori}. \par
+
+
+
 
 \subsection{Modifying the MCMC File}
 
@@ -480,14 +507,14 @@ The number of classes can vary; we have chosen 4 for tractability.\par
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 n_cats = 4
-alpha\_ofbeta ~ dnExponential( 1 )
-beta\_ofbeta ~ dnExponential( 1 )
-moves[mvi++] = mvScale(alpha\_ofbeta, lambda=1,    weight=1.0 )
-moves[mvi++] = mvScale(alpha\_ofbeta, lambda=0.1,  weight=1.0 )
-moves[mvi++] = mvScale(alpha\_ofbeta, lambda=0.01, weight=1.0 )
-moves[mvi++] = mvScale(beta\_ofbeta, lambda=1,    weight=1.0 )
-moves[mvi++] = mvScale(beta\_ofbeta, lambda=0.1,  weight=1.0 )
-moves[mvi++] = mvScale(beta\_ofbeta, lambda=0.01, weight=1.0 )
+alpha_ofbeta ~ dnExponential( 1 )
+beta_ofbeta ~ dnExponential( 1 )
+moves[mvi++] = mvScale(alpha_ofbeta, lambda=1,    weight=1.0 )
+moves[mvi++] = mvScale(alpha_ofbeta, lambda=0.1,  weight=1.0 )
+moves[mvi++] = mvScale(alpha_ofbeta, lambda=0.01, weight=1.0 )
+moves[mvi++] = mvScale(beta_ofbeta, lambda=1,    weight=1.0 )
+moves[mvi++] = mvScale(beta_ofbeta, lambda=0.1,  weight=1.0 )
+moves[mvi++] = mvScale(beta_ofbeta, lambda=0.01, weight=1.0 )
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -552,8 +579,16 @@ Run the new MCMC file, just as you ran the plain Mk file.
 This estimation will take longer than the Mk model, due to increased model complexity. \par
 
 
-\section{Site-Heterogeneous Discrete Morphology Model}
+\section{Site-Heterogeneous Discrete Morphology Model} \label{sec:dm_dir}
 
+\begin{figure}[h!]
+\fbox{%
+\begin{minipage}{\textwidth}\centering
+\includegraphics[width=0.5\textwidth,angle=0]{\ResourcePath figures/tikz/morph_hyperprior}
+\caption{\small Graphical model demonstrating the Dirichlet prior to allow variable state frequencies in both binary and multistate data.}
+\end{minipage}}
+\label{fig:module-relaxed morphology}
+\end{figure}
 
 In the previous example, we explored allowing among-character variation in state frequencies.
 This is an excellent start for allowing more complex models for morphology.
@@ -562,10 +597,10 @@ First, because we use a Beta distribution, this model really only works for bina
 Secondly, oftentimes, we will not have a good idea of the shape of the distribution from which we expect state frequencies to be drawn. \par
 To accommodate for these concerns, \cl{RevBayes} also has a model that is similar to the CAT model. \par
 The site-heterogeneous discrete morphology model (SHDM) uses a hyperprior on the prior on state frequencies to mix over different possible combinations state frequencies.
-In this model, F81 Q-matrices (an extension of the Jukes-Cantor which allows for different state frequencies between characters) is initialized from a set of state frequencies.
+In this mixture model, F81 Q-matrices (an extension of the Jukes-Cantor which allows for different state frequencies between characters) is initialized from a set of state frequencies.
 The number of Q-matrices initialized is equal to the number of user-defined categories, as in the discretized Beta model.
 The state frequencies used to initialize the Q-matrices are drawn from a Dirichelet prior distribution, which is generated by drawing values from an exponential hyperprior distribution. 
-This model is visualized in .\par
+This model is visualized in Fig. 3.\par
 
 \subsection{Example: Site-Heterogeneous Discrete Morphology Model }
 
@@ -589,9 +624,9 @@ First, we will create a hyperprior called \cl{dir\_alpha} and specify a move on 
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 dir_alpha ~ dnExponential(1)
-moves[mvi++] = mvScale(dir\_alpha, lambda=1,    weight=1.0 )
-moves[mvi++] = mvScale(dir\_alpha, lambda=0.1,  weight=1.0 )
-moves[mvi++] = mvScale(dir\_alpha, lambda=0.01, weight=1.0 )
+moves[mvi++] = mvScale(dir_alpha, lambda=1,    weight=1.0 )
+moves[mvi++] = mvScale(dir_alpha, lambda=0.1,  weight=1.0 )
+moves[mvi++] = mvScale(dir_alpha, lambda=0.01, weight=1.0 )
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -599,7 +634,7 @@ This hyperparameter, dir\_alpha, will be used as a parameter to a Dirichelet dis
 
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-pi_prior := v(dir\_alpha,dir\_alpha)
+pi_prior := v(dir_alpha,dir_alpha)
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -625,69 +660,59 @@ No other aspects of the model file need to change.
 Run the MCMC as before. \par
 
 \bigskip
-\subsection{Evaluate and Summarize Your Results}\label{subsect:Exercise-SummarizeResults}
+\section{Evaluate and Summarize Your Results}\label{sec:trace}
 
 %TODO some text here
 % what is interesting? What are we looking for? 
 
 \medskip
-\subsubsection{Evaluate MCMC}\label{subsub:Exercise-EvalMCMC}
+\subsection{Evaluate MCMC}\label{subsub:Exercise-EvalMCMC}
 
-In this section, we will evaluate the \textit{mixing} and \textit{convergence} of our MCMC simulation using the program {\tt Tracer}.
-We can also summarize the marginal distributions for particular parameters we're interested in.
-\href{http://tree.bio.ed.ac.uk/software/tracer/}{\tt Tracer} \citep{Rambaut2011} is a tool for visualizing parameters sampled by MCMC.
-This program is limited to numerical parameters, however, and cannot be used to summarize or analyze MCMC samples of the tree topology (this will be discussed further in section \ref{subsub:Exercise-SummarizeTree}).
-
-\begin{figure}[h!]
-\fbox{%
-\begin{minipage}{\textwidth}\centering
-\includegraphics[width=\textwidth,angle=0]{\ResourcePath figures/tracer_load_file.png}
-\caption{\small The {\tt Tracer} window. To add data, click on the ``+'' sign, highlighted in red above.}
-\end{minipage}}
-\label{fig:tracer}
-\end{figure}
-
-
-%Import the MCMC log file into Tracer.
-\begin{framed}
-Open {\tt Tracer} and import the log files generated by our three estimations \mi{File\textrightarrow Import New Trace File}.
-Or click the \fbox{$+$} button on the left-hand side of the screen to add your log file (see Fig.\ \ref{fig:tracer}).
-\end{framed}
+As discussion in \cl{RB\_Total\_Evidence\_TEFBD}, we will use Tracer to evaluate the MCMC samples from our three estimations. 
+Load all three of the MCMC logs into the Tracer window.
+The MCMC chains will not have converged because they have not been run very long. 
+Highlight all three files in the upper left-hand viewer (Fig. 4) by right- or command-clicking all three files. \par
 
 \begin{figure}[h!]
 \fbox{%
 \begin{minipage}{\textwidth}\centering
-\includegraphics[width=\textwidth,angle=0]{\ResourcePath figures/tracer_fig_posterior_short.png}
-\caption{\small The \mi{Estimates} window in {\tt Tracer} showing the histogram of the \mi{Posterior}.}
+\includegraphics[width=0.5\textwidth,angle=0]{\ResourcePath figures/AddFiles}
+\caption{\small Highlight all three files for model comparison.}
 \end{minipage}}
-\label{fig:tracer-post-ests}
+\label{fig:module-gm}
 \end{figure}
 
 
-Immediately upon loading your file (see Fig.\ \ref{fig:tracer-post-ests}), 
-you will see the list of \mi{Trace Files} on the left-hand side (you can load multiple files).
-The bottom left section, called \mi{Traces}, provides a list of every parameter in the log file, along with the mean and the effective sample size (ESS) for the posterior sample of that parameter.
-The ESS statistic provides a measure of the number of independent draws in our sample for a given parameter.
-This quantity will typically be much smaller than the number of generations of the chain.
-In {\tt Tracer}, poor to fair values for the ESS will be colored red and yellow.
-You will likely see a lot of red and yellow numbers because the MCMC runs in this exercise are too short to effectively sample the posterior distributions of most parameters.
-A much longer analysis is provided in the \cl{output} directory. 
+Once all three trace logs are loaded and highlighted, first look at the estimated marginal likelihoods.
+You will notice that the Mk model, as originally proposed by Lewis (2001) is improved by allowing any state frequency heterogeneity at all. 
+The discretized model and the Dirichlet model both represent improvements, but are fairly close in likelihood score to each other (Fig. 5).
+Likely, we would need to perform stepping stone model assessment to truly tell if the more complicated model is statistically justified.
+This analysis is too complicated and time-consuming for this tutorial period, but you will find instructions below for performing the analysis. \par
+\begin{figure}[h!]
+\fbox{%
+\begin{minipage}{\textwidth}\centering
+\includegraphics[width=0.75\textwidth,angle=0]{\ResourcePath figures/likelihoods}
+\caption{\small Comparison of likelihood scores for all three models.}
+\end{minipage}}
+\label{fig:module-gm}
+\end{figure}
 
-The inspection window for your selected parameter is the \mi{Estimates} window, which shows a histogram and summary statistics of the values sampled by the Markov chain. 
-Figure \ref{fig:tracer-post-ests} shows the marginal distribution of the \mi{Posterior} statistic for the log files in the \cl{output} directory.
+Click on the `Trace' panel.
+In the lower left hand corner, you will notice an option to color each trace by the file it came from.
+Choose this option (you may need to expand the window slightly to see it).
+Next to this option, you can also see an option to add a legend to your trace window.
+The results of this coloring can be seen in Fig. 6.
+When the coloring is working, you will see that the Mk model mixes quite well, but that mixing becomes worse as we relax the assumption of equal state frequencies.
+This is because we are greatly increasing model complexity.
+Therefore, we would need to run the MCMC chains longer if we were to use these analyses in a paper. \par
 
-
-
-
-
-\subsection{Things to consider}
-
-...
-
-
-\section{Overview of Discrete Morphology Models} \label{sec:dm_simple}
-
-\section{Overview of Discrete Morphology Models} \label{sec:dm_complex}
-{\bf \framebox{?} Alright, who did it?}
+\begin{figure}[h!]
+\fbox{%
+\begin{minipage}{\textwidth}\centering
+\includegraphics[width=0.75\textwidth,angle=0]{\ResourcePath figures/colortrace}
+\caption{\small The Trace window. The traces are colored by which version of the Mk model they correspond to.}
+\end{minipage}}
+\label{fig:module-gm}
+\end{figure}
 
 \newpage

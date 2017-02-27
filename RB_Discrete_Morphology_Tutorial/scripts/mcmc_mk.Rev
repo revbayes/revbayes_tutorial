@@ -39,11 +39,21 @@ monitors[mni++] = mnFile(filename="output/mk_simple.trees", printgen=10, phyloge
 # 3. and a few select parameters to be printed to the screen #
 monitors[mni++] = mnScreen(printgen=10)
 # Initialize the MCMC object #
-mymcmc = mcmc(mymodel, monitors, moves)
+#mymcmc = mcmc(mymodel, monitors, moves)
+pow_p = powerPosterior(model=mymodel, moves=moves, monitors=monitors, filename="output", cats=50)
 
 # Run the MCMC #
-mymcmc.run(generations=100000)
-source("scripts/summarize_mk.Rev")
+#mymcmc.run(generations=50000)
+pow_p.burnin(generations=1000,tuningInterval=250)
+pow_p.run(generations=10000)
+ss <- steppingStoneSampler(file="model1.out", powerColumnName="power", likelihoodColumnName="
+likelihood")
+ss.marginal()
+# Read in the tree trace and construct the consensus tree tree #
+trace = readTreeTrace("output/mk_simple.trees")
+
+# Summarize tree trace and the consensus tree to file
+consensusTree(trace, file="output/mk_simple.majrule.tre")
 
 # Quit RevBayes #
 q()
