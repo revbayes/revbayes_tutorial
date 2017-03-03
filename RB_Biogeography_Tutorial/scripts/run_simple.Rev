@@ -11,6 +11,16 @@ dat_range_01 = readDiscreteCharacterData(range_fn)
 # convert binary ranges into NaturalNumbers
 dat_range_n = formatDiscreteCharacterData(dat_range_01, "DEC")
 
+# store the converted state descriptions
+state_desc = dat_range_n.getStateDescriptions()
+state_desc_fn = "output/range_state_values.txt"
+state_desc_str = "state,range\n"
+for (i in 1:state_desc.size())
+{
+    state_desc_str += (i-1)+","+state_desc[i]+"\n"
+}
+write(state_desc_str, file=state_desc_fn)
+
 # compare characters for two taxa
 dat_range_01[1]
 dat_range_n[1]

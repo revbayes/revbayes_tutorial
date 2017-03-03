@@ -1,0 +1,30 @@
+###########################################
+# Binary morphological substitution model #
+###########################################
+#Obtain a list of names from the Nexus file. We will use this to add tips to the tree
+names <- morpho.names()
+
+# Set up branch length moves
+nbr <- 2*names.size() - 3
+for (i in 1:nbr){
+    br_lens[i] ~ dnExponential(5.0)
+    moves[mvi++] = mvScale(br_lens[i]) 
+}
+
+#Create the Q matrix. These data are binary, so we initialize the Jukes-Cantor matrix with
+# two states
+Q_morpho := fnJC(2)
+
+#Create a starting tree and place moves on it.
+tau ~ dnUniformTopology(names)
+phylogeny := treeAssembly(tau, br_lens)
+moves[mvi++] = mvSPR(tau, weight=5)
+moves[mvi++] = mvNNI(tau, weight=15)
+
+#Combine all of our elements into a CTMC. Because we have not observed any invariant sites, 
+# we specify the coding is 'variable'.
+
+phyMorpho ~ dnPhyloCTMC(tree=phylogeny, Q=Q_morpho, type="Standard")
+phyMorpho.clamp(morpho)
+
+
