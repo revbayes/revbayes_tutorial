@@ -1,0 +1,54 @@
+###########################################
+# Binary morphological substitution model #
+###########################################
+#Obtain a list of names from the Nexus file. We will use this to add tips to the tree
+names <- morpho.names()
+
+# Set up branch length moves
+nbr <- 2*names.size() - 3
+for (i in 1:nbr){
+    br_lens[i] ~ dnExponential(5.0)
+    moves[mvi++] = mvScale(br_lens[i]) 
+}
+
+
+#Create the Q matrix. These data are binary, so we initialize the Jukes-Cantor matrix with
+# two states
+n_classes <- 2
+n_class_pairs <- n_classes * (n_classes-1)
+
+# rate matrix per class
+pi ~ dnBeta( 1,1 )
+moves[mvi++] = mvSlide(pi, delta=0.2, weight=2)
+Q_class[1] := fnFreeK( v( pi, abs(1.0 - pi) ) )
+Q_class[2] := fnJC(2)
+
+# rate scalers per class
+rate_class_simplex ~ dnDirichlet( rep(2, n_classes) )
+moves[mvi++] = mvSimplexElementScale(rate_class_simplex, alpha=10, weight=2)
+rate_class := n_classes * rate_class_simplex
+
+# class switch rate matrix
+rate_switch ~ dnDirichlet( rep(2, n_class_pairs) )
+moves[mvi++] = mvSimplexElementScale(rate_switch, alpha=10, weight=2)
+Q_switch := fnFreeK(n_classes * rate_switch, rescale=false)
+
+# covarion rate matrix
+Q_covarion := fnCovarionRateMatrix( Q=Q_class,
+                                    switch_rates=Q_switch,
+                                    clock_rates=rate_class) 
+
+#Create a starting tree and place moves on it.
+tau ~ dnUniformTopology(names)
+phylogeny := treeAssembly(tau, br_lens)
+moves[mvi++] = mvSPR(tau, weight=5)
+moves[mvi++] = mvNNI(tau, weight=15)
+tree_length := phylogeny.treeLength()
+
+#Combine all of our elements into a CTMC. Because we have not observed any invariant sites, 
+# we specify the coding is 'variable'.
+
+phyMorpho ~ dnPhyloCTMC(tree=phylogeny, Q=Q_covarion, type="Standard", coding="variable")
+phyMorpho.clamp(morpho)
+
+

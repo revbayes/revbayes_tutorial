@@ -20,6 +20,8 @@ tau ~ dnUniformTopology(names)
 phylogeny := treeAssembly(tau, br_lens)
 moves[mvi++] = mvSPR(tau, weight=5)
 moves[mvi++] = mvNNI(tau, weight=15)
+tree_length := phylogeny.treeLength()
+
 
 #Combine all of our elements into a CTMC. Because we have not observed any invariant sites, 
 # we specify the coding is 'variable'.

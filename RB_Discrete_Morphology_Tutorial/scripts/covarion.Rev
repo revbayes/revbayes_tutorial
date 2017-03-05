@@ -1,0 +1,81 @@
+# source("/Users/mlandis/projects/rb_sandbox/code/covarion.Rev")
+
+mvi = 1
+
+morpho = readDiscreteCharacterData("data/bears.covarion.nex")
+taxa = morpho.taxa()
+
+#Obtain a list of names from the Nexus file. We will use this to add tips to the tree
+names <- morpho.names()
+
+# Set up branch length moves
+nbr <- 2*names.size() - 3
+for (i in 1:nbr){
+    br_lens[i] ~ dnExponential(5.0)
+    mv[mvi++] = mvScale(br_lens[i]) 
+}
+
+# random tree
+
+#phy ~ dnBDP(lambda=1, mu=0, rootAge=10, taxa=taxa)
+
+tau ~ dnUniformTopology(names)
+phy := treeAssembly(tau, br_lens)
+mv[mvi++] = mvSPR(tau, weight=5)
+mv[mvi++] = mvNNI(tau, weight=15)
+
+n_classes <- 2
+n_class_pairs <- n_classes * (n_classes-1)
+
+# rate matrix per class
+pi ~ dnBeta( 1,1 )
+mv[mvi++] = mvSlide(pi, delta=0.2, weight=2)
+Q_class[1] := fnFreeK( v( pi, abs(1.0 - pi) ) )
+Q_class[2] := fnJC(2)
+
+# rate scalers per class
+rate_class_simplex ~ dnDirichlet( rep(2, n_classes) )
+mv[mvi++] = mvSimplexElementScale(rate_class_simplex, alpha=10, weight=2)
+rate_class := n_classes * rate_class_simplex
+
+# class switch rate matrix
+rate_switch ~ dnDirichlet( rep(2, n_class_pairs) )
+mv[mvi++] = mvSimplexElementScale(rate_switch, alpha=10, weight=2)
+Q_switch := fnFreeK(n_classes * rate_switch, rescale=false)
+
+# covarion rate matrix
+Q_covarion := fnCovarionRateMatrix( Q=Q_class,
+                                    switch_rates=Q_switch,
+                                    clock_rates=rate_class) 
+
+
+# phylogenetic model
+seq ~ dnPhyloCTMC(Q=Q_covarion,
+                  tree=phy,
+                  type="Standard",
+                  nSites=100,
+                  coding="variable")
+
+
+seq.clamp(morpho)
+
+
+# monitors
+mn[1] = mnScreen(pi, rate_class, rate_switch, printgen=10)
+mn[2] = mnModel(file="output/covarion.log", printgen=10)
+mn[3] = mnFile(phy, file="output/covarion.tre", printgen=10)
+
+
+
+mdl = model(phy)
+
+ch = mcmc(mv, mn, mdl)
+
+#ch.burnin(1e3,tuningInterval=1e2)
+ch.run(1e4)
+
+
+trace = readTreeTrace("output/covarion.tre")
+
+# Summarize tree trace and the consensus tree to file
+consensusTree(trace, file="output/covarion.majrule.tree")

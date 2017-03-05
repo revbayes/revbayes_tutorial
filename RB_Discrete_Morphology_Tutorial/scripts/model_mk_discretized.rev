@@ -18,11 +18,11 @@ n_cats = 4
 alpha_ofbeta ~ dnExponential( 1 )
 beta_ofbeta ~ dnExponential( 1 )
 moves[mvi++] = mvScale(beta_ofbeta, lambda=1,    weight=1.0 )
-moves[mvi++] = mvScale(beta_ofbeta, lambda=0.1,  weight=1.0 )
-moves[mvi++] = mvScale(beta_ofbeta, lambda=0.01, weight=1.0 )
+moves[mvi++] = mvScale(beta_ofbeta, lambda=0.1,  weight=2.0 )
+moves[mvi++] = mvScale(beta_ofbeta, lambda=0.01, weight=3.0 )
 moves[mvi++] = mvScale(alpha_ofbeta, lambda=1,    weight=1.0 )
-moves[mvi++] = mvScale(alpha_ofbeta, lambda=0.1,  weight=1.0 )
-moves[mvi++] = mvScale(alpha_ofbeta, lambda=0.01, weight=1.0 )
+moves[mvi++] = mvScale(alpha_ofbeta, lambda=0.1,  weight=2.0 )
+moves[mvi++] = mvScale(alpha_ofbeta, lambda=0.01, weight=3.0 )
 
 #Create the Beta distribution, according to the two parameters and the number of categories.
 
@@ -34,8 +34,7 @@ cats := fnDiscretizeBeta(alpha_ofbeta, beta_ofbeta,4)
 
 for (i in 1:cats.size())
 {
-Q[i] := fnFreeBinary(v(1-cats[i], cats[i]), false)
-cats[i]
+    Q[i] := fnFreeBinary(v(1-cats[i], cats[i]), false)
 }
 
 # Tell the model what the probability of a character going into any particular category. 
@@ -58,7 +57,9 @@ moves[mvi++] = mvScale(alpha_morpho, lambda=1,    weight=1.0)
 
 tau ~ dnUniformTopology(names)
 phylogeny := treeAssembly(tau, br_lens)
-moves[mvi++] = mvSPR(tau)
+moves[mvi++] = mvSPR(tau, weight=5)
+moves[mvi++] = mvNNI(tau, weight=15)
+tree_length := phylogeny.treeLength()
 
 #Combine all of our elements into a CTMC. Because we have not observed any invariant sites, 
 # we specify the coding is 'variable'. Note that we are now feeding the site matrices to the CTMC.
