@@ -6,9 +6,12 @@
 names <- morpho.names()
 
 # Set up branch length moves
+br_len_lambda ~ dnExp(0.2)
+moves[mvi++] = mvScale(br_len_lambda)
+
 nbr <- 2*names.size() - 3
 for (i in 1:nbr){
-    br_lens[i] ~ dnExponential(5.0)
+    br_lens[i] ~ dnExponential(br_len_lambda)
     moves[mvi++] = mvScale(br_lens[i]) 
 }
 
@@ -20,9 +23,9 @@ n_cats = 4
 #Specify the hyperparameter to the distribution from which we will draw our state frequencies.
 
 dir_alpha ~ dnExponential(1)
-moves[mvi++] = mvScale(dir_alpha, lambda=0.01, weight=3.0 )
-moves[mvi++] = mvScale(dir_alpha, lambda=0.1,  weight=2.0 )
-moves[mvi++] = mvScale(dir_alpha, lambda=1,    weight=1.0 )
+moves[mvi++] = mvScale(dir_alpha, lambda=0.01, weight=3.0, tuneTarget=0.6 )
+moves[mvi++] = mvScale(dir_alpha, lambda=0.1,  weight=2.0, tuneTarget=0.44 )
+moves[mvi++] = mvScale(dir_alpha, lambda=1,    weight=1.0, tuneTarget=0.1 )
 
 
 
@@ -57,15 +60,15 @@ rates_morpho := fnDiscretizeGamma( alpha_morpho, alpha_morpho, 4 )
 
 #Moves on the parameters to the Gamma distribution.
 
-moves[mvi++] = mvScale(alpha_morpho, lambda=0.01, weight=3.0)
-moves[mvi++] = mvScale(alpha_morpho, lambda=0.1,  weight=2.0)
-moves[mvi++] = mvScale(alpha_morpho, lambda=1,    weight=1.0)
+moves[mvi++] = mvScale(alpha_morpho, lambda=0.01, weight=5.0, tuneTarget=0.6)
+moves[mvi++] = mvScale(alpha_morpho, lambda=0.1,  weight=3.0, tuneTarget=0.44)
+moves[mvi++] = mvScale(alpha_morpho, lambda=1,    weight=1.0, tuneTarget=0.1)
 
 #Create a starting tree and place moves on it.
 tau ~ dnUniformTopology(names)
 phylogeny := treeAssembly(tau, br_lens)
-moves[mvi++] = mvSPR(tau, weight=5)
-moves[mvi++] = mvNNI(tau, weight=15)
+moves[mvi++] = mvNNI(tau, weight=2*nbr)
+moves[mvi++] = mvSPR(tau, weight=nbr)
 tree_length := phylogeny.treeLength()
 
 #Combine all of our elements into a CTMC. Because we have not observed any invariant sites, 

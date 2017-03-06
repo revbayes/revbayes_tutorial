@@ -13,7 +13,7 @@
 #######################
 # Import the morphological character matrix #
 # this file contains only the taxa for which morphological characters are available #
-morpho <- readDiscreteCharacterData("data/bears.nex")
+morpho <- readDiscreteCharacterData("data/bears.covarion.nex")
 
 ## helpers
 mvi = 1
@@ -23,7 +23,7 @@ n_taxa <- taxa.size()
 n_branches <- 2 * n_taxa - 2
 
 # Load the model files
-source("scripts/model_simple.rev") # Morphological character change model
+source("scripts/model_mk_discretized_covarion.rev") # Morphological character change model
 
 ########
 # MCMC #
@@ -33,15 +33,15 @@ source("scripts/model_simple.rev") # Morphological character change model
 mymodel = model(phylogeny)
 # Create a vector of monitors #
 # 1. for the full model #
-monitors[mni++] = mnModel(filename="output/simple.log", printgen=10)
+monitors[mni++] = mnModel(filename="output/mk_discretized_covarion.log", printgen=10)
 # 2. the tree #
-monitors[mni++] = mnFile(filename="output/simple.trees", printgen=10, phylogeny)
+monitors[mni++] = mnFile(filename="output/mk_discretized_covarion.trees", printgen=10, phylogeny)
 # 3. and a few select parameters to be printed to the screen #
 monitors[mni++] = mnScreen(printgen=10)
-# 4. the ancestral states
+# 4. add an ancestral state monitor
 monitors[mni++] = mnJointConditionalAncestralState(tree=phylogeny,
                                                    ctmc=phyMorpho,
-                                                   filename="output/simple.states.txt",
+                                                   filename="output/mk_discretized_covarion.states.txt",
                                                    type="Standard",
                                                    printgen=10,
                                                    withTips=true)
@@ -50,13 +50,14 @@ monitors[mni++] = mnJointConditionalAncestralState(tree=phylogeny,
 mymcmc = mcmc(mymodel, monitors, moves)
 
 # Run the MCMC #
-mymcmc.run(generations=5000)
+mymcmc.run(generations=10000)
 
 # Read in the tree trace and construct the consensus tree tree #
-trace = readTreeTrace("output/simple.trees", treetype="non-clock")
+trace = readTreeTrace("output/mk_discretized_covarion.trees", treetype="non-clock")
 
 # Summarize tree trace and the consensus tree to file
-consensusTree(trace, file="output/simple.majrule.tre")
+consensusTree(trace, file="output/mk_discretized_covarion.majrule.tre")
+mccTree(trace, file="output/mk_discretized_covarion.mcc.tre")
 
 # Quit RevBayes #
 q()

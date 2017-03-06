@@ -5,9 +5,12 @@
 names <- morpho.names()
 
 # Set up branch length moves
+br_len_lambda ~ dnExp(0.2)
+moves[mvi++] = mvScale(br_len_lambda)
+
 nbr <- 2*names.size() - 3
 for (i in 1:nbr){
-    br_lens[i] ~ dnExponential(5.0)
+    br_lens[i] ~ dnExponential(br_len_lambda)
     moves[mvi++] = mvScale(br_lens[i]) 
 }
 
@@ -34,7 +37,8 @@ cats := fnDiscretizeBeta(alpha_ofbeta, beta_ofbeta,4)
 
 for (i in 1:cats.size())
 {
-    Q[i] := fnFreeBinary(v(1-cats[i], cats[i]), false)
+    #Q[i] := fnFreeK(v(abs(1-cats[i]), cats[i]))
+    Q[i] := fnF81(simplex(abs(1-cats[i]), cats[i]))
 }
 
 # Tell the model what the probability of a character going into any particular category. 
@@ -57,8 +61,8 @@ moves[mvi++] = mvScale(alpha_morpho, lambda=1,    weight=1.0)
 
 tau ~ dnUniformTopology(names)
 phylogeny := treeAssembly(tau, br_lens)
-moves[mvi++] = mvSPR(tau, weight=5)
-moves[mvi++] = mvNNI(tau, weight=15)
+moves[mvi++] = mvNNI(tau, weight=2*nbr)
+moves[mvi++] = mvSPR(tau, weight=nbr)
 tree_length := phylogeny.treeLength()
 
 #Combine all of our elements into a CTMC. Because we have not observed any invariant sites, 

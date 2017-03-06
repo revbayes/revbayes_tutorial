@@ -5,9 +5,13 @@
 names <- morpho.names()
 
 # Set up branch length moves
+
+br_len_lambda ~ dnExp(0.2)
+moves[mvi++] = mvScale(br_len_lambda)
+
 nbr <- 2*names.size() - 3
 for (i in 1:nbr){
-    br_lens[i] ~ dnExponential(5.0)
+    br_lens[i] ~ dnExponential(br_len_lambda)
     moves[mvi++] = mvScale(br_lens[i]) 
 }
 
@@ -18,10 +22,9 @@ Q_morpho := fnJC(2)
 #Create a starting tree and place moves on it.
 tau ~ dnUniformTopology(names)
 phylogeny := treeAssembly(tau, br_lens)
-moves[mvi++] = mvSPR(tau, weight=5)
-moves[mvi++] = mvNNI(tau, weight=15)
+moves[mvi++] = mvNNI(tau, weight=2*nbr)
+moves[mvi++] = mvSPR(tau, weight=nbr)
 tree_length := phylogeny.treeLength()
-
 
 #Combine all of our elements into a CTMC. Because we have not observed any invariant sites, 
 # we specify the coding is 'variable'.

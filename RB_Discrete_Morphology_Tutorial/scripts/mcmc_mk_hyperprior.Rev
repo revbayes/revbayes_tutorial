@@ -51,6 +51,7 @@ monitors[mni++] = mnJointConditionalAncestralState(tree=phylogeny,
 mymcmc = mcmc(mymodel, monitors, moves)
 
 # Run the MCMC #
+#mymcmc.burnin(5000,tuningInterval=100)
 mymcmc.run(generations=50000)
 
 # Read in the tree trace and construct the consensus tree tree #
