@@ -332,7 +332,7 @@ moves[mvi++] = mvSlide(log10_rate_bg, weight=4)
 The relative dispersal rate is fixed to 1
 \begin{snugshade}
 \begin{lstlisting}
-dispersal_rate <- abs(1)
+dispersal_rate <- 1.0
 \end{lstlisting}
 \end{snugshade}
 
@@ -356,7 +356,7 @@ Next, create dispersal rates that are functions of distance between all pairs of
 for (i in 1:n_epochs) {
   for (j in 1:n_areas) {
     for (k in 1:n_areas) {
-     dr[i][j][k] <- abs(0)
+     dr[i][j][k] <- 0.0
      if (connectivity[i][j][k] > 0) {
        dr[i][j][k] := dispersal_rate * exp(-distance_scale * distances[j][k])
      }
@@ -382,7 +382,7 @@ moves[mvi++] = mvScale(extirpation_rate, weight=2)
 for (i in 1:n_epochs) {
   for (j in 1:n_areas) {
     for (k in 1:n_areas) {
-      er[i][j][k] <- abs(0.0) 
+      er[i][j][k] <- 0.0 
     }
     er[i][j][j] := extirpation_rate
   }

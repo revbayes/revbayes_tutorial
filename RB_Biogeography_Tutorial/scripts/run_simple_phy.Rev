@@ -150,20 +150,32 @@ seq_mol.clamp(dat_mol)
 # Biogeography models #
 #######################
 
-# the biogeographic event rate multiplier
-log10_rate_bg ~ dnUniform(-4,2)
-log10_rate_bg.setValue(-2)
-rate_bg := 10^log10_rate_bg
-moves[mvi++] = mvSlide(log10_rate_bg, weight=4)
+# the biogeographic rate scaler
+#log10_rate_bg ~ dnUniform(-4,2)
+#log10_rate_bg.setValue(-2)
+#rate_bg := 10^log10_rate_bg
+#moves[mvi++] = mvSlide(log10_rate_bg, weight=4)
 
-# the relative dispersal rate
-dispersal_rate <- abs(1)
+# relative dispersal rate is fixed to one
+#dispersal_rate <- abs(1)
 
-# the relative extirpation rate
-log_sd <- 0.5
-log_mean <- ln(1) - 0.5*log_sd^2
-extirpation_rate ~ dnLognormal(mean=log_mean, sd=log_sd)
-moves[mvi++] = mvScale(extirpation_rate, weight=2)
+# anagenetic event rate scaler
+log10_dispersal_rate ~ dnUniform(-4,2)
+log10_dispersal_rate.setValue(-2)
+dispersal_rate := 10^log10_dispersal_rate
+moves[mvi++] = mvSlide(log10_dispersal_rate, weight=4)
+
+# extirpation
+log10_extirpation_rate ~ dnUniform(-4,2)
+log10_extirpation_rate.setValue(-1)
+extirpation_rate := 10^log10_extirpation_rate
+moves[mvi++] = mvSlide(log10_extirpation_rate, weight=4)
+
+# then relative extirpation rates (or per-area extinction rates)
+#log_sd <- 0.5
+#log_mean <- ln(1) - 0.5*log_sd^2
+#extirpation_rate ~ dnLognormal(mean=log_mean, sd=log_sd)
+#moves[mvi++] = mvScale(extirpation_rate, weight=2)
 
 # the relative dispersal and extirpation rate matrices
 for (i in 1:n_areas) {
@@ -195,7 +207,7 @@ rf_DEC    <- simplex(rf_DEC)
 m_bg ~ dnPhyloCTMCClado(tree=phy,
                            Q=Q_DEC,
                            cladoProbs=P_DEC,
-                           branchRates=rate_bg,
+                           branchRates=1.,
                            rootFrequencies=rf_DEC,
                            type="NaturalNumbers",
                            nSites=1)

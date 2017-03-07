@@ -4,7 +4,7 @@
 range_fn = "data/n6/silversword.n6.range.nex"
 mol_fn   = "data/n6/silversword.mol.nex"
 tree_fn   = "data/n6/silversword.tre"
-out_fn   = "output/epoch_phy_prior"
+out_fn   = "output/epoch_phy"
 geo_fn   = "data/n6/hawaii.n6"
 times_fn = geo_fn + ".times.txt"
 dist_fn  = geo_fn + ".distances.txt"
@@ -115,7 +115,7 @@ kappa ~ dnGamma(2,2)
 moves[mvi++] = mvScale(kappa)
 
 bf ~ dnDirichlet( [1,1,1,1] )
-moves[mvi++] = mvSimplex(bf, alpha=10, weight=2, offset=1)
+moves[mvi++] = mvSimplexElementScale(bf, alpha=10, weight=3, tune=false)
 
 Q_mol := fnHKY(kappa, bf)
 
@@ -141,18 +141,19 @@ seq_mol.clamp(dat_mol)
 
 
 # anagenetic event rate scaler
-log10_rate_bg ~ dnUniform(-4,2)
-log10_rate_bg.setValue(-2)
-rate_bg := 10^log10_rate_bg
-moves[mvi++] = mvSlide(log10_rate_bg, weight=4)
+log10_dispersal_rate ~ dnUniform(-4,2)
+log10_dispersal_rate.setValue(-2)
+dispersal_rate := 10^log10_dispersal_rate
+moves[mvi++] = mvSlide(log10_dispersal_rate, weight=4)
 
 # fix relative dispersal rate to 1
-dispersal_rate <- 1.0
+#dispersal_rate <- 1.0
 
 # geographic distance scaler
 distance_scale ~ dnUnif(0,20)
 distance_scale.setValue(0.001)
-moves[mvi++] = mvScale(distance_scale, weight=3)
+moves[mvi++] = mvScale(distance_scale, lambda=0.05, weight=3)
+moves[mvi++] = mvScale(distance_scale, weight=1)
 
 # then, the dispersal rate matrix
 for (i in 1:n_epochs) {
@@ -166,11 +167,17 @@ for (i in 1:n_epochs) {
     }
 }
 
+# extirpation
+log10_extirpation_rate ~ dnUniform(-4,2)
+log10_extirpation_rate.setValue(-1)
+extirpation_rate := 10^log10_extirpation_rate
+moves[mvi++] = mvSlide(log10_extirpation_rate, weight=4)
+
 # then relative extirpation rates (or per-area extinction rates)
-log_sd <- 0.5
-log_mean <- ln(1) - 0.5*log_sd^2
-extirpation_rate ~ dnLognormal(mean=log_mean, sd=log_sd)
-moves[mvi++] = mvScale(extirpation_rate, weight=2)
+#log_sd <- 0.5
+#log_mean <- ln(1) - 0.5*log_sd^2
+#extirpation_rate ~ dnLognormal(mean=log_mean, sd=log_sd)
+#moves[mvi++] = mvScale(extirpation_rate, weight=2)
 
 # the extirpation rate matrix
 for (i in 1:n_epochs) {
@@ -198,7 +205,7 @@ for (i in 1:n_epochs) {
         epoch_times[i] <- 0.0
     } else {
         epoch_times[i] ~ dnUniform(time_min[i], time_max[i])
-        moves[mvi++] = mvSlide(epoch_times[i], delta=(time_bounds[i][1]-time_bounds[i][2])/2)
+        moves[mvi++] = mvSlide(epoch_times[i], delta=(time_bounds[i][1]-time_bounds[i][2])/2, weight=2, tune=false)
     }
 }
 
@@ -225,7 +232,7 @@ rf_DEC    <- simplex(rf_DEC)
 m_bg ~ dnPhyloCTMCClado(tree=tree,
                            Q=Q_DEC_epoch,
                            cladoProbs=P_DEC,
-                           branchRates=rate_bg,
+                           branchRates=1.,
                            rootFrequencies=rf_DEC,
                            type="NaturalNumbers",
                            nSites=1)
@@ -250,7 +257,7 @@ for (i in 1:n_epochs) {
     ingroup_older_island[i] := ifelse(ingroup_age > epoch_times[i], 1, 0)
 }
 
-monitors[mni++] = mnScreen(printgen=100, dispersal_rate, distance_scale, ingroup_age)
+monitors[mni++] = mnScreen(printgen=10, dispersal_rate, extirpation_rate, distance_scale, ingroup_age)
 monitors[mni++] = mnModel(file=out_fn+".model.log", printgen=100)
 monitors[mni++] = mnFile(tree, filename=out_fn+".tre", printgen=100)
 monitors[mni++] = mnJointConditionalAncestralState(tree=tree,
@@ -272,6 +279,10 @@ mymodel = model(m_bg, ingroup_older_island)
 mymcmc = mcmc(mymodel, monitors, moves)
 
 # run the MCMC analysis
+
+mymcmc.burnin(2e3, tuningInterval=1e2)
+mymcmc.operatorSummary()
+
 mymcmc.run(n_gen)
 
 #################
