@@ -21,8 +21,12 @@
 # read in the data 
 ######################
 
+# We need to limit the maximum number of chromosomes,
+# so here we just use the largest chromosome count plus 10.
+max_chromo = 26
+
 # Get the chromosome counts from a tab-delimited file.
-chromo_data = readCharacterDataDelimitted("data/chromosome_counts.tsv", type="NaturalNumbers")
+chromo_data = readCharacterDataDelimited("data/chromosome_counts.tsv", stateLabels=(max_chromo + 1), type="NaturalNumbers", delimiter="\t", headers=FALSE)
 
 # Get the DNA sequence alignment for the matK chloroplast gene.
 dna_seq = readDiscreteCharacterData("data/matK_treebase_aligned.fas")
@@ -31,7 +35,7 @@ dna_seq = readDiscreteCharacterData("data/matK_treebase_aligned.fas")
 n_species = dna_seq.ntaxa()
 n_sites = dna_seq.nchar()
 names = dna_seq.names()
-n_branches = 2 * n_species - 3
+n_branches = 2 * n_species - 2
 
 # Since we want to jointly infer ancestral states, we need to set an a priori
 # rooting constraint on our phylogeny. So here we set an ingroup and outgroup.
@@ -42,14 +46,14 @@ i = 1
 for (j in 1:names.size()) {
     found = false
     for (k in 1:outgroup.size()) {
-        if (outgroup[k] == names[j]) {
+        if (outgroup[k] == names[j].getSpeciesName()) {
             found = true
             break
         }
         k += 1
     }
     if (!found) {
-        ingroup[i] = names[j]
+        ingroup[i] = names[j].getSpeciesName()
         i += 1
     }
     j += 1
@@ -59,7 +63,7 @@ mi = 0
 # We make make a vector of clade objects.
 clade_ingroup = clade(ingroup)
 clade_outgroup = clade(outgroup)
-constraints = v(clade_ingroup, clade_outgroup)
+constraints = [clade_ingroup, clade_outgroup]
 
 # Next, we read in a starting tree that is consistent with our outgroup constraints.
 # This is only used to initialize the MCMC, it can be completely random as long 
@@ -73,13 +77,14 @@ starting_tree <- readBranchLengthTrees("data/matK_starting_tree.nwk")[1]
 ##############
 
 # We specify a uniform prior on the tree topology.
-topology ~ dnUniformTopology(names, constraints)
+#topology ~ dnUniformTopology(taxa=names, constraints=constraints, rooted=TRUE)
+topology ~ dnUniformTopology(taxa=names, outgroup=clade_outgroup, rooted=TRUE)
 
 # Use the starting tree topology consistent with the rooting constraint.
-topology.setValue(starting_tree.topology())
+#topology.setValue(starting_tree.topology())
 
 # Initialize an index for our moves, and add moves on the topology.
-mi = 0
+mi = 1
 moves[mi++] = mvNNI(topology, weight=10.0)
 
 # Create a stochastic node for each branch length.
@@ -144,17 +149,13 @@ delta ~ dnExponential(10.0)
 # rate of polyploidization
 rho ~ dnExponential(10.0)
 
-# We need to limit the maximum number of chromosomes,
-# so here we just use the largest chromosome count plus 10.
-max_chromo = 26
 
 # Create the rate matrix for chromosome number transitions.
 R := fnChromosomes(max_chromo, lambda, delta, rho)
 
 # We do not assume stationarity, so the root frequencies
 # are set flat.
-root_frequencies := simplex(1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1)
-#root_frequencies := simplex(rep(max_chromo, 1))
+root_frequencies := simplex(rep(1, max_chromo))
 
 # Add moves for each of the rates.
 moves[mi++] = mvScale(lambda, lambda=1, weight=1) 
@@ -183,7 +184,7 @@ monitors[1] = mnScreen(printgen=10, lambda, delta, rho, TL)
 monitors[2] = mnFile(filename="output/chromosomes_joint.trees", printgen=10, phylogeny)
 
 # The ancestral state monitor for the chromosome number reconstruction:
-monitors[3] = mnAncestralState(filename="output/chromosomes_joint.log", printgen=10, tree=phylogeny, ctmc=chromo_ctmc, type="NaturalNumbers")
+monitors[3] = mnJointConditionalAncestralState(filename="output/chromosomes_joint.log", printgen=10, tree=phylogeny, ctmc=chromo_ctmc, type="NaturalNumbers")
 
 # And another monitor for all the model variables:
 monitors[4] = mnModel(filename="output/chromosomes_joint_model.log", printgen=10)
