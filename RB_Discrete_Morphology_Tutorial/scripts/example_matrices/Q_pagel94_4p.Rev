@@ -2,6 +2,7 @@
 #    pi[1] = character is in state 0
 #    pi[2] = character is in state 1
 pi ~ dnDirichlet([1,1])
+pi.setValue( simplex(1,2) )
 
 # rates (3 free parameters):
 #    r[1] = 0->1 given the other character is 0
@@ -9,6 +10,7 @@ pi ~ dnDirichlet([1,1])
 #    r[3] = 1->0 given the other character is 0
 #    r[4] = 1->0 given the other character is 1
 r ~ dnDirichlet( [1,1,1,1] )
+r.setValue( simplex(1,3,3,1) )
 
 # create empty array of rates
 for (i in 1:4) {
