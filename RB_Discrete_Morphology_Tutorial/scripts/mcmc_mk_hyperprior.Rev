@@ -34,11 +34,11 @@ source("scripts/model_mk_hyperprior.rev") # Morphological character change model
 mymodel = model(phylogeny)
 # Create a vector of monitors #
 # 1. for the full model #
-monitors[mni++] = mnModel(filename="output/mk_hyperprior.log", printgen=10)
+monitors[mni++] = mnModel(filename="output/ant_hyperprior.log", printgen=10)
 # 2. the tree #
-monitors[mni++] = mnFile(filename="output/mk_hyperprior.trees", printgen=10, phylogeny)
+monitors[mni++] = mnFile(filename="output/ant_hyperprior.trees", printgen=10, phylogeny)
 # 3. and a few select parameters to be printed to the screen #
-monitors[mni++] = mnScreen(printgen=10, Q_morpho, pi)
+monitors[mni++] = mnScreen(printgen=10, Q_morpho, pi_prior)
 # Initialize the MCMC object #
 mymcmc = mcmc(mymodel, monitors, moves)
 
@@ -46,10 +46,10 @@ mymcmc = mcmc(mymodel, monitors, moves)
 mymcmc.run(generations=50000)
 
 # Read in the tree trace and construct the consensus tree tree #
-trace = readTreeTrace("output/mk_hyperprior.trees")
+trace = readTreeTrace("output/ant_hyperprior.trees")
 
 # Summarize tree trace and the consensus tree to file
-consensusTree(trace, file="output/mk_hyperprior.majrule.tre")
+consensusTree(trace, file="output/ant_hyperprior.majrule.tre")
 
 # Quit RevBayes #
 q()
