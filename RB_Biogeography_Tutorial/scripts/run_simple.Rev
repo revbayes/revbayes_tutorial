@@ -11,6 +11,7 @@ dat_range_01 = readDiscreteCharacterData(range_fn)
 # convert binary ranges into NaturalNumbers
 dat_range_n = formatDiscreteCharacterData(dat_range_01, "DEC")
 
+
 # compare characters for two taxa
 dat_range_01[1]
 dat_range_n[1]
@@ -36,14 +37,20 @@ tree <- readTrees(tree_fn)[1]
 # Biogeography models #
 #######################
 
-# the biogeographic event rate multiplier
-log10_rate_bg ~ dnUniform(-4,2)
-log10_rate_bg.setValue(-2)
-rate_bg := 10^log10_rate_bg
-moves[mvi++] = mvSlide(log10_rate_bg, weight=4)
+# the biogeographic rate scaler
+#log10_rate_bg ~ dnUniform(-4,2)
+#log10_rate_bg.setValue(-2)
+#rate_bg := 10^log10_rate_bg
+#moves[mvi++] = mvSlide(log10_rate_bg, weight=4)
 
-# the relative dispersal rate
-dispersal_rate <- abs(1)
+# relative dispersal rate is fixed to one
+#dispersal_rate <- abs(1)
+
+# anagenetic event rate scaler
+log10_dispersal_rate ~ dnUniform(-4,2)
+log10_dispersal_rate.setValue(-2)
+dispersal_rate := 10^log10_dispersal_rate
+moves[mvi++] = mvSlide(log10_dispersal_rate, weight=4)
 
 # build the relative dispersal rate matrix
 for (i in 1:n_areas) {
@@ -52,16 +59,22 @@ for (i in 1:n_areas) {
     }
 }
 
-# then the relative extirpation rate (or per-area extinction rates)
-log_sd <- 0.5
-log_mean <- ln(1) - 0.5*log_sd^2
-extirpation_rate ~ dnLognormal(mean=log_mean, sd=log_sd)
-moves[mvi++] = mvScale(extirpation_rate, weight=2)
+# extirpation
+log10_extirpation_rate ~ dnUniform(-4,2)
+log10_extirpation_rate.setValue(-1)
+extirpation_rate := 10^log10_extirpation_rate
+moves[mvi++] = mvSlide(log10_extirpation_rate, weight=4)
+
+# then relative extirpation rates (or per-area extinction rates)
+#log_sd <- 0.5
+#log_mean <- ln(1) - 0.5*log_sd^2
+#extirpation_rate ~ dnLognormal(mean=log_mean, sd=log_sd)
+#moves[mvi++] = mvScale(extirpation_rate, weight=2)
 
 # build the relative extirpation rate matrix
 for (i in 1:n_areas) {
     for (j in 1:n_areas) {
-        er[i][j] <- abs(0)        
+        er[i][j] <- 0.0       
     }
     er[i][i] := extirpation_rate
 }
@@ -81,7 +94,7 @@ P_DEC := fnDECCladoProbs(eventProbs=clado_event_probs,
 m_bg ~ dnPhyloCTMCClado(tree=tree,
                            Q=Q_DEC,
                            cladoProbs=P_DEC,
-                           branchRates=rate_bg,
+                           branchRates=1.,
                            type="NaturalNumbers",
                            nSites=1)
     
@@ -116,5 +129,20 @@ mymcmc = mcmc(mymodel, monitors, moves)
 # run the MCMC analysis
 mymcmc.run(n_gen)
 
+#################
+# Post-Analysis #
+#################
 
+# get the converted state descriptions
+state_desc = dat_range_n.getStateDescriptions()
+
+# write the state descriptions to file
+state_desc_str = "state,range\n"
+for (i in 1:state_desc.size())
+{
+    state_desc_str += (i-1) + "," + state_desc[i] + "\n"
+}
+write(state_desc_str, file=out_fn+".state_labels.txt")
+
+# exit
 quit()

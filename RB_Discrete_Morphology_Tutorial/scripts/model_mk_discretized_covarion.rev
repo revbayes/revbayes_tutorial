@@ -34,11 +34,33 @@ cats := fnDiscretizeBeta(alpha_ofbeta, beta_ofbeta,4)
 #Create the Q matrices. These data are binary, so we initialize the Jukes-Cantor matrix with
 # two states. The matrix is initialized from the median values of out four quantiles from
 # the Beta.
+n_classes <- 2
+n_class_pairs <- n_classes * (n_classes-1)
+
+# rate scalers per class
+rate_class_simplex ~ dnDirichlet( rep(2, n_classes) )
+moves[mvi++] = mvSimplexElementScale(rate_class_simplex, alpha=10, weight=2)
+rate_class := n_classes * rate_class_simplex
+
+# class switch rate matrix
+rate_switch ~ dnDirichlet( rep(2, n_class_pairs) )
+moves[mvi++] = mvSimplexElementScale(rate_switch, alpha=10, weight=2)
+Q_switch := fnFreeK(n_classes * rate_switch, rescale=false)
 
 for (i in 1:cats.size())
 {
-    #Q[i] := fnFreeK(v(abs(1-cats[i]), cats[i]))
-    Q[i] := fnF81(simplex(abs(1-cats[i]), cats[i]))
+	#Create the Q matrix. These data are binary, so we initialize the Jukes-Cantor matrix with
+    # two states
+    
+    # rate matrix per class
+    Q_class[i][1] := fnFreeK( v( abs(1-cats[i]), cats[i] ), rescale=false )
+    Q_class[i][2] := fnJC(2)
+
+    # covarion rate matrix
+    Q[i] := fnCovarionRateMatrix( Q=Q_class[i],
+                                           switch_rates=Q_switch,
+                                           clock_rates=rate_class) 
+
 }
 
 # Tell the model what the probability of a character going into any particular category. 

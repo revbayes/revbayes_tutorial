@@ -56,13 +56,19 @@ tree <- readTrees(tree_fn)[1]
 #######################
 
 # the biogeographic rate scaler
-log10_rate_bg ~ dnUniform(-4,2)
-log10_rate_bg.setValue(-2)
-rate_bg := 10^log10_rate_bg
-moves[mvi++] = mvSlide(log10_rate_bg, weight=4)
+#log10_rate_bg ~ dnUniform(-4,2)
+#log10_rate_bg.setValue(-2)
+#rate_bg := 10^log10_rate_bg
+#moves[mvi++] = mvSlide(log10_rate_bg, weight=4)
 
 # relative dispersal rate is fixed to one
-dispersal_rate <- abs(1)
+#dispersal_rate <- abs(1)
+
+# anagenetic event rate scaler
+log10_dispersal_rate ~ dnUniform(-4,2)
+log10_dispersal_rate.setValue(-2)
+dispersal_rate := 10^log10_dispersal_rate
+moves[mvi++] = mvSlide(log10_dispersal_rate, weight=4)
 
 # the geographical distance scaling factor
 distance_scale ~ dnUnif(0,20)
@@ -81,11 +87,17 @@ for (i in 1:n_epochs) {
     }
 }
 
-# then extirpation rates (or per-area extinction rates)
-log_sd <- 0.5
-log_mean <- ln(1) - 0.5*log_sd^2
-extirpation_rate ~ dnLognormal(mean=log_mean, sd=log_sd)
-moves[mvi++] = mvScale(extirpation_rate, weight=2)
+# extirpation
+log10_extirpation_rate ~ dnUniform(-4,2)
+log10_extirpation_rate.setValue(-1)
+extirpation_rate := 10^log10_extirpation_rate
+moves[mvi++] = mvSlide(log10_extirpation_rate, weight=4)
+
+# then relative extirpation rates (or per-area extinction rates)
+#log_sd <- 0.5
+#log_mean <- ln(1) - 0.5*log_sd^2
+#extirpation_rate ~ dnLognormal(mean=log_mean, sd=log_sd)
+#moves[mvi++] = mvScale(extirpation_rate, weight=2)
 
 # the extirpation rate matrix
 for (i in 1:n_epochs) {
@@ -144,7 +156,7 @@ rf_DEC    <- simplex(rf_DEC)
 m_bg ~ dnPhyloCTMCClado(tree=tree,
                            Q=Q_DEC_epoch,
                            cladoProbs=P_DEC,
-                           branchRates=rate_bg,
+                           branchRates=1.,
                            rootFrequencies=rf_DEC,
                            type="NaturalNumbers",
                            nSites=1)
@@ -181,4 +193,22 @@ mymcmc = mcmc(mymodel, monitors, moves)
 # run the MCMC analysis
 mymcmc.run(n_gen)
 
+
+
+#################
+# Post-Analysis #
+#################
+
+# get the converted state descriptions
+state_desc = dat_range_n.getStateDescriptions()
+
+# write the state descriptions to file
+state_desc_str = "state,range\n"
+for (i in 1:state_desc.size())
+{
+    state_desc_str += (i-1) + "," + state_desc[i] + "\n"
+}
+write(state_desc_str, file=out_fn+".state_labels.txt")
+
+# exit
 quit()

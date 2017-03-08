@@ -6,9 +6,12 @@
 names <- morpho.names()
 
 # Set up branch length moves
+br_len_lambda ~ dnExp(0.2)
+moves[mvi++] = mvScale(br_len_lambda)
+
 nbr <- 2*names.size() - 3
 for (i in 1:nbr){
-    br_lens[i] ~ dnExponential(5.0)
+    br_lens[i] ~ dnExponential(br_len_lambda)
     moves[mvi++] = mvScale(br_lens[i]) 
 }
 
@@ -20,9 +23,11 @@ n_cats = 4
 #Specify the hyperparameter to the distribution from which we will draw our state frequencies.
 
 dir_alpha ~ dnExponential(1)
-moves[mvi++] = mvScale(dir_alpha, lambda=1,    weight=1.0 )
-moves[mvi++] = mvScale(dir_alpha, lambda=0.1,  weight=1.0 )
-moves[mvi++] = mvScale(dir_alpha, lambda=0.01, weight=1.0 )
+moves[mvi++] = mvScale(dir_alpha, lambda=0.01, weight=3.0, tuneTarget=0.6 )
+moves[mvi++] = mvScale(dir_alpha, lambda=0.1,  weight=2.0, tuneTarget=0.44 )
+moves[mvi++] = mvScale(dir_alpha, lambda=1,    weight=1.0, tuneTarget=0.1 )
+
+
 
 # Create a vector of how many different state frequencies we will need. We are working with
 # binary data and will only need two. If you were working with multistate data, you could
@@ -36,7 +41,7 @@ pi_prior := v(dir_alpha,dir_alpha)
 for(i in 1:n_cats)
 {
 	pi[i] ~ dnDirichlet(pi_prior)
-    moves[mvi++] = mvSimplexElementScale(pi[i], alpha=10, weight=1.0) 
+    moves[mvi++] = mvSimplexElementScale(pi[i], alpha=10, weight=2.0) 
     
     Q_morpho[i] := fnF81(pi[i])
 }
@@ -45,7 +50,7 @@ for(i in 1:n_cats)
 # This prior says that a character is equally likely to be put into any category.
 
 matrix_probs ~ dnDirichlet(v(1,1,1,1))
-moves[mvi++] = mvSimplexElementScale(matrix_probs, alpha=10, weight=1.0) 
+moves[mvi++] = mvSimplexElementScale(matrix_probs, alpha=10, weight=2.0) 
 
 
 # We also use a discretized gamma distribution of rate categories #
@@ -55,16 +60,16 @@ rates_morpho := fnDiscretizeGamma( alpha_morpho, alpha_morpho, 4 )
 
 #Moves on the parameters to the Gamma distribution.
 
-moves[mvi++] = mvScale(alpha_morpho, lambda=0.01, weight=1.0)
-moves[mvi++] = mvScale(alpha_morpho, lambda=0.1,  weight=1.0)
-moves[mvi++] = mvScale(alpha_morpho, lambda=1,    weight=1.0)
+moves[mvi++] = mvScale(alpha_morpho, lambda=0.01, weight=5.0, tuneTarget=0.6)
+moves[mvi++] = mvScale(alpha_morpho, lambda=0.1,  weight=3.0, tuneTarget=0.44)
+moves[mvi++] = mvScale(alpha_morpho, lambda=1,    weight=1.0, tuneTarget=0.1)
 
 #Create a starting tree and place moves on it.
-
-
 tau ~ dnUniformTopology(names)
 phylogeny := treeAssembly(tau, br_lens)
-moves[mvi++] = mvSPR(tau)
+moves[mvi++] = mvNNI(tau, weight=2*nbr)
+moves[mvi++] = mvSPR(tau, weight=nbr)
+tree_length := phylogeny.treeLength()
 
 #Combine all of our elements into a CTMC. Because we have not observed any invariant sites, 
 # we specify the coding is 'variable'. Note that we are now feeding the site matrices to the CTMC.

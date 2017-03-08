@@ -1,0 +1,19 @@
+# number of states
+n_state <- 4
+
+# rates (2 free parameters):
+#    r[1] = 0->1
+#    r[2] = 1->0
+r ~ dnDirichlet( [1,1] )
+
+# rate matrix structure
+rates := [ [  0.0, r[1], r[1], r[1]],
+           [ r[2],  0.0, r[1], r[1]],
+           [ r[2], r[2],  0.0, r[1]],
+           [ r[2], r[2], r[2],  0.0] ]
+
+# rate matrix
+Q := fnFreeK(rates)
+
+# transition probabilities for branch of length 0.1
+P <- Q.getTransitionProbabilities(rate=0.1)
