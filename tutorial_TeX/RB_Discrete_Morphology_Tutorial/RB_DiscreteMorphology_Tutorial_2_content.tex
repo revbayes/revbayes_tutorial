@@ -1,0 +1,131 @@
+\section{Beyond binary rate matrices} \label{sec:dm_matrix}
+
+The instantaneous rate matrix encodes the transition rates between all pairs of evolutionary states.
+It is important to emphasize that all rate matrices are assertions about how morphological evolution operates.
+Depending on how one populates the rate matrix elements, different evolutionary hypotheses may be expressed.
+
+
+\subsection{Symmetric unordered}
+
+The standard Mk model of character evolution, where M denotes it is a Markov model and $k$ denotes the number of states for the character.
+The lineage may transition directly from state 1 to state 4 without going through states 2 and 3, which is representative of a character with {\it unordered} states.
+In addition, all transition rates are equal as they are in the Jukes-Cantor rate matrix \citep{jukes69}.
+Here is an example of a symmetric unordered Mk model for $k=4$.
+
+\begin{equation*}
+Q = \begin{pmatrix}
+- & \mu & \mu & \mu \\
+\mu & -   & \mu & \mu \\
+\mu & \mu & -   & \mu \\
+\mu & \mu & \mu & - 
+\end{pmatrix}
+\end{equation*}
+
+[ RevBayes code to come. ]
+
+
+\subsection{Asymmetric ordered}
+
+Character states that are ordered imply that evolutionary transitions occur in particular sequences.
+For example, the number of digits on a foot might vary by gaining and losing single digits, meaning the transition from three to five digits cannot occur without going through the evolutionary state of possessing four digits.
+Below, we assume that gain events ( $n \rightarrow n+1$ ) occur at rate $\mu_1$ and loss events ($n \rightarrow n-1$) occur at rate $\mu_2$.
+The zeroes indicate that there is no immediate evolutionary path between states $i$ and $j$: some intermediate state must be used to reach $j$.
+
+\begin{equation*}
+Q = \begin{pmatrix}
+- & \mu_1 & 0 & 0 \\
+\mu_2 & -   & \mu_1 & 0 \\
+0 & \mu_2 & -   & \mu_1 \\
+0 & 0 & \mu_2 & - 
+\end{pmatrix}
+\end{equation*}
+
+[ RevBayes code to come. ]
+
+
+\subsection{Correlated binary characters}
+
+Two characters do not necessarily evolve independently of one another.
+Take two characters: in plants, the presence or absence of toothed leaf margins (character X) is thought to be ecologically correlated with the presence of absence of leaf lobing (character Y).
+For a single binary character, there are two states (0 and 1), but there are four for a pair of non-independent binary characters (00, 10, 01, and 11).
+\citet{pagel94} introduced a general framework for modeling the evolution of joint sets of characters.
+These models require that only one evolutionary event can occur in a moment of time, which is enforced with the 0 terms.
+In addition, the transition rate that, say, character X goes from 0 to 1 depends on the current value of character Y.
+
+\subsubsection{Eight free parameters}
+
+In the first case, all possible transitions might be assigned their own parameter.
+
+\begin{equation*}
+Q = \begin{pmatrix}
+                      - & \mu_{00 \rightarrow 10} & \mu_{00 \rightarrow 01} &                       0 \\
+\mu_{10 \rightarrow 00} &                       - &                       0 & \mu_{10 \rightarrow 11} \\
+\mu_{01 \rightarrow 00} &                       0 &                       - & \mu_{01 \rightarrow 11} \\
+                      0 & \mu_{11 \rightarrow 10} & \mu_{11 \rightarrow 01} &                       - \\
+\end{pmatrix}
+\end{equation*}
+
+[ RevBayes code to come. ]
+
+\subsubsection{Five free parameters}
+
+Alternatively, characters X and Y might share state frequencies, $\pi_j$, and transition rates $\mu_{ij}^{(k)}$, where $i$ is the starting state for the character undergoing change, $j$ is the ending state, and $k$ is the state of the other character.
+This results in two stationary frequencies (one free parameter), four transition rates for $0 \rightarrow 1$ and $1 \rightarrow 0$ given that the other character is in state 0 or state 1 (three free parameters), plus one free parameter to scale the rate matrix.
+
+\begin{equation*}
+Q = \begin{pmatrix}
+- & \mu_{01}^{(0)} \pi_1 \pi_0 & \mu_{01}^{(0)} \pi_0 \pi_1 & 0 \\
+\mu_{10}^{(0)} \pi_0 \pi_0 & -   & 0 & \mu_{01}^{(1)} \pi_1 \pi_1 \\
+\mu_{10}^{(0)} \pi_0 \pi_0 & 0   & - & \mu_{01}^{(1)} \pi_1 \pi_1 \\
+0 & \mu_{10}^{(1)} \pi_1 \pi_0 & \mu_{10}^{(1)} \pi_0 \pi_1 & - \\
+\end{pmatrix}
+\end{equation*}
+
+[ RevBayes code to come. ]
+
+\subsection{Covarion}
+
+Covarion models \citep{tuffley98} capture the possibility that a ``hidden'' (unobserved or unmeasurable) state causes evolutionary processes to .
+For example, phylogenetically local clusters of plant lineages transition between herbaceous and woody habits at relatively high rates, and one might want to quantify where these bursts occur \citep{beaulieu15}.
+While similar to the correlated character model of \citet{pagel94}, covarion models do not observe the hidden state that induce the mode-shifts.
+Instead, covarion models expand the character's state space by a factor of $K$, and observe the character once for each of the $K$ categories.
+For example, take a binary character modeled with $K=2$ hidden state classes.
+The model would treat a character that is observed as being in state 0 as possibly being in either of the $K=2$ classes (0,1) and (0,2).
+In practice, this is done by setting the likelihood of observing those $0k$ states to equal 1.
+
+The expanded structure of a simple covarion rate matrix with $K=2$ is
+
+\begin{equation*}
+Q = \left(
+\arraycolsep=6pt\def\arraystretch{2.5}
+\begin{array}{cc|cc}
+- & r_1 q_{01}^{(1)} & s_{12} & 0 \\
+r_1 q_{10}^{(1)} & - & 0 & s_{12} \\
+\hline
+s_{21} & 0 & - & r_2 q_{01}^{(2)} \\
+0 & s_{21} & r_2 q_{10}^{(2)} & -  \\
+
+\end{array}
+\right)    
+\end{equation*}
+
+This form can be reduced to a simpler block-matrix representation
+
+\begin{equation*}
+Q = \left(
+\arraycolsep=8pt\def\arraystretch{3.0}
+\begin{array}{c|c}
+r_1 Q^{(1)} & s_{12} I  \\
+\hline
+s_{21} I & r_2 Q^{(2)} \\
+\end{array}
+\right)
+\end{equation*}
+
+
+where $Q^{(i)}$ is the rate matrix for the $i$th class, $r_i \in r$ is the clock rate for the $i$th class, and $S$ is the rate matrix to switch between classes.
+
+
+[ RevBayes code to come. ]
+
+\newpage
