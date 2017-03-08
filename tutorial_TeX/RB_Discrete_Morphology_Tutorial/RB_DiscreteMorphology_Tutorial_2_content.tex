@@ -7,21 +7,63 @@ Depending on how one populates the rate matrix elements, different evolutionary 
 
 \subsection{Symmetric unordered}
 
-The standard Mk model of character evolution, where M denotes it is a Markov model and $k$ denotes the number of states for the character.
+The standard Mk model of character evolution, where M denotes it is a Markov model and $K$ denotes the number of states for the character.
 The lineage may transition directly from state 1 to state 4 without going through states 2 and 3, which is representative of a character with {\it unordered} states.
 In addition, all transition rates are equal as they are in the Jukes-Cantor rate matrix \citep{jukes69}.
-Here is an example of a symmetric unordered Mk model for $k=4$.
+Here is an example of a symmetric unordered Mk model for $K=4$.
 
 \begin{equation*}
 Q = \begin{pmatrix}
-- & \mu & \mu & \mu \\
-\mu & -   & \mu & \mu \\
-\mu & \mu & -   & \mu \\
-\mu & \mu & \mu & - 
+- & r & r & r \\
+r & - & r & r \\
+r & r & - & r \\
+r & r & r & - 
 \end{pmatrix}
 \end{equation*}
 
-[ RevBayes code to come. ]
+
+Define the single shared rate parameter
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+r <- 1.0
+\end{lstlisting}
+\end{snugshade*}}
+
+Define the rates
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+rates := [ [0.0,   r,   r,   r],
+           [  r, 0.0,   r,   r],
+           [  r,   r, 0.0,   r],
+           [  r,   r,   r, 0.0] ]
+\end{lstlisting}
+\end{snugshade*}}
+
+Create the rate matrix
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+Q := fnFreeK(rates)
+Q
+   [ [ -1.0000, 0.3333, 0.3333, 0.3333 ] ,
+     0.3333, -1.0000, 0.3333, 0.3333 ] ,
+     0.3333, 0.3333, -1.0000, 0.3333 ] ,
+     0.3333, 0.3333, 0.3333, -1.0000 ] ]
+\end{lstlisting}
+\end{snugshade*}}
+
+Compute the transition probability matrix for a branch length of 0.1.
+
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+P <- Q.getTransitionProbabilities(0.1)
+P
+   [ [ 0.906, 0.031, 0.031, 0.031],
+     [ 0.031, 0.906, 0.031, 0.031],
+     [ 0.031, 0.031, 0.906, 0.031],
+     [ 0.031, 0.031, 0.031, 0.906] ]
+\end{lstlisting}
+\end{snugshade*}}
+
 
 
 \subsection{Asymmetric ordered}
@@ -40,7 +82,54 @@ Q = \begin{pmatrix}
 \end{pmatrix}
 \end{equation*}
 
-[ RevBayes code to come. ]
+
+Create a simplex of unscaled rate parameters for gain ({\tt r[1]}) and loss ({\tt r[2]}) events.
+The simplex is assigned a flat Dirichlet prior with an initial gain-to-loss rate ratio of 3:1
+
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+r ~ dnDirichlet( [1,1] )
+r.setValue( simplex(3,1) )
+\end{lstlisting}
+\end{snugshade*}}
+
+Create a tridiagonal matrix of transition rates, meaning state $i$ may only transition to states $i-1$ and $i+1$
+
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+rates := [ [  0.0, r[1],  0.0,  0.0],
+           [ r[2],  0.0, r[1],  0.0],
+           [  0.0, r[2],  0.0, r[1]],
+           [  0.0,  0.0, r[2],  0.0] ]
+\end{lstlisting}
+\end{snugshade*}}
+
+Create the rate matrix
+
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+Q := fnFreeK(rates)
+[ [ -1.5385, 1.5385, 0.0000, 0.0000 ] ,
+     0.5128, -2.0513, 1.5385, 0.0000 ] ,
+     0.0000, 0.5128, -2.0513, 1.5385 ] ,
+     0.0000, 0.0000, 0.5128, -0.5128 ] ]
+\end{lstlisting}
+\end{snugshade*}}
+
+Compute the transition probability matrix for a branch length of 0.1.
+
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+P <- Q.getTransitionProbabilities(rate=0.1)
+[ [ 0.861, 0.129, 0.010, 0.001],
+  [ 0.043, 0.821, 0.126, 0.010],
+  [ 0.001, 0.042, 0.821, 0.136],
+  [ 0.000, 0.001, 0.045, 0.954]]
+\end{lstlisting}
+\end{snugshade*}}
+
+Note that {\tt P[1][2]} > {\tt P[1][3]} > {\tt P[1][4]} primarily because those transitions require a minimum of one, two, and three events each.
+In addition, note that {\tt P[1][2]} > {\tt P[2][1]} because {\tt rates[1][2]} > {\tt rates[2][1]}.
 
 
 \subsection{Correlated binary characters}

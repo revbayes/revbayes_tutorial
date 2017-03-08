@@ -1,10 +1,8 @@
-# number of states
-n_state <- 4
-
 # rates (2 free parameters):
 #    r[1] = 0->1
 #    r[2] = 1->0
 r ~ dnDirichlet( [1,1] )
+r.setValue( simplex(3,1) )
 
 # rate matrix structure
 rates := [ [  0.0, r[1],  0.0,  0.0],
