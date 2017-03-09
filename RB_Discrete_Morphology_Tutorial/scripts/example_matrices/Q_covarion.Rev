@@ -1,0 +1,26 @@
+
+# switch rates
+sr ~ dnDirichlet([1,1])
+sr.setValue( simplex(1,2) )
+switch_rates := [ [   0.0, sr[1] ],
+                  [ sr[2],   0.0 ] ]
+Q_switch := fnFreeK(switch_rates)
+
+# clock rates per class
+cr[1] ~ dnExp(1)
+cr[2] ~ dnExp(1)
+cr[1].setValue(3)
+cr[2].setValue(1)
+
+# rate matrix per class
+Q_class[1] := fnJC(2)
+
+bf ~ dnDirichlet( [1,1] )
+bf.setValue( simplex(1,3) )
+Q_class[2] := fnF81( bf )
+
+# create the rate matrix
+Q := fnCovarionRateMatrix(Q=Q_class, switch_rates=Q_switch, clock_rates=cr)
+
+# transition probabilities for branch of length 0.1
+P <- Q.getTransitionProbabilities(rate=0.1)
