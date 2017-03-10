@@ -2,8 +2,7 @@
 
 \subsection{Outline}
 
-This tutorial describes how to specify an episodic branching-process models in \RevBayes;
-a birth-death process where diversification rates vary episodically through time model by piecewise constant rates \citep{Stadler2011,Hoehna2015a}.
+This tutorial describes how to specify an episodic branching-process model in \RevBayes; a birth-death process where diversification rates vary episodically through time modeled as piecewise-constant rates \citep{Stadler2011,Hoehna2015a}.
 The probabilistic graphical model is given once at the beginning of this tutorial.
 Your goal is to estimate speciation and extinction rates through-time using Markov chain Monte Carlo (MCMC).
 
@@ -40,37 +39,37 @@ In the \cl{data} folder, you will find the following files
 \bigskip
 \section{Episodic Birth-Death Model}
 
-The basic idea behind the model is that speciation and extinction rates are piecewise constant but can be different for different time intervals.
-Thus, we will divide time into equal time interval with the only exception that the first 20\% of the time do not have any rate changes.
+The basic idea behind the model is that speciation and extinction rates are constant within time intervals but can be different between time intervals.
+Thus, we will divide time into equally sized intervals, with the only exception that the first 20\% of the time does not have any rate changes.
 Our only reason to do so is because there are too few lineages in the reconstructed tree at that time to obtain reliable parameter estimates.
 An overview of the underlying theory of the specific model and implementation is given in \cite{Hoehna2015a}.
 \begin{figure}[h!]
 \centering
 \fbox{\includegraphics[width=\textwidth]{\ResourcePath figures/EBD_scenarios.pdf}}
-\caption{\small Two scenarios of birth-death models. On the left we show constant diversification. On the right we show an example of an episodic birth-death process where rates are constant in each time interval (epoch). The top panel of this figure shows example realization under the given rates.}
+\caption{\small Two scenarios of birth-death models. On the left we show constant diversification. On the right we show an example of an episodic birth-death process where rates are constant in each time interval (epoch). The top panel of this figure shows an example realization under the given rates.}
 \label{fig:EBD}
 \end{figure}
 Figure~\ref{fig:EBD} shows an example of a constant rate birth-death process and an episodic birth-death process.
 
 We assume that the log-transformed rates are drawn from a normal distribution.
-Furthermore, we will assume that rates are autocorrelated, that is, rates in the next time interval will be centered around the rates in the current time interval.
+Furthermore, we will assume that rates are autocorrelated, that is, rates in the current time interval will be centered around the rates in the previous time interval.
 Thus, we model (log-transformed) diversification rates by a Brownian motion.
 The assumption of autocorrelated rates does not only makes sense biologically but also improves our ability to estimate parameters.
 \begin{figure}[h!]
 \centering
 \fbox{\includegraphics[width=\textwidth]{\ResourcePath figures/Graphical_Model_EBD.pdf}}
-\caption{\small A graphical model with the outline of the \Rev code. On the left we see the graphical model describing the correlated (Brownian motion) model for rate-variation through time. On the right we show the correspond \Rev commands to instantiate this model in computer memory. This figure gives a complete overview of the model that we use here in this analysis.}
+\caption{\small A graphical model with the outline of the \Rev code. On the left we see the graphical model describing the correlated (Brownian motion) model for rate-variation through time. On the right we show the corresponding \Rev commands to instantiate this model. This figure gives a complete overview of the model that we use here in this analysis.}
 \label{fig:EBD_GM}
 \end{figure}
 We show a graphical model of the episodic birth-death process with autocorrelated rates in Figure~\ref{fig:EBD_GM}.
 This graphical model shows you which variables are included in the model, and the dependency between the variables.
 Thus, it makes the structure and assumption of the model clear and visible instead of a black-box \citep{Hoehna2014b}.
-For example, you see how the speciation and extinction rates in each time interval depend on the rates of the previous rates, and that we use a hyperprior for the standard deviation of rates between time intervals.
+For example, you see how the speciation and extinction rates in each time interval depend on the rates of the previous interval, and that we use a hyperprior for the standard deviation of rates between time intervals.
 
 
 \subsection{Read the tree}
 
-Begin by reading in the ``observed'' tree. 
+Begin by reading in the ``observed'' tree.
 
 {\tt \begin{snugshade*}
 \begin{lstlisting}
@@ -107,10 +106,10 @@ Using this variable we can easily change our script to break-up time into many (
 
 \subsubsection{Priors on amount of rate variation}
 We start by specifying prior distributions on the rates.
-Each interval-specific speciation and extinction rate will be drawn from a normal distribution.
+Each interval-specific speciation- and extinction-rate will be drawn from a normal distribution.
 Thus, we need a parameter for the standard deviation of those normal distributions.
 We use an exponential hyperprior with rate 1.0 to estimate the standard deviation, but assume that all speciation rates and all extinction rates share the same standard deviation.
-The motivation for an exponential hyperprior is that it has the highest probability density at 0 which would make the variance of rates between consecutive time intervals 0 and thus represent a constant rate process.
+The motivation for an exponential hyperprior is that it has the highest probability density at 0 which would make the variance of rates between consecutive time intervals 0 and thus represent a constant-rate process.
 The data will tell us if there should be much variation in rates through time.
 (You may want to experiment with this hyperprior if you are interested.)
 {\tt \begin{snugshade*}
@@ -137,8 +136,8 @@ This is because we are actually modeling rate-changes backwards in time and ther
 Modeling rates backwards in time makes it easier for us if we had some prior information about some event affected diversification sometime before the present, \EG 25 million years ago.
 
 We use a uniform distribution between -10 and 10 because of our lack of prior knowledge on the diversification rate.
-This actually means that we allow speciation and extinction rates between $e^{-10}$ and $e^10$ we should clearly cover the true values.
-(Note that for diversification rate estimates $e^{-10}$ is virtually 0 since the rate is so slow).
+This actually means that we allow speciation and extinction rates between $e^{-10}$ and $e^10$, so we should clearly cover the true values.
+(Note that for diversification rate estimates, $e^{-10}$ is virtually 0 since the rate is so slow).
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 log_speciation[1] ~ dnUniform(-10.0,10.0)
@@ -167,13 +166,13 @@ extinction[1] := exp( log_extinction[1] )
 
 Next, we specify the speciation and extinction rates for each time interval (\IE epoch).
 This can be done efficiently using a \cl{for}-loop.
-We will use a specific index variable so that we can easier refer to the rate at the previous interval.
-Remember that we want to model the rates as a Brownian motion, which we achieve by specify a normal distribution as the prior distribution on the rates centered around the previous rate (\IE the mean is equal to the previous rate).
+We will use a specific index variable so that we can more easily refer to the rate at the previous interval.
+Remember that we want to model the rates as a Brownian motion, which we achieve by specifying a normal distribution as the prior distribution on the rates centered around the previous rate (\IE the mean of the normal distribution is equal to the previous rate).
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 for (i in 1:NUM_INTERVALS) {
     index = i+1
-    
+
     log_speciation[index] ~ dnNormal( mean=log_speciation[i], sd=speciation_sd )
     log_extinction[index] ~ dnNormal( mean=log_extinction[i], sd=extinction_sd )
 
@@ -186,7 +185,7 @@ for (i in 1:NUM_INTERVALS) {
 }
 \end{lstlisting}
 \end{snugshade*}}
-Finally, we apply moves that slide all values in the rate vectors, \IE all speciation or extinction rates. 
+Finally, we apply moves that slide all values in the rate vectors, \IE all speciation or extinction rates.
 We will use an \cl{mvVectorSlide} move.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
@@ -218,12 +217,12 @@ Also, remember that the times of the intervals represent ages going backwards in
 
 \subsubsection{Incomplete Taxon Sampling}
 
-We know that we have sampled 233 out of 367 living primate species. 
+We know that we have sampled 233 out of 367 living primate species.
 To account for this we can set the sampling parameter as a constant node with a value of 233/367.
 For simplicity, and since almost all species have been sampled, we assume \emph{uniform} taxon sampling \citep{Hoehna2011,Hoehna2014a},
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-rho <- T.ntips()/377
+rho <- T.ntips()/367
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -231,7 +230,7 @@ rho <- T.ntips()/377
 \subsubsection{Root age}
 
 The birth-death process requires a parameter for the root age.
-In this exercise we use a fix tree and thus we know the age of the tree.
+In this exercise we use a fixed tree and thus we know the age of the tree.
 Hence, we can get the value for the root from the \citet{MagnusonFord2012} tree.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
@@ -241,7 +240,7 @@ root_time <- T.rootAge()
 
 \subsubsection{The time tree}
 
-Now we have all of the parameters we need to specify the full episodic birth-death model. 
+Now we have all of the parameters we need to specify the full episodic birth-death model.
 We initialize the stochastic node representing the time tree.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
@@ -258,22 +257,22 @@ timetree.clamp(T)
 \end{lstlisting}
 \end{snugshade*}}
 
-Finally, we create a workspace object of our whole model using the \cl{model()} function. 
+Finally, we create a workspace object of our whole model using the \cl{model()} function.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 mymodel = model(speciation)
 \end{lstlisting}
 \end{snugshade*}}
 
-The \cl{model()} function traversed all of the connections and found all of the nodes we specified. 
+The \cl{model()} function traversed all of the connections and found all of the nodes we specified.
 
 
 \subsection{Running an MCMC analysis}
 
 \subsubsection{Specifying Monitors}
 
-For our MCMC analysis, we need to set up a vector of \textit{monitors} to record the states of our Markov chain. 
-First, we will initialize the model monitor using the \cl{mnModel} function. This creates a new monitor variable that will output the states for all model parameters when passed into a MCMC function. 
+For our MCMC analysis, we need to set up a vector of \textit{monitors} to record the states of our Markov chain.
+First, we will initialize the model monitor using the \cl{mnModel} function. This creates a new monitor variable that will output the states for all model parameters when passed into a MCMC function.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 monitors[++mni] = mnModel(filename="output/primates_EBD.log",printgen=10, separator = TAB)
@@ -291,7 +290,7 @@ monitors[++mni] = mnFile(filename="output/primates_EBD_extinction_times.log",pri
 \end{lstlisting}
 \end{snugshade*}}
 
-Finally, create a screen monitor that will report the states of specified variables to the screen with \cl{mnScreen}:
+Finally, we create a screen monitor that will report the states of specified variables to the screen with \cl{mnScreen}:
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 monitors[++mni] = mnScreen(printgen=1000, extinction_sd, speciation_sd)
@@ -300,7 +299,7 @@ monitors[++mni] = mnScreen(printgen=1000, extinction_sd, speciation_sd)
 
 \subsubsection{Initializing and Running the MCMC Simulation}
 
-With a fully specified model, a set of monitors, and a set of moves, we can now set up the MCMC algorithm that will sample parameter values in proportion to their posterior probability. 
+With a fully specified model, a set of monitors, and a set of moves, we can now set up the MCMC algorithm that will sample parameter values in proportion to their posterior probability.
 The \cl{mcmc()} function will create our MCMC object:
 {\tt \begin{snugshade*}
 \begin{lstlisting}
@@ -367,7 +366,7 @@ dev.off()
 \subsection{Exercise 2}
 
 \begin{itemize}
-\item In our results we see that the extinction rate is fairly constant. Modify the model by using a constant-rate for the extinction rate parameter but still let the speciation rate vary through time. 
+\item In our results we see that the extinction rate is fairly constant. Modify the model by using a constant-rate for the extinction rate parameter but still let the speciation rate vary through time.
 \begin{itemize}
 \item Remove all previous occurrences of the extinction rates (\IE priors, parameters and moves).
 \item Specify a lognormal prior distribution on the constant extinction rate \\(\cl{extinction $\sim$ dnLognormal(-5,sd=2*0.587405)})
