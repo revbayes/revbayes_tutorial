@@ -298,7 +298,7 @@ mymcmc = mcmc(mymodel, monitors, moves)
 
 # run the MCMC analysis
 
-#mymcmc.burnin(2e3, tuningInterval=1e2)
+mymcmc.burnin(2e3, tuningInterval=1e2)
 mymcmc.operatorSummary()
 
 mymcmc.run(n_gen)
