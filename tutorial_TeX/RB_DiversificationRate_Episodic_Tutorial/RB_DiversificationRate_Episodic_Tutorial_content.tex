@@ -30,11 +30,11 @@ We provide the data file(s) which we will use in this tutorial.
 You may want to use your own data instead.
 In the \cl{data} folder, you will find the following files
 \begin{itemize}
-\item \cl{primates\_springer.tre}: Dated primates phylogeny including 369 out of 377 species from \cite{Springer2012}.
+\item \cl{primates\_tree.nex}: Dated primates phylogeny including 233 out of 367 species from \cite{MagnusonFord2012}.
 \end{itemize}
 
 
-\impmark{Open the tree \cl{data/primates\_springer.tre} in \FigTree.}
+\impmark{Open the tree \cl{data/primates\_tree.nex} in \FigTree.}
 
 
 \bigskip
@@ -74,7 +74,7 @@ Begin by reading in the ``observed'' tree.
 
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-T <- readTrees("data/primates_springer.tre")[1]
+T <- readTrees("data/primates_tree.nex")[1]
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -157,7 +157,7 @@ moves[++mvi] = mvSlide(log_speciation[1], weight=2)
 moves[++mvi] = mvSlide(log_extinction[1], weight=2)
 \end{lstlisting}
 \end{snugshade*}}
-Now we transform the diversification rate parameters into actual rates.
+Now we transform the diversification rate parameters into actual rates using an exponential parameter transformation.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 speciation[1] := exp( log_speciation[1] )
@@ -207,7 +207,7 @@ Both moves considerably improve the efficiency of our MCMC analysis.
 \subsubsection{Setting up the time intervals}
 In \RevBayes you actually have the possibility to specify unequal time intervals or even different intervals for the speciation and extinction rate.
 This is achieved by providing a vector of times when each interval ends.
-Here we simply break-up the most recent 80\% of time since the root in equal intervals.
+Here we simply break-up the most recent 80\% of time since the root in equal-length intervals.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 interval_times <- T.rootAge() * (1:NUM_INTERVALS) / (NUM_INTERVALS) * 0.8
@@ -218,8 +218,8 @@ Also, remember that the times of the intervals represent ages going backwards in
 
 \subsubsection{Incomplete Taxon Sampling}
 
-We know that we have sampled 367 out of 377 living primate species. 
-To account for this we can set the sampling parameter as a constant node with a value of 367/377.
+We know that we have sampled 233 out of 367 living primate species. 
+To account for this we can set the sampling parameter as a constant node with a value of 233/367.
 For simplicity, and since almost all species have been sampled, we assume \emph{uniform} taxon sampling \citep{Hoehna2011,Hoehna2014a},
 {\tt \begin{snugshade*}
 \begin{lstlisting}
@@ -232,7 +232,7 @@ rho <- T.ntips()/377
 
 The birth-death process requires a parameter for the root age.
 In this exercise we use a fix tree and thus we know the age of the tree.
-Hence, we can get the value for the root from the \citet{Springer2012} tree.
+Hence, we can get the value for the root from the \citet{MagnusonFord2012} tree.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 root_time <- T.rootAge()
@@ -300,7 +300,8 @@ monitors[++mni] = mnScreen(printgen=1000, extinction_sd, speciation_sd)
 
 \subsubsection{Initializing and Running the MCMC Simulation}
 
-With a fully specified model, a set of monitors, and a set of moves, we can now set up the MCMC algorithm that will sample parameter values in proportion to their posterior probability. The \cl{mcmc()} function will create our MCMC object:
+With a fully specified model, a set of monitors, and a set of moves, we can now set up the MCMC algorithm that will sample parameter values in proportion to their posterior probability. 
+The \cl{mcmc()} function will create our MCMC object:
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 mymcmc = mcmc(mymodel, monitors, moves)
@@ -331,16 +332,17 @@ Just start \R in the main directory for this analysis and then type the followin
 \begin{lstlisting}
 library(RevGadgets)
 
-tree <- read.tree("data/primates_Springer.tre")
+tree <- read.nexus("data/primates_tree.nex")
 
 rev_out <- rev.process.div.rates(speciation_times_file = "output/primates_EBD_speciation_times.log", speciation_rates_file = "output/primates_EBD_speciation_rates.log", extinction_times_file = "output/primates_EBD_extinction_times.log", extinction_rates_file = "output/primates_EBD_extinction_rates.log", tree, burnin=0.25,numIntervals=100)
 
 pdf("EBD.pdf")
 par(mfrow=c(2,2))
-rev.plot.output(rev_out)
+rev.plot.output(rev_out,use.geoscale=FALSE)
 dev.off()
 \end{lstlisting}
 \end{snugshade*}}
+(Note, you may want to add a nice geological timescale to the plot by setting \cl{use.geoscale=TRUE} but then you can only plot one figure per page.)
 
 \impmark{The \Rev file for performing this analysis: \href{https://github.com/revbayes/revbayes_tutorial/raw/master/RB_DiversificationRate_Episodic_Tutorial/scripts/mcmc_EBD.Rev}{\cl{mcmc\_EBD.Rev}}.}
 
