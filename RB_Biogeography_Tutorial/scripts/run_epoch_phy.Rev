@@ -4,7 +4,7 @@
 range_fn = "data/n6/silversword.n6.range.nex"
 mol_fn   = "data/n6/silversword.mol.nex"
 tree_fn   = "data/n6/silversword.tre"
-out_fn   = "output/epoch_phy"
+out_fn   = "output/epoch_phy_prior"
 geo_fn   = "data/n6/hawaii.n6"
 times_fn = geo_fn + ".times.txt"
 dist_fn  = geo_fn + ".distances.txt"
@@ -63,7 +63,7 @@ n_branches = 2 * n_taxa - 2
 
 # root age
 root_age ~ dnUniform(0, 15)
-moves[mvi++] = mvScale(root_age, weight=5)
+moves[mvi++] = mvScale(root_age, weight=2)
 
 # proportion of sampled tips
 rho <- 35 / 50
@@ -86,7 +86,7 @@ root_age.setValue(tree_init.rootAge())
 # tree moves
 moves[mvi++] = mvNNI(tree, weight=n_branches/2)
 moves[mvi++] = mvFNPR(tree, weight=n_branches/8)
-moves[mvi++] = mvNodeTimeSlideUniform(tree, weight=n_branches)
+moves[mvi++] = mvNodeTimeSlideUniform(tree, weight=n_branches/2)
 
 
 
@@ -96,44 +96,32 @@ moves[mvi++] = mvNodeTimeSlideUniform(tree, weight=n_branches)
 ###################
 
 # molecular clock
-ln_rate_mol ~ dnUniform(-6,3)
-ln_rate_mol.setValue( ln(0.1) )
-moves[mvi++] = mvSlide(ln_rate_mol, weight=2, delta=0.5)
-moves[mvi++] = mvSlide(ln_rate_mol, weight=5, delta=0.1)
-#rate_mol := 10^log10_rate_mol
-
-# discretize
-n_rate_categories <- 16
-rate_probs <- simplex( rep(1, n_rate_categories) )
-step_size <- 3
-
-branch_sd <- 0.5
-branch_mean := ln_rate_mol - 0.5*branch_sd^2
-rate_distribution = dnLognormal(mean=branch_mean, sd=branch_sd)
-rate_categories := fnDiscretizeDistribution(rate_distribution, n_rate_categories)
+log10_rate_mol ~ dnUniform(-6,3)
+log10_rate_mol.setValue(-1)
+moves[mvi++] = mvSlide(log10_rate_mol, weight=5, delta=0.2)
+rate_mol := 10^log10_rate_mol
 
 # relaxed clock
+branch_sd <- 1.0
+branch_mean <- 0 - 0.5*branch_sd^2
 for (i in 1:n_branches) {
-    #rate_mol[i] ~ dnLognormal(mean=branch_mean, sd=branch_sd)
-    #moves[mvi++] = mvScale(branch_rate_multiplier[i])
-    #branch_rates[i] := rate_mol * branch_rate_multiplier[i]
-    branch_rates[i] ~ dnMixture(rate_categories, rate_probs)
-    branch_rates[i].setValue( rate_categories[ floor(n_rate_categories/2) ] )
-    moves[mvi++] = mvMixtureAllocation( branch_rates[i], weight=1, delta=step_size )
+    branch_rate_multiplier[i] ~ dnLognormal(mean=branch_mean, sd=branch_sd)
+    moves[mvi++] = mvScale(branch_rate_multiplier[i])
+    branch_rates[i] := rate_mol * branch_rate_multiplier[i]
 }
 
 # HKY substitution process
 kappa ~ dnGamma(2,2)
-moves[mvi++] = mvScale(kappa, weight=2)
+moves[mvi++] = mvScale(kappa)
 
 bf ~ dnDirichlet( [1,1,1,1] )
-moves[mvi++] = mvSimplexElementScale(bf, alpha=10, weight=3, tune=false)
+moves[mvi++] = mvSimplex(bf, alpha=10, weight=2, offset=1)
 
 Q_mol := fnHKY(kappa, bf)
 
 # +Gamma-4 among site rate variation
 alpha ~ dnUniform(0,50)
-moves[mvi++] = mvScale(alpha, weight=2)
+moves[mvi++] = mvScale(alpha)
 site_rates := fnDiscretizeGamma(alpha, alpha, numCats=4)
 
 # substitution process over phylogeny
@@ -151,25 +139,20 @@ seq_mol.clamp(dat_mol)
 # Biogeography models #
 #######################
 
-log10_rate_bg ~ dnUniform(-4,2)
-log10_rate_bg.setValue(-1)
-rate_bg := 10^log10_rate_bg
-moves[mvi++] = mvSlide(log10_rate_bg, weight=4, delta=0.5)
 
 # anagenetic event rate scaler
-log10_dispersal_rate ~ dnUniform(-4,2)
-log10_dispersal_rate.setValue(0)
-dispersal_rate := 10^log10_dispersal_rate
-moves[mvi++] = mvSlide(log10_dispersal_rate, weight=4)
+log10_rate_bg ~ dnUniform(-4,2)
+log10_rate_bg.setValue(-2)
+rate_bg := 10^log10_rate_bg
+moves[mvi++] = mvSlide(log10_rate_bg, weight=4)
 
 # fix relative dispersal rate to 1
-#dispersal_rate <- 1.0
+dispersal_rate <- 1.0
 
 # geographic distance scaler
-distance_scale ~ dnUnif(0,5)
+distance_scale ~ dnUnif(0,20)
 distance_scale.setValue(0.001)
-moves[mvi++] = mvScale(distance_scale, lambda=0.05, weight=3)
-moves[mvi++] = mvScale(distance_scale, weight=1)
+moves[mvi++] = mvScale(distance_scale, weight=3)
 
 # then, the dispersal rate matrix
 for (i in 1:n_epochs) {
@@ -183,24 +166,17 @@ for (i in 1:n_epochs) {
     }
 }
 
-# extirpation
-extirpation_rate <- 1.
-#log10_extirpation_rate ~ dnUniform(-4,2)
-#log10_extirpation_rate.setValue(-1)
-#extirpation_rate := 10^log10_extirpation_rate
-#moves[mvi++] = mvSlide(log10_extirpation_rate, weight=4)
-
 # then relative extirpation rates (or per-area extinction rates)
-#log_sd <- 0.5
-#log_mean <- ln(1) - 0.5*log_sd^2
-#extirpation_rate ~ dnLognormal(mean=log_mean, sd=log_sd)
-#moves[mvi++] = mvScale(extirpation_rate, weight=2)
+log_sd <- 0.5
+log_mean <- ln(1) - 0.5*log_sd^2
+extirpation_rate ~ dnLognormal(mean=log_mean, sd=log_sd)
+moves[mvi++] = mvScale(extirpation_rate, weight=2)
 
 # the extirpation rate matrix
 for (i in 1:n_epochs) {
     for (j in 1:n_areas) {
         for (k in 1:n_areas) {
-            er[i][j][k] <- abs(0.0) 
+            er[i][j][k] <- 0.0
         }
         er[i][j][j] := extirpation_rate
     }
@@ -222,7 +198,7 @@ for (i in 1:n_epochs) {
         epoch_times[i] <- 0.0
     } else {
         epoch_times[i] ~ dnUniform(time_min[i], time_max[i])
-        moves[mvi++] = mvSlide(epoch_times[i], delta=(time_bounds[i][1]-time_bounds[i][2])/2, weight=2, tune=false)
+        moves[mvi++] = mvSlide(epoch_times[i], delta=(time_bounds[i][1]-time_bounds[i][2])/2)
     }
 }
 
@@ -244,7 +220,6 @@ P_DEC := fnDECCladoProbs(eventProbs=clado_event_probs,
 rf_DEC    <- rep(0, n_states)
 rf_DEC[n_areas+1] <- 1  # Mainland (Z) is the only possible starting state
 rf_DEC    <- simplex(rf_DEC)
-
 
 # the phylogenetic CTMC with cladogenetic events
 m_bg ~ dnPhyloCTMCClado(tree=tree,
@@ -271,39 +246,32 @@ ingroup_clade <- clade("Wilkesia_hobdyi",
                        "Argyroxiphium_caliginis")
 
 ingroup_age := tmrca(tree, ingroup_clade)
-ingroup_epoch_bin[1] := ifelse(ingroup_age > epoch_times[1], 1, 0)
-for (i in 2:n_epochs) {
-    #ingroup_older_island[i] := ifelse(ingroup_age > epoch_times[i], 1, 0)
-    ingroup_epoch_bin[i] := ifelse(ingroup_age > epoch_times[i] && ingroup_age < epoch_times[i-1], 1, 0)
+for (i in 1:n_epochs) {
+    ingroup_older_island[i] := ifelse(ingroup_age > epoch_times[i], 1, 0)
 }
 
-monitors[mni++] = mnScreen(printgen=10, dispersal_rate, extirpation_rate, distance_scale, ingroup_age)
+monitors[mni++] = mnScreen(printgen=100, dispersal_rate, distance_scale, ingroup_age)
 monitors[mni++] = mnModel(file=out_fn+".model.log", printgen=100)
 monitors[mni++] = mnFile(tree, filename=out_fn+".tre", printgen=100)
 monitors[mni++] = mnJointConditionalAncestralState(tree=tree,
-                                                   ctmc=m_bg,
-                                                   type="NaturalNumbers",
-                                                   withTips=true,
-                                                   withStartStates=true,
-                                                   filename=out_fn+".states.log",
-                                                   printgen=100)
+                                                       ctmc=m_bg,
+                                                       type="NaturalNumbers",
+                                                       withTips=true,
+                                                       withStartStates=true,
+                                                       filename=out_fn+".states.log",
+                                                       printgen=100)
 
 ############
 # Analysis #
 ############
 
 # build the model analysis object from the model graph
-#mymodel = model(m_bg, ingroup_older_island)
-mymodel = model(m_bg, ingroup_epoch_bin)
+mymodel = model(m_bg, ingroup_older_island)
 
 # create the MCMC analysis object
 mymcmc = mcmc(mymodel, monitors, moves)
 
 # run the MCMC analysis
-
-mymcmc.burnin(2e3, tuningInterval=1e2)
-mymcmc.operatorSummary()
-
 mymcmc.run(n_gen)
 
 #################

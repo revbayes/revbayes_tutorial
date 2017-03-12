@@ -44,7 +44,7 @@ monitors[mni++] = mnJointConditionalAncestralState(tree=phylogeny,
                                                    filename="output/mk_discretized.states.txt",
                                                    type="Standard",
                                                    printgen=10,
-                                                   withTips=true)
+                                                   withStartStates=false)
 
 # Initialize the MCMC object #
 mymcmc = mcmc(mymodel, monitors, moves)
@@ -54,10 +54,10 @@ mymcmc.run(generations=10000)
 
 # Read in the tree trace and construct the consensus tree tree #
 trace = readTreeTrace("output/mk_discretized.trees", treetype="non-clock")
+trace.setBurnin(0.25)
 
 # Summarize tree trace and the consensus tree to file
 consensusTree(trace, file="output/mk_discretized.majrule.tre")
-mccTree(trace, file="output/mk_discretized.mcc.tre")
 
 # Quit RevBayes #
 q()

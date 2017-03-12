@@ -150,37 +150,25 @@ seq_mol.clamp(dat_mol)
 # Biogeography models #
 #######################
 
-# the biogeographic rate scaler
-#log10_rate_bg ~ dnUniform(-4,2)
-#log10_rate_bg.setValue(-2)
-#rate_bg := 10^log10_rate_bg
-#moves[mvi++] = mvSlide(log10_rate_bg, weight=4)
+# the biogeographic event rate multiplier
+log10_rate_bg ~ dnUniform(-4,2)
+log10_rate_bg.setValue(-2)
+rate_bg := 10^log10_rate_bg
+moves[mvi++] = mvSlide(log10_rate_bg, weight=4)
 
-# relative dispersal rate is fixed to one
-#dispersal_rate <- abs(1)
+# the relative dispersal rate
+dispersal_rate <- 1.0
 
-# anagenetic event rate scaler
-log10_dispersal_rate ~ dnUniform(-4,2)
-log10_dispersal_rate.setValue(-2)
-dispersal_rate := 10^log10_dispersal_rate
-moves[mvi++] = mvSlide(log10_dispersal_rate, weight=4)
-
-# extirpation
-log10_extirpation_rate ~ dnUniform(-4,2)
-log10_extirpation_rate.setValue(-1)
-extirpation_rate := 10^log10_extirpation_rate
-moves[mvi++] = mvSlide(log10_extirpation_rate, weight=4)
-
-# then relative extirpation rates (or per-area extinction rates)
-#log_sd <- 0.5
-#log_mean <- ln(1) - 0.5*log_sd^2
-#extirpation_rate ~ dnLognormal(mean=log_mean, sd=log_sd)
-#moves[mvi++] = mvScale(extirpation_rate, weight=2)
+# the relative extirpation rate
+log_sd <- 0.5
+log_mean <- ln(1) - 0.5*log_sd^2
+extirpation_rate ~ dnLognormal(mean=log_mean, sd=log_sd)
+moves[mvi++] = mvScale(extirpation_rate, weight=2)
 
 # the relative dispersal and extirpation rate matrices
 for (i in 1:n_areas) {
     for (j in 1:n_areas) {
-        er[i][j] <- abs(0) 
+        er[i][j] <- 1.0 
         dr[i][j] := dispersal_rate
     }
     er[i][i] := extirpation_rate
@@ -207,7 +195,7 @@ rf_DEC    <- simplex(rf_DEC)
 m_bg ~ dnPhyloCTMCClado(tree=phy,
                            Q=Q_DEC,
                            cladoProbs=P_DEC,
-                           branchRates=1.,
+                           branchRates=rate_bg,
                            rootFrequencies=rf_DEC,
                            type="NaturalNumbers",
                            nSites=1)
@@ -222,7 +210,7 @@ for (i in 1:n_epochs) {
     time_min[i] <- time_bounds[i][2]
 
     if (i == n_epochs) {
-        epoch_times[i] <- abs(0)
+        epoch_times[i] <- 0.0
     } else {
         epoch_times[i] ~ dnUniform(time_min[i], time_max[i])
         moves[mvi++] = mvSlide(epoch_times[i], delta=(time_bounds[i][1]-time_bounds[i][2])/2)

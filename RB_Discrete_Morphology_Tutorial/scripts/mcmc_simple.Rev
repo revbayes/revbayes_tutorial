@@ -54,6 +54,7 @@ mymcmc.run(generations=5000)
 
 # Read in the tree trace and construct the consensus tree tree #
 trace = readTreeTrace("output/simple.trees", treetype="non-clock")
+trace.setBurnin(0.25)
 
 # Summarize tree trace and the consensus tree to file
 consensusTree(trace, file="output/simple.majrule.tre")
