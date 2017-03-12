@@ -2,34 +2,19 @@
 
 Discrete morphological models are not only useful for tree estimation, as was done in Section \ref{sec:dm_overview}, but also for ancestral state estimation.
 The central problem in statistical phylogenetics concerns {\it marginalizing} over all unobserved character histories that evolved along the branches of a given phylogenetic tree.
-This allows one to compute the likelihood of observing a character matrix given they evolved according to an underlying tree.
-While marginalizing over those histories, one might also seek to produce samples of ancestral states that are consistent with the tip state distribution.
+This allows one to compute the likelihood of observing a character matrix given they evolved according to an underlying tree, $P( X^{(\text{tip})} ) = \sum_{x \in X^{(\text{internal})}} P( X^{(\text{tip})}, X^{(\text{internal})} )$.
+One might also seek to learn the probability of the distribution of ancestral state configurations that are consistent with the tip state distribution, $P( X^{(\text{internal})} \mid X^{(\text{tip})} )$.
+This procedure is known as {\it ancestral state estimation}.
 
-\begin{align*}
-P( X_\text{tip} ) & = \sum_{x \in X_\text{internal}} P( X_\text{tip}, X_\text{internal} )
-\end{align*}
-
-We want the joint probabilities of internal node states conditioned on the tips
-\begin{align*}
-P( X^{(\text{internal})} \mid X^{(\text{tip})} ) & = \sum_{x \in X_\text{internal}} P( X_\text{tip}, X_\text{internal} )
-\end{align*}
-
-or the marginal probabilities conditioned on the tips
-
-\begin{align*}
-P( X_i^{(\text{internal})} \mid X^{(\text{tip})} ) & = \sum_{x \in X_\text{internal}} P( X_\text{tip}, X_\text{internal} )
-\end{align*}
-
-
-Ancestral state estimation is the procedure of sampling ancestral states that are consistent with the observed distribution of tip states.
 There are several strategies for doing so, each with their own advantages and disadvantages.
 One can compute the {\it exact probability} of any given ancestral node having an ancestral state value; or one can {\it sample} states from that distribution in proportion to the exact probability.
 One can produce {\it marginal} ancestral state estimates that report how often any given node is in a state without the context of the ancestral states of the remaining nodes; or one can produce {\it joint} ancestral state estimates that report the probability of particular combinations of sequences of evolutionary histories, running from the root to the tips of the phylogeny.
+
 While it is straightforward to produce exact probabilities for marginal histories, sampling is generally required to produce joint histories.
+This tutorial uses a joint sampling strategy because they yield the most complete representation of possible evolutionary scenarios.
 
 \subsection{Ancestral state monitors}
 
-We focus on joint samples in this tutorial and in \RevBayes because they yield most direct representation of possible evolutionary scenarios.
 The completed exercises from Section \ref{sec:dm_overview} made use of a monitor names {\tt mnJointConditionalAncestralState}, which was created with the command
 
 {\tt \begin{snugshade*}
@@ -108,6 +93,17 @@ Next, the shell script calls {\tt Rscript} to execute {\tt scripts/plot\_anc\_st
 The {\tt plot\_anc\_states.R} file produces a tree figure for each file using the {\tt R} package, {\tt RevGadgets}.
 Finally, the shell script combines the resulting figures into a single concatenated pdf using the tool {\tt gs}.
 
+
+
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+./scripts/make_anc_trees.sh output/mk_simple 1 5
+\end{lstlisting}
+\end{snugshade*}}
+
+
+
+
 \subsection{Results}
 
 Knowing what we do about the various models, how might we expect the ancestral state estimates to differ?
@@ -117,5 +113,47 @@ This leads to overestimated branch lengths when compared to the {\tt mk\_simple}
 We might expect that {\tt mk\_simple}, because it forces all characters to evolve under a single symmetric model of evolution, would have more ambiguity in ancestral state estimates.
 In contrast {\tt mk\_discretized} and {\tt mk\_mixture} allow characters to evolve with different tendencies towards 0- or 1-valued states, which might increase the certainty in ancestral state estimates.
 
+
+Many ancestral state estimates are fairly insensitive to model choice, particularly for characters that underwent only a single transition.
+Characters that underwent a reversion are more sensitive.
+Character 36, for example:
+Figure \ref{fig:mk_simple_ase} shows that the uniform Mkv model has a weak preference for the two immediate ancestral nodes for {\it Melursus urisinus} and {\it Tremarctos ornatus} to be in the absent state ($p < 0.55$).
+Figure \ref{fig:mk_simple_ase}) shows that the discretized-beta model provides stronger and contradictory support for the present state ($0.65 \leq p \leq 0.70$).
+
+\begin{figure}[h!]
+\fbox{%
+\begin{minipage}{\textwidth}\centering
+\includegraphics[width=0.92\textwidth,angle=0]{\ResourcePath figures/results/mk_simple_char_36_ase}
+\caption{\small Ancestral state estimates assuming the uniform Mk model for character 36.}
+\end{minipage}}
+\label{fig:mk_simple_ase}
+\end{figure}
+
+\begin{figure}[h!]
+\fbox{%
+\begin{minipage}{\textwidth}\centering
+\includegraphics[width=0.92\textwidth,angle=0]{\ResourcePath figures/results/mk_discretized_char_36_ase}
+\caption{\small Ancestral state estimates assuming the beta-discretized Mkv model for character 36.}
+\end{minipage}}
+\label{fig:mk_discretized_ase}
+\end{figure}
+
+Ancestral state estimate
+
+
+\subsection{Comparing tree estimates}
+
+\subsubsection{Topology}
+
+Majority rule consensus tre
+
+Poor support for the simple trees generally points to weak or conflicting support for clades.
+
+
+\subsubsection{Branch length distributions}
+
+
+Inflation of tree length parameter only for the uniform Mk model.
+Models that correct for sampling variable character (+v) generally agree on tree length.
 
 \newpage
