@@ -44,7 +44,7 @@ monitors[mni++] = mnJointConditionalAncestralState(tree=phylogeny,
                                                    filename="output/mk_discretized.states.txt",
                                                    type="Standard",
                                                    printgen=10,
-                                                   withTips=true)
+                                                   withStartStates=false)
 
 # Initialize the MCMC object #
 mymcmc = mcmc(mymodel, monitors, moves)

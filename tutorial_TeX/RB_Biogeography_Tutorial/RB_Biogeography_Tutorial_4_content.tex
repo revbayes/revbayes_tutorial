@@ -106,6 +106,20 @@ dat_range_n = formatDiscreteCharacterData(dat_range_01, "DEC", n_states)
 \end{lstlisting}
 \end{snugshade}
 
+Record the complete list of range descriptions to file
+
+\begin{snugshade}
+\begin{lstlisting}
+state_desc = dat_range_n.getStateDescriptions()
+state_desc_str = "state,range\n"
+for (i in 1:state_desc.size())
+{
+    state_desc_str += (i-1) + "," + state_desc[i] + "\n"
+}
+write(state_desc_str, file=out_fn+".state_labels.txt")
+\end{lstlisting}
+\end{snugshade}
+
 Read the minimum and maximum ages of the island complexes
 
 \begin{snugshade}
@@ -382,7 +396,7 @@ moves[mvi++] = mvScale(extirpation_rate, weight=2)
 for (i in 1:n_epochs) {
   for (j in 1:n_areas) {
     for (k in 1:n_areas) {
-      er[i][j][k] <- 0.0 
+      er[i][j][k] <- 0.0
     }
     er[i][j][j] := extirpation_rate
   }

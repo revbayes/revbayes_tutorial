@@ -19,6 +19,7 @@ if (n_args == 1) {
 }
 fix_fn = paste(file_path_sans_ext(tree_fn), ".fix.", file_ext(tree_fn), sep="")
 pdf_fn = paste(file_path_sans_ext(tree_fn), ".pdf", sep="")
+title = file_path_sans_ext(basename(tree_fn))
 
 # clean up the ASE file to work with ggtree
 lines = readLines(tree_fn)
@@ -30,20 +31,26 @@ writeLines(lines, file_conn)
 close(file_conn)
 
 # plot states
+state_labels = c("0","1","?")
+state_colors = c("red","blue","gray")
 plot_scale = 0.1
 summary_statistic = "MAP"
 p = plot_ancestral_states(tree_file=fix_fn,
                           include_start_states=F,
                           summary_statistic=summary_statistic,
                           node_label_size=0,
-                          node_size_range=c(2,4),
-                          node_label_nudge_x=0.1*plot_scale,
+                          node_pp_label_size=0,
+                          node_size_range=c(0.5,4),
+                          node_label_nudge_x=0.0*plot_scale,
                           tip_node_size=4,
                           tip_label_size=2,
-                          tip_label_offset=0.5*plot_scale,
+                          tip_label_offset=0.2*plot_scale,
                           xlim_visible=c(0,17*plot_scale),
                           show_posterior_legend=T,
-                          show_tree_scale=T)
+                          show_tree_scale=T,
+                          state_labels=c("0"="Absent","1"="Present","?"="Missing"),
+                          state_colors=c("blue","red","gray"),
+                          title=title)
 
 # save plot
 ggsave(filename=pdf_fn)

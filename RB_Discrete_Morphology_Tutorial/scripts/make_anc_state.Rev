@@ -3,18 +3,17 @@
 
 
 # NOTE: modify out_str to use with other analyses!
-if (!exists("out_str")) out_str = "output/mk_simple"
-out_str
-#out_str = "output/mk_discretized"
+if (!exists("out_fp")) out_fp = "output/mk_simple"
+if (!exists("out_str")) out_str = "mk_simple"
 
-out_state_fn = out_str + ".states.txt"
-out_phy_fn   = out_str + ".trees"
-out_mcc_fn   = out_str + ".mcc.tre"
+out_state_fn = out_fp + "/" + out_str + ".states.txt"
+out_phy_fn   = out_fp + "/" + out_str + ".trees"
+out_mcc_fn   = out_fp + "/" + out_str + "/" + out_str + ".mcc.tre"
 
 # compute MCC tree for "reference tree"
 tree_trace = readTreeTrace(file=out_phy_fn, treetype="non-clock")
 tree_trace.setBurnin(0.25)
-mcc_tree = consensusTree(tree_trace, file=out_mcc_fn, mean=false)
+mcc_tree = mccTree(tree_trace, file=out_mcc_fn, mean=false)
 
 # get ancestral state trace
 state_trace = readAncestralStateTrace(file=out_state_fn)
@@ -26,7 +25,6 @@ state_tree_trace = readAncestralStateTreeTrace(file=out_phy_fn, treetype="non-cl
 n_burn = floor(0.25 * state_tree_trace.getNumberSamples())
 
 # compute ancestral state tree
-write("", filename=out_str+".ase.tre", separator="\n")
 if (!exists("start_idx")) start_idx = 1
 if (!exists("end_idx")) end_idx = start_idx
 n_sites = end_idx-start_idx+1
@@ -37,7 +35,7 @@ for (site in start_idx:end_idx) {
                                   ancestral_state_trace_vector=state_trace,
                                   tree_trace=state_tree_trace,
                                   include_start_states=false,
-                                  file=out_str+".char_"+site+".ase.tre",
+                                  file=out_fp+"/"+out_str+"/"+out_str+".char_"+site+".ase.tre",
                                   burnin=n_burn,
                                   summary_statistic="MAP",
                                   site=site)
