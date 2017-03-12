@@ -2,7 +2,7 @@
 #
 # RevBayes Example: Bayesian inference of diversification rates under a
 #                   constant-rate pure-birth model
-# 
+#
 #
 # authors: Sebastian Hoehna and Tracy A. Heath
 #
@@ -16,13 +16,14 @@
 
 ### Read in sequence data for both genes
 
-T <- readTrees("data/primates_Springer.tre")[1]
+T <- readTrees("data/primates_tree.nex")[1]
 
 # Get some useful variables from the data. We need these later on.
 taxa <- T.taxa()
 
 # set my move index
 mvi = 0
+mni = 0
 
 
 ######################
@@ -31,15 +32,15 @@ mvi = 0
 
 ### the birth rate is a stochastic random variable drawn from a lognormal prior
 ### MCMC samples this variable using a scale proposal
-birth_rate_mean <- ln( ln(450.0/2.0) / T.rootAge() )
+birth_rate_mean <- ln( ln(367.0/2.0) / T.rootAge() )
 birth_rate_sd <- 0.587405
-birth_rate ~ dnLognormal(mean=birth_rate_mean,sd=birth_rate_sd) 
+birth_rate ~ dnLognormal(mean=birth_rate_mean,sd=birth_rate_sd)
 moves[++mvi] = mvScale(birth_rate,lambda=1.0,tune=true,weight=3.0)
 
 ### rho is the probability of sampling species at the present
-### fix this to 367/450, since there are ~450 described species of primates
-### and we have sampled 367
-rho <- T.ntips()/450
+### fix this to 233/367, since there are ~367 described species of primates
+### and we have sampled 233
+rho <- T.ntips()/367
 
 ### the BDP is conditioned on the root time, we can get this value from our tree and set a constant node
 root_time <- T.rootAge()
@@ -61,9 +62,9 @@ timetree.clamp(T)
 ### workspace model wrapper ###
 mymodel = model(birth_rate)
 
-### set up the monitors that will output parameter values to file and screen 
-monitors[1] = mnModel(filename="output/primates_Yule.log",printgen=10, separator = TAB)
-monitors[2] = mnScreen(printgen=1000, birth_rate)
+### set up the monitors that will output parameter values to file and screen
+monitors[++mni] = mnModel(filename="output/primates_Yule.log",printgen=10, separator = TAB)
+monitors[++mni] = mnScreen(printgen=1000, birth_rate)
 
 
 
@@ -72,17 +73,17 @@ monitors[2] = mnScreen(printgen=1000, birth_rate)
 ################
 
 ### compute power posterior distributions
-pow_p = powerPosterior(mymodel, moves, monitors, "output/Yule_powp.out", cats=100, sampleFreq=10) 
+pow_p = powerPosterior(mymodel, moves, monitors, "output/Yule_powp.out", cats=100, sampleFreq=10)
 pow_p.burnin(generations=10000,tuningInterval=200)
-pow_p.run(generations=10000)  
+pow_p.run(generations=10000)
 
 ### Use stepping-stone sampling to calculate marginal likelihoods
 ss = steppingStoneSampler(file="output/Yule_powp.out", powerColumnName="power", likelihoodColumnName="likelihood")
-ss.marginal() 
+ss.marginal()
 
 ### Use path-sampling to calculate marginal likelihoods
 ps = pathSampler(file="output/Yule_powp.out", powerColumnName="power", likelihoodColumnName="likelihood")
-ps.marginal() 
+ps.marginal()
 
 
 

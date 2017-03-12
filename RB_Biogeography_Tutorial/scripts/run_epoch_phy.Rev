@@ -271,34 +271,37 @@ ingroup_clade <- clade("Wilkesia_hobdyi",
                        "Argyroxiphium_caliginis")
 
 ingroup_age := tmrca(tree, ingroup_clade)
-for (i in 1:n_epochs) {
-    ingroup_older_island[i] := ifelse(ingroup_age > epoch_times[i], 1, 0)
+ingroup_epoch_bin[1] := ifelse(ingroup_age > epoch_times[1], 1, 0)
+for (i in 2:n_epochs) {
+    #ingroup_older_island[i] := ifelse(ingroup_age > epoch_times[i], 1, 0)
+    ingroup_epoch_bin[i] := ifelse(ingroup_age > epoch_times[i] && ingroup_age < epoch_times[i-1], 1, 0)
 }
 
 monitors[mni++] = mnScreen(printgen=10, dispersal_rate, extirpation_rate, distance_scale, ingroup_age)
 monitors[mni++] = mnModel(file=out_fn+".model.log", printgen=100)
 monitors[mni++] = mnFile(tree, filename=out_fn+".tre", printgen=100)
 monitors[mni++] = mnJointConditionalAncestralState(tree=tree,
-                                                       ctmc=m_bg,
-                                                       type="NaturalNumbers",
-                                                       withTips=true,
-                                                       withStartStates=true,
-                                                       filename=out_fn+".states.log",
-                                                       printgen=100)
+                                                   ctmc=m_bg,
+                                                   type="NaturalNumbers",
+                                                   withTips=true,
+                                                   withStartStates=true,
+                                                   filename=out_fn+".states.log",
+                                                   printgen=100)
 
 ############
 # Analysis #
 ############
 
 # build the model analysis object from the model graph
-mymodel = model(m_bg, ingroup_older_island)
+#mymodel = model(m_bg, ingroup_older_island)
+mymodel = model(m_bg, ingroup_epoch_bin)
 
 # create the MCMC analysis object
 mymcmc = mcmc(mymodel, monitors, moves)
 
 # run the MCMC analysis
 
-#mymcmc.burnin(2e3, tuningInterval=1e2)
+mymcmc.burnin(2e3, tuningInterval=1e2)
 mymcmc.operatorSummary()
 
 mymcmc.run(n_gen)
