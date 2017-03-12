@@ -96,6 +96,21 @@ dat_range_n = formatDiscreteCharacterData(dat_range_01, "DEC", n_states)
 
 Our state space now includes only 11 states ($\emptyset$, K, O, M, H, KO, KM, OM, KH, OH, MH).
 
+Record the complete list of range descriptions to file
+
+\begin{snugshade}
+\begin{lstlisting}
+state_desc = dat_range_n.getStateDescriptions()
+state_desc_str = "state,range\n"
+for (i in 1:state_desc.size())
+{
+    state_desc_str += (i-1) + "," + state_desc[i] + "\n"
+}
+write(state_desc_str, file=out_fn+".state_labels.txt")
+\end{lstlisting}
+\end{snugshade}
+
+
 As with the previous analysis, we'll brazenly assume we know the dated species phylogeny without error.
 
 \begin{snugshade}
@@ -181,7 +196,7 @@ Fix the base dispersal rate to 1
 
 \begin{snugshade}
 \begin{lstlisting}
-dispersal_rate <- abs(1)
+dispersal_rate <- 1.0
 \end{lstlisting}
 \end{snugshade}
 
@@ -203,7 +218,7 @@ moves[mvi++] = mvScale(distance_scale, weight=3)
 Now we can assign rates that are functions of distance between all pairs of areas, {\it but also over all epochs}.
 To accomplish this, notice we now have an outer loop over the number of epochs, {\tt n\_epochs}.
 This is used to construct a vector of dispersal matrices, one matrix per epoch.
-It is crucial to note that all of elements are assigned the value {\tt abs(0)} unless the if-statement {\tt "if (connectivity[i][j][k] > 0)" } evaluates to {\tt true}.
+It is crucial to note that all of elements are assigned the value {\tt 0.0} unless the if-statement {\tt "if (connectivity[i][j][k] > 0)" } evaluates to {\tt true}.
 That is, dispersal rates between areas {\tt j} and {\tt k} for epoch {\tt i} are non-zero if and only if the connectivity matrix element {\tt connectivity[i][j][k]} has a positive value!
 When this condition is met, the dispersal rate is determined by the exponential function of inverse distance given above.
 
@@ -213,7 +228,7 @@ When this condition is met, the dispersal rate is determined by the exponential 
 for (i in 1:n_epochs) {
   for (j in 1:n_areas) {
     for (k in 1:n_areas) {
-      dr[i][j][k] <- abs(0)
+      dr[i][j][k] <- 0.0
       if (connectivity[i][j][k] > 0) {
         dr[i][j][k]  := dispersal_rate * exp(-distance_scale * distances[j][k])
       }
@@ -248,7 +263,7 @@ and then provide the appropriate extirpation matrix structure
 for (i in 1:n_epochs) {
   for (j in 1:n_areas) {
     for (k in 1:n_areas) {
-      er[i][j][k] <- abs(0.0) 
+      er[i][j][k] <- 0.0
     }
     er[i][j][j] := extirpation_rate
   }
