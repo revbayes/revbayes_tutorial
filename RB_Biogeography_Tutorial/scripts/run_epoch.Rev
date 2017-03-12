@@ -56,19 +56,13 @@ tree <- readTrees(tree_fn)[1]
 #######################
 
 # the biogeographic rate scaler
-#log10_rate_bg ~ dnUniform(-4,2)
-#log10_rate_bg.setValue(-2)
-#rate_bg := 10^log10_rate_bg
-#moves[mvi++] = mvSlide(log10_rate_bg, weight=4)
+log10_rate_bg ~ dnUniform(-4,2)
+log10_rate_bg.setValue(-2)
+rate_bg := 10^log10_rate_bg
+moves[mvi++] = mvSlide(log10_rate_bg, weight=4)
 
 # relative dispersal rate is fixed to one
-#dispersal_rate <- abs(1)
-
-# anagenetic event rate scaler
-log10_dispersal_rate ~ dnUniform(-4,2)
-log10_dispersal_rate.setValue(-2)
-dispersal_rate := 10^log10_dispersal_rate
-moves[mvi++] = mvSlide(log10_dispersal_rate, weight=4)
+dispersal_rate <- abs(1)
 
 # the geographical distance scaling factor
 distance_scale ~ dnUnif(0,20)
@@ -87,17 +81,11 @@ for (i in 1:n_epochs) {
     }
 }
 
-# extirpation
-log10_extirpation_rate ~ dnUniform(-4,2)
-log10_extirpation_rate.setValue(-1)
-extirpation_rate := 10^log10_extirpation_rate
-moves[mvi++] = mvSlide(log10_extirpation_rate, weight=4)
-
-# then relative extirpation rates (or per-area extinction rates)
-#log_sd <- 0.5
-#log_mean <- ln(1) - 0.5*log_sd^2
-#extirpation_rate ~ dnLognormal(mean=log_mean, sd=log_sd)
-#moves[mvi++] = mvScale(extirpation_rate, weight=2)
+# then extirpation rates (or per-area extinction rates)
+log_sd <- 0.5
+log_mean <- ln(1) - 0.5*log_sd^2
+extirpation_rate ~ dnLognormal(mean=log_mean, sd=log_sd)
+moves[mvi++] = mvScale(extirpation_rate, weight=2)
 
 # the extirpation rate matrix
 for (i in 1:n_epochs) {
@@ -156,7 +144,7 @@ rf_DEC    <- simplex(rf_DEC)
 m_bg ~ dnPhyloCTMCClado(tree=tree,
                            Q=Q_DEC_epoch,
                            cladoProbs=P_DEC,
-                           branchRates=1.,
+                           branchRates=rate_bg,
                            rootFrequencies=rf_DEC,
                            type="NaturalNumbers",
                            nSites=1)
