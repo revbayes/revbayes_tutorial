@@ -145,9 +145,38 @@ Ancestral state estimate
 
 \subsubsection{Topology}
 
-Majority rule consensus tre
+The morphology trees estimated in \ref{sec:dm_simple} and \ref{sec:dm_disc} are summarized using a majority rule consensus tree.
+Clades appearing in $p>0.5$ of posterior samples are resolved in the majority rule consensus tree, while poorly support clades with $p leq 0.5$ are shown as unresolved polytomies.
+%Poor support for clades is typically caused by either having too little  conflicting phylogenetic information.
+Poor phylogenetic resolution might be caused by having too few phylogenetically informative characters, or it might be due to conflicting signals for certain species relationships.
+Because phylogenetic information is generated through model choice, let's compare our topological estimates across models.
 
-Poor support for the simple trees generally points to weak or conflicting support for clades.
+\begin{figure}[h!]
+\fbox{%
+\begin{minipage}{\textwidth}\centering
+\includegraphics[width=0.92\textwidth,angle=0]{\ResourcePath figures/results/simple_majrule_tre}
+\caption{\small Majority rule consensus tree for the uniform Mk analysis.}
+\end{minipage}}
+\label{fig:simple_majrule}
+\end{figure}
+
+\begin{figure}[h!]
+\fbox{%
+\begin{minipage}{\textwidth}\centering
+\includegraphics[width=0.92\textwidth,angle=0]{\ResourcePath figures/results/mk_simple_majrule_tre}
+\caption{\small Majority rule consensus tree for the uniform Mkv analysis.}
+\end{minipage}}
+\label{fig:mk_simple_majrule}
+\end{figure}
+
+\begin{figure}[h!]
+\fbox{%
+\begin{minipage}{\textwidth}\centering
+\includegraphics[width=0.92\textwidth,angle=0]{\ResourcePath figures/results/mk_discretized_majrule_tre}
+\caption{\small Majority rule consensus tree for the beta-discretized Mkv analysis.}
+\end{minipage}}
+\label{fig:mk_discretized_majrule}
+\end{figure}
 
 
 \subsubsection{Branch length distributions}

@@ -51,8 +51,10 @@ mymcmc = mcmc(mymodel, monitors, moves)
 
 # Run the MCMC #
 mymcmc.run(generations=10000)
+
 # Read in the tree trace and construct the consensus tree tree #
 trace = readTreeTrace("output/mk_covarion.trees", treetype="non-clock")
+trace.setBurnin(0.25)
 
 # Summarize tree trace and the consensus tree to file
 consensusTree(trace, file="output/mk_covarion.majrule.tre")
