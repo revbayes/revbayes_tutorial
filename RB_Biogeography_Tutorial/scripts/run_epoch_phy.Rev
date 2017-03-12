@@ -176,7 +176,7 @@ moves[mvi++] = mvScale(extirpation_rate, weight=2)
 for (i in 1:n_epochs) {
     for (j in 1:n_areas) {
         for (k in 1:n_areas) {
-            er[i][j][k] <- abs(0.0) 
+            er[i][j][k] <- 0.0
         }
         er[i][j][j] := extirpation_rate
     }

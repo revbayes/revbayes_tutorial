@@ -157,7 +157,7 @@ rate_bg := 10^log10_rate_bg
 moves[mvi++] = mvSlide(log10_rate_bg, weight=4)
 
 # the relative dispersal rate
-dispersal_rate <- abs(1)
+dispersal_rate <- 1.0
 
 # the relative extirpation rate
 log_sd <- 0.5
@@ -168,7 +168,7 @@ moves[mvi++] = mvScale(extirpation_rate, weight=2)
 # the relative dispersal and extirpation rate matrices
 for (i in 1:n_areas) {
     for (j in 1:n_areas) {
-        er[i][j] <- abs(0) 
+        er[i][j] <- 1.0 
         dr[i][j] := dispersal_rate
     }
     er[i][i] := extirpation_rate
@@ -210,7 +210,7 @@ for (i in 1:n_epochs) {
     time_min[i] <- time_bounds[i][2]
 
     if (i == n_epochs) {
-        epoch_times[i] <- abs(0)
+        epoch_times[i] <- 0.0
     } else {
         epoch_times[i] ~ dnUniform(time_min[i], time_max[i])
         moves[mvi++] = mvSlide(epoch_times[i], delta=(time_bounds[i][1]-time_bounds[i][2])/2)
