@@ -134,7 +134,7 @@ Because the rate matrix will describe the relative anagenetic event rates, we ca
 
 \begin{snugshade}
 \begin{lstlisting}
-dispersal_rate <- 1.0
+dispersal_rate <- abs(1)
 \end{lstlisting}
 \end{snugshade}
 
@@ -168,7 +168,7 @@ then create a matrix of extirpation rates
 \begin{lstlisting}
 for (i in 1:n_areas) {
   for (j in 1:n_areas) {
-    er[i][j] <- 0.0        
+    er[i][j] <- abs(0)        
   }
   er[i][i] := extirpation_rate
 }
