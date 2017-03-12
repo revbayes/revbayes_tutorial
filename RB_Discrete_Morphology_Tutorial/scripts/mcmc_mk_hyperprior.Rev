@@ -34,9 +34,9 @@ source("scripts/model_mk_hyperprior.rev") # Morphological character change model
 mymodel = model(phylogeny)
 # Create a vector of monitors #
 # 1. for the full model #
-monitors[mni++] = mnModel(filename="output/ant_hyperprior.log", printgen=10)
+monitors[mni++] = mnModel(filename="output/mk_hyperprior.log", printgen=10)
 # 2. the tree #
-monitors[mni++] = mnFile(filename="output/ant_hyperprior.trees", printgen=10, phylogeny)
+monitors[mni++] = mnFile(filename="output/mk_hyperprior.trees", printgen=10, phylogeny)
 # 3. and a few select parameters to be printed to the screen #
 monitors[mni++] = mnScreen(printgen=10, Q_morpho, pi_prior)
 # 4. add an ancestral state monitor
@@ -45,7 +45,7 @@ monitors[mni++] = mnJointConditionalAncestralState(tree=phylogeny,
                                                    filename="output/mk_hyperprior.states.txt",
                                                    type="Standard",
                                                    printgen=10,
-                                                   withTips=true)
+                                                   withStartStates=true)
 
 # Initialize the MCMC object #
 mymcmc = mcmc(mymodel, monitors, moves)
