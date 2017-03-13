@@ -88,16 +88,16 @@ Begin by reading in the observed tree.
 
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-tree <- readTrees("data/primates_tree.nex")[1]
+observed_phylogeny <- readTrees("data/primates_tree.nex")[1]
 \end{lstlisting}
 \end{snugshade*}}
 
 From this tree, we can get some helpful variables:
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-taxa <- tree.taxa()
-tree_length <- tree.treeLength()
-root_age <- tree.rootAge()
+taxa <- observed_phylogeny.taxa()
+root <- observed_phylogeny.rootAge()
+tree_length <- observed_phylogeny.treeLength()
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -109,24 +109,17 @@ mni = 0
 \end{lstlisting}
 \end{snugshade*}}
 
-We also create a helper variable that specifies the number of discrete rate categories.
+Finally, we create a helper variable that specifies the number of discrete rate categories, another helper variable for the expected number of rate-shift events, the total number of species, and the variation in rates.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 NUM_RATE_CATEGORIES = 4
-\end{lstlisting}
-\end{snugshade*}}
-Using this variable we can easily change our script to use more or fewer categories and test the impact.
-For example, setting \cl{NUM\_RATE\_CATEGORIES = 1} gives the constant rate birth-death process.
-
-Finally, we create some helper variables for our model.
-{\tt \begin{snugshade*}
-\begin{lstlisting}
+EXPECTED_NUM_EVENTS = 2
 NUM_TOTAL_SPECIES = 367
 H = 0.587405
-EXPECTED_NUM_EVENTS = 2
 \end{lstlisting}
 \end{snugshade*}}
-These variables are defined here so that you can easily modify the analysis script.
+Using these variables we can easily change our script, for example, to use more or fewer categories and test the impact.
+For example, setting \cl{NUM\_RATE\_CATEGORIES = 1} gives the constant rate birth-death process.
 
 \subsection{Specifying the model}
 
@@ -139,18 +132,18 @@ These variables are defined here so that you can easily modify the analysis scri
 \end{figure}
 Instead of using a continuous probability distribution we will use a discrete approximation of the distribution, as done for modeling rate variation across sites \citep{Yang1994a} and for modeling relaxed molecular clocks \citep{Drummond2006}.
 That means, we assume that the speciation rates are drawn from one of the $N$ quantiles of the lognormal distribution.
-For this we will use the function \cl{fnDiscretizeDistribution} which takes in a distribution as its first argument and the number of quantile as the second argument.
+For this we will use the function \cl{fnDiscretizeDistribution} which takes in a distribution as its first argument and the number of quantiles as the second argument.
 The return value is a vector of quantiles.
 We use it as a deterministic variable and every time the parameters of the base distribution (\IE the lognormal distribution in our case) change the quantiles will update automatically as well.
 Thus we only need to specify parameters for our base distribution, the lognormal distribution.
 We choose a stochastic variable for the mean parameter of the lognormal distribution drawn from yet another lognormal prior distribution.
-We fix the prior mean on this mean diversification rate on our expected speciation rate, which is $\ln( \ln(\frac{\#Taxa}{2})/age )$.
+We fix the prior mean on this mean speciation rate on our expected diversification rate, which is $\ln( \ln(\frac{\#Taxa}{2})/age )$.
 Remember that the median of a lognormal distribution is equal to the exponential of the mean parameter.
 This is why we used a log-transform of the actual mean.
-This prior density is analogous to the prior on the diversification rate in the constant-rate birth-death process.
+This prior density is analogous to the prior on the speciation-rate parameter in the constant-rate birth-death process.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-speciation_prior_mean <- ln( ln(NUM_TOTAL_SPECIES/2.0) / root_age )
+speciation_prior_mean <- ln( ln(NUM_TOTAL_SPECIES/2.0) / root )
 speciation_mean ~ dnLognormal(mean=speciation_prior_mean, sd=H)
 moves[++mvi] = mvScale(speciation_mean,lambda=1,tune=true,weight=5)
 \end{lstlisting}
@@ -171,7 +164,7 @@ Alternatively, we could assume that each rate category has the same extinction r
 
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-extinction_prior_mean <- ln( ln(NUM_TOTAL_SPECIES/2.0) / root_age )
+extinction_prior_mean <- ln( ln(NUM_TOTAL_SPECIES/2.0) / root )
 extinction_mean ~ dnLognormal(mean=extinction_prior_mean,sd=2*H)
 moves[++mvi] = mvScale(extinction_mean,lambda=1.0,tune=true,weight=3.0)
 \end{lstlisting}
@@ -236,10 +229,10 @@ rate_category_prior <- simplex( rep(1, NUM_RATE_CATEGORIES * NUM_RATE_CATEGORIES
 \subsubsection{Incomplete Taxon Sampling}
 
 We know that we have sampled 233 out of 367 living primate species.
-To account for this we can set the sampling parameter as a constant node with a value of 233/367.
+To account for this we can set the sampling parameter as a constant node with a value of 233 / 367.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-rho <- tree.ntips() / NUM_TOTAL_SPECIES
+rho <- observed_phylogeny.ntips() / NUM_TOTAL_SPECIES
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -249,7 +242,7 @@ rho <- tree.ntips() / NUM_TOTAL_SPECIES
 The birth-death process requires a parameter for the root age.
 In this exercise we use a fix tree and thus we know the age of the tree.
 Hence, we can get the value for the root from the \citet{MagnusonFord2012} tree.
-This is done using our global variable \cl{root\_age} defined above and nothing else has to be done here.
+This is done using our global variable \cl{root} defined above and nothing else has to be done here.
 
 \subsubsection{The time tree}
 
@@ -257,13 +250,13 @@ Now we have all of the parameters we need to specify the full episodic birth-dea
 We initialize the stochastic node representing the time tree.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-timetree ~ dnMRBDP(lambda=speciation, mu=extinction, Q=rate_matrix, rootAge=root_age, rho=rho, pi=rate_category_prior, delta=event_rate, taxa=taxa)
+timetree ~ dnMRBDP(lambda=speciation, mu=extinction, Q=rate_matrix, rootAge=root, rho=rho, pi=rate_category_prior, delta=event_rate, taxa=taxa)
 \end{lstlisting}
 \end{snugshade*}}
 And then we attach data to it.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-timetree.clamp(tree)
+timetree.clamp(observed_phylogeny)
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -411,16 +404,16 @@ Begin by reading in the observed tree.
 
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-tree <- readTrees("data/primates_tree.nex")[1]
+observed_phylogeny <- readTrees("data/primates_tree.nex")[1]
 \end{lstlisting}
 \end{snugshade*}}
 
 From this tree, we can get some helpful variables:
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-taxa <- tree.taxa()
-tree_length <- tree.treeLength()
-root_age <- tree.rootAge()
+taxa <- observed_phylogeny.taxa()
+root <- observed_phylogeny.rootAge()
+tree_length <- observed_phylogeny.treeLength()
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -432,7 +425,7 @@ mni = 0
 \end{lstlisting}
 \end{snugshade*}}
 
-Finally, we create a helper variable that specifies the number of discrete rate categories, another helper variable for the expected number of rate-shift events, the total number of species, and the variation in rates..
+Finally, we create a helper variable that specifies the number of discrete rate categories, another helper variable for the expected number of rate-shift events, the total number of species, and the variation in rates.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 NUM_RATE_CATEGORIES = 4
@@ -530,7 +523,7 @@ We know that we have sampled 233 out of 367 living primate species.
 To account for this we can set the sampling parameter as a constant node with a value of 233 / 367.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-rho <- tree.ntips() / NUM_TOTAL_SPECIES
+rho <- observed_phylogeny.ntips() / NUM_TOTAL_SPECIES
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -540,11 +533,7 @@ rho <- tree.ntips() / NUM_TOTAL_SPECIES
 The birth-death process requires a parameter for the root age.
 In this exercise we use a fix tree and thus we know the age of the tree.
 Hence, we can get the value for the root from the \citet{MagnusonFord2012} tree.
-{\tt \begin{snugshade*}
-\begin{lstlisting}
-root_time <- tree.rootAge()
-\end{lstlisting}
-\end{snugshade*}}
+This is done using our global variable \cl{root} defined above and nothing else has to be done here.
 
 \subsubsection{The time tree}
 
@@ -552,13 +541,13 @@ Now we have all of the parameters we need to specify the full branch-specific bi
 We initialize the stochastic node representing the time tree.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-timetree ~ dnHBDP(lambda=speciation, mu=extinction, rootAge=root_time, rho=rho, rootState=root_category, delta=event_rate, taxa=taxa )
+timetree ~ dnHBDP(lambda=speciation, mu=extinction, rootAge=root, rho=rho, rootState=root_category, delta=event_rate, taxa=taxa )
 \end{lstlisting}
 \end{snugshade*}}
 And then we attach data to it.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-timetree.clamp(tree)
+timetree.clamp(observed_phylogeny)
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -652,7 +641,7 @@ mymcmc.burnin(generations=1000,tuningInterval=200)
 Now, run the MCMC:
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-mymcmc.run(generations=10000)
+mymcmc.run(generations=5000)
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -677,7 +666,7 @@ Now you can open the tree in \FigTree.
 \item Run an MCMC simulation to estimate the posterior distribution of the speciation rate and extinction rate.
 \item Visualize the branch-specific rates in \FigTree.
 \item Do you see evidence for rate decreases or increases? What is the general trend?
-\item Run the analysis using a different number of categories, \EG 2 or 8. How do the rates change?
+\item Run the analysis using a different number of categories, \EG 2 or 6. How do the rates change?
 \item Modify the model by specifying a prior on the log-diversification and log-turnover rate and then estimate the diversification rates through time. Do you see any differences in the estimates?
 \end{itemize}
 
