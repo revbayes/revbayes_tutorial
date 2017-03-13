@@ -508,6 +508,21 @@ We have rooted the tree at the outgroup \emph{Galeopterus\_variegatus}}
 
 \noindent \\ \impmark Fill in the following table as you go through the tutorial.
 
+Note, you can query the posterior probability of a clade being monophyletic using the following command:
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+Lemuroidea <- clade("Cheirogaleus_major", 
+                    "Daubentonia_madagascariensis", 
+                    "Lemur_catta", 
+                    "Lepilemur_hubbardorum",
+                    "Microcebus_murinus",
+                    "Propithecus_coquereli",
+                    "Varecia_variegata_variegata")
+                    
+treetrace.cladeProbability( Lemuroidea )
+\end{lstlisting}
+\end{snugshade*}}
+
 \begin{Form}
 \begin{table}[h!]
 \centering
