@@ -4,7 +4,7 @@
 
 library(RevGadgets)
 
-tree <- read.tree("data/primates_Springer.tre")
+tree <- read.nexus("data/primates_tree.nex")
 
 rev_out <- rev.process.div.rates(speciation_times_file = "output/primates_EBD_speciation_times.log",
                                  speciation_rates_file = "output/primates_EBD_speciation_rates.log",
@@ -15,5 +15,5 @@ rev_out <- rev.process.div.rates(speciation_times_file = "output/primates_EBD_sp
 
 pdf("EBD.pdf")
 par(mfrow=c(2,2))
-rev.plot.div.rates(rev_out)
+rev.plot.div.rates(rev_out,use.geoscale=FALSE)
 dev.off()
