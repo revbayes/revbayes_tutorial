@@ -1,16 +1,148 @@
-\section{Ancestral state estimation} \label{sec:dm_matrix}
+\bigskip
+\section{Evaluate and Summarize Your Results}\label{sec:trace}
+
+%TODO some text here
+% what is interesting? What are we looking for? 
+
+\medskip
+\subsection{Evaluate MCMC}\label{subsub:Exercise-EvalMCMC}
+
+As discussion in \cl{RB\_Total\_Evidence\_TEFBD}, we will use Tracer to evaluate the MCMC samples from our three estimations. 
+Load all three of the MCMC logs into the Tracer window.
+The MCMC chains will not have converged because they have not been run very long. 
+Highlight all three files in the upper left-hand viewer (Fig. \ref{fig:tracer-files}) by right- or command-clicking all three files.
+
+\begin{figure}[h!]
+\fbox{%
+\begin{minipage}{\textwidth}\centering
+\includegraphics[width=0.5\textwidth,angle=0]{\ResourcePath figures/AddFiles}
+\caption{\small Highlight all three files for model comparison.}
+\end{minipage}}
+\label{fig:tracer-files}
+\end{figure}
+
+Once all three trace logs are loaded and highlighted, first look at the estimated marginal likelihoods.
+You will notice that the Mk model, as originally proposed by \citep{lewis01} is improved by allowing any state frequency heterogeneity at all. 
+The discretized model and the Dirichlet model both represent improvements, but are fairly close in likelihood score to each other (Fig. \ref{fig:tracer-llik}).
+Likely, we would need to perform stepping stone model assessment to truly tell if the more complicated model is statistically justified.
+This analysis is too complicated and time-consuming for this tutorial period, but you will find instructions below for performing the analysis. \par
+\begin{figure}[h!]
+\fbox{%
+\begin{minipage}{\textwidth}\centering
+\includegraphics[width=0.75\textwidth,angle=0]{\ResourcePath figures/likelihoods}
+\caption{\small Comparison of likelihood scores for all three models.}
+\end{minipage}}
+\label{fig:tracer-llik}
+\end{figure}
+
+Click on the `Trace' panel.
+In the lower left hand corner, you will notice an option to color each trace by the file it came from.
+Choose this option (you may need to expand the window slightly to see it).
+Next to this option, you can also see an option to add a legend to your trace window.
+The results of this coloring can be seen in Fig. 6.
+When the coloring is working, you will see that the Mk model mixes quite well, but that mixing becomes worse as we relax the assumption of equal state frequencies.
+This is because we are greatly increasing model complexity.
+Therefore, we would need to run the MCMC chains longer if we were to use these analyses in a paper. \par
+
+\begin{figure}[h!]
+\fbox{%
+\begin{minipage}{\textwidth}\centering
+\includegraphics[width=0.6\textwidth,angle=0]{\ResourcePath figures/colortrace}
+\caption{\small The Trace window. The traces are colored by which version of the Mk model they correspond to.}
+\end{minipage}}
+\label{fig:module-gm}
+\end{figure}
+
+
+We are interested in two aspects of the posterior distribution.
+First, all analyses correct for the biased sampling of variable characters except for the {\tt simple} analysis.
+Then, we expect the {\tt tree\_length} variable to be greater for {\tt simple} than for the remaining analyses, because our data are enriched for variation.
+Figure \ref{fig:tracer_tree_length} shows that {\tt tree\_length} is approximately 30\% greater for {\tt simple} than for {\tt mk\_simple}, which are identical except that {\tt mk\_simple} corrects for sampling bias.
+To compare these densities, click the ``Marginal Prob Distribution'' tab in the upper part of the window, highlight all of the loaded Trace Files, then select {\tt tree\_length} from the list of Traces.
+
+\begin{figure}[h!]
+\fbox{%
+\begin{minipage}{\textwidth}\centering
+\includegraphics[width=0.9\textwidth,angle=0]{\ResourcePath figures/results/tracer_tree_length}
+\caption{\small Posterior tree length estimates.}
+\end{minipage}}
+\label{fig:tracer_tree_length}
+\end{figure}
+
+Second, we are interested in characterizing the degree of heterogeneity estimated by the beta-discretized model.
+If the data were distributed by a single morphological rate matrix, then we would expect to see very little variation among the different values in {\tt cats}, and very large values for the shape and scale parameters of the discrete-beta distribution.
+For example, if {\tt alpha\_ofbeta = \beta\_ofbeta = 1000}, then that would cause all discrete-beta categories to have values approaching 0.5.
+
+\begin{figure}[h!]
+\fbox{%
+\begin{minipage}{\textwidth}\centering
+\includegraphics[width=0.9\textwidth,angle=0]{\ResourcePath figures/results/cats}
+\caption{\small Posterior tree length estimates.}
+\end{minipage}}
+\label{fig:tracer_cats}
+\end{figure}
+
+\begin{figure}[h!]
+\fbox{%
+\begin{minipage}{\textwidth}\centering
+\includegraphics[width=0.9\textwidth,angle=0]{\ResourcePath figures/results/alpha_beta}
+\caption{\small Posterior tree length estimates.}
+\end{minipage}}
+\label{fig:tracer_alpha_beta}
+\end{figure}
+
+Figure \ref{fig:tracer_cats} shows that the four discrete-beta state frequencies do not all have the exact same value.
+In addition, Figure \ref{fig:tracer_alpha_beta} shows that the priors on the discrete-beta distribution are small enough that we expect to see variance among {\tt cat} values.
+If the data contained no information regarding the distribution of {\tt cat} values, then the posterior estimates for {\tt alpha\_ofbeta} and {\tt beta\_ofbeta} would resemble the prior.
+
+\subsection{Summarizing tree estimates}
+
+\begin{figure}[h!]
+\fbox{%
+\begin{minipage}{\textwidth}\centering
+\includegraphics[width=0.6\textwidth,angle=0]{\ResourcePath figures/results/simple_majrule_tre}
+\caption{\small Majority rule consensus tree for the uniform Mk analysis.}
+\end{minipage}}
+\label{fig:simple_majrule}
+\end{figure}
+
+
+The morphology trees estimated in \ref{sec:dm_simple} and \ref{sec:dm_disc} are summarized using a majority rule consensus tree (MRCT).
+Clades appearing in $p>0.5$ of posterior samples are resolved in the MRCT, while poorly support clades with $p \leq 0.5$ are shown as unresolved polytomies.
+%Poor support for clades is typically caused by either having too little  conflicting phylogenetic information.
+Poor phylogenetic resolution might be caused by having too few phylogenetically informative characters, or it might be due to conflicting signals for certain species relationships.
+Because phylogenetic information is generated through model choice, let's compare our topological estimates across models.
+
+\begin{figure}[h!]
+\fbox{%
+\begin{minipage}{\textwidth}\centering
+\includegraphics[width=0.6\textwidth,angle=0]{\ResourcePath figures/results/mk_discretized_majrule_tre}
+\caption{\small Majority rule consensus tree for the beta-discretized Mkv analysis.}
+\end{minipage}}
+\label{fig:mk_discretized_majrule}
+\end{figure}
+
+The MRCTs for the simple model without the +v correction (Fig \ref{fig:simple_majrule}) and the discretized-beta model (Fig \ref{fig:mk_discretized_majrule}) produce trees with comparable support for clades.
+Note that the scale bars for branch lengths differ greatly, indicating that tree length estimates are inflated without the +v correction, just as we saw when comparing the posterior tree length densities.
+In general, it is important to assess whether your results are sensitive to model assumptions, such as the degree of model complexity, and any mechanistic assumptions that motivate the model's design.
+In this case, our tree estimate appears to be robust to model complexity.
+
+\subsection{Ancestral state estimation} \label{sec:anc_states}
 
 Discrete morphological models are not only useful for tree estimation, as was done in Section \ref{sec:dm_overview}, but also for ancestral state estimation.
-The central problem in statistical phylogenetics concerns {\it marginalizing} over all unobserved character histories that evolved along the branches of a given phylogenetic tree.
-This allows one to compute the likelihood of observing a character matrix given they evolved according to an underlying tree, $P( X^{(\text{tip})} ) = \sum_{x \in X^{(\text{internal})}} P( X^{(\text{tip})}, X^{(\text{internal})} )$.
-One might also seek to learn the probability of the distribution of ancestral state configurations that are consistent with the tip state distribution, $P( X^{(\text{internal})} \mid X^{(\text{tip})} )$.
+The central problem in statistical phylogenetics concerns {\it marginalizing} over all unobserved character histories that evolved along the branches of a given phylogenetic tree according to some model, $M$, under some parameters, $\theta$.
+This marginalization yields the probability of observing the tip states, $X_\text{tip}$, given the model and its parameters, $P( X_\text{tip} | \theta, M ) = \sum_{X_\text{internal}} P( X_\text{internal}, X_\text{tip} \mid \theta, M )$.
+One might also wish to find the probability distribution of ancestral state configurations that are consistent with the tip state distribution, $P( X_\text{internal} \mid X_\text{tip}, \theta, M )$, and to sample ancestral states from that distribution.
 This procedure is known as {\it ancestral state estimation}.
 
-There are several strategies for doing so, each with their own advantages and disadvantages.
+There are several strategies for ancestral state estimation, each with their own advantages and disadvantages.
 One can compute the {\it exact probability} of any given ancestral node having an ancestral state value; or one can {\it sample} states from that distribution in proportion to the exact probability.
 One can produce {\it marginal} ancestral state estimates that report how often any given node is in a state without the context of the ancestral states of the remaining nodes; or one can produce {\it joint} ancestral state estimates that report the probability of particular combinations of sequences of evolutionary histories, running from the root to the tips of the phylogeny.
 
 While it is straightforward to produce exact probabilities for marginal histories, sampling is generally required to produce joint histories.
+Exact marginal approaches are fast, accurate, and compact, while joint sampling approaches require more samples to achieve accuracy comparable to marginal estimates, along with large files to store those samples.
+While one can obtain marginal estimates from joint estimates, one cannot obtain joint estimates from marginal estimates.
+
 This tutorial uses a joint sampling strategy because they yield the most complete representation of possible evolutionary scenarios.
 
 \subsection{Ancestral state monitors}
@@ -141,48 +273,5 @@ Figure \ref{fig:mk_simple_ase}) shows that the discretized-beta model provides s
 Ancestral state estimate
 
 
-\subsection{Comparing tree estimates}
-
-\subsubsection{Topology}
-
-The morphology trees estimated in \ref{sec:dm_simple} and \ref{sec:dm_disc} are summarized using a majority rule consensus tree.
-Clades appearing in $p>0.5$ of posterior samples are resolved in the majority rule consensus tree, while poorly support clades with $p leq 0.5$ are shown as unresolved polytomies.
-%Poor support for clades is typically caused by either having too little  conflicting phylogenetic information.
-Poor phylogenetic resolution might be caused by having too few phylogenetically informative characters, or it might be due to conflicting signals for certain species relationships.
-Because phylogenetic information is generated through model choice, let's compare our topological estimates across models.
-
-\begin{figure}[h!]
-\fbox{%
-\begin{minipage}{\textwidth}\centering
-\includegraphics[width=0.92\textwidth,angle=0]{\ResourcePath figures/results/simple_majrule_tre}
-\caption{\small Majority rule consensus tree for the uniform Mk analysis.}
-\end{minipage}}
-\label{fig:simple_majrule}
-\end{figure}
-
-\begin{figure}[h!]
-\fbox{%
-\begin{minipage}{\textwidth}\centering
-\includegraphics[width=0.92\textwidth,angle=0]{\ResourcePath figures/results/mk_simple_majrule_tre}
-\caption{\small Majority rule consensus tree for the uniform Mkv analysis.}
-\end{minipage}}
-\label{fig:mk_simple_majrule}
-\end{figure}
-
-\begin{figure}[h!]
-\fbox{%
-\begin{minipage}{\textwidth}\centering
-\includegraphics[width=0.92\textwidth,angle=0]{\ResourcePath figures/results/mk_discretized_majrule_tre}
-\caption{\small Majority rule consensus tree for the beta-discretized Mkv analysis.}
-\end{minipage}}
-\label{fig:mk_discretized_majrule}
-\end{figure}
-
-
-\subsubsection{Branch length distributions}
-
-
-Inflation of tree length parameter only for the uniform Mk model.
-Models that correct for sampling variable character (+v) generally agree on tree length.
 
 \newpage

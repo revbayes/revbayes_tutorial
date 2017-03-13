@@ -6,7 +6,7 @@ names <- morpho.names()
 
 # Set up branch length moves
 br_len_lambda ~ dnExp(0.2)
-moves[mvi++] = mvScale(br_len_lambda)
+moves[mvi++] = mvScale(br_len_lambda, weight=5)
 
 nbr <- 2*names.size() - 3
 for (i in 1:nbr){
