@@ -54,21 +54,21 @@ n_cats = 4
 alpha_ofbeta ~ dnExponential( 1 )
 beta_ofbeta ~ dnExponential( 1 )
 moves[mvi++] = mvScale(alpha_ofbeta, lambda=1,    weight=1.0 )
-moves[mvi++] = mvScale(alpha_ofbeta, lambda=0.1,  weight=1.0 )
-moves[mvi++] = mvScale(alpha_ofbeta, lambda=0.01, weight=1.0 )
+moves[mvi++] = mvScale(alpha_ofbeta, lambda=0.1,  weight=3.0 )
+moves[mvi++] = mvScale(alpha_ofbeta, lambda=0.01, weight=5.0 )
 moves[mvi++] = mvScale(beta_ofbeta, lambda=1,    weight=1.0 )
-moves[mvi++] = mvScale(beta_ofbeta, lambda=0.1,  weight=1.0 )
-moves[mvi++] = mvScale(beta_ofbeta, lambda=0.01, weight=1.0 )
+moves[mvi++] = mvScale(beta_ofbeta, lambda=0.1,  weight=3.0 )
+moves[mvi++] = mvScale(beta_ofbeta, lambda=0.01, weight=5.0 )
 \end{lstlisting}
 \end{snugshade*}}
 
 Above, we initialized the number of categories,  the parameters to the Beta distribution, and the moves on the parameters to the Beta. 
 
-Next, we set the categories to each represent a quadrant of the Beta distribution specified by the \cl{alpha\_ofbeta} and \cl{beta\_ofbeta}.
+Next, we set the categories to each represent a quadrant of the Beta distribution specified by the \cl{alpha\_ofbeta} and \cl{beta\_ofbeta}. The {\tt +1} values are added to the beta shape and scale parameters to prevent model overfitting.
 
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-cats := fnDiscretizeBeta(alpha_ofbeta, beta_ofbeta,4)
+cats := fnDiscretizeBeta(alpha_ofbeta+1, beta_ofbeta+1, 4)
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -85,13 +85,13 @@ If you were to print the \cl{cats} variable, you would see a list of state frequ
 
 Using these state frequencies, we will generate a new vector of Q matrices.
 Because we are varying the state frequencies, we must use a Q matrix generation function that allows for state frequencies to vary as a parameter.
-We will, therefore, use the \cl{freeBinary} function.
+We will, therefore, use the \cl{fnF81} function.
 
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 for (i in 1:cats.size())
 {
-Q[i] := fnFreeBinary(v(1-cats[i], cats[i]), false)
+    Q[i] := fnF81(simplex(abs(1-cats[i]), cats[i]))
 }
 \end{lstlisting}
 \end{snugshade*}}
@@ -169,8 +169,8 @@ First, we will create a hyperprior called \cl{dir\_alpha} and specify a move on 
 \begin{lstlisting}
 dir_alpha ~ dnExponential(1)
 moves[mvi++] = mvScale(dir_alpha, lambda=1,    weight=1.0 )
-moves[mvi++] = mvScale(dir_alpha, lambda=0.1,  weight=1.0 )
-moves[mvi++] = mvScale(dir_alpha, lambda=0.01, weight=1.0 )
+moves[mvi++] = mvScale(dir_alpha, lambda=0.1,  weight=3.0 )
+moves[mvi++] = mvScale(dir_alpha, lambda=0.01, weight=5.0 )
 \end{lstlisting}
 \end{snugshade*}}
 
