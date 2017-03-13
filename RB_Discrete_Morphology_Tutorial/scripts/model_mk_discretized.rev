@@ -6,7 +6,7 @@ names <- morpho.names()
 
 # Set up branch length moves
 br_len_lambda ~ dnExp(0.2)
-moves[mvi++] = mvScale(br_len_lambda)
+moves[mvi++] = mvScale(br_len_lambda, weight=5)
 
 nbr <- 2*names.size() - 3
 for (i in 1:nbr){
@@ -28,8 +28,8 @@ moves[mvi++] = mvScale(alpha_ofbeta, lambda=0.1,  weight=2.0 )
 moves[mvi++] = mvScale(alpha_ofbeta, lambda=0.01, weight=3.0 )
 
 #Create the Beta distribution, according to the two parameters and the number of categories.
-
-cats := fnDiscretizeBeta(alpha_ofbeta, beta_ofbeta,4)
+cat_offset <- 1.0
+cats := fnDiscretizeBeta(alpha_ofbeta + cat_offset, beta_ofbeta + cat_offset, 4)
 
 #Create the Q matrices. These data are binary, so we initialize the Jukes-Cantor matrix with
 # two states. The matrix is initialized from the median values of out four quantiles from
@@ -45,7 +45,7 @@ for (i in 1:cats.size())
 # This prior says that a character is equally likely to be put into any category.
 
 matrix_probs ~ dnDirichlet(v(1,1,1,1))
-moves[mvi++] = mvSimplexElementScale(matrix_probs, alpha=10, weight=1.0) 
+moves[mvi++] = mvSimplexElementScale(matrix_probs, alpha=10, weight=4.0) 
 
 
 #Set up Gamma-distributed rate variation.
@@ -53,8 +53,8 @@ alpha_morpho ~ dnExponential( 1.0 )
 rates_morpho := fnDiscretizeGamma( alpha_morpho, alpha_morpho, 4 )
 
 #Moves on the parameters to the Gamma distribution.
-moves[mvi++] = mvScale(alpha_morpho, lambda=0.01, weight=1.0)
-moves[mvi++] = mvScale(alpha_morpho, lambda=0.1,  weight=1.0)
+moves[mvi++] = mvScale(alpha_morpho, lambda=0.01, weight=5.0)
+moves[mvi++] = mvScale(alpha_morpho, lambda=0.1,  weight=3.0)
 moves[mvi++] = mvScale(alpha_morpho, lambda=1,    weight=1.0)
 
 #Create a starting tree and place moves on it.

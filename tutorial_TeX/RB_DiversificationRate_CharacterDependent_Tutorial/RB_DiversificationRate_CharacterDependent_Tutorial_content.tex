@@ -1,42 +1,42 @@
-\section{Estimating Speciation \& Extinction Rates Through Time}
+\section{Estimating Character-Dependent Speciation \& Extinction Rates}
 
 \subsection{Outline}
 
 This tutorial describes how to specify a character-dependent branching-process models in \RevBayes;
-a birth-death process where diversification rates are dependent on the state of a discrete character \citep{Maddison2007,Fitzjohn2012}.
+a birth-death process where diversification rates are dependent on the state of a discrete character \citep{Maddison2007,Fitzjohn2012,Beaulieu2016}.
 The probabilistic graphical model is given for this tutorial.
-Finally, you will estimate speciation and extinction rates through-time using Markov chain Monte Carlo (MCMC).
+Finally, you will estimate character-dependent speciation and extinction rates using Markov chain Monte Carlo (MCMC).
 
 
 \subsection{Requirements}
 We assume that you have read and hopefully completed the following tutorials:
 \begin{itemize}
-\item RB\_Getting\_Started
-\item RB\_Basics\_Tutorial
-\item RB\_BayesFactor\_Tutorial
-\item RB\_BasicDiversificationRate\_Tutorial
+\item \href{https://github.com/revbayes/revbayes_tutorial/raw/master/tutorial_TeX/RB_Getting_Started/RB_Getting_Started.pdf}{Getting started}
+\item \href{https://github.com/revbayes/revbayes_tutorial/raw/master/tutorial_TeX/RB_Basics_Tutorial/RB_Basics_Tutorial.pdf}{\Rev basics}
+\item \href{https://github.com/revbayes/revbayes_tutorial/raw/master/tutorial_TeX/RB_DiversificationRate_Tutorial/RB_DiversificationRate_Tutorial.pdf}{Basic Diversification Rate Estimation}
 \end{itemize}
-Note that the RB\_Basics\_Tutorial introduces the basic syntax of \Rev but does not cover any phylogenetic models.
-You may skip the RB\_Basics\_Tutorial if you have some familiarity with \R.
-The RB\_BayesFactor\_Tutorial introduced Bayesian model selection by means of Bayes factors, which can be skipped by readers familiar with Bayesian model selection.
+Note that the \href{https://github.com/revbayes/revbayes_tutorial/raw/master/tutorial_TeX/RB_Basics_Tutorial/RB_Basics_Tutorial.pdf}{\Rev basics tutorial} introduces the basic syntax of \Rev but does not cover any phylogenetic models.
+You may skip the \href{https://github.com/revbayes/revbayes_tutorial/raw/master/tutorial_TeX/RB_Basics_Tutorial/RB_Basics_Tutorial.pdf}{\Rev basics tutorial} if you have some familiarity with \R.
 We tried to keep this tutorial very basic and introduce all the language concepts and theory on the way.
-You may only need the RB\_Basics\_Tutorial for a more in-depth discussion of concepts in \Rev.
+You may only need the \href{https://github.com/revbayes/revbayes_tutorial/raw/master/tutorial_TeX/RB_Basics_Tutorial/RB_Basics_Tutorial.pdf}{\Rev basics tutorial} for a more in-depth discussion of concepts in \Rev.
 
 
-%%%%%%%%
+%%%%%%%%%%%%%%
 %%   Data   %%
-%%%%%%%%
+%%%%%%%%%%%%%%
 \section{Data and files}
 
 We provide the data file(s) which we will use in this tutorial.
 You may want to use your own data instead.
 In the \cl{data} folder, you will find the following files
 \begin{itemize}
-\item \cl{primates\_springer.tre}: Dated primates phylogeny including 369 out of 450 species from .
+\item \href{https://github.com/revbayes/revbayes_tutorial/raw/master/RB_DiversificationRate_CharacterDependent_Tutorial/data/primates\_tree.nex}{primates\_tree.nex}: Dated primates phylogeny including 233 out of 367 species from \cite{MagnusonFord2012}.
+\item \href{https://github.com/revbayes/revbayes_tutorial/raw/master/RB_DiversificationRate_CharacterDependent_Tutorial/data/primates_morph.nex}{primates\_morph.nex}: A set of discrete morphological characters from \cite{MagnusonFord2012}. The type of characters are described in the file \href{https://github.com/revbayes/revbayes_tutorial/raw/master/RB_DiversificationRate_CharacterDependent_Tutorial/data/primates_morph_description.txt}{primates\_morph\_description.txt}.
 \end{itemize}
 
 
-\impmark{Open the tree \cl{data/primates\_springer.tre} in FigTree.}
+\impmark{Open the tree \cl{data/primates\_tree.nex} in FigTree.}
+\impmark{Open the character data file \cl{data/primates\_morph.nex} in a text editor.}
 
 
 \bigskip
@@ -45,117 +45,112 @@ In the \cl{data} folder, you will find the following files
 
 \subsection{Read the tree}
 
-Begin by reading in the observed tree. 
-
+Begin by reading in the observed tree and the morphological data. 
+We have both stored in separate nexus files.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-T <- readTrees("data/Primates_tree.nex")[1]
-data <- readDiscreteCharacterData("data/Primates_morph.nex")
+observed_phylogeny <- readTrees("data/primates_tree.nex")[1]
+data <- readCharacterData("data/primates_solitariness.nex")
 \end{lstlisting}
 \end{snugshade*}}
-On this example we are only going to use the first character of the matrix.
-{\tt \begin{snugshade*}
-\begin{lstlisting}
-data.excludeAll()
-data.includeCharacter(1)
-\end{lstlisting}
-\end{snugshade*}}
+Note, the character-dependent birth-death process currently uses always the first character/site in the alignment file.
+We have therefore split the morphological dataset into several small files that include only one morphological character each.
 
-From this tree, we can get some helpful variables:
+From the tree, we can get some helpful variables:
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-taxa <- T.taxa()
+taxa <- observed_phylogeny.taxa()
 \end{lstlisting}
 \end{snugshade*}}
 
-Additionally, we can initialize an iterator variable for our vector of moves:
+Additionally, we can initialize an iterator variable for our vector of moves and monitors:
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 mvi = 0
+mni = 0
 \end{lstlisting}
 \end{snugshade*}}
 
-Finally, we create a helper variable that specifies the number of intervals.
+Finally, we create a helper variable that specifies the number of states that the morphological character has.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 NUM_STATES = 2
 \end{lstlisting}
 \end{snugshade*}}
-Using this variable we can easily change our script to break-up time into many or few intervals.
+Using this variable we can easily change our script to use a different morphological character with a different number of states.
+We will also use this variable in our second example on hidden-state speciation and extinction model. 
 
 
 
 \subsection{Specifying the model}
 
-The basic idea behind the model in this example is that speciation and extinction rates are dependent on a binary character.
+The basic idea behind the model in this example is that speciation and extinction rates are dependent on a binary character \citep{Maddison2007}.
 
 
 \subsubsection{Priors on rates}
-We start by specifying prior distributions on the rates.
-
+We start by specifying prior distributions on the diversification rates.
+We will assume here an identical prior distribution on the speciation and extinction rate.
+Furthermore, we will use a normal distribution as the prior distribution on the log of the speciation and extinction rate.
+Hence, we will use a mean of $\frac{\ln(\frac{\text{\#Taxa}}{2})}{\text{tree-age}}$ which is the expected net-diversification rate.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-diversification_mean <- ln( ln(450.0/2.0) / T.rootAge() )
-turnover_mean <- ln( ln(450.0/2.0) / T.rootAge() )
-diversification_sd <- 0.587405*2
-turnover_sd <- 0.587405*2
+rate_mean <- ln( ln(367.0/2.0) / observed_phylogeny.rootAge() )
+rate_sd <- 2.0
 \end{lstlisting}
 \end{snugshade*}}
-
-
+Now we can specify our character-specific specification and extinction rate parameters.
+As we just said before, we are going to use normal distributions for the prior on the log-speciation and log-extinction rate.
+Here we will use a \cl{for}-loop to specify speciation and extinction parameters for each character, \EG two in a binary state case.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 for (i in 1:NUM_STATES) {
-
-    ### Create a lognormal distributed variable for the diversification rate
-    diversification[i] ~ dnLognormal(mean=diversification_mean,sd=diversification_sd) 
-    moves[++mvi] = mvScale(diversification[i],lambda=1.0,tune=true,weight=3.0)
+    
+     ### Create a lognormal distributed variable for the diversification rate
+    log_speciation[i] ~ dnNormal(mean=rate_mean,sd=rate_sd) 
+    speciation[i] := exp( log_speciation[i] )
+    moves[++mvi] = mvSlide(log_speciation[i],delta=0.20,tune=true,weight=3.0)
 
     ### Create a lognormal distributed variable for the turnover rate
-    turnover[i] ~ dnLognormal(mean=turnover_mean,sd=turnover_sd) 
-    moves[++mvi] = mvScale(turnover[i],lambda=1.0,tune=true,weight=3.0)
-
-
-    ### Transform the parameters
-    speciation[i] := ln( diversification[i] + turnover[i] )
-    extinction[i] := ln( turnover[i] ) 
+    log_extinction[i] ~ dnNormal(mean=rate_mean,sd=rate_sd) 
+    extinction[i] := exp( log_extinction[i] )
+    moves[++mvi] = mvSlide(log_extinction[i],delta=0.20,tune=true,weight=3.0)
 
 }
 \end{lstlisting}
 \end{snugshade*}}
 
 Create a rate-matrix for the relative-rate of change between categories.
-Here we simply use equal rates, that is,  a Jukes-Cantor rate-matrix with \cl{NUM\_STATES} states.
-{\tt \begin{snugshade*}
-\begin{lstlisting}
-rate_matrix <- fnJC( NUM_STATES )
+# Each transition rate between observed states are drawn
+# from an exponential distribution with a mean of 10
+# character state transitions over the tree. 
+rate_pr := observed_phylogeny.treeLength() / 10
+rate_12 ~ dnExp(rate_pr)
+rate_21 ~ dnExp(rate_pr)
+
+moves[++mvi] = mvScale( rate_12, weight=2 )
+moves[++mvi] = mvScale( rate_21, weight=2 )
+
+rate_matrix := fnFreeBinary( [rate_12, rate_21 ], rescaled=false)
 \end{lstlisting}
 \end{snugshade*}}
 
+
+\subsubsection{Prior on the root state}
 Create a constant variable with the prior probabilities of each rate category at the root.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-rate_category_prior <- simplex( rep(1,NUM_STATES) )
+rate_category_prior ~ dnDirichlet( rep(1,NUM_STATES) )
+moves[++mvi] = mvDirichletSimplex(rate_category_prior,tune=true,weight=2)
 \end{lstlisting}
 \end{snugshade*}}
-
-Create a exponential distributed variable for the rate of rate-shift events
-{\tt \begin{snugshade*}
-\begin{lstlisting}
-event_rate ~ dnExponential(1.0)
-moves[++mvi] = mvScale(event_rate,lambda=1,tune=true,weight=5)
-\end{lstlisting}
-\end{snugshade*}}
-
-
 
 \subsubsection{Incomplete Taxon Sampling}
 
-We know that we have sampled 369 out of 450 living primate species. 
-To account for this we can set the sampling parameter as a constant node with a value of 369/450
+We know that we have sampled 233 out of 367 living primate species. 
+To account for this we can set the sampling parameter as a constant node with a value of 233/367
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-rho <- T.ntips()/450
+rho <- observed_phylogeny.ntips()/367
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -164,10 +159,10 @@ rho <- T.ntips()/450
 
 The birth-death process requires a parameter for the root age.
 In this exercise we use a fix tree and thus we know the age of the tree.
-Hence, we can get the value for the root from the \citet{Springer2012} tree.
+Hence, we can get the value for the root from the \citet{MagnusonFord2012} tree.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-root_time <- T.rootAge()
+root <- observed_phylogeny.rootAge()
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -177,23 +172,21 @@ Now we have all of the parameters we need to specify the full episodic birth-dea
 We initialize the stochastic node representing the time tree.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-timetree ~ dnCDBDP( rootAge                   = root,
-                    hiddenSpeciationRates     = [ 0.0 ],
-                    observedSpeciationRates   = speciation,
-                    hiddenExtinctionRates     = [ 0.0 ],
-                    observedExtinctionRates   = extinction, 
-                    Q                         = rate_matrix,
-                    delta                     = event_rate,
-                    pi                        = rate_category_prior,
-                    rho                       = rho,
-                    condition                 = "survival",
-                    taxa                      = taxa )
+timetree ~ dnCDBDP( rootAge           = root,
+                    speciationRates   = speciation,
+                    extinctionRates   = extinction, 
+                    Q                 = rate_matrix,
+                    pi                = rate_category_prior,
+                    delta             = 1.0,
+                    rho               = rho,
+                    condition         = "survival",
+                    taxa              = taxa )
 \end{lstlisting}
 \end{snugshade*}}
 And then we attach data to it.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-timetree.clamp( T )
+timetree.clamp( observed_phylogeny )
 timetree.clampCharData( data )
 \end{lstlisting}
 \end{snugshade*}}
@@ -201,7 +194,7 @@ timetree.clampCharData( data )
 Finally, we create a workspace object of our whole model using the \cl{model()} function. 
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-mymodel = model(rho)
+mymodel = model(rate_matrix)
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -215,8 +208,10 @@ The \cl{model()} function traversed all of the connections and found all of the 
 For our MCMC analysis, we set up a vector of \emph{monitors} to record the states of our Markov chain. 
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-monitors[1] = mnModel(filename="output/primates_CBBD.log",printgen=10, separator = TAB)
-monitors[2] = mnScreen(printgen=10, event_rate)
+monitors[++mni] = mnFile(filename="output/primates_BiSSE_"+DATASET+".trees", printgen=1, timetree)
+monitors[++mni] = mnModel(filename="output/primates_BiSSE_"+DATASET+".log", printgen=1)
+monitors[++mni] = mnJointConditionalAncestralState(tree=timetree, cdbdp=timetree, type="Standard", printgen=1, withTips=true, withStartStates=false, filename="output/anc_states_primates_BiSSE_"+DATASET+".log")
+monitors[++mni] = mnScreen(printgen=10, rate_12, rate_21, speciation, extinction)
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -232,18 +227,83 @@ mymcmc = mcmc(mymodel, monitors, moves)
 First, we will run a pre-burnin to tune the moves and to obtain starting values from the posterior distribution.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-mymcmc.burnin(generations=10000,tuningInterval=200)
+mymcmc.burnin(generations=5000,tuningInterval=200)
 \end{lstlisting}
 \end{snugshade*}}
-
 
 Now, run the MCMC:
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-mymcmc.run(generations=50000)
+mymcmc.run(generations=20000)
 \end{lstlisting}
 \end{snugshade*}}
 
+
+\subsubsection{Summarizing ancestral states}
+
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+anc_states = readAncestralStateTrace("output/anc_states_primates_BiSSE_solitariness.log")
+anc_tree = ancestralStateTree(tree=observed_phylogeny, ancestral_state_trace_vector=anc_states, include_start_states=false, file="output/anc_states_primates_BiSSE_solitariness_results.tree", burnin=0, summary_statistic="MAP", site=0)
+\end{lstlisting}
+\end{snugshade*}}
+
+
+\subsubsection{Plotting ancestral states}
+
+\definecolor{shadecolor}{RGB}{200,200,200}
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+library(RevGadgets)
+
+tree_file = "output/anc_states_primates_BiSSE_results.tree"
+
+plot_ancestral_states(tree_file, summary_statistic="MAP",
+                      tip_label_size=0,
+                      xlim_visible=NULL,
+                      node_label_size=0,
+                      show_posterior_legend=TRUE,
+                      node_size_range=c(2, 6),
+                      alpha=0.75)
+
+output_file = "RevBayes_Anc_States_BiSSE.pdf"
+ggsave(output_file, width = 11, height = 9)
+\end{lstlisting}
+\end{snugshade*}}
+\definecolor{shadecolor}{RGB}{183,207,237}
+
+\subsubsection{Plotting diversification rates}
+
+
+\definecolor{shadecolor}{RGB}{200,200,200}
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+library(coda)
+library(ggplot2)
+source("scripts/multiplot.R")
+
+data <- read.table("output/primates_BiSSE.log",header=TRUE)
+
+dat_ext  <- data.frame(dens = c(data$extinction.1, data$extinction.2), Type = rep(c("1", "2"), each = length(data$extinction.1)))
+dat_spec <- data.frame(dens = c(data$speciation.1, data$speciation.2), Type = rep(c("1", "2"), each = length(data$extinction.1)))
+dat_div  <- data.frame(dens = c(data$speciation.1-data$extinction.1, data$speciation.2-data$extinction.2), Type = rep(c("1", "2"), each = length(data$extinction.1)))
+dat_rel  <- data.frame(dens = c(data$extinction.1/data$speciation.1, data$extinction.2/data$speciation.2), Type = rep(c("1", "2"), each = length(data$extinction.1)))
+
+pdf("RevBayes_BiSSE_Results.pdf")
+
+p1 <- ggplot(dat_spec, aes(x = dens, fill = Type)) + labs(title = "Speciation", x="Rate", y="Posterior Density") + geom_density(alpha = 0.5)
+p2 <- ggplot(dat_ext, aes(x = dens, fill = Type)) + labs(title = "Extinction", x="Rate", y="Posterior Density") + geom_density(alpha = 0.5)
+p3 <- ggplot(dat_div, aes(x = dens, fill = Type)) + labs(title = "Net-Diversification", x="Rate", y="Posterior Density") + geom_density(alpha = 0.5)
+p4 <- ggplot(dat_rel, aes(x = dens, fill = Type)) + labs(title = "Relative Extinction", x="Rate", y="Posterior Density") + geom_density(alpha = 0.5)
+
+multiplot(p1, p2, p3, p4)
+dev.off()
+\end{lstlisting}
+\end{snugshade*}}
+
+
+
+\definecolor{shadecolor}{RGB}{183,207,237}
 
 %\impmark{The \Rev file for performing this analysis: \href{https://github.com/revbayes/revbayes_tutorial/raw/master/RB_DiversificationRateEpisodic_Tutorial/RevBayes_scripts/mcmc_EBD.Rev}{\cl{mcmc\_EBD.Rev}}.}
 %\impmark{An \R file for plotting the output: \href{https://github.com/revbayes/revbayes_tutorial/raw/master/RB_DiversificationRateEpisodic_Tutorial/RevBayes_scripts/Plot_EBD_RevBayes.R}{\cl{Plot\_EBD\_RevBayes.R}}.}
