@@ -33,7 +33,7 @@ close(file_conn)
 # plot states
 state_labels = c("0","1","?")
 state_colors = c("red","blue","gray")
-plot_scale = 0.1
+plot_scale = 0.15
 summary_statistic = "MAP"
 p = plot_ancestral_states(tree_file=fix_fn,
                           include_start_states=F,
