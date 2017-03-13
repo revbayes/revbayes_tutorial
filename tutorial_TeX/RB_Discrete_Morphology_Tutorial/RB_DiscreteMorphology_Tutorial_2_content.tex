@@ -68,7 +68,8 @@ P
 \end{lstlisting}
 \end{snugshade*}}
 
-
+Because the transition rates between all differing pairs of states are the same, so are the transition probabilities.
+Similarly, the probability of remaining in any given state is also equal across states.
 
 \subsection{Asymmetric ordered}
 
@@ -132,15 +133,15 @@ P <- Q.getTransitionProbabilities(rate=0.1)
 \end{lstlisting}
 \end{snugshade*}}
 
-Note that {\tt P[1][2]} > {\tt P[1][3]} > {\tt P[1][4]} primarily because those transitions require a minimum of one, two, and three events each.
-In addition, note that {\tt P[1][2]} > {\tt P[2][1]} because {\tt rates[1][2]} > {\tt rates[2][1]}.
+Note that {\tt P[1][2]} > {\tt P[1][3]} > {\tt P[1][4]}, primarily because those transitions require a minimum of one, two, and three events, respectively.
+In addition, note that assigning asymmetric transition rates causes {\tt P[1][2]} > {\tt P[2][1]} because {\tt rates[1][2]} > {\tt rates[2][1]}.
 
 
 \subsection{Correlated binary characters}
 
 Two characters do not necessarily evolve independently of one another.
-Take two characters: in plants, the presence or absence of toothed leaf margins (character X) is thought to be ecologically correlated with the presence of absence of leaf lobing (character Y).
-For a single binary character, there are two states (0 and 1), but there are four for a pair of non-independent binary characters (00, 10, 01, and 11).
+Take two characters in plants: the presence or absence of toothed leaf margins (character X) is thought to be ecologically correlated with the presence of absence of leaf lobing (character Y).
+For a single binary character, there are two states (0 and 1), but there are four states for a pair of non-independent binary characters (00, 10, 01, and 11).
 \citet{pagel04} introduced a general framework for modeling the evolution of joint sets of characters.
 These models require that only one evolutionary event can occur in a moment of time, which is enforced with the 0 terms.
 In addition, the transition rate that, say, character X goes from 0 to 1 depends on the current value of character Y.
@@ -321,8 +322,8 @@ P_10
 
 \subsection{Covarion}
 
-Covarion models \citep{tuffley98} capture the possibility that a ``hidden'' (unobserved or unmeasurable) state causes evolutionary processes to .
-For example, phylogenetically local clusters of plant lineages transition between herbaceous and woody habits at relatively high rates, and one might want to quantify where these bursts occur \citep{beaulieu2013}.
+Covarion models \citep{tuffley98} capture the possibility that a ``hidden'' (unobserved or unmeasurable) states cause evolutionary processes to vary in tempo and modes.
+For example, phylogenetically local clusters of plant lineages appear to transition between herbaceous and woody habits at relatively high rates, so one might want to quantify where these bursts occur \citep{beaulieu2013}.
 While similar in structure to the correlated character model of \citet{pagel94}, covarion models do not observe the hidden state that induce the mode-shifts.
 Instead, covarion models expand the character's state space by a factor of $K$, and observe the character once for each of the $K$ categories.
 For example, take a binary character modeled with $K=2$ hidden state classes.

@@ -77,7 +77,7 @@ For example, if {\tt alpha\_ofbeta = beta\_ofbeta = 1000}, then that would cause
 \fbox{%
 \begin{minipage}{\textwidth}\centering
 \includegraphics[width=0.9\textwidth,angle=0]{\ResourcePath figures/results/cats}
-\caption{\small Posterior tree length estimates.}
+\caption{\small Posterior discretized state frequencies for the discrete-beta model.}
 \end{minipage}}
 \label{fig:tracer_cats}
 \end{figure}
@@ -86,7 +86,7 @@ For example, if {\tt alpha\_ofbeta = beta\_ofbeta = 1000}, then that would cause
 \fbox{%
 \begin{minipage}{\textwidth}\centering
 \includegraphics[width=0.9\textwidth,angle=0]{\ResourcePath figures/results/alpha_beta}
-\caption{\small Posterior tree length estimates.}
+\caption{\small Posterior alpha and beta parameters for the discrete-beta model.}
 \end{minipage}}
 \label{fig:tracer_alpha_beta}
 \end{figure}
@@ -97,15 +97,14 @@ If the data contained no information regarding the distribution of {\tt cat} val
 
 \subsection{Summarizing tree estimates}
 
-\begin{figure}[h!]
-\fbox{%
-\begin{minipage}{\textwidth}\centering
-\includegraphics[width=0.6\textwidth,angle=0]{\ResourcePath figures/results/simple_majrule_tre}
-\caption{\small Majority rule consensus tree for the uniform Mk analysis.}
-\end{minipage}}
-\label{fig:simple_majrule}
-\end{figure}
-
+%\begin{figure}[h!]
+%\fbox{%
+%\begin{minipage}{\textwidth}\centering
+%\includegraphics[width=0.6\textwidth,angle=0]{\ResourcePath figures/results/simple_majrule_tre}
+%\caption{\small Majority rule consensus tree for the uniform Mk analysis.}
+%\end{minipage}}
+%\label{fig:simple_majrule}
+%\end{figure}
 
 The morphology trees estimated in \ref{sec:dm_simple} and \ref{sec:dm_disc} are summarized using a majority rule consensus tree (MRCT).
 Clades appearing in $p>0.5$ of posterior samples are resolved in the MRCT, while poorly support clades with $p \leq 0.5$ are shown as unresolved polytomies.
@@ -122,7 +121,7 @@ Because phylogenetic information is generated through model choice, let's compar
 \label{fig:mk_discretized_majrule}
 \end{figure}
 
-The MRCTs for the simple model without the +v correction (Fig \ref{fig:simple_majrule}) and the discretized-beta model (Fig \ref{fig:mk_discretized_majrule}) produce trees with comparable support for clades.
+The MRCTs for the simple model with and without the +v correction are very similar to that for the discretized-beta model (Fig \ref{fig:mk_discretized_majrule}).
 Note that the scale bars for branch lengths differ greatly, indicating that tree length estimates are inflated without the +v correction, just as we saw when comparing the posterior tree length densities.
 In general, it is important to assess whether your results are sensitive to model assumptions, such as the degree of model complexity, and any mechanistic assumptions that motivate the model's design.
 In this case, our tree estimate appears to be robust to model complexity.
@@ -238,20 +237,6 @@ Finally, the shell script combines the resulting figures into a single concatena
 
 \subsection{Results}
 
-Knowing what we do about the various models, how might we expect the ancestral state estimates to differ?
-For one, the {\tt simple} model does not condition on ascertainment bias towards variable characters.
-This leads to overestimated branch lengths when compared to the {\tt mk\_simple} model.
-
-We might expect that {\tt mk\_simple}, because it forces all characters to evolve under a single symmetric model of evolution, would have more ambiguity in ancestral state estimates.
-In contrast {\tt mk\_discretized} and {\tt mk\_mixture} allow characters to evolve with different tendencies towards 0- or 1-valued states, which might increase the certainty in ancestral state estimates.
-
-
-Many ancestral state estimates are fairly insensitive to model choice, particularly for characters that underwent only a single transition.
-Characters that underwent a reversion are more sensitive.
-Character 36, for example:
-Figure \ref{fig:mk_simple_ase} shows that the uniform Mkv model has a weak preference for the two immediate ancestral nodes for {\it Melursus urisinus} and {\it Tremarctos ornatus} to be in the absent state ($p < 0.55$).
-Figure \ref{fig:mk_simple_ase}) shows that the discretized-beta model provides stronger and contradictory support for the present state ($0.65 \leq p \leq 0.70$).
-
 \begin{figure}[h!]
 \fbox{%
 \begin{minipage}{\textwidth}\centering
@@ -261,6 +246,10 @@ Figure \ref{fig:mk_simple_ase}) shows that the discretized-beta model provides s
 \label{fig:mk_simple_ase}
 \end{figure}
 
+Knowing what we do about the various models, how might we expect the ancestral state estimates to differ?
+For one, the {\tt simple} model does not condition on ascertainment bias towards variable characters.
+This leads to overestimated branch lengths when compared to the {\tt mk\_simple} model.
+
 \begin{figure}[h!]
 \fbox{%
 \begin{minipage}{\textwidth}\centering
@@ -269,5 +258,16 @@ Figure \ref{fig:mk_simple_ase}) shows that the discretized-beta model provides s
 \end{minipage}}
 \label{fig:mk_discretized_ase}
 \end{figure}
+
+We might expect that {\tt mk\_simple}, because it forces all characters to evolve under a single symmetric model of evolution, would have more ambiguity in ancestral state estimates.
+In contrast {\tt mk\_discretized} allows characters to evolve with different tendencies towards 0- or 1-valued states, which might increase the certainty in ancestral state estimates.
+
+Many ancestral state estimates are fairly insensitive to model choice, particularly for characters that underwent only a single transition.
+Characters that underwent a reversion are more sensitive.
+Character 36, for example:
+Figure \ref{fig:mk_simple_ase} shows that the uniform Mkv model has a weak preference for the two immediate ancestral nodes for {\it Melursus urisinus} and {\it Tremarctos ornatus} to be in the absent state ($p < 0.55$).
+Figure \ref{fig:mk_simple_ase}) shows that the discretized-beta model provides stronger and contradictory support for the present state ($0.65 \leq p \leq 0.70$).
+
+
 
 \newpage
