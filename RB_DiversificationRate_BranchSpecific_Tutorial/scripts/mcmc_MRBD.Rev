@@ -1,7 +1,7 @@
 ################################################################################
 #
 # RevBayes Example: Bayesian inference of diversification rates under a
-#                   multi-rate birth-death model
+#                   branch-specific birth-death model
 #
 #
 # authors: Sebastian Hoehna
@@ -30,7 +30,7 @@ mni = 0
 # Global parameters for our analysis
 NUM_RATE_CATEGORIES = 4
 EXPECTED_NUM_EVENTS = 2
-NUM_TOTAL_SPECIES = 450
+NUM_TOTAL_SPECIES = 367
 H = 0.587405
 
 ####################
@@ -88,17 +88,15 @@ timetree ~ dnMRBDP(lambda=speciation, mu=extinction, Q=rate_matrix, rootAge=root
 ### clamp the model with the "observed" tree
 timetree.clamp(tree)
 
-
 #############
 # The Model #
 #############
-
 
 ### workspace model wrapper ###
 mymodel = model(rho)
 
 ### set up the monitors that will output parameter values to file and screen
-monitors[++mni] = mnModel(filename="output/primates_MRBD_powp.log",printgen=10, separator = TAB)
+monitors[++mni] = mnModel(filename="output/primates_MRBD.log",printgen=10, separator = TAB)
 monitors[++mni] = mnScreen(printgen=10, speciation_mean, extinction_mean)
 
 
@@ -106,19 +104,15 @@ monitors[++mni] = mnScreen(printgen=10, speciation_mean, extinction_mean)
 # The Analysis #
 ################
 
-### compute power posterior distributions
-pow_p = powerPosterior(mymodel, moves, monitors, "output/MRBD_powp.out", cats=100, sampleFreq=10)
-pow_p.burnin(generations=1000,tuningInterval=200)
-pow_p.run(generations=2000)
+### workspace mcmc
+mymcmc = mcmc(mymodel, monitors, moves)
 
-### Use stepping-stone sampling to calculate marginal likelihoods
-ss = steppingStoneSampler(file="output/MRBD_powp.out", powerColumnName="power", likelihoodColumnName="likelihood")
-ss.marginal()
+### pre-burnin to tune the proposals
+mymcmc.burnin(generations=1000,tuningInterval=200)
 
-### Use path-sampling to calculate marginal likelihoods
-ps = pathSampler(file="output/MRBD_powp.out", powerColumnName="power", likelihoodColumnName="likelihood")
-ps.marginal()
-
+### run the MCMC
+mymcmc.run(generations=5000)
+mymcmc.operatorSummary()
 
 ## quit ##
 q()
