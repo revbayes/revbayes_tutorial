@@ -4,7 +4,7 @@ The instantaneous rate matrix encodes the transition rates between all pairs of 
 It is important to emphasize that all rate matrices are assertions about how morphological evolution operates.
 Depending on how one populates the rate matrix elements, different evolutionary hypotheses may be expressed. \par
 
-When we model morphological data, unlike nucleotide data, each change may require multiple genetic changes.
+When we model the evolution of morphological data, unlike nucleotide data, each change may require a sequence of intermediate changes.
 Getting to one state may require going through another.
 In short, it is probably not likely that one single model describes all characters well. \par 
 
@@ -48,10 +48,10 @@ Create the rate matrix
 \begin{lstlisting}
 Q := fnFreeK(rates)
 Q
-   [ [ -1.0000, 0.3333, 0.3333, 0.3333 ] ,
-     0.3333, -1.0000, 0.3333, 0.3333 ] ,
-     0.3333, 0.3333, -1.0000, 0.3333 ] ,
-     0.3333, 0.3333, 0.3333, -1.0000 ] ]
+|*[ [ -1.0000, 0.3333, 0.3333, 0.3333 ] ,
+|*    0.3333, -1.0000, 0.3333, 0.3333 ] ,
+|*    0.3333, 0.3333, -1.0000, 0.3333 ] ,
+|*    0.3333, 0.3333, 0.3333, -1.0000 ] ]
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -61,13 +61,14 @@ Compute the transition probability matrix for a branch length of 0.1.
 \begin{lstlisting}
 P <- Q.getTransitionProbabilities(0.1)
 P
-   [ [ 0.906, 0.031, 0.031, 0.031],
-     [ 0.031, 0.906, 0.031, 0.031],
-     [ 0.031, 0.031, 0.906, 0.031],
-     [ 0.031, 0.031, 0.031, 0.906] ]
+|*[ [ 0.906, 0.031, 0.031, 0.031],
+|*  [ 0.031, 0.906, 0.031, 0.031],
+|*  [ 0.031, 0.031, 0.906, 0.031],
+|*  [ 0.031, 0.031, 0.031, 0.906] ]
 \end{lstlisting}
 \end{snugshade*}}
 
+<<<<<<< HEAD
 If we believed that, for example, for a couple of states, some transitions are strongly more likely, we could add a multiplier between those two states:
 
 {\tt \begin{snugshade*}
@@ -101,13 +102,15 @@ This type of approach is common in parsimony, where it is called weighted or Wag
 This approach to using different matrices requires you to, \textit{a priori} specify your matrix.
 But in reality, there is often fairly little guidance or information by which we decide if a weight applied to a transition is appropriate.
 Biologists still use models of this type - the Dollo model, in which a character is assumed not to be able to re-evolve once lost, is an extreme version of penalizing one change.
+Because the transition rates between all differing pairs of states are the same, so are the transition probabilities.
+Similarly, the probability of remaining in any given state is also equal across states.
 
 \subsection{Asymmetric ordered}
 
 Character states that are ordered imply that evolutionary transitions occur in particular sequences.
 For example, the number of digits on a foot might vary by gaining and losing single digits, meaning the transition from three to five digits cannot occur without going through the evolutionary state of possessing four digits.
 Below, we assume that gain events ( $n \rightarrow n+1$ ) occur at rate $\mu_1$ and loss events ($n \rightarrow n-1$) occur at rate $\mu_2$.
-The zeroes indicate that there is no immediate evolutionary path between states $i$ and $j$: some intermediate state must be used to reach $j$.
+The zeroes indicate that there is no immediate evolutionary path between states $1$ and $4$: states $2$ and $3$ must be used to reach $4$ from $1$.
 
 \begin{equation*}
 Q = \begin{pmatrix}
@@ -145,10 +148,10 @@ Create the rate matrix
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 Q := fnFreeK(rates)
-[ [ -1.5385, 1.5385, 0.0000, 0.0000 ] ,
-     0.5128, -2.0513, 1.5385, 0.0000 ] ,
-     0.0000, 0.5128, -2.0513, 1.5385 ] ,
-     0.0000, 0.0000, 0.5128, -0.5128 ] ]
+|*[ [ -1.5385, 1.5385, 0.0000, 0.0000 ] ,
+|*     0.5128, -2.0513, 1.5385, 0.0000 ] ,
+|*     0.0000, 0.5128, -2.0513, 1.5385 ] ,
+|*     0.0000, 0.0000, 0.5128, -0.5128 ] ]
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -157,29 +160,30 @@ Compute the transition probability matrix for a branch length of 0.1.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 P <- Q.getTransitionProbabilities(rate=0.1)
-[ [ 0.861, 0.129, 0.010, 0.001],
-  [ 0.043, 0.821, 0.126, 0.010],
-  [ 0.001, 0.042, 0.821, 0.136],
-  [ 0.000, 0.001, 0.045, 0.954]]
+|*[ [ 0.861, 0.129, 0.010, 0.001],
+|*  [ 0.043, 0.821, 0.126, 0.010],
+|*  [ 0.001, 0.042, 0.821, 0.136],
+|*  [ 0.000, 0.001, 0.045, 0.954]]
 \end{lstlisting}
 \end{snugshade*}}
 
-Note that {\tt P[1][2]} > {\tt P[1][3]} > {\tt P[1][4]} primarily because those transitions require a minimum of one, two, and three events each.
-In addition, note that {\tt P[1][2]} > {\tt P[2][1]} because {\tt rates[1][2]} > {\tt rates[2][1]}.
+Note that {\tt P[1][2]} > {\tt P[1][3]} > {\tt P[1][4]}, primarily because those transitions require a minimum of one, two, and three events, respectively.
+In addition, note that assigning asymmetric transition rates causes {\tt P[1][2]} > {\tt P[2][1]} because {\tt rates[1][2]} > {\tt rates[2][1]}.
 
 
 \subsection{Correlated binary characters}
 
 Two characters do not necessarily evolve independently of one another.
-Take two characters: in plants, the presence or absence of toothed leaf margins (character X) is thought to be ecologically correlated with the presence of absence of leaf lobing (character Y).
-For a single binary character, there are two states (0 and 1), but there are four for a pair of non-independent binary characters (00, 10, 01, and 11).
-\citet{pagel94} introduced a general framework for modeling the evolution of joint sets of characters.
+Take two characters in plants: the presence or absence of toothed leaf margins (character X) is thought to be ecologically correlated with the presence of absence of leaf lobing (character Y).
+For a single binary character, there are two states (0 and 1), but there are four states for a pair of non-independent binary characters (00, 10, 01, and 11).
+\citet{pagel04} introduced a general framework for modeling the evolution of joint sets of characters.
 These models require that only one evolutionary event can occur in a moment of time, which is enforced with the 0 terms.
 In addition, the transition rate that, say, character X goes from 0 to 1 depends on the current value of character Y.
 
-\subsubsection{Eight free parameters}
+\subsubsection{Seven free parameters}
 
 In the first case, all possible transitions might be assigned their own parameter.
+Here, we'll assign a simplex over all rates, leaving seven free parameters (plus an eighth parameter that scales the rate matrix).
 
 \begin{equation*}
 Q = \begin{pmatrix}
@@ -229,10 +233,10 @@ Create the rate matrix
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 Q := fnFreeK(rates)
-[ [ -0.6667, 0.3333, 0.3333, 0.0000 ] ,
-     1.0000, -2.0000, 0.0000, 1.0000 ] ,
-     1.0000, 0.0000, -2.0000, 1.0000 ] ,
-     0.0000, 0.3333, 0.3333, -0.6667 ] ]
+|*[ [ -0.6667, 0.3333, 0.3333, 0.0000 ] ,
+|*     1.0000, -2.0000, 0.0000, 1.0000 ] ,
+|*     1.0000, 0.0000, -2.0000, 1.0000 ] ,
+|*     0.0000, 0.3333, 0.3333, -0.6667 ] ]
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -241,17 +245,17 @@ Compute the transition probability matrix for a branch length of 0.1.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 P <- Q.getTransitionProbabilities(rate=0.1)
-[ [ 0.938, 0.029, 0.029, 0.003],
-  [ 0.088, 0.822, 0.003, 0.088],
-  [ 0.088, 0.003, 0.822, 0.088],
-  [ 0.003, 0.029, 0.029, 0.938] ]
+|*[ [ 0.938, 0.029, 0.029, 0.003],
+|*  [ 0.088, 0.822, 0.003, 0.088],
+|*  [ 0.088, 0.003, 0.822, 0.088],
+|*  [ 0.003, 0.029, 0.029, 0.938] ]
 \end{lstlisting}
 \end{snugshade*}}
 
 Note that the probability of remaining in state 10 or state 01 is less than the probability of remaining in state 00 or state 11.
 In this toy example, these probabilities reflect that states 10 an 01 are less evolutionarily stable than states 00 and 11.
 
-\subsubsection{Five free parameters}
+\subsubsection{Four free parameters}
 
 Alternatively, characters X and Y might share state frequencies, $\pi_j$, and transition rates $\mu_{ij}^{(k)}$, where $i$ is the starting state for the character undergoing change, $j$ is the ending state, and $k$ is the state of the other character.
 This results in two stationary frequencies (one free parameter), four transition rates for $0 \rightarrow 1$ and $1 \rightarrow 0$ given that the other character is in state 0 or state 1 (three free parameters), plus one free parameter to scale the rate matrix.
@@ -316,10 +320,10 @@ Create the rate matrix
 \begin{lstlisting}
 Q := fnFreeK(rates)
 Q
-[ [ -0.6333, 0.3167, 0.3167, 0.0000 ] ,
-     0.4750, -2.3750, 0.0000, 1.9000 ] ,
-     0.4750, 0.0000, -2.3750, 1.9000 ] ,
-     0.0000, 0.3167, 0.3167, -0.6333 ] ]
+|*[ [ -0.6333, 0.3167, 0.3167, 0.0000 ] ,
+|*     0.4750, -2.3750, 0.0000, 1.9000 ] ,
+|*     0.4750, 0.0000, -2.3750, 1.9000 ] ,
+|*     0.0000, 0.3167, 0.3167, -0.6333 ] ]
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -329,10 +333,10 @@ Compute the transition probability matrix for a branch length of 0.1.
 \begin{lstlisting}
 P <- Q.getTransitionProbabilities(0.1)
 P
-[ [ 0.940, 0.027, 0.027, 0.005],
-  [ 0.041, 0.792, 0.003, 0.164],
-  [ 0.041, 0.003, 0.792, 0.164],
-  [ 0.001, 0.027, 0.027, 0.944] ]
+|*[ [ 0.940, 0.027, 0.027, 0.005],
+|*  [ 0.041, 0.792, 0.003, 0.164],
+|*  [ 0.041, 0.003, 0.792, 0.164],
+|*  [ 0.001, 0.027, 0.027, 0.944] ]
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -342,19 +346,19 @@ Note that this model has a tendency towards state 11.
 \begin{lstlisting}
 P_10 <- Q.getTransitionProbabilities(10.0)
 P_10
-[ [ 0.159, 0.105, 0.105, 0.630],
-  [ 0.158, 0.105, 0.105, 0.632],
-  [ 0.158, 0.105, 0.105, 0.632],
-  [ 0.158, 0.105, 0.105, 0.632] ]
+|*[ [ 0.159, 0.105, 0.105, 0.630],
+|*  [ 0.158, 0.105, 0.105, 0.632],
+|*  [ 0.158, 0.105, 0.105, 0.632],
+|*  [ 0.158, 0.105, 0.105, 0.632] ]
 \end{lstlisting}
 \end{snugshade*}}
 
 
 \subsection{Covarion}
 
-Covarion models \citep{tuffley98} capture the possibility that a ``hidden'' (unobserved or unmeasurable) state causes evolutionary processes to .
-For example, phylogenetically local clusters of plant lineages transition between herbaceous and woody habits at relatively high rates, and one might want to quantify where these bursts occur \citep{beaulieu15}.
-While similar to the correlated character model of \citet{pagel94}, covarion models do not observe the hidden state that induce the mode-shifts.
+Covarion models \citep{tuffley98} capture the possibility that a ``hidden'' (unobserved or unmeasurable) states cause evolutionary processes to vary in tempo and modes.
+For example, phylogenetically local clusters of plant lineages appear to transition between herbaceous and woody habits at relatively high rates, so one might want to quantify where these bursts occur \citep{beaulieu2013}.
+While similar in structure to the correlated character model of \citet{pagel94}, covarion models do not observe the hidden state that induce the mode-shifts.
 Instead, covarion models expand the character's state space by a factor of $K$, and observe the character once for each of the $K$ categories.
 For example, take a binary character modeled with $K=2$ hidden state classes.
 The model would treat a character that is observed as being in state 0 as possibly being in either of the $K=2$ classes (0,1) and (0,2).
@@ -434,10 +438,10 @@ Create the rate matrix
 Q := fnCovarionRateMatrix(Q=Q_class, switch_rates=Q_switch, clock_rates=cr)
 
 Q
-[ [ -1.1126, 0.8901, 0.2225, 0.0000 ] ,
-     0.8901, -1.1126, 0.0000, 0.2225 ] ,
-     0.4451, 0.0000, -1.0385, 0.5934 ] ,
-     0.0000, 0.4451, 0.1978, -0.6429 ] ]
+|*[ [ -1.1126, 0.8901, 0.2225, 0.0000 ] ,
+|*     0.8901, -1.1126, 0.0000, 0.2225 ] ,
+|*     0.4451, 0.0000, -1.0385, 0.5934 ] ,
+|*     0.0000, 0.4451, 0.1978, -0.6429 ] ]
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -448,10 +452,10 @@ Compute the transition probability matrix for a branch length of 0.1.
 P <- Q.getTransitionProbabilities(0.1)
 P <- Q.getTransitionProbabilities(1)
 P
-[ [ 0.899, 0.080, 0.020, 0.002],
-  [ 0.080, 0.899, 0.001, 0.020],
-  [ 0.040, 0.003, 0.902, 0.055],
-  [ 0.002, 0.041, 0.018, 0.939] ]
+|*[ [ 0.899, 0.080, 0.020, 0.002],
+|*  [ 0.080, 0.899, 0.001, 0.020],
+|*  [ 0.040, 0.003, 0.902, 0.055],
+|*  [ 0.002, 0.041, 0.018, 0.939] ]
 \end{lstlisting}
 \end{snugshade*}}
 

@@ -1,5 +1,5 @@
 #!/usr/bin/env Rscript
-stable = !T
+stable = T
 if (stable) {
     library(RevGadgets)
 } else {
