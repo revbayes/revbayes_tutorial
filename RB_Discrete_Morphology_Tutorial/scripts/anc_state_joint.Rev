@@ -1,0 +1,125 @@
+################################################################################
+#
+# RevBayes Example: Inferring a Phylogeny of Fossil Bears Using the Mk Model
+# 
+# This file: Runs the full MCMC ...
+#
+# authors:  April M. Wright, Michael J. Landis, Sebastian Hoehna, Will Freyman
+#
+################################################################################
+
+#######################
+# Reading in the Data #
+#######################
+# Import the morphological character matrix #
+# this file contains only the taxa for which morphological characters are available #
+morpho <- readDiscreteCharacterData("Data/bears.nex")
+#Import the trait we'd like to map to the tree
+bears_traits = readCharacterDataDelimited("data/bears_traits.tsv", stateLabels=(0+1))
+## helpers
+mvi = 1
+mni = 1
+names <- morpho.names()
+n_taxa <- names.size()
+n_branches <- 2 * n_taxa - 2
+
+
+#ASR needs a rooted tree, so specify an in-group constraint
+ingroup = ["Agriarctos_spp","Ailurarctos_lufengensis","Ailuropoda_melanoleuca","Helarctos_malayanus","Indarctos_arctoides","Indarctos_punjabiensis","Indarctos_vireti","Kretzoiarctos_beatrix","Melursus_ursinus","Tremarctos_ornatus","Ursavus_brevirhinus","Ursavus_primaevus","Ursus_americanus","Ursus_arctos","Ursus_maritimus","Ursus_thibetanus"]
+outgroup = ["Ballusia_elmensis", "Zaragocyon_daamsi"]
+
+
+i = 1
+for (j in 1:names.size()) {
+    found = false
+    for (k in 1:outgroup.size()) {
+        if (outgroup[k] == names[j].getSpeciesName()) {
+            found = true
+            break
+        }
+        k += 1
+    }
+    if (!found) {
+        ingroup[i] = names[j].getSpeciesName()
+        i += 1
+    }
+    j += 1
+}
+mi = 0
+
+
+# We make make a vector of clade objects.
+clade_ingroup = clade(ingroup)
+clade_outgroup = clade(outgroup)
+constraints = [clade_ingroup, clade_outgroup]
+
+
+
+# Next, we read in a starting tree that is consistent with our outgroup constraints.
+# This is only used to initialize the MCMC, it can be completely random as long 
+# as it is consistent with the topology constraints.
+starting_tree <- readBranchLengthTrees("data/hyperprior.majrule.tre")[1]
+
+
+###########################################
+# Binary morphological substitution model #
+# You can sub in a DNA model here         #
+###########################################
+
+source("scripts/model_mk.rev")
+
+###########################################
+# Trait Evolution Model. For Simplicity, I #
+# Just used an Mk model, but you could use #
+# Others. Sample other Q-matrices are in the#
+# Discrete morphology tutorial 				#
+###########################################
+
+Q_trait = fnJC(2)
+root_frequencies <- simplex(1,1)
+trait_ctmc ~ dnPhyloCTMC(Q=Q_trait,rootFreq=root_frequencies, tree=phylogeny, type="NaturalNumbers")
+trait_ctmc.clamp(bears_traits)
+
+##################
+# Finalize the integrated model and set up MCMC
+##################
+
+mymodel = model(phylogeny)
+
+# Create the monitors:
+# First, a screen monitor with some useful variables:
+monitors[1] = mnScreen(printgen=10, lambda, delta, rho, TL)
+
+# A file monitor for our trees:
+monitors[2] = mnFile(filename="output/bears_traits.trees", printgen=10, phylogeny)
+
+# The ancestral state monitor for the chromosome number reconstruction:
+monitors[3] = mnJointConditionalAncestralState(filename="output/bears_traits.log", printgen=10, tree=phylogeny, ctmc=trait_ctmc, type="NaturalNumbers")
+
+# And another monitor for all the model variables:
+monitors[4] = mnModel(filename="output/bears_traits_joint_model.log", printgen=10)
+
+# Now set up the MCMC.
+mymcmc = mcmc(mymodel, monitors, moves)
+
+# Run the MCMC... for a real analysis you'd want to run many more iterations and check for convergence...
+mymcmc.run(200)
+
+
+##################
+# Summarize the results
+##################
+
+# To summarize the results, first get the maximum a posteriori (MAP) tree.
+treetrace = readTreeTrace("output/bears_traits.trees", treetype="non-clock") 
+map = mapTree(treetrace,"output/bears_traits_map.tree")
+
+# Now let's summarize the ancestral estimates over the MAP tree.
+# First, read in the ancestral state trace:
+anc_state_trace = readAncestralStateTrace("output/bears_traits_joint.log")
+
+# Now read in the tree trace that matches up with the ancestral state trace:
+anc_state_tree_trace = readAncestralStateTreeTrace("output/bears_traits_joint.trees", treetype="non-clock")
+
+# Finally, summarize the values from the traces over the MAP tree.
+ancestralStateTree(map, anc_state_trace, anc_state_tree_trace, "output/bears_traits_joint_final.tree")
