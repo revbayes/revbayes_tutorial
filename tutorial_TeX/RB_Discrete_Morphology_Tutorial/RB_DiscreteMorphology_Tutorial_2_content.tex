@@ -68,7 +68,39 @@ P
 \end{lstlisting}
 \end{snugshade*}}
 
+If we believed that, for example, for a couple of states, some transitions are strongly more likely, we could add a multiplier between those two states:
 
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+rates := [ [0.0,   r*2,   r,   r],
+           [  r, 0.0,   r,   r],
+           [  r,   r, 0.0,   r],
+           [  r,   r*2,   r, 0.0] ]
+Q := fnFreeK(rates)
+Q
+   [ [ -1.1765, 0.5882, 0.2941, 0.2941 ] ,
+     0.2941, -0.8824, 0.2941, 0.2941 ] ,
+     0.2941, 0.2941, -0.8824, 0.2941 ] ,
+     0.2941, 0.5882, 0.2941, -1.1765 ] ]
+\end{lstlisting}
+\end{snugshade*}}
+
+If we then get our transition probabilities, we see that this changes our probability of observing the not simply of our two state transitions that we changed the rate for, but others as well.
+
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+P
+   [ [ 0.891, 0.054, 0.028, 0.027], 
+   [ 0.027, 0.918, 0.028, 0.027], 
+   [ 0.027, 0.029, 0.917, 0.027], 
+   [ 0.027, 0.054, 0.028, 0.891]]
+\end{lstlisting}
+\end{snugshade*}}
+
+This type of approach is common in parsimony, where it is called weighted or Wagner parsimony. 
+This approach to using different matrices requires you to, \textit{a priori} specify your matrix.
+But in reality, there is often fairly little guidance or information by which we decide if a weight applied to a transition is appropriate.
+Biologists still use models of this type - the Dollo model, in which a character is assumed not to be able to re-evolve once lost, is an extreme version of penalizing one change.
 
 \subsection{Asymmetric ordered}
 
