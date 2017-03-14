@@ -507,7 +507,7 @@ moves[++mvi] = mvScale(event_rate,lambda=1,tune=true,weight=5)
 
 Additionally, we need a parameter for the category of the process at root.
 We use a uniform prior distribution on the indices 1 to $N^2$ since we do not have any prior information in which rate category the process is at the root.
-The move for this random variable is a random integer walk because the random variable is defined only on the indices (\CF with real number).
+The move for this random variable is a random integer walk because the random variable is defined only on the indices (\IE with real number).
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 root_category ~ dnUniformNatural(1,NUM_RATE_CATEGORIES * NUM_RATE_CATEGORIES)
