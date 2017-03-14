@@ -15,7 +15,7 @@
 # this file contains only the taxa for which morphological characters are available #
 morpho <- readDiscreteCharacterData("Data/bears.nex")
 #Import the trait we'd like to map to the tree
-bears_traits = readCharacterDataDelimited("data/bears_traits.tsv", stateLabels=(0+1))
+bears_traits = readCharacterDataDelimited("data/bears_traits.tsv", stateLabels=(0+1), headers=FALSE)
 ## helpers
 mvi = 1
 mni = 1
@@ -58,7 +58,7 @@ constraints = [clade_ingroup, clade_outgroup]
 # Next, we read in a starting tree that is consistent with our outgroup constraints.
 # This is only used to initialize the MCMC, it can be completely random as long 
 # as it is consistent with the topology constraints.
-starting_tree <- readBranchLengthTrees("data/hyperprior.majrule.tre")[1]
+starting_tree <- readBranchLengthTrees("data/bifurcating.tre")[1]
 
 
 ###########################################
@@ -88,7 +88,7 @@ mymodel = model(phylogeny)
 
 # Create the monitors:
 # First, a screen monitor with some useful variables:
-monitors[1] = mnScreen(printgen=10, lambda, delta, rho, TL)
+monitors[1] = mnScreen(printgen=10, tree_length)
 
 # A file monitor for our trees:
 monitors[2] = mnFile(filename="output/bears_traits.trees", printgen=10, phylogeny)
@@ -116,10 +116,10 @@ map = mapTree(treetrace,"output/bears_traits_map.tree")
 
 # Now let's summarize the ancestral estimates over the MAP tree.
 # First, read in the ancestral state trace:
-anc_state_trace = readAncestralStateTrace("output/bears_traits_joint.log")
+anc_state_trace = readAncestralStateTrace("output/bears_traits_joint_model.log")
 
 # Now read in the tree trace that matches up with the ancestral state trace:
-anc_state_tree_trace = readAncestralStateTreeTrace("output/bears_traits_joint.trees", treetype="non-clock")
+anc_state_tree_trace = readAncestralStateTreeTrace("output/bears_traits.trees", treetype="non-clock")
 
 # Finally, summarize the values from the traces over the MAP tree.
 ancestralStateTree(map, anc_state_trace, anc_state_tree_trace, "output/bears_traits_joint_final.tree")
