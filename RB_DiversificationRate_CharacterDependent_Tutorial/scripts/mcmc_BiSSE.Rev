@@ -1,0 +1,179 @@
+################################################################################
+#
+# RevBayes Analysis: Bayesian inference of diversification rates under a
+#                    character-dependent birth-death model.
+#                    Here each transition rate between observed states is
+#                    drawn from an independent exponentially distributed 
+#                    rate. 
+# 
+#
+# authors: Sebastian Hoehna, Will Freyman
+#
+################################################################################
+
+#######################
+# Reading in the Data #
+#######################
+
+
+NUM_STATES = 2
+DATASET = "activity_period"
+### Read in the data
+observed_phylogeny <- readTrees("data/primates_tree.nex")[1]
+data <- readCharacterData("data/primates_"+DATASET+".nex")
+ 
+# Get some useful variables from the data. We need these later on.
+taxa <- observed_phylogeny.taxa()
+
+# set my move index
+mvi = 0
+mni = 0
+
+
+H = 0.587405
+
+
+
+
+####################
+# Create the rates #
+####################
+
+### Specify a prior on the diversification and turnover rate
+
+### Create the constant prior parameters of the diversification rates
+rate_mean <- ln( ln(367.0/2.0) / observed_phylogeny.rootAge() )
+rate_sd <- 2*H
+
+for (i in 1:NUM_STATES) {
+    
+     ### Create a lognormal distributed variable for the diversification rate
+    log_speciation[i] ~ dnNormal(mean=rate_mean,sd=rate_sd) 
+    log_speciation[i].setValue( rate_mean )
+    speciation[i] := exp( log_speciation[i] )
+    moves[++mvi] = mvSlide(log_speciation[i],delta=0.20,tune=true,weight=3.0)
+
+    ### Create a lognormal distributed variable for the turnover rate
+    log_extinction[i] ~ dnNormal(mean=rate_mean,sd=rate_sd) 
+    log_extinction[i].setValue( rate_mean )
+    extinction[i] := exp( log_extinction[i] )
+    moves[++mvi] = mvSlide(log_extinction[i],delta=0.20,tune=true,weight=3.0)
+    
+    
+    ### diversification = birth_rate - death_rate
+    ### assume a lognormal prior distribution 
+    ### and apply a scale proposal
+#    diversification[i] ~ dnLognormal(rate_mean,sd=rate_sd) 
+#    moves[++mvi] = mvScale(diversification[i],lambda=1.0,tune=true,weight=3.0)
+
+    ### turnover = death_rate / birth_rate
+    ### this parameter can only take values between 0 and 1
+    ### use a Beta prior distribution
+    ### and a slide move
+#    turnover[i] ~ dnBeta(2.0, 2.0) 
+#    moves[++mvi] = mvSlide(turnover[i],delta=1.0,tune=true,weight=3.0)
+
+    ### the parameters of the BDP include birth and death rates
+    ### these are deterministic variables of the diversification & turnover
+    ##### create a variable to ensure the rates are always positive (RealPos)
+#    denom[i] := abs(1.0 - turnover[i]) 
+#    speciation[i] := diversification[i] / denom[i]
+#    extinction[i] := (turnover[i] * diversification[i]) / denom[i]
+
+}
+
+
+#########################################################
+# Set up the transition rate matrix for observed states #
+#########################################################
+
+# Each transition rate between observed states are drawn
+# from an exponential distribution with a mean of 10
+# character state transitions over the tree. 
+rate_pr := observed_phylogeny.treeLength() / 10
+rate_12 ~ dnExp(rate_pr)
+rate_21 ~ dnExp(rate_pr)
+
+moves[++mvi] = mvScale( rate_12, weight=2 )
+moves[++mvi] = mvScale( rate_21, weight=2 )
+
+
+
+######################################################################
+# Create the rate matrix for the combined observed and hidden states #
+######################################################################
+rate_matrix := fnFreeBinary( [rate_12, rate_21 ], rescaled=false)
+
+
+#####################################
+# Set up the root state frequencies #
+#####################################
+
+### Create a constant variable with the prior probabilities of each rate category at the root.
+rate_category_prior ~ dnDirichlet( rep(1,NUM_STATES) )
+moves[++mvi] = mvDirichletSimplex(rate_category_prior,tune=true,weight=2)
+
+
+### Create the fix parameter for the age of the root set to the observed age
+root <- observed_phylogeny.rootAge()
+
+
+### rho is the probability of sampling species at the present
+### fix this to 233/367
+rho <- observed_phylogeny.ntips()/367
+
+
+#### construct a variable for the tree drawn from a birth death process
+timetree ~ dnCDBDP( rootAge           = root,
+                    speciationRates   = speciation,
+                    extinctionRates   = extinction, 
+                    Q                 = rate_matrix,
+                    pi                = rate_category_prior,
+                    delta             = 1.0,
+                    rho               = rho,
+                    condition         = "time",
+                    taxa              = taxa )
+
+### clamp the model with the "observed" tree
+timetree.clamp( observed_phylogeny )
+timetree.clampCharData( data )
+
+
+
+#############
+# The Model #
+#############
+
+
+### workspace model wrapper ###
+mymodel = model(rate_matrix)
+
+### set up the monitors that will output parameter values to file and screen 
+monitors[++mni] = mnFile(filename="output/primates_BiSSE_"+DATASET+".trees", printgen=1, timetree)
+monitors[++mni] = mnModel(filename="output/primates_BiSSE_"+DATASET+".log", printgen=1)
+monitors[++mni] = mnJointConditionalAncestralState(tree=timetree, cdbdp=timetree, type="Standard", printgen=1, withTips=true, withStartStates=false, filename="output/anc_states_primates_BiSSE_"+DATASET+".log")
+monitors[++mni] = mnScreen(printgen=10, rate_12, rate_21, speciation, extinction)
+
+
+################
+# The Analysis #
+################
+
+### workspace mcmc
+mymcmc = mcmc(mymodel, monitors, moves, nruns=1, moveschedule="random")
+
+### pre-burnin to tune the proposals
+mymcmc.burnin(generations=10000,tuningInterval=100)
+
+### run the MCMC
+mymcmc.run(generations=50000)
+
+##############################
+# Summarize ancestral states #
+##############################
+
+
+anc_states = readAncestralStateTrace("output/anc_states_primates_BiSSE_"+DATASET+".log")
+anc_tree = ancestralStateTree(tree=observed_phylogeny, ancestral_state_trace_vector=anc_states, include_start_states=false, file="output/anc_states_primates_BiSSE_"+DATASET+"_results.tree", burnin=0, summary_statistic="MAP", site=0)
+
+q()
