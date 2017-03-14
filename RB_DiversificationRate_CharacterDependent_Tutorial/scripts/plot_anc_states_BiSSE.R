@@ -12,7 +12,7 @@
 
 library(RevGadgets)
 
-tree_file = "output/anc_states_primates_BiSSE_results.tree"
+tree_file = "output/anc_states_primates_BiSSE_activity_period_results.tree"
 
 plot_ancestral_states(tree_file, summary_statistic="MAP",
                       tip_label_size=0,

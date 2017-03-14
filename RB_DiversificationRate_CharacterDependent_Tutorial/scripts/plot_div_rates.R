@@ -37,11 +37,14 @@ dev.off()
 
 data <- read.table("output/primates_HiSSE.log",header=TRUE)
 
-HiSSE_types <- rep(c("1A", "2A", "1B", "2B"), each = length(data$extinction.1))
-dat_ext  <- data.frame(dens = c(data$extinction.1, data$extinction.2, data$extinction.3, data$extinction.4), Type = HiSSE_types)
-dat_spec <- data.frame(dens = c(data$speciation.1, data$speciation.2, data$speciation.3, data$speciation.4), Type = HiSSE_types)
-dat_div  <- data.frame(dens = c(data$speciation.1-data$extinction.1, data$speciation.2-data$extinction.2, data$speciation.3-data$extinction.3, data$speciation.4-data$extinction.4), Type = HiSSE_types)
-dat_rel  <- data.frame(dens = c(data$extinction.1/data$speciation.1, data$extinction.2/data$speciation.2, data$extinction.3/data$speciation.3, data$extinction.4/data$speciation.4), Type = HiSSE_types)
+start <- round(0.5*length(data$extinction.1))
+end   <- length(data$extinction.1)
+
+HiSSE_types <- rep(c("1A", "2A", "1B", "2B"), each = length(data$extinction.1[start:end]))
+dat_ext  <- data.frame(dens = c(data$extinction.1[start:end], data$extinction.2[start:end], data$extinction.3[start:end], data$extinction.4[start:end]), Type = HiSSE_types)
+dat_spec <- data.frame(dens = c(data$speciation.1[start:end], data$speciation.2[start:end], data$speciation.3[start:end], data$speciation.4[start:end]), Type = HiSSE_types)
+dat_div  <- data.frame(dens = c(data$speciation.1[start:end]-data$extinction.1[start:end], data$speciation.2[start:end]-data$extinction.2[start:end], data$speciation.3[start:end]-data$extinction.3[start:end], data$speciation.4[start:end]-data$extinction.4[start:end]), Type = HiSSE_types)
+dat_rel  <- data.frame(dens = c(data$extinction.1[start:end]/data$speciation.1[start:end], data$extinction.2[start:end]/data$speciation.2[start:end], data$extinction.3[start:end]/data$speciation.3[start:end], data$extinction.4[start:end]/data$speciation.4[start:end]), Type = HiSSE_types)
 
 
 pdf("RevBayes_HiSSE_Results.pdf")
