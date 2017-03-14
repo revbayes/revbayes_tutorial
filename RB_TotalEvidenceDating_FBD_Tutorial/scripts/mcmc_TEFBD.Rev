@@ -38,7 +38,7 @@ source("scripts/model_UExp_TEFBD.Rev") # UExp relaxed clock
 
 source("scripts/model_GTRG_TEFBD.Rev") # Molecular substitution model (GTR+G)
 
-source("scripts/model_Morph_TEFBD.Rev") # Morphological character change model
+source("scripts/model_Morph_TEFBD.rev") # Morphological character change model
 
 
 ########
