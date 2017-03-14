@@ -172,21 +172,11 @@ Therefore, an appropriate model of morphological character evolution is needed t
 The Mk model \citep{Lewis2001} uses a generalized Jukes-Cantor matrix to allow for the incorporation of morphology into likelihood and Bayesian analyses.
 One key assumption of this model is that characters exhibit symmetrical change - that a given character is as likely to transition from a one state to another as it is to reverse.
 In this tutorial we will consider only binary morphological characters, \IE characters that are coded as being in one of two states, 0 or 1.
-So for example, the assumption of the Mk model applied to our binary character would mean that a change from a 0 state to a 1 state is as likely as a change from a 1 state to a 0 state.
+For example, the assumption of the Mk model applied to our binary character would mean that a change from a 0 state to a 1 state is as likely as a change from a 1 state to a 0 state.
 This assumption is equivalent to assuming that the stationary probability of being in a 1 state is equal to $1/2$.
 
-In this tutorial, we will relax this assumption by allowing the stationary 1-state probability to take on any value between 0 and 1, drawn from a beta prior distribution.
-In addition, we will allow each morphological character to have its own substitution matrix with its own stationary frequency (Fig. \ref{fig:morpho_gm}).
-Then, similar to the way we model site-specific substitution rates using a discretized gamma distribution, %(see the \href{https://github.com/revbayes/revbayes_tutorial/raw/master/tutorial_TeX/RB_CTMC_Tutorial/RB_CTMC_Tutorial.pdf}{\mi{Substitution Models}} tutorial), 
-we will model site-specific stationary frequencies using a discretized beta distribution \citep{Wright2016}.
-\begin{figure}[h!]
-\fbox{%
-\begin{minipage}{\textwidth}\centering
-\includegraphics[scale=0.25,angle=0]{\ResourcePath figures/tikz/morpho_gm}
-\caption{\small A graphical model of the beta-distributed frequencies across sites model. In this model, stationary frequencies are drawn from a discretized beta distribution and used to generate site-specific asymmetric rate matrices.}
-\end{minipage}}
-\label{fig:morpho_gm}
-\end{figure}
+In this tutorial, we will use Mk to model our data. If you are interested in how we can relax the assumptions in the previous paragraph, please see \href{https://github.com/revbayes/revbayes_tutorial/raw/master/tutorial_TeX/RB_Discrete_Morphology_Tutorial/RB_Discrete_Morphology.pdf}{Discrete Morphology tutorial}.
+
 
 Because of the way morphological data are collected, we need to exercise caution in how we model the data. 
 Traditionally, phylogenetic trees were built from morphological data using parsimony. 
@@ -864,30 +854,13 @@ Open your text editor and create the morphological character model file called {
 Enter the \Rev code provided in this section in the new model file.
 \end{framed}}
 
-As stated in the introduction (section \ref{subsect:Intro-Morpho} and Fig.\ \ref{fig:morpho_gm}), we will use a prior on state frequencies to relax the key assumption of the Mk model. 
-Because we are working with binary data, we can use a discretized beta distribution to describe the variation in stationary state frequencies across characters. 
-The \href{https://en.wikipedia.org/wiki/Beta_distribution}{beta distribution} has two parameters, $\alpha$ and $\beta$ which describe its shape. 
-For simplicity, we will assume that $\alpha$ = $\beta$. 
-The following code draws a value for $\beta$ from an exponential distribution and assigns a move on that parameter.
-{\tt \begin{snugshade*}
-\begin{lstlisting}
-beta_hp ~ dnExponential( 1.0 )
-moves[mvi++] = mvScale(beta_hp, lambda=1,    weight=1.0 )
-moves[mvi++] = mvScale(beta_hp, lambda=0.1,  weight=1.0 )
-moves[mvi++] = mvScale(beta_hp, lambda=0.01, weight=1.0 )
-\end{lstlisting}
-\end{snugshade*}}
+As stated in the introduction (section \ref{subsect:Intro-Morpho} and Fig.\ \ref{fig:morpho_gm}), we will use Mk to model our data. 
+Because the Mk model is a generalization of the Mk model, we will initialize our Q matrix from a Jukes-Cantor matrix.
 
-Next, we'll create a vector containing four different site stationary state frequencies. 
-This is similar to allowing gamma-distributed rate variation across sites. 
-We will use these stationary frequencies to generate a set of new substitution matrices which do not enforce the assumptions of the same transition rates at every site and equal forward and backwards transition rates.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-beta_cats := fnDiscretizeBeta( beta_hp, beta_hp, 4)
-for(i in 1:beta_cats.size())
-{
-    Q_morpho[i] := fnFreeBinary(v(1-beta_cats[i], beta_cats[i]))
-}
+Q_morpho := fnJC(2)
+
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -921,12 +894,9 @@ There are some unique aspects to doing this for morphology.
 You will notice that we have an option called \cl{coding}. This option allows us to condition on biases in the way the morphological data were collected (ascertainment bias).
 The option \cl{coding=variable} specifies that we should correct for coding only variable characters (discussed in \ref{subsect:Intro-Morpho}). \par
 
-We use the flag \cl{siteMatrices=true} to indicate that we are providing multiple Q matrices generated as a function of our state frequency variation model. \par
-
-
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-phyMorpho ~ dnPhyloCTMC(tree=fbd_tree, siteRates=rates_morpho, branchRates=clock_morpho, Q=Q_morpho, type="Standard", coding="variable", siteMatrices=true)
+phyMorpho ~ dnPhyloCTMC(tree=fbd_tree, siteRates=rates_morpho, branchRates=clock_morpho, Q=Q_morpho, type="Standard", coding="variable")
 phyMorpho.clamp(morpho)
 \end{lstlisting}
 \end{snugshade*}}
