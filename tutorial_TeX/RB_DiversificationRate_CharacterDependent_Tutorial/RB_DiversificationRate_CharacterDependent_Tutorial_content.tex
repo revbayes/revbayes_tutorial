@@ -512,7 +512,7 @@ dev.off()
 
 
 \bigskip
-\section{The Theory behind Character-dependent diversification rate models}\label{sec:BiSSE_Theory}
+\section{Accommodating uncorrelated diversification rate changes}\label{sec:HiSSE_Theory}
 
 \RevBayes implements the multi-state extension of \BiSSE, just as implemented in \diversitree. 
 The main differences are just which priors you use on the parameters and the inference procedure, \IE the specifics of the MCMC algorithm.
@@ -521,112 +521,16 @@ You may want to skip over this section if you are not interested in math behind.
 Then we will show how to run this analysis in \RevBayes.
 \begin{figure}[h!]
 \centering
-\fbox{\includegraphics[width=\textwidth]{\ResourcePath figures/BiSSE.pdf}}
-\caption{\small A schematic overview of the \BiSSE model. Each lineage has a binary state associated to it and thus can either be in state 0 (blue) or state 1 (red). When a lineage is in state 0 (blue), it can either (a) speciate with rate $\lambda_0$ which results into two descendant lineage both being in state 0 (blue); (b) it can go extinct with rate $\mu_0$; or (c) it can switch the state to 1 (red) with rate $q_{01}$. The same type of events are possible when a lineage is in state 1 (red) but with rate $\lambda_1$, $\mu_1$, and $q_{10}$ respectively.}
-\label{fig:BiSSE_Schematic}
+\fbox{\includegraphics[width=\textwidth]{\ResourcePath figures/HiSSE.pdf}}
+\caption{\small A schematic overview of the \HiSSE model. Each lineage has a binary state associated to it and thus can either be in state 0 (blue) or state 1 (red). When a lineage is in state 0 (blue), it can either (a) speciate with rate $\lambda_0$ which results into two descendant lineage both being in state 0 (blue); (b) it can go extinct with rate $\mu_0$; or (c) it can switch the state to 1 (red) with rate $q_{01}$. The same type of events are possible when a lineage is in state 1 (red) but with rate $\lambda_1$, $\mu_1$, and $q_{10}$ respectively.}
+\label{fig:HiSSE_Schematic}
 \end{figure}
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%    LIKELIHOOD  FN    %%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\subsection{Likelihood function}\label{section:likelihood}
-We introduce the theory and likelihood function of the \BiSSE (Binary State Speciation and Extinction) model developed in \cite{Maddison2007}.
-The \BiSSE model assumes a finite number of states (two; one for each of the binary states), where the states of each extant species is known (indeed, it is an observed discrete trait).
-The general approach adopted by \BiSSE models is to derive a set of ordinary differential equations (ODEs) that describe how the probability of observing a descendant clade changes along a branch in the observed phylogeny.
-Each equation in this set describes how the probability of observing the clade changes through time if it is in a particular state over that time period; collectively, these equations are called $\frac{ \mathrm{d}D_{N,i}(t)}{\mathrm{d}t}$, where the subscript $N$ refers to the descendant clade and the subscript $i$ refers to $i^\text{th}$ state.
-
-Computing the likelihood proceeds by establishing an initial value problem: in principle, if we know the probabilities of observing a lineage at some specific time (\EG the present), and know how those probabilities change over time (described by the ODEs), then we can compute the probabilities of observing those lineages at some earlier time (\EG the root).
-Assuming that there are exactly $k$ possible states, we initialize $k$ probabilities at each tip in the phylogeny; we then compute how each of those $k$ probabilities changes down each branch in the tree using the above set of $k$ ODEs.
-At each node in the tree, we take the product of each of the $k$ probabilities for the descendants of that node (multiplied by the instantaneous speciation rate for each of the $k$ states to account for the observed speciation event at the node) as the initial values for the ancestral branch subtending that node.
-Proceeding in this way down the tree results in a set of $k$ probabilities at the root; these $k$ probabilities represent the probability of observing the phylogeny conditional on the root being in each of the states (\IE the $i^\text{th}$ conditional probability is the probability of observing the tree given that the root is in state $i$).
-The overall likelihood of the tree is a weighted average of the $k$ probabilities at the root, where the weighting scheme represents the assumed probability that the root was in each of the $k$ states.
-
-As with all birth-death process models, special care must be taken to account for the possibility of extinction.
-Specifically, the above ODEs must accommodate lineages that may arise along each branch in the tree that subsequently go extinct before the present (and so are unobserved).
-This requires a second set of $k$ ODEs, $\frac{ \mathrm{d}E_{i}(t)}{\mathrm{d}t}$, which define how the probability of extinction in process $i$ changes over time.
-These ODEs must be solved to compute the differential equations $\frac{ \mathrm{d}D_{N,i}(t)}{\mathrm{d}t}$, as we will demonstrate when we derive both sets of equations in the following sections.
-
-This framework therefore requires four distinct pieces of information to compute the likelihood of the data:
-%	\begin{enumerate}
-%		\item A set of ordinary differential equations describing how the probability of the data (observed lineages) changes through time, $\frac{ \mathrm{d}D_{N,i}(t)}{\mathrm{d}t}$.
-%		\item A set of ordinary differential equations describing how the extinction probability of unobserved (extinct or unsampled) lineages changes through time, $\frac{ \mathrm{d}E_{i}(t)}{\mathrm{d}t}$.
-%		\item An appropriate set of initial conditions.
-%		\item An appropriate weighting scheme for the root probabilities.
-%	\end{enumerate}
-
-In the following sections we detail how each of these components is determined for increasingly complex birth-death process models.
-
-
-\subsubsection{Binary-state space of diversification processes}
-Consider a (time-independent) birth-death process with two possible states (\EG a binary state), with diversification rates $\{\lambda_0, \mu_0\}$ and $\{\lambda_1, \mu_1\}$.
-We define $D_{N,0}(t)$ as the probability of observing lineage $N$ descending from a particular branch at time $t$, given that the lineage at that point is in state 0 (with rate parameters $\lambda_{0}$, and $\mu_{0}$).
-To compute the probability of observing the lineage at some earlier point, $ D_{N,0}(t + \Delta t)$, we enumerate all possible events that could occur within the interval $\Delta t$.
-Assuming that $\Delta t$ is small---so that the probability of any two events occurring in the interval is negligible---there are four possible scenarios within the interval:
-\begin{enumerate}
-	\item nothing happens in the interval;
-	\item the process changes $0 \rightarrow 1$;
-	\item a speciation event occurs and the left descendant subsequently goes extinct before the present, or;
-	\item a speciation event occurs and the right descendant subsequently goes extinct before the present.
-\end{enumerate}
-We can thus compute $D_{N,0}(t + \Delta t)$ as (see \cite{Maddison2007} and \cite{FitzJohn2009} for a more complete elucidation):
-\begin{align}
-	D_{N,0}(t + \Delta t) = & \;(1 - \mu_0\Delta t) \times & \text{in all cases, no extinction of the observed lineage} \label{equation:ProbDeltaT} \\
-			    		   & \;[  (1 - q\Delta t)(1 - \lambda_0\Delta t)D_{N,0}(t) & \text{Case (1) nothing happens} \nonumber\\
-						   & \; + q_{01}\Delta t (1 - \lambda_0\Delta t)D_{N,1}(t) & \text{Case (2) process change but no speciation} \nonumber\\
-						   & \; + (1 - q_{01}\Delta t)\lambda_0\Delta t E_0(t)D_{N,0}(t) & \text{Case (3) no process change, speciation, extinction} \nonumber\\
-						   & \; + (1 - q\Delta t)\lambda_0\Delta t E_0(t)D_{N,0}(t)] & \text{Case (4) no process change, speciation, extinction} \nonumber
-\end{align}
-A matching equation can be written down for $D_{N,1}(t+\Delta t)$.
-
-Define $E_0(t)$ as the probability that a lineage in state 0 at time $t$ goes extinct before the present.
-To determine the extinction probability at an earlier point, $E_0(t+\Delta t)$, we can again enumerate all the possible events in the interval $\Delta t$:
-\begin{enumerate}
-	\item the lineage goes extinct within the interval;
-	\item the lineage neither goes extinct nor speciates, resulting in a single lineage that must eventually go extinct before the present;
-	\item the lineage neither goes extinct nor speciates, but there is a state change, resulting in a single lineage that must go extinct before the present, or;
-	\item the lineage speciates in the interval, resulting in \emph{two} lineages that must eventually go extinct before the present.
-\end{enumerate}
-
-\begin{align}
-	E_0(t + \Delta t) = &\; \mu_0\Delta t +	& \text{Case (1) extinction in the interval} \label{equation:ExtDeltaT}\\
-				     & (1 - \mu_0\Delta t) \times & \text{no extinction in the interval and \dots} \nonumber\\
-				     & \;[(1-q_{01}\Delta t)(1-\lambda_0\Delta t)E_0(t) & \text{Case (2) nothing happens, but subsequent extinction} \nonumber\\
-				     & \;+ q_{01}\Delta t (1-\lambda_0\Delta t)E_1(t) & \text{Case (3) process change and subsequent extinction} \nonumber\\
-				     & \;+ (1 - q\Delta t) \lambda_0\Delta t E_0(t)^2] & \text{Case (4) speciation and subsequent extinctions} \nonumber
-\end{align}
-Again, a matching equation $E_1(t+\Delta t)$ can be written down.
-
-\subsection{Extension to a multi-state birth-death process}
-We can expand the \BiSSE model to accommodate an arbitrary number of processes, $k$, by writing a set of $k$ difference equations $D_{N,0}(t+\Delta t), D_{N,1}(t+\Delta t), \ldots, D_{N,k}(t+\Delta t)$.
-%\begin{align}
-%		D_{N,i}(t + \Delta t) = & \;(1 - \mu_i\Delta t) \times \label{equation:DKStates} \\
-%		& \;[  (1 - \sum\limits_{j \neq i}^k q_{ij}\Delta t)(1 - \lambda_i\Delta t)D_{N,i}(t) \nonumber\\
-%		& \; + (1 - \lambda_i\Delta t)  \sum\limits_{j \neq i}^k q_{ij}\Delta t D_{N,j}(t) \nonumber\\
-%		& \; + 2 (1 - \sum\limits_{j \neq i}^k q\Delta t) \lambda_i\Delta t E_i(t)D_{N,i}(t)] \nonumber
-%\end{align}
-%along with $E_0(t+\Delta t), E_1(t+\Delta t), \ldots, E_k(t+\Delta t)$:
-%\begin{align}
-%	E_i(t + \Delta t) = &\; \mu_i\Delta t +	\label{equation:ExtKStates}	\\
-%				    	    & (1 - \mu_i\Delta t) \times \nonumber\\
-%					    & \;[(1-\sum\limits_{j \neq i}^k q_{ij}\Delta t)(1-\lambda_i\Delta t)E_i(t) \nonumber\\
-%					    & \;+ (1-\lambda_i\Delta t) \sum\limits_{j \neq i}^k q_{ij}\Delta t E_j(t) \nonumber\\
-%					    & \;+ (1 - \sum\limits_{j \neq i}^k q\Delta t) \lambda_i\Delta t E_i(t)^2] \nonumber
-%\end{align}
-The resulting differential equations are (see \cite{Maddison2007} for the two-process case and \cite{FitzJohn2010} for the $k$-process case):
-\begin{align*}
-	\frac{\mathrm{d}D_{N,i}(t)}{\mathrm{d}t} = & - \left(\lambda_i + \mu_i + \sum\limits_{j \neq i}^k q\right)D_{N,i}(t) + 2\lambda_iE_i(t)D_{N,i}(t) + \sum\limits_{i \neq j}^k q D_{N,j}(t) \\
-   	\frac{\mathrm{d}E_i(t)}{\mathrm{d}t} = & - \left(\lambda_i + \mu_i + \sum\limits_{j \neq i}^k q \right)E_i(t) + \lambda_iE_i(t)^2 + \mu_i + \sum\limits_{i \neq j}^k q E_j(t)
-\end{align*}
-
-Initial probabilities are assigned according to the observed discrete states: if species $i$ has state $j$, then $D_{i,j}(0) = 1$ for the observed state (or $D_{i,j}(0) = \rho_j$ when species sampling is incomplete), and $D_{i,j}(0) = 0$ for all other ($\neq j$) states.
-%If the state is not observable, then $D_{i,j}(0) = 1$ for all $j$, since all states have probability 1 of producing the observation; this is analogous to the treatment of missing or ambiguous states in conventional phylogenetic likelihood calculation, \emph{c.f.}, \cite{Felsenstein2004}.
-Initial extinction probabilities are set to 0 (since there is no time for extinction to occur at the present) or to $1-\rho_i$ if incomplete taxon sampling is used. 
-Root probabilities are either weighted using equal probabilities (uniformly), by a vector of pre-defined root stationary probabilities (informative), or by the stationary distribution of the model, to compute the overall likelihood of the data.
 
 
 \begin{table}[t!]
 	\centering
-	\caption{\bf{\BiSSE model parameters and their interpretation}} \label{tab:param}
+	\caption{\bf{\HiSSE model parameters and their interpretation}} \label{tab:param}
 	\begin{tabular}{ l l l }
 		\toprule
 		Parameter & Interpretation \\
@@ -644,9 +548,6 @@ Root probabilities are either weighted using equal probabilities (uniformly), by
 	\end{tabular}
 \end{table}
 
-
-\section{Character-dependent diversification rates}\label{sec:CDBDP}
-Now let's start to analyze an example in \RevBayes using the BiSSE model.
 
 \subsection{Read the tree}
 
@@ -680,16 +581,12 @@ Finally, we create a helper variable that specifies the number of states that th
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 NUM_STATES = 2
+NUM_HIDDEN = 2
+NUM_RATES = NUM_STATES * NUM_HIDDEN
 \end{lstlisting}
 \end{snugshade*}}
 Using this variable we can easily change our script to use a different morphological character with a different number of states.
 We will also use this variable in our second example on hidden-state speciation and extinction model. 
-
-
-
-\subsection{Specifying the model}
-
-The basic idea behind the model in this example is that speciation and extinction rates are dependent on a binary character \citep{Maddison2007}.
 
 
 \subsubsection{Priors on rates}
@@ -723,14 +620,40 @@ for (i in 1:NUM_STATES) {
 }
 \end{lstlisting}
 \end{snugshade*}}
-Great! Now we have create our main variables of interest, the state-specific speciation and extinction rate variables with some meaningful prior distributions. 
-Additionally, we have already created moves on these variables.
-So we can now turn our focus on the remaining variables of the model.
+Now we need to create the variable for the hidden states.
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+for (i in 1:(NUM_HIDDEN-1)) {
+    
+    ### Create an exponential distributed variable for the diversification rate
+    speciation_beta[i] ~ dnExp(1.0) 
+    moves[++mvi] = mvScale(speciation_beta[i],lambda=0.20,tune=true,weight=2.0)        
 
-Next, we specify the transition rates $q_{01}$ and $q_{10}$ between the two states 0 and 1.
-Each transition rate between observed states is drawn rom an exponential distribution with a mean of 10 character state transitions over the entire tree. 
-We hope that this is a reasonable prior but also leaves enough uncertainty in our prior knowledge.
-(You may want to compare the posterior to the prior and/or check the resulting posterior estimates for different choices of the prior!)
+    ### Create an normal distributed variable for the turnover rate
+    extinction_beta[i] ~ dnNormal(0.0,1.0)
+    moves[++mvi] = mvSlide(extinction_beta[i],delta=0.20,tune=true,weight=2.0)
+    
+}
+\end{lstlisting}
+\end{snugshade*}}
+Finally, we match the rates to all possible ---hidden and observed--- states.
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+for (j in 1:NUM_HIDDEN) {
+    for (i in 1:NUM_STATES) {
+        if ( j == 1) {
+            speciation[i] := exp( speciation_alpha[i] )
+            extinction[i] := exp( extinction_alpha[i] )
+        } else {
+            index = i+(j*NUM_STATES)-NUM_STATES
+            speciation[index] := speciation[index-NUM_STATES] * exp( speciation_beta[j-1] )
+            extinction[index] := exp( extinction_alpha[i] + extinction_beta[j-1] )
+        }
+    }
+}
+\end{lstlisting}
+\end{snugshade*}}
+As before, we specify a rate prior.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 rate_pr := observed_phylogeny.treeLength() / 10
@@ -749,7 +672,25 @@ Finally, we build a rate matrix for the relative-rate of change between categori
 This is because we need a rate matrix in our state-dependent birth-death process.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-rate_matrix := fnFreeBinary( [rate_12, rate_21 ], rescaled=false)
+Q := [ rate_12, rate_21 ]
+\end{lstlisting}
+\end{snugshade*}}
+Set up the transition rate matrix for hidden states.
+We assume the transitions among the hidden states are all equal and drawn from an exponential distribution.
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+hidden_rate ~ dnExponential(rate_pr)
+moves[++mvi] = mvScale(hidden_rate,lambda=0.2,tune=true,weight=5)
+
+for (i in 1:(NUM_HIDDEN * (NUM_HIDDEN - 1))) {
+    R[i] := hidden_rate
+}
+\end{lstlisting}
+\end{snugshade*}}
+Create the rate matrix for the combined observed and hidden states
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+rate_matrix := fnHiddenStateRateMatrix(Q, R, rescaled=false)
 \end{lstlisting}
 \end{snugshade*}}
 A specific note here is that we do not rescale the rate matrix. 
