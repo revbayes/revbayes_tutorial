@@ -77,7 +77,7 @@ source("scripts/model_mk.rev")
 
 Q_trait = fnJC(2)
 root_frequencies <- simplex(1,1)
-trait_ctmc ~ dnPhyloCTMC(Q=Q_trait,rootFreq=root_frequencies, tree=phylogeny, type="NaturalNumbers")
+trait_ctmc ~ dnPhyloCTMC(Q=Q_trait,rootFreq=root_frequencies, tree=phylogeny, type="Standard")
 trait_ctmc.clamp(bears_traits)
 
 ##################
@@ -103,7 +103,7 @@ monitors[4] = mnModel(filename="output/bears_traits_joint_model.log", printgen=1
 mymcmc = mcmc(mymodel, monitors, moves)
 
 # Run the MCMC... for a real analysis you'd want to run many more iterations and check for convergence...
-mymcmc.run(200)
+mymcmc.run(1000)
 
 
 ##################
@@ -116,7 +116,7 @@ map = mapTree(treetrace,"output/bears_traits_map.tree")
 
 # Now let's summarize the ancestral estimates over the MAP tree.
 # First, read in the ancestral state trace:
-anc_state_trace = readAncestralStateTrace("output/bears_traits_joint_model.log")
+anc_state_trace = readAncestralStateTrace("output/bears_traits.log")
 
 # Now read in the tree trace that matches up with the ancestral state trace:
 anc_state_tree_trace = readAncestralStateTreeTrace("output/bears_traits.trees", treetype="non-clock")

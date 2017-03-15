@@ -2,9 +2,9 @@
 stable = T
 if (stable) {
     library(RevGadgets)
-} else {
-    source("/Users/mlandis/projects/RevGadgets/R/plot_ancestral_states.R")
-}
+#} else {
+#    source("/Users/mlandis/projects/RevGadgets/R/plot_ancestral_states.R")
+#}
 library(ggtree)
 library(tools)
 

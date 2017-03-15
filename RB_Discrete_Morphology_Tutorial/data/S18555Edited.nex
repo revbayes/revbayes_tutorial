@@ -1,0 +1,61 @@
+#NEXUS
+[written Sat Feb 04 13:13:05 CST 2017 by Mesquite  version 3.10 (build 765) at Oread.local/172.19.131.127]
+
+BEGIN TAXA;
+	DIMENSIONS NTAX=41;
+	TAXLABELS
+		Acanthoponera_minor Amblyopone_pallipes Aneuretus Anomalomyrma_sp Apomyrma_stygia Brownimecia_clavata Camelomecia Cerapachys_sexspinus Chalybion_californicum Chyphotes_mellipes Formica_fusca Gerontoformica_gracilis Gerontoformica_magnus Gerontoformica_pilosus Gerontoformica_spiralis Haidomyrmex_scimitarus Haidomyrmodes_mammuthus Haidoterminus_cippus Heterogyna Hypoponera_opacior Kyromyrma Lasius_californicus Leptanilla_swani Leptanilloides_nomada Leptogenys_diminuta Martialis_heureka Metapolybia_cingulata Myanmyrma_gracilis Myrmecia_nigriceps Myrmica_americana Nothomyrmecia_macrops Opamyrma_hungvuong Paraponera_clavata Platythyrea_punctata Pogonomyrmex_californicus Proceratium_stictum Scolia_verticalis Sphecomyrma_freyi Tatuidris_tatusia Tetraponera_punctulata Zigrasimecia 
+	;
+
+END;
+
+BEGIN CHARACTERS;
+	DIMENSIONS  NCHAR=41;
+	FORMAT DATATYPE = STANDARD GAP = - MISSING = ? SYMBOLS = "  0 1 2 3 4 5 6 7";
+	MATRIX
+	Acanthoponera_minor        100012100202021002101101112011003010-0103
+	Amblyopone_pallipes        10100110121202100111310011110100301010012
+	Aneuretus                  1000121000-2021012113100111011000010-0104
+	Anomalomyrma_sp            1001001000-2001011101100102100110210-1002
+	Apomyrma_stygia            1001001000-2001011201100112000000310-0001
+	Brownimecia_clavata        10??12?0?0-20210121131011110?1003110-0000
+	Camelomecia                100012001301121011?1311111101101?110-0006
+	Cerapachys_sexspinus       100002100102001?00203100102001000010-1113
+	Chalybion_californicum     0000120000-0121112013011100-00000110--000
+	Chyphotes_mellipes         0000010000-1021102201011100-00002110--000
+	Formica_fusca              1000120000-2021012113100103000000001-0103
+	Gerontoformica_gracilis    1010120000-112101101311111101101011010201
+	Gerontoformica_magnus      1010120000-112101101311111101101011010201
+	Gerontoformica_pilosus     1010120000-112101101311111101101111010201
+	Gerontoformica_spiralis    1010120000-112101101311111101101011010201
+	Haidomyrmex_scimitarus     0100200100-1021011013111111001000110-0005
+	Haidomyrmodes_mammuthus    0100200100-112101101???1111001000110-0005
+	Haidoterminus_cippus       0100201100-2021011013111111001000110-0005
+	Heterogyna                 0000120000-01211110130110-----000110--003
+	Hypoponera_opacior         100012002112021011113102012010003110-?104
+	Kyromyrma                  1000110000-202101211310010?000000001-0103
+	Lasius_californicus        1000120000-2021012113100103000000001-0103
+	Leptanilla_swani           1000001000-2001011201100102000110010-1003
+	Leptanilloides_nomada      100000001002001000203100102000100010-1103
+	Leptogenys_diminuta        100011002112021011113102112010013110-?102
+	Martialis_heureka          1000001010-2001001113110111001003010-0002
+	Metapolybia_cingulata      0000110000-1121002013000111001000110--003
+	Myanmyrma_gracilis         10111??0?0-1?210?10131111110110?311010?01
+	Myrmecia_nigriceps         100012101102121012113101111011013110-1102
+	Myrmica_americana          100012100202021012113100111001100010-0103
+	Nothomyrmecia_macrops      100012101102021012113101111011010110-1104
+	Opamyrma_hungvuong         1001001000-2001011213100112001000010-0001
+	Paraponera_clavata         100012001102021002113101112011003010-0114
+	Platythyrea_punctata       100011002112021001213102102110003110-?104
+	Pogonomyrmex_californicus  100012100202021012213100111001100010-0103
+	Proceratium_stictum        100002100102011002213100112100004010-?003
+	Scolia_verticalis          0000110000-0120002013010111101000110--000
+	Sphecomyrma_freyi          1000120000-11210110131111110?1000110-0001
+	Tatuidris_tatusia          1000000000-2021000200100102100103010-1004
+	Tetraponera_punctulata     100001001102021011113101111011000110-1103
+	Zigrasimecia               1011000010-102101201311111100100011010001
+
+;
+
+END;
+
