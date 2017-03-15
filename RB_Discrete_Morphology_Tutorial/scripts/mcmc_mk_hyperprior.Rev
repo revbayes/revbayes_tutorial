@@ -23,7 +23,7 @@ n_taxa <- taxa.size()
 n_branches <- 2 * n_taxa - 2
 
 # Load the model files
-source("scripts/model_mk_hyperprior.rev") # Morphological character change model
+source("scripts/model_mk_hyperprior.Rev") # Morphological character change model
 
 
 ########

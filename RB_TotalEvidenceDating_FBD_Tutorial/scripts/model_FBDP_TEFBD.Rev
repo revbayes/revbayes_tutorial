@@ -56,9 +56,8 @@ clade_ursinae = clade("Melursus_ursinus", "Ursus_arctos", "Ursus_maritimus",
                       "Helarctos_malayanus", "Ursus_americanus", "Ursus_thibetanus", 
                       "Ursus_abstrusus", "Ursus_spelaeus")
 constraints = v(clade_ursinae)
-"test2"
-fbd_tree ~ dnConstrainedTopology(fbd_dist, constraints=constraints, inverse=FALSE)
-fbd_tree.setValue( readTrees("data/starting.tree.tre")[1] )
+#fbd_tree <-  readTrees("data/starting_tree.tre")[1]
+fbd_tree ~ dnConstrainedTopology(fbd_dist, constraints=constraints)
 
 # Specify moves on the tree and node times #
 # These moves update the tree topology 
