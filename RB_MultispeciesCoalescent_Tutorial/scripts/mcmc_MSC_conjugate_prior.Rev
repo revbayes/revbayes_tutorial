@@ -56,7 +56,7 @@ extinction := speciation * relativeExtinction
 # specify a prior on the root age (our informed guess is about 75-80 mya)
 root ~ dnNormal(mean=75,sd=2.5,min=0.0, max=Inf)
 
-sampling_fraction <- 23 / 450 # 23 out of the ~ 450 primate species
+sampling_fraction <- 23 / 367 # 23 out of the ~ 367 primate species
 
 # create some moves that change the stochastic variables
 # all moves are sliding and scaling proposals
@@ -86,17 +86,12 @@ moves[++mi] = mvTreeNodeAgeSlide(psi, weight=100)
 
 
 # We assume independent effective population size parameters for each branch of the species tree.
-for (i in 1:n_species) {
-  Ne[i] <- 10.0
-}
-for (i in (n_species+1):n_branches) {
-  Ne[i] ~ dnExponential(0.01)
-  moves[++mi] = mvScale(Ne[i],1,true,1.0)
-}
+#
+mean_Ne ~ dnGamma(shape=1.0,rate=1.0)
+moves[++mi] = mvScale(mean_Ne,1,true,1.0)
 
-# We could also assume a single effective population size for the entire species tree.
-#Ne ~ dnGamma(shape=1.0,rate=1.0)
-#moves[++mi] = mvScale(Ne,1,true,1.0)
+shape <- 3.0
+rate := 2.0 * mean_Ne
 
 move_species_narrow_exchange = mvSpeciesNarrow( speciesTree=psi, weight=5 )
 
@@ -108,7 +103,7 @@ for (i in 1:num_loci) {
    # The gene tree from the multispecies coalescent process
    # Note that if Ne had been a vector of effective population sizes, 
    # allowing 1 parameter per branch of the species tree, the same line would work.
-   geneTree[i] ~ dnMultiSpeciesCoalescent(speciesTree=psi, Ne=Ne, taxa=taxon_map)
+   geneTree[i] ~ dnMultiSpeciesCoalescentInverseGamma(speciesTree=psi, shape=shape, rate=rate, taxa=taxon_map)
 
    # moves on the tree
    moves[++mi] = mvNNI(geneTree[i], 5.0)
@@ -209,11 +204,11 @@ mymodel = model(psi)
 
 # Monitors to check the progression of the program
 monitors[1] = mnScreen(printgen=100, root)
-monitors[2] = mnModel(filename="output_2/primates_root_calibration.log",printgen=10, separator = TAB)
-monitors[3] = mnFile(filename="output_2/primates_root_calibration.trees",printgen=10, separator = TAB, psi)
+monitors[2] = mnModel(filename="output/primates_root_calibration.log",printgen=10, separator = TAB)
+monitors[3] = mnFile(filename="output/primates_root_calibration.trees",printgen=10, separator = TAB, psi)
 for ( i in 1:num_loci ) { 
     # We add a monitor for each gene tree
-    monitors[i+3] = mnFile(filename="output_2/primates_root_calibration_" + locus_names[i] + ".trees",printgen=10, separator = TAB, geneTree[i])
+    monitors[i+3] = mnFile(filename="output/primates_root_calibration_" + locus_names[i] + ".trees",printgen=10, separator = TAB, geneTree[i])
 }
 
 # Here we use a plain MCMC. You could also set nruns=2 for a replicated analysis
@@ -227,11 +222,11 @@ mymcmc.run(generations=10000)
 
 # Now, we will analyze the tree output.
 # Let us start by reading in the tree trace
-treetrace = readTreeTrace("output_2/primates_root_calibration.trees", treetype="clock")
+treetrace = readTreeTrace("output/primates_root_calibration.trees", treetype="clock")
 # and get the summary of the tree trace
 #treetrace.summarize()
 
-mapTree(treetrace,"output_2/primates_root_calibration.tree")
+mapTree(treetrace,"output/primates_root_calibration.tree")
 
 # you may want to quit RevBayes now
 q()
