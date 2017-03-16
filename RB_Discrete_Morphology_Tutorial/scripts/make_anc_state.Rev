@@ -3,7 +3,7 @@
 
 
 # NOTE: modify out_str to use with other analyses!
-if (!exists("out_fp")) out_fp = "output/mk_simple"
+if (!exists("out_fp")) out_fp = "output"
 if (!exists("out_str")) out_str = "mk_simple"
 
 out_state_fn = out_fp + "/" + out_str + ".states.txt"

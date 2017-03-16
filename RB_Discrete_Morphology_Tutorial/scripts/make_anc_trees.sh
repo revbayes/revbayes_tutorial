@@ -18,11 +18,11 @@ BASE_FN=$(basename $BASE_STR)
 
 # create ancestral state estimates all characters in $CHAR_LIST
 echo "Generating ancestral state trees...\n"
-RB_COMMAND="out_fp = \"$BASE_FP\";\n
-            out_str = \"$BASE_FN\";\n
-            start_idx = $START_IDX;\n
-            end_idx = $END_IDX;\n
-            source(\"scripts/make_anc_state.Rev\");\n"
+RB_COMMAND="out_fp = \"$BASE_FP\";
+            out_str = \"$BASE_FN\";
+            start_idx = $START_IDX;
+            end_idx = $END_IDX;
+            source(\"scripts/make_anc_state.Rev\");"
 
 echo $RB_COMMAND | rb
 
@@ -36,10 +36,10 @@ do
     PDF_FN_LIST="$PDF_FN_LIST $IDX_BASE_FN.pdf"
 done
 
-# combine all characters' pdfs with gs
-echo "Combining pdfs...\n"
-MERGE_PDF_FN=$BASE_STR.char_$START_IDX"_to_"$END_IDX.pdf
-GS_CMD="gs -dBATCH -dNOPAUSE -q -sDEVICE=pdfwrite -sOutputFile=$MERGE_PDF_FN $PDF_FN_LIST"
-$GS_CMD
+## combine all characters' pdfs with gs
+#echo "Combining pdfs...\n"
+#MERGE_PDF_FN=$BASE_STR.char_$START_IDX"_to_"$END_IDX.pdf
+#GS_CMD="gs -dBATCH -dNOPAUSE -q -sDEVICE=pdfwrite -sOutputFile=$MERGE_PDF_FN $PDF_FN_LIST"
+#$GS_CMD
 
 
