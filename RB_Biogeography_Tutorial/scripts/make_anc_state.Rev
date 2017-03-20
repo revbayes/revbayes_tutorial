@@ -2,10 +2,10 @@
 # rb make_anc_state.Rev
 
 # NOTE: modify out_str to use with other analyses!
-#out_str = "output/simple"
+out_str = "output/simple"
 #out_str = "output/epoch"
 #out_str = "output/simple_phy"
-out_str = "output/epoch_phy"
+#out_str = "output/epoch_phy"
 
 out_state_fn = out_str + ".states.log"
 out_phy_fn   = out_str + ".tre"
