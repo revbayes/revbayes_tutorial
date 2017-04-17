@@ -243,7 +243,7 @@ for (i in 1:simData.size()) {
 }
 
 ## Lower 1-tailed
-empValue = empData[1][1]
+empValue = empData[1][z-1]
 lowCount = 0
 for (i in simvalues) { if (i <= empValue) { lowCount <- lowCount + 1 } }
 
