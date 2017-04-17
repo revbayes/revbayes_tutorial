@@ -97,13 +97,13 @@ n_areas <- 3
 \end{lstlisting}
 \end{snugshade}
 
-First, create a matrix of dispersal rates between area pairs, with rates $d_{AB} = d_{AC} = \ldots = d_{CB} = 1$. The {\tt abs()} function ensures the rates are real positive values.
+First, create a matrix of dispersal rates between area pairs, with rates $d_{AB} = d_{AC} = \ldots = d_{CB} = 1$.
 
 \begin{snugshade}
 \begin{lstlisting}
 for (i in 1:n_areas) {
     for (j in 1:n_areas) {
-        dr[i][j] <- abs(1)
+        dr[i][j] <- 1.0
     }
 }
 \end{lstlisting}
@@ -115,9 +115,9 @@ Next, let's create the extirpation rates with values $e_A=e_B=e_C=1$
 \begin{lstlisting}
 for (i in 1:n_areas) {
     for (j in 1:n_areas) {
-        er[i][j] <- abs(0)
+        er[i][j] <- 0.0
     }
-    er[i][i] <- abs(1) 
+    er[i][i] <- 1.0
 }
 \end{lstlisting}
 \end{snugshade}

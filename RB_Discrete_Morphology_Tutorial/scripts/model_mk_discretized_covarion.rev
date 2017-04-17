@@ -1,0 +1,96 @@
+###########################################
+# Binary morphological substitution model #
+###########################################
+#Obtain a list of names from the Nexus file. We will use this to add tips to the tree
+names <- morpho.names()
+
+# Set up branch length moves
+br_len_lambda ~ dnExp(0.2)
+moves[mvi++] = mvScale(br_len_lambda)
+
+nbr <- 2*names.size() - 3
+for (i in 1:nbr){
+    br_lens[i] ~ dnExponential(br_len_lambda)
+    moves[mvi++] = mvScale(br_lens[i]) 
+}
+
+#Specify the number of categories we would like to use to describe our data. For simplicity,
+# we will use 4.
+n_cats = 4
+#Specify the two parameters to the Beta distribution, and the moves on these parameters.
+alpha_ofbeta ~ dnExponential( 1 )
+beta_ofbeta ~ dnExponential( 1 )
+moves[mvi++] = mvScale(beta_ofbeta, lambda=1,    weight=1.0 )
+moves[mvi++] = mvScale(beta_ofbeta, lambda=0.1,  weight=2.0 )
+moves[mvi++] = mvScale(beta_ofbeta, lambda=0.01, weight=3.0 )
+moves[mvi++] = mvScale(alpha_ofbeta, lambda=1,    weight=1.0 )
+moves[mvi++] = mvScale(alpha_ofbeta, lambda=0.1,  weight=2.0 )
+moves[mvi++] = mvScale(alpha_ofbeta, lambda=0.01, weight=3.0 )
+
+#Create the Beta distribution, according to the two parameters and the number of categories.
+
+cats := fnDiscretizeBeta(alpha_ofbeta, beta_ofbeta,4)
+
+#Create the Q matrices. These data are binary, so we initialize the Jukes-Cantor matrix with
+# two states. The matrix is initialized from the median values of out four quantiles from
+# the Beta.
+n_classes <- 2
+n_class_pairs <- n_classes * (n_classes-1)
+
+# rate scalers per class
+rate_class_simplex ~ dnDirichlet( rep(2, n_classes) )
+moves[mvi++] = mvSimplexElementScale(rate_class_simplex, alpha=10, weight=2)
+rate_class := n_classes * rate_class_simplex
+
+# class switch rate matrix
+rate_switch ~ dnDirichlet( rep(2, n_class_pairs) )
+moves[mvi++] = mvSimplexElementScale(rate_switch, alpha=10, weight=2)
+Q_switch := fnFreeK(n_classes * rate_switch, rescale=false)
+
+for (i in 1:cats.size())
+{
+	#Create the Q matrix. These data are binary, so we initialize the Jukes-Cantor matrix with
+    # two states
+    
+    # rate matrix per class
+    Q_class[i][1] := fnFreeK( v( abs(1-cats[i]), cats[i] ), rescale=false )
+    Q_class[i][2] := fnJC(2)
+
+    # covarion rate matrix
+    Q[i] := fnCovarionRateMatrix( Q=Q_class[i],
+                                           switch_rates=Q_switch,
+                                           clock_rates=rate_class) 
+
+}
+
+# Tell the model what the probability of a character going into any particular category. 
+# This prior says that a character is equally likely to be put into any category.
+
+matrix_probs ~ dnDirichlet(v(1,1,1,1))
+moves[mvi++] = mvSimplexElementScale(matrix_probs, alpha=10, weight=1.0) 
+
+
+#Set up Gamma-distributed rate variation.
+alpha_morpho ~ dnExponential( 1.0 )
+rates_morpho := fnDiscretizeGamma( alpha_morpho, alpha_morpho, 4 )
+
+#Moves on the parameters to the Gamma distribution.
+moves[mvi++] = mvScale(alpha_morpho, lambda=0.01, weight=1.0)
+moves[mvi++] = mvScale(alpha_morpho, lambda=0.1,  weight=1.0)
+moves[mvi++] = mvScale(alpha_morpho, lambda=1,    weight=1.0)
+
+#Create a starting tree and place moves on it.
+
+tau ~ dnUniformTopology(names)
+phylogeny := treeAssembly(tau, br_lens)
+moves[mvi++] = mvNNI(tau, weight=2*nbr)
+moves[mvi++] = mvSPR(tau, weight=nbr)
+tree_length := phylogeny.treeLength()
+
+#Combine all of our elements into a CTMC. Because we have not observed any invariant sites, 
+# we specify the coding is 'variable'. Note that we are now feeding the site matrices to the CTMC.
+
+phyMorpho ~ dnPhyloCTMC(tree=phylogeny, siteRates=rates_morpho, Q=Q, type="Standard", coding="variable", siteMatrices=matrix_probs)
+phyMorpho.clamp(morpho)
+
+

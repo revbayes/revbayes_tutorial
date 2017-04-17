@@ -1,0 +1,462 @@
+\section{Beyond binary rate matrices} \label{sec:dm_matrix}
+
+The instantaneous rate matrix encodes the transition rates between all pairs of evolutionary states.
+It is important to emphasize that all rate matrices are assertions about how morphological evolution operates.
+Depending on how one populates the rate matrix elements, different evolutionary hypotheses may be expressed. \par
+
+When we model the evolution of morphological data, unlike nucleotide data, each change may require a sequence of intermediate changes.
+Getting to one state may require going through another.
+In short, it is probably not likely that one single model describes all characters well. \par 
+
+
+\subsection{Symmetric unordered}
+
+The standard Mk model of character evolution, where M denotes it is a Markov model and $K$ denotes the number of states for the character.
+The lineage may transition directly from state 1 to state 4 without going through states 2 and 3, which is representative of a character with {\it unordered} states.
+In addition, all transition rates are equal as they are in the Jukes-Cantor rate matrix \citep{jukes69}.
+Here is an example of a symmetric unordered Mk model for $K=4$.
+
+\begin{equation*}
+Q = \begin{pmatrix}
+- & r & r & r \\
+r & - & r & r \\
+r & r & - & r \\
+r & r & r & - 
+\end{pmatrix}
+\end{equation*}
+
+
+Define the single shared rate parameter
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+r <- 1.0
+\end{lstlisting}
+\end{snugshade*}}
+
+Define the rates
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+rates := [ [0.0,   r,   r,   r],
+           [  r, 0.0,   r,   r],
+           [  r,   r, 0.0,   r],
+           [  r,   r,   r, 0.0] ]
+\end{lstlisting}
+\end{snugshade*}}
+
+Create the rate matrix
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+Q := fnFreeK(rates)
+Q
+|*[ [ -1.0000, 0.3333, 0.3333, 0.3333 ] ,
+|*    0.3333, -1.0000, 0.3333, 0.3333 ] ,
+|*    0.3333, 0.3333, -1.0000, 0.3333 ] ,
+|*    0.3333, 0.3333, 0.3333, -1.0000 ] ]
+\end{lstlisting}
+\end{snugshade*}}
+
+Compute the transition probability matrix for a branch length of 0.1.
+
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+P <- Q.getTransitionProbabilities(0.1)
+P
+|*[ [ 0.906, 0.031, 0.031, 0.031],
+|*  [ 0.031, 0.906, 0.031, 0.031],
+|*  [ 0.031, 0.031, 0.906, 0.031],
+|*  [ 0.031, 0.031, 0.031, 0.906] ]
+\end{lstlisting}
+\end{snugshade*}}
+
+If we believed that, for example, for a couple of states, some transitions are strongly more likely, we could add a multiplier between those two states:
+
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+rates := [ [0.0,   r*2,   r,   r],
+           [  r, 0.0,   r,   r],
+           [  r,   r, 0.0,   r],
+           [  r,   r*2,   r, 0.0] ]
+Q := fnFreeK(rates)
+Q
+   [ [ -1.1765, 0.5882, 0.2941, 0.2941 ] ,
+     0.2941, -0.8824, 0.2941, 0.2941 ] ,
+     0.2941, 0.2941, -0.8824, 0.2941 ] ,
+     0.2941, 0.5882, 0.2941, -1.1765 ] ]
+
+ P <- Q.getTransitionProbabilities(0.1)
+ P
+   [ [ 0.891, 0.054, 0.028, 0.027], 
+   [ 0.027, 0.918, 0.028, 0.027], 
+   [ 0.027, 0.029, 0.917, 0.027], 
+   [ 0.027, 0.054, 0.028, 0.891]]
+\end{lstlisting}
+\end{snugshade*}}
+
+If we then get our transition probabilities, we see that this changes our probability of observing the not simply of our two state transitions that we changed the rate for, but others as well.
+
+This type of approach is common in parsimony, where it is one of several things referred to as weighted parsimony. 
+This approach to using different matrices requires you to, \textit{a priori} specify your matrix.
+But in reality, there is often fairly little guidance or information by which we decide if a weight applied to a transition is appropriate.
+Biologists still use models of this type - the Dollo model, in which a character is assumed not to be able to re-evolve once lost, is an extreme version of penalizing one change.
+
+Because the transition rates between all differing pairs of states are the same, so are the transition probabilities.
+Similarly, the probability of remaining in any given state is also equal across states.
+
+\subsection{Asymmetric ordered}
+
+Character states that are ordered imply that evolutionary transitions occur in particular sequences.
+For example, the number of digits on a foot might vary by gaining and losing single digits, meaning the transition from three to five digits cannot occur without going through the evolutionary state of possessing four digits.
+Below, we assume that gain events ( $n \rightarrow n+1$ ) occur at rate $\mu_1$ and loss events ($n \rightarrow n-1$) occur at rate $\mu_2$.
+The zeroes indicate that there is no immediate evolutionary path between states $1$ and $4$: states $2$ and $3$ must be used to reach $4$ from $1$.
+
+\begin{equation*}
+Q = \begin{pmatrix}
+- & r_1 & 0 & 0 \\
+r_2 & -   & r_1 & 0 \\
+0 & r_2 & -   & r_1 \\
+0 & 0 & r_2 & - 
+\end{pmatrix}
+\end{equation*}
+
+
+Create a simplex of unscaled rate parameters for gain ({\tt r[1]}) and loss ({\tt r[2]}) events.
+The simplex is assigned a flat Dirichlet prior with an initial gain-to-loss rate ratio of 3:1
+
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+r ~ dnDirichlet( [1,1] )
+r.setValue( simplex(3,1) )
+\end{lstlisting}
+\end{snugshade*}}
+
+Create a tridiagonal matrix of transition rates, meaning state $i$ may only transition to states $i-1$ and $i+1$
+
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+rates := [ [  0.0, r[1],  0.0,  0.0],
+           [ r[2],  0.0, r[1],  0.0],
+           [  0.0, r[2],  0.0, r[1]],
+           [  0.0,  0.0, r[2],  0.0] ]
+\end{lstlisting}
+\end{snugshade*}}
+
+Create the rate matrix
+
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+Q := fnFreeK(rates)
+|*[ [ -1.5385, 1.5385, 0.0000, 0.0000 ] ,
+|*     0.5128, -2.0513, 1.5385, 0.0000 ] ,
+|*     0.0000, 0.5128, -2.0513, 1.5385 ] ,
+|*     0.0000, 0.0000, 0.5128, -0.5128 ] ]
+\end{lstlisting}
+\end{snugshade*}}
+
+Compute the transition probability matrix for a branch length of 0.1.
+
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+P <- Q.getTransitionProbabilities(rate=0.1)
+|*[ [ 0.861, 0.129, 0.010, 0.001],
+|*  [ 0.043, 0.821, 0.126, 0.010],
+|*  [ 0.001, 0.042, 0.821, 0.136],
+|*  [ 0.000, 0.001, 0.045, 0.954]]
+\end{lstlisting}
+\end{snugshade*}}
+
+Note that {\tt P[1][2]} > {\tt P[1][3]} > {\tt P[1][4]}, primarily because those transitions require a minimum of one, two, and three events, respectively.
+In addition, note that assigning asymmetric transition rates causes {\tt P[1][2]} > {\tt P[2][1]} because {\tt rates[1][2]} > {\tt rates[2][1]}.
+
+
+\subsection{Correlated binary characters}
+
+Two characters do not necessarily evolve independently of one another.
+Take two characters in plants: the presence or absence of toothed leaf margins (character X) is thought to be ecologically correlated with the presence of absence of leaf lobing (character Y).
+For a single binary character, there are two states (0 and 1), but there are four states for a pair of non-independent binary characters (00, 10, 01, and 11).
+\citet{pagel04} introduced a general framework for modeling the evolution of joint sets of characters.
+These models require that only one evolutionary event can occur in a moment of time, which is enforced with the 0 terms.
+In addition, the transition rate that, say, character X goes from 0 to 1 depends on the current value of character Y.
+
+\subsubsection{Seven free parameters}
+
+In the first case, all possible transitions might be assigned their own parameter.
+Here, we'll assign a simplex over all rates, leaving seven free parameters (plus an eighth parameter that scales the rate matrix).
+
+\begin{equation*}
+Q = \begin{pmatrix}
+                      - & \mu_{00 \rightarrow 10} & \mu_{00 \rightarrow 01} &                       0 \\
+\mu_{10 \rightarrow 00} &                       - &                       0 & \mu_{10 \rightarrow 11} \\
+\mu_{01 \rightarrow 00} &                       0 &                       - & \mu_{01 \rightarrow 11} \\
+                      0 & \mu_{11 \rightarrow 10} & \mu_{11 \rightarrow 01} &                       - \\
+\end{pmatrix}
+\end{equation*}
+
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+r ~ dnDirichlet( [1,1,1,1,1,1,1,1] )
+r.setValue( simplex(1,1,3,3,3,3,1,1) )
+\end{lstlisting}
+\end{snugshade*}}
+
+Create an array of zeroes for the four states (00, 10, 01, 11)
+
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+for (i in 1:4) {
+    for (j in 1:4) {
+        rates[i][j] <- 0.0
+    }
+}
+\end{lstlisting}
+\end{snugshade*}}
+
+Populate the elements of {\tt rates}
+
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+rates[1][2] := r[1] # 00->10
+rates[1][3] := r[2] # 00->01
+rates[2][1] := r[3] # 10->00
+rates[2][4] := r[4] # 10->11
+rates[3][1] := r[5] # 01->00
+rates[3][4] := r[6] # 01->11
+rates[4][2] := r[7] # 11->10
+rates[4][3] := r[8] # 11->01
+\end{lstlisting}
+\end{snugshade*}}
+
+Create the rate matrix
+
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+Q := fnFreeK(rates)
+|*[ [ -0.6667, 0.3333, 0.3333, 0.0000 ] ,
+|*     1.0000, -2.0000, 0.0000, 1.0000 ] ,
+|*     1.0000, 0.0000, -2.0000, 1.0000 ] ,
+|*     0.0000, 0.3333, 0.3333, -0.6667 ] ]
+\end{lstlisting}
+\end{snugshade*}}
+
+Compute the transition probability matrix for a branch length of 0.1.
+
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+P <- Q.getTransitionProbabilities(rate=0.1)
+|*[ [ 0.938, 0.029, 0.029, 0.003],
+|*  [ 0.088, 0.822, 0.003, 0.088],
+|*  [ 0.088, 0.003, 0.822, 0.088],
+|*  [ 0.003, 0.029, 0.029, 0.938] ]
+\end{lstlisting}
+\end{snugshade*}}
+
+Note that the probability of remaining in state 10 or state 01 is less than the probability of remaining in state 00 or state 11.
+In this toy example, these probabilities reflect that states 10 an 01 are less evolutionarily stable than states 00 and 11.
+
+\subsubsection{Four free parameters}
+
+Alternatively, characters X and Y might share state frequencies, $\pi_j$, and transition rates $\mu_{ij}^{(k)}$, where $i$ is the starting state for the character undergoing change, $j$ is the ending state, and $k$ is the state of the other character.
+This results in two stationary frequencies (one free parameter), four transition rates for $0 \rightarrow 1$ and $1 \rightarrow 0$ given that the other character is in state 0 or state 1 (three free parameters), plus one free parameter to scale the rate matrix.
+
+\begin{equation*}
+Q = \begin{pmatrix}
+- & \mu_{01}^{(0)} \pi_1 \pi_0 & \mu_{01}^{(0)} \pi_0 \pi_1 & 0 \\
+\mu_{10}^{(0)} \pi_0 \pi_0 & -   & 0 & \mu_{01}^{(1)} \pi_1 \pi_1 \\
+\mu_{10}^{(0)} \pi_0 \pi_0 & 0   & - & \mu_{01}^{(1)} \pi_1 \pi_1 \\
+0 & \mu_{10}^{(1)} \pi_1 \pi_0 & \mu_{10}^{(1)} \pi_0 \pi_1 & - \\
+\end{pmatrix}
+\end{equation*}
+
+Assign the stationary frequencies of being in state 0 or state 1 shared by both characters X and Y.
+
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+pi ~ dnDirichlet([1,1])
+pi.setValue( simplex(1,3) )
+\end{lstlisting}
+\end{snugshade*}}
+
+Assign the relative transition rates for gain and loss provided that the other character is in state 0 or 1.
+
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+r ~ dnDirichlet( [1,1,1,1] )
+r.setValue( simplex(1,3,3,1) )
+\end{lstlisting}
+\end{snugshade*}}
+
+Create an array of zeroes for the four states (00, 10, 01, 11)
+
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+for (i in 1:4) {
+    for (j in 1:4) {
+        rates[i][j] <- 0.0
+    }
+}
+\end{lstlisting}
+\end{snugshade*}}
+
+Populate the elements of {\tt rates}
+
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+rates[1][2] := r[1] * pi[2] * pi[1] # 00->10
+rates[1][3] := r[1] * pi[1] * pi[2] # 00->01
+rates[2][1] := r[3] * pi[1] * pi[1] # 10->00
+rates[2][4] := r[2] * pi[2] * pi[2] # 10->11
+rates[3][1] := r[2] * pi[1] * pi[1] # 01->00
+rates[3][4] := r[3] * pi[2] * pi[2] # 01->11
+rates[4][2] := r[4] * pi[2] * pi[1] # 11->10
+rates[4][3] := r[4] * pi[1] * pi[2] # 11->01
+\end{lstlisting}
+\end{snugshade*}}
+
+Create the rate matrix
+
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+Q := fnFreeK(rates)
+Q
+|*[ [ -0.6333, 0.3167, 0.3167, 0.0000 ] ,
+|*     0.4750, -2.3750, 0.0000, 1.9000 ] ,
+|*     0.4750, 0.0000, -2.3750, 1.9000 ] ,
+|*     0.0000, 0.3167, 0.3167, -0.6333 ] ]
+\end{lstlisting}
+\end{snugshade*}}
+
+Compute the transition probability matrix for a branch length of 0.1.
+
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+P <- Q.getTransitionProbabilities(0.1)
+P
+|*[ [ 0.940, 0.027, 0.027, 0.005],
+|*  [ 0.041, 0.792, 0.003, 0.164],
+|*  [ 0.041, 0.003, 0.792, 0.164],
+|*  [ 0.001, 0.027, 0.027, 0.944] ]
+\end{lstlisting}
+\end{snugshade*}}
+
+Note that this model has a tendency towards state 11.
+
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+P_10 <- Q.getTransitionProbabilities(10.0)
+P_10
+|*[ [ 0.159, 0.105, 0.105, 0.630],
+|*  [ 0.158, 0.105, 0.105, 0.632],
+|*  [ 0.158, 0.105, 0.105, 0.632],
+|*  [ 0.158, 0.105, 0.105, 0.632] ]
+\end{lstlisting}
+\end{snugshade*}}
+
+
+\subsection{Covarion}
+
+Covarion models \citep{tuffley98} capture the possibility that a ``hidden'' (unobserved or unmeasurable) states cause evolutionary processes to vary in tempo and modes.
+For example, phylogenetically local clusters of plant lineages appear to transition between herbaceous and woody habits at relatively high rates, so one might want to quantify where these bursts occur \citep{beaulieu2013}.
+While similar in structure to the correlated character model of \citet{pagel94}, covarion models do not observe the hidden state that induce the mode-shifts.
+Instead, covarion models expand the character's state space by a factor of $K$, and observe the character once for each of the $K$ categories.
+For example, take a binary character modeled with $K=2$ hidden state classes.
+The model would treat a character that is observed as being in state 0 as possibly being in either of the $K=2$ classes (0,1) and (0,2).
+In practice, this is done by setting the likelihood of observing those $0k$ states to equal 1.
+
+The expanded structure of a simple covarion rate matrix with $K=2$ is
+
+\begin{equation*}
+Q = \left(
+\arraycolsep=6pt\def\arraystretch{2.5}
+\begin{array}{cc|cc}
+- & r_1 q_{01}^{(1)} & s_{12} & 0 \\
+r_1 q_{10}^{(1)} & - & 0 & s_{12} \\
+\hline
+s_{21} & 0 & - & r_2 q_{01}^{(2)} \\
+0 & s_{21} & r_2 q_{10}^{(2)} & -  \\
+
+\end{array}
+\right)    
+\end{equation*}
+
+This form can be reduced to a simpler block-matrix representation
+
+\begin{equation*}
+Q = \left(
+\arraycolsep=8pt\def\arraystretch{3.0}
+\begin{array}{c|c}
+r_1 Q^{(1)} & s_{12} I  \\
+\hline
+s_{21} I & r_2 Q^{(2)} \\
+\end{array}
+\right)
+\end{equation*}
+
+
+where $Q^{(i)}$ is the rate matrix for the $i$th class, $r_i \in r$ is the clock rate for the $i$th class, and $S$ is the rate matrix to switch between classes.
+
+
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+sr ~ dnDirichlet([1,1])
+sr.setValue( simplex(1,2) )
+switch_rates := [ [   0.0, sr[1] ],
+                  [ sr[2],   0.0 ] ]
+Q_switch := fnFreeK(switch_rates)
+\end{lstlisting}
+\end{snugshade*}}
+
+Create an array of zeroes for the four states (00, 10, 01, 11)
+
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+cr[1] ~ dnExp(1)
+cr[2] ~ dnExp(1)
+cr[1].setValue(3)
+cr[2].setValue(1)
+\end{lstlisting}
+\end{snugshade*}}
+
+Populate the elements of {\tt rates}
+
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+Q_class[1] := fnJC(2)
+
+bf ~ dnDirichlet( [1,1] )
+bf.setValue( simplex(1,3) )
+Q_class[2] := fnF81( bf )
+
+\end{lstlisting}
+\end{snugshade*}}
+
+Create the rate matrix
+
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+Q := fnCovarionRateMatrix(Q=Q_class, switch_rates=Q_switch, clock_rates=cr)
+
+Q
+|*[ [ -1.1126, 0.8901, 0.2225, 0.0000 ] ,
+|*     0.8901, -1.1126, 0.0000, 0.2225 ] ,
+|*     0.4451, 0.0000, -1.0385, 0.5934 ] ,
+|*     0.0000, 0.4451, 0.1978, -0.6429 ] ]
+\end{lstlisting}
+\end{snugshade*}}
+
+Compute the transition probability matrix for a branch length of 0.1.
+
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+P <- Q.getTransitionProbabilities(0.1)
+P <- Q.getTransitionProbabilities(1)
+P
+|*[ [ 0.899, 0.080, 0.020, 0.002],
+|*  [ 0.080, 0.899, 0.001, 0.020],
+|*  [ 0.040, 0.003, 0.902, 0.055],
+|*  [ 0.002, 0.041, 0.018, 0.939] ]
+\end{lstlisting}
+\end{snugshade*}}
+
+The rows and columns correspond to (in order): state 0 evolving by $r_1 Q^{(1)}$, state 1 evolving by $r_1 Q^{(1)}$, state 1 evolving by $r_2 Q^{(2)}$, and state 2 evolving by $r_2 Q^{(2)}$.
+Note that {\tt P[1][2]} > {\tt P[3][4]}, which is largely due to the fact that $r_1 > r_2$.
+
+\newpage

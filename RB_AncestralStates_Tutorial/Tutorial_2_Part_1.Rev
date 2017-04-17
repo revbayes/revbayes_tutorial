@@ -35,7 +35,7 @@
 #
 
 # Read in the character data, note there is some missing character data notated by '?'. 
-gynostemium_data = readCharacterDataDelimited("data/gynostemium_data.tsv", type="NaturalNumbers")
+gynostemium_data = readCharacterDataDelimited("data/gynostemium_data.tsv", stateLabels=3, type="NaturalNumbers", headers=FALSE)
 
 # To accommodate for phylogenetic uncertainty, we will run our analyses over a
 # posterior distribution of trees estimated in a previous analysis. We do this
@@ -45,12 +45,13 @@ gynostemium_data = readCharacterDataDelimited("data/gynostemium_data.tsv", type=
 # read in tree trace
 treetrace = readTreeTrace("data/precooked_tree_samples.trees", treetype="non-clock") 
 
-# Sample 200 trees from the empirical tree distribution. We also include
-# as the first sample the MAP tree, which will be useful when we want to 
+# draw a tree from the empirical tree distribution
+psi ~ dnEmpiricalTree(burnin=200, treetrace)
+
+# We'll also read in a pre-cooked MAP tree to 
 # summarize our results.
 map_tree = readBranchLengthTrees("data/precooked_MAP.tree")[1]
 
-psi ~ dnEmpiricalTree(burnin=200, treetrace)
 
 
 
@@ -98,7 +99,7 @@ mymodel = model(Q)
 # create the monitors
 monitors[1] = mnScreen(printgen=10, lambda)
 monitors[2] = mnFile(filename="output/mk1.trees", printgen=10, psi)
-monitors[3] = mnAncestralState(filename="output/mk1.log",printgen=10, tree=psi, ctmc=morpho_ctmc, type="NaturalNumbers")
+monitors[3] = mnJointConditionalAncestralState(filename="output/mk1.log",printgen=10, tree=psi, ctmc=morpho_ctmc, type="NaturalNumbers")
 monitors[4] = mnModel(filename="output/mk1_model.log",printgen=10)
 
 
@@ -113,9 +114,9 @@ mymcmc.run(5000)
 mymcmc.operatorSummary()
 
 # now summarize ancestral states over the MAP tree
-#ancestral_state_trace = readAncestralStateTrace("output/mk1.log") 
-#ancestral_state_tree_trace = readAncestralStateTreeTrace("output/mk1.trees", treetype="non-clock")
-#ancestralStateTree(map_tree, ancestral_state_trace, ancestral_state_tree_trace, "output/mk1_final.tree")
+ancestral_state_trace = readAncestralStateTrace("output/mk1.log") 
+ancestral_state_tree_trace = readAncestralStateTreeTrace("output/mk1.trees", treetype="non-clock")
+ancestralStateTree(map_tree, ancestral_state_trace, ancestral_state_tree_trace, "output/mk1_final.tree")
 
 # The ancestral state tree trace step is necessary because the ancestralStateTree function does not
 # assume the topology is fixed.

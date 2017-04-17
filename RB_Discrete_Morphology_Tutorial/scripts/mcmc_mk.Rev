@@ -21,9 +21,9 @@ mni = 1
 taxa <- morpho.names()
 n_taxa <- taxa.size()
 n_branches <- 2 * n_taxa - 2
-# Load the model files
 
-source("scripts/model_mk.rev") # Morphological character change model
+# Load the model files
+source("scripts/model_mk.Rev") # Morphological character change model
 
 ########
 # MCMC #
@@ -38,12 +38,26 @@ monitors[mni++] = mnModel(filename="output/mk_simple.log", printgen=10)
 monitors[mni++] = mnFile(filename="output/mk_simple.trees", printgen=10, phylogeny)
 # 3. and a few select parameters to be printed to the screen #
 monitors[mni++] = mnScreen(printgen=10)
+# 4. add an ancestral state monitor
+monitors[mni++] = mnJointConditionalAncestralState(tree=phylogeny,
+                                                   ctmc=phyMorpho,
+                                                   filename="output/mk_simple.states.txt",
+                                                   type="Standard",
+                                                   printgen=10,
+                                                   withStartStates=false)
+
 # Initialize the MCMC object #
 mymcmc = mcmc(mymodel, monitors, moves)
 
 # Run the MCMC #
-mymcmc.run(generations=100000)
-source("scripts/summarize_mk.Rev")
+mymcmc.run(generations=10000)
+
+# Read in the tree trace and construct the consensus tree tree #
+trace = readTreeTrace("output/mk_simple.trees", treetype="non-clock")
+trace.setBurnin(0.25)
+
+# Summarize tree trace and the consensus tree to file
+consensusTree(trace, file="output/mk_simple.majrule.tre")
 
 # Quit RevBayes #
 q()

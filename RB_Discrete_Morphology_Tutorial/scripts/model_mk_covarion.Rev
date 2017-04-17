@@ -1,0 +1,64 @@
+###########################################
+# Binary morphological substitution model #
+###########################################
+#Obtain a list of names from the Nexus file. We will use this to add tips to the tree
+names <- morpho.names()
+
+# Set up branch length moves
+br_len_lambda ~ dnExp(0.2)
+moves[mvi++] = mvScale(br_len_lambda)
+
+nbr <- 2*names.size() - 3
+for (i in 1:nbr){
+    br_lens[i] ~ dnExponential(br_len_lambda)
+    moves[mvi++] = mvScale(br_lens[i]) 
+}
+
+
+#Create the Q matrix. These data are binary, so we initialize the Jukes-Cantor matrix with
+# two states
+n_classes <- 2
+n_class_pairs <- n_classes * (n_classes-1)
+
+# rate matrix per class
+pi ~ dnBeta( 1,1 )
+moves[mvi++] = mvSlide(pi, delta=0.2, weight=2)
+Q_class[1] := fnFreeK( v( pi, abs(1.0 - pi) ) )
+Q_class[2] := fnJC(2)
+
+# rate scalers per class
+rate_class_simplex ~ dnDirichlet( rep(2, n_classes) )
+moves[mvi++] = mvSimplexElementScale(rate_class_simplex, alpha=10, weight=2)
+rate_class := n_classes * rate_class_simplex
+
+# class switch rate matrix
+rate_switch ~ dnDirichlet( rep(2, n_class_pairs) )
+moves[mvi++] = mvSimplexElementScale(rate_switch, alpha=10, weight=2)
+Q_switch := fnFreeK(n_classes * rate_switch, rescale=false)
+
+# covarion rate matrix
+Q_covarion := fnCovarionRateMatrix( Q=Q_class,
+                                    switch_rates=Q_switch,
+                                    clock_rates=rate_class) 
+
+#Set up Gamma-distributed rate variation.
+alpha_morpho ~ dnExponential( 1.0 )
+rates_morpho := fnDiscretizeGamma( alpha_morpho, alpha_morpho, 4 )
+
+#Moves on the parameters to the Gamma distribution.
+moves[mvi++] = mvScale(alpha_morpho, weight=2)
+
+#Create a starting tree and place moves on it.
+tau ~ dnUniformTopology(names)
+phylogeny := treeAssembly(tau, br_lens)
+moves[mvi++] = mvNNI(tau, weight=2*nbr)
+moves[mvi++] = mvSPR(tau, weight=nbr)
+tree_length := phylogeny.treeLength()
+
+#Combine all of our elements into a CTMC. Because we have not observed any invariant sites, 
+# we specify the coding is 'variable'.
+
+phyMorpho ~ dnPhyloCTMC(tree=phylogeny, Q=Q_covarion, siteRates=rates_morpho, type="Standard", coding="variable")
+phyMorpho.clamp(morpho)
+
+

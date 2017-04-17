@@ -62,7 +62,7 @@ rate_bg := 10^log10_rate_bg
 moves[mvi++] = mvSlide(log10_rate_bg, weight=4)
 
 # relative dispersal rate is fixed to one
-dispersal_rate <- abs(1)
+dispersal_rate <- 1.0
 
 # the geographical distance scaling factor
 distance_scale ~ dnUnif(0,20)
@@ -73,7 +73,7 @@ moves[mvi++] = mvScale(distance_scale, weight=3)
 for (i in 1:n_epochs) {
     for (j in 1:n_areas) {
         for (k in 1:n_areas) {
-            dr[i][j][k] <- abs(0)
+            dr[i][j][k] <- 0.0
             if (connectivity[i][j][k] > 0) {
                 dr[i][j][k] := dispersal_rate * exp(-distance_scale * distances[j][k])
             }
@@ -91,7 +91,7 @@ moves[mvi++] = mvScale(extirpation_rate, weight=2)
 for (i in 1:n_epochs) {
     for (j in 1:n_areas) {
         for (k in 1:n_areas) {
-            er[i][j][k] <- abs(0.0) 
+            er[i][j][k] <- 0.0
         }
         er[i][j][j] := extirpation_rate
     }
@@ -111,7 +111,7 @@ for (i in 1:n_epochs) {
     time_min[i] <- time_bounds[i][2]
 
     if (i == n_epochs) {
-        epoch_times[i] <- abs(0)
+        epoch_times[i] <- 0.0
     } else {
         epoch_times[i] ~ dnUniform(time_min[i], time_max[i])
         moves[mvi++] = mvSlide(epoch_times[i], delta=(time_max[i]-time_min[i])/2)
@@ -181,4 +181,22 @@ mymcmc = mcmc(mymodel, monitors, moves)
 # run the MCMC analysis
 mymcmc.run(n_gen)
 
+
+
+#################
+# Post-Analysis #
+#################
+
+# get the converted state descriptions
+state_desc = dat_range_n.getStateDescriptions()
+
+# write the state descriptions to file
+state_desc_str = "state,range\n"
+for (i in 1:state_desc.size())
+{
+    state_desc_str += (i-1) + "," + state_desc[i] + "\n"
+}
+write(state_desc_str, file=out_fn+".state_labels.txt")
+
+# exit
 quit()

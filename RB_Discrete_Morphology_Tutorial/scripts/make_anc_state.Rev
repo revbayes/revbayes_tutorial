@@ -1,0 +1,47 @@
+# This script may be run from the command line by typing
+# rb make_anc_state.Rev
+
+
+# NOTE: modify out_str to use with other analyses!
+if (!exists("out_fp")) out_fp = "output"
+if (!exists("out_str")) out_str = "mk_simple"
+
+out_state_fn = out_fp + "/" + out_str + ".states.txt"
+out_phy_fn   = out_fp + "/" + out_str + ".trees"
+out_mcc_fn   = out_fp + "/" + out_str + "/" + out_str + ".mcc.tre"
+
+# compute MCC tree for "reference tree"
+tree_trace = readTreeTrace(file=out_phy_fn, treetype="non-clock")
+tree_trace.setBurnin(0.25)
+mcc_tree = mccTree(tree_trace, file=out_mcc_fn, mean=false)
+
+# get ancestral state trace
+state_trace = readAncestralStateTrace(file=out_state_fn)
+
+# get ancestral state tree trace
+state_tree_trace = readAncestralStateTreeTrace(file=out_phy_fn, treetype="non-clock")
+
+# compute burnin
+n_burn = floor(0.25 * state_tree_trace.getNumberSamples())
+
+# compute ancestral state tree
+if (!exists("start_idx")) start_idx = 1
+if (!exists("end_idx")) end_idx = start_idx
+n_sites = end_idx-start_idx+1
+idx = 1
+for (site in start_idx:end_idx) {
+    "Processing character " + site + " (" + idx + " of " + n_sites + ")..."
+    anc_tree[idx] = ancestralStateTree(tree=mcc_tree,
+                                  ancestral_state_trace_vector=state_trace,
+                                  tree_trace=state_tree_trace,
+                                  include_start_states=false,
+                                  file=out_fp+"/"+out_str+"/"+out_str+".char_"+site+".ase.tre",
+                                  burnin=n_burn,
+                                  summary_statistic="MAP",
+                                  site=site)
+    idx += 1
+}
+
+# exit RevBayes
+quit()
+                             

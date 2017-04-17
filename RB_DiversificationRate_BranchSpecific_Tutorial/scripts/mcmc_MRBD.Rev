@@ -1,0 +1,115 @@
+################################################################################
+#
+# RevBayes Example: Bayesian inference of diversification rates under a
+#                   branch-specific birth-death model
+#
+#
+# authors: Sebastian Hoehna
+#
+################################################################################
+
+#######################
+# Reading in the Data #
+#######################
+
+# Read in the observed phylogeny
+observed_phylogeny <- readTrees("data/primates_tree.nex")[1]
+
+# Get the names of the taxa in the tree and the age of the tree. We need these later on.
+taxa <- observed_phylogeny.taxa()
+root <- observed_phylogeny.rootAge()
+tree_length <- observed_phylogeny.treeLength()
+
+# set my move index
+mvi = 0
+mni = 0
+
+# Global parameters for our analysis
+NUM_RATE_CATEGORIES = 4
+EXPECTED_NUM_EVENTS = 2
+NUM_TOTAL_SPECIES = 367
+H = 0.587405
+
+####################
+# Create the rates #
+####################
+
+### Specify a prior on the speciation and extinction rates
+
+### Create a lognormal distributed variable for the mean speciation rate
+speciation_prior_mean <- ln( ln(NUM_TOTAL_SPECIES/2.0) / root )
+speciation_mean ~ dnLognormal(mean=speciation_prior_mean, sd=H)
+moves[++mvi] = mvScale(speciation_mean,lambda=1,tune=true,weight=5)
+
+### Create a deterministic variable for the speciation rate categories
+### using a discretized lognormal distribution (the N-quantiles of it)
+speciation_sd <- H*2
+speciation_categories := fnDiscretizeDistribution( dnLognormal(ln(speciation_mean), speciation_sd), NUM_RATE_CATEGORIES )
+
+### Create a lognormal distributed variable for the extinction rate
+extinction_prior_mean <- ln( ln(NUM_TOTAL_SPECIES/2.0) / root )
+extinction_mean ~ dnLognormal(mean=extinction_prior_mean,sd=H*2)
+moves[++mvi] = mvScale(extinction_mean,lambda=1.0,tune=true,weight=3.0)
+
+### Create a deterministic variable for the extinction rate categories
+### using a discretized lognormal distribution (the N-quantiles of it)
+extinction_categories := fnDiscretizeDistribution( dnLognormal(ln(extinction_mean), H), NUM_RATE_CATEGORIES )
+
+### Make a vector that combines each of the diversification and turnover categories
+k = 1
+for(i in 1:NUM_RATE_CATEGORIES) {
+    for(j in 1:NUM_RATE_CATEGORIES) {
+        speciation[k]   := speciation_categories[i]
+        extinction[k++] := extinction_categories[j]
+    }
+}
+
+### Create a exponential distributed variable for the rate of rate-shift events
+event_rate ~ dnLognormal( ln( EXPECTED_NUM_EVENTS/tree_length ), H)
+moves[++mvi] = mvScale(event_rate,lambda=1,tune=true,weight=5)
+
+### Create a rate matrix for the transition events
+rate_matrix <- fnJC( NUM_RATE_CATEGORIES * NUM_RATE_CATEGORIES)
+
+### Create a uniform prior on the root state
+rate_category_prior <- simplex( rep(1,NUM_RATE_CATEGORIES * NUM_RATE_CATEGORIES) )
+
+### rho is the probability of sampling species at the present
+### fix this to 233/367, since there are ~367 described species of primates
+### and we have sampled 367
+rho <- observed_phylogeny.ntips() / NUM_TOTAL_SPECIES
+
+#### construct a variable for the tree drawn from a birth death process
+timetree ~ dnMRBDP(lambda=speciation, mu=extinction, Q=rate_matrix, rootAge=root, rho=rho, pi=rate_category_prior, delta=event_rate, taxa=taxa, condition="survival" )
+
+### clamp the model with the "observed" tree
+timetree.clamp(observed_phylogeny)
+
+#############
+# The Model #
+#############
+
+### workspace model wrapper ###
+mymodel = model(speciation)
+
+### set up the monitors that will output parameter values to file and screen
+monitors[++mni] = mnModel(filename="output/primates_MRBD.log", printgen=10, separator = TAB)
+monitors[++mni] = mnScreen(printgen=10, speciation_mean, extinction_mean)
+
+
+################
+# The Analysis #
+################
+
+### workspace mcmc
+mymcmc = mcmc(mymodel, monitors, moves)
+
+### pre-burnin to tune the proposals
+mymcmc.burnin(generations=1000,tuningInterval=200)
+
+### run the MCMC
+mymcmc.run(generations=5000)
+mymcmc.operatorSummary()
+
+## quit ##
+q()

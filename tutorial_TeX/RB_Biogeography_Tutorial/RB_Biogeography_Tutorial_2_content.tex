@@ -95,6 +95,29 @@ dat_range_n[1]
 \end{lstlisting}
 \end{snugshade}
 
+
+We'll want to record the relationship between range states and range labels when producing an ancestral range estimate figure.
+First, store the vector of range state descriptions
+
+\begin{snugshade}
+\begin{lstlisting}
+state_desc = dat_range_n.getStateDescriptions()
+\end{lstlisting}
+\end{snugshade}
+
+then write it to file 
+
+\begin{snugshade}
+\begin{lstlisting}
+state_desc_str = "state,range\n"
+for (i in 1:state_desc.size())
+{
+    state_desc_str += (i-1) + "," + state_desc[i] + "\n"
+}
+write(state_desc_str, file=out_fn+".state_labels.txt")
+\end{lstlisting}
+\end{snugshade}
+
 For this tutorial we'll assume we know the dated species phylogeny without error.
 
 \begin{snugshade}
@@ -134,7 +157,7 @@ Because the rate matrix will describe the relative anagenetic event rates, we ca
 
 \begin{snugshade}
 \begin{lstlisting}
-dispersal_rate <- abs(1)
+dispersal_rate <- 1.0
 \end{lstlisting}
 \end{snugshade}
 
@@ -168,7 +191,7 @@ then create a matrix of extirpation rates
 \begin{lstlisting}
 for (i in 1:n_areas) {
   for (j in 1:n_areas) {
-    er[i][j] <- abs(0)        
+    er[i][j] <- 0.0       
   }
   er[i][i] := extirpation_rate
 }
@@ -357,7 +380,7 @@ The script is easily modified for use with different datasets.
 To create build a figure, open an \R session and load the plotting script with the {\tt source} function
 \begin{snugshade}
 \begin{lstlisting}
-source("plot_anc_state.n4.R")
+source("plot_anc_state.simple.R")
 \end{lstlisting}
 \end{snugshade}
 

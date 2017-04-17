@@ -11,6 +11,7 @@ dat_range_01 = readDiscreteCharacterData(range_fn)
 # convert binary ranges into NaturalNumbers
 dat_range_n = formatDiscreteCharacterData(dat_range_01, "DEC")
 
+
 # compare characters for two taxa
 dat_range_01[1]
 dat_range_n[1]
@@ -43,7 +44,7 @@ rate_bg := 10^log10_rate_bg
 moves[mvi++] = mvSlide(log10_rate_bg, weight=4)
 
 # the relative dispersal rate
-dispersal_rate <- abs(1)
+dispersal_rate <- 1.0
 
 # build the relative dispersal rate matrix
 for (i in 1:n_areas) {
@@ -61,7 +62,7 @@ moves[mvi++] = mvScale(extirpation_rate, weight=2)
 # build the relative extirpation rate matrix
 for (i in 1:n_areas) {
     for (j in 1:n_areas) {
-        er[i][j] <- abs(0)        
+        er[i][j] <- 0.0       
     }
     er[i][i] := extirpation_rate
 }
@@ -116,5 +117,20 @@ mymcmc = mcmc(mymodel, monitors, moves)
 # run the MCMC analysis
 mymcmc.run(n_gen)
 
+#################
+# Post-Analysis #
+#################
 
+# get the converted state descriptions
+state_desc = dat_range_n.getStateDescriptions()
+
+# write the state descriptions to file
+state_desc_str = "state,range\n"
+for (i in 1:state_desc.size())
+{
+    state_desc_str += (i-1) + "," + state_desc[i] + "\n"
+}
+write(state_desc_str, file=out_fn+".state_labels.txt")
+
+# exit
 quit()

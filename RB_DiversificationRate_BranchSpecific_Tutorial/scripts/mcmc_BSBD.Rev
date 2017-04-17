@@ -2,7 +2,7 @@
 #
 # RevBayes Example: Bayesian inference of diversification rates under a
 #                   branch-specific birth-death model
-# 
+#
 #
 # authors: Sebastian Hoehna
 #
@@ -12,83 +12,76 @@
 # Reading in the Data #
 #######################
 
-###### This just defines a single model for all sites #######
+# Read in the observed phylogeny
+observed_phylogeny <- readTrees("data/primates_tree.nex")[1]
 
-### Read in sequence data for both genes
-
-tree <- readTrees("data/primates_Springer.tre")[1]
-
-# Get some useful variables from the data. We need these later on.
-taxa <- tree.taxa()
-tree_length <- tree.treeLength()
-root_age <- tree.rootAge()
+# Get the names of the taxa in the tree and the age of the tree. We need these later on.
+taxa <- observed_phylogeny.taxa()
+root <- observed_phylogeny.rootAge()
+tree_length <- observed_phylogeny.treeLength()
 
 # set my move index
 mvi = 0
 mni = 0
 
 # Global parameters for our analysis
-NUM_RATE_CATEGORIES = 10
+NUM_RATE_CATEGORIES = 4
 EXPECTED_NUM_EVENTS = 2
-NUM_TOTAL_SPECIES = 450
+NUM_TOTAL_SPECIES = 367
 H = 0.587405
-
 
 ####################
 # Create the rates #
 ####################
 
-### Specify a prior on the diversification and turnover rate
+### Specify a prior on the speciation and extinction rates
 
-### Create a lognormal distributed variable for the mean diversification rate
-diversification_prior_mean <- ln( ln(NUM_TOTAL_SPECIES/2.0) / root_age )
-diversification_mean ~ dnLognormal(mean=diversification_prior_mean, sd=H)
-moves[++mvi] = mvScale(diversification_mean,lambda=1,tune=true,weight=5)
+### Create a lognormal distributed variable for the mean speciation rate
+speciation_prior_mean <- ln( ln(NUM_TOTAL_SPECIES/2.0) / root )
+speciation_mean ~ dnLognormal(mean=speciation_prior_mean, sd=H)
+moves[++mvi] = mvScale(speciation_mean,lambda=1,tune=true,weight=5)
 
-
-### Create a deterministic variable for the diversification rate categories
+### Create a deterministic variable for the speciation rate categories
 ### using a discretized lognormal distribution (the N-quantiles of it)
-diversification_sd <- H*2
-diversification := fnDiscretizeDistribution( dnLognormal(ln(diversification_mean), diversification_sd), NUM_RATE_CATEGORIES )
+speciation_sd <- H*2
+speciation_categories := fnDiscretizeDistribution( dnLognormal(ln(speciation_mean), speciation_sd), NUM_RATE_CATEGORIES )
 
+### Create a lognormal distributed variable for the extinction rate
+extinction_prior_mean <- ln( ln(NUM_TOTAL_SPECIES/2.0) / root )
+extinction_mean ~ dnLognormal(mean=extinction_prior_mean,sd=H*2)
+moves[++mvi] = mvScale(extinction_mean,lambda=1.0,tune=true,weight=3.0)
 
-### Create a lognormal distributed variable for the turnover rate
-turnover_prior_mean <- ln( ln(NUM_TOTAL_SPECIES/2.0) / root_age )
-turnover_mean ~ dnLognormal(mean=turnover_prior_mean,sd=H*2) 
-moves[++mvi] = mvScale(turnover_mean,lambda=1.0,tune=true,weight=3.0)
-
-### Create a deterministic variable for the turnover rate categories
+### Create a deterministic variable for the extinction rate categories
 ### using a discretized lognormal distribution (the N-quantiles of it)
-turnover := fnDiscretizeDistribution( dnLognormal(ln(turnover_mean), H), NUM_RATE_CATEGORIES )
+extinction_categories := fnDiscretizeDistribution( dnLognormal(ln(extinction_mean), H), NUM_RATE_CATEGORIES )
 
-
-### Transform the parameters
-speciation := diversification + turnover
-extinction := turnover 
-
+### Make a vector that combines each of the diversification and turnover categories
+k = 1
+for(i in 1:NUM_RATE_CATEGORIES) {
+    for(j in 1:NUM_RATE_CATEGORIES) {
+        speciation[k]   := speciation_categories[i]
+        extinction[k++] := extinction_categories[j]
+    }
+}
 
 ### Create a uniformly distributed variable for the category at the root
-root_category ~ dnUniformNatural(1,NUM_RATE_CATEGORIES)
+root_category ~ dnUniformNatural(1,NUM_RATE_CATEGORIES * NUM_RATE_CATEGORIES)
 moves[++mvi] = mvRandomIntegerWalk(root_category,weight=1)
-
 
 ### Create a exponential distributed variable for the rate of rate-shift events
 event_rate ~ dnLognormal( ln( EXPECTED_NUM_EVENTS/tree_length ), H)
 moves[++mvi] = mvScale(event_rate,lambda=1,tune=true,weight=5)
 
-
 ### rho is the probability of sampling species at the present
-### fix this to 367/450, since there are ~450 described species of primates
+### fix this to 233/367, since there are ~367 described species of primates
 ### and we have sampled 367
-rho <- tree.ntips()/NUM_TOTAL_SPECIES
-
+rho <- observed_phylogeny.ntips() / NUM_TOTAL_SPECIES
 
 #### construct a variable for the tree drawn from a birth death process
-timetree ~ dnHBDP(lambda=speciation, mu=extinction, rootAge=root_age, rho=rho, rootState=root_category, delta=event_rate, taxa=taxa )
+timetree ~ dnHBDP(lambda=speciation, mu=extinction, rootAge=root, rho=rho, rootState=root_category, delta=event_rate, taxa=taxa )
 
 ### clamp the model with the "observed" tree
-timetree.clamp(tree)
-
+timetree.clamp(observed_phylogeny)
 
 ### Create moves that change the augmented rate-shift events on the tree
 moves[++mvi] = mvBirthDeathEvent(timetree,weight=2)
@@ -99,24 +92,22 @@ moves[++mvi] = mvDiscreteEventCategoryRandomWalk(timetree,weight=2)
 num_events := timetree.numberEvents()
 avg_lambda := timetree.averageSpeciationRate()
 avg_mu     := timetree.averageExtinctionRate()
+avg_net    := avg_lambda - avg_mu
+avg_rel    := avg_mu / avg_lambda
 
 total_num_events := sum( num_events )
-
-
-
 
 #############
 # The Model #
 #############
 
-
 ### workspace model wrapper ###
-mymodel = model(rho)
+mymodel = model(speciation)
 
-### set up the monitors that will output parameter values to file and screen 
+### set up the monitors that will output parameter values to file and screen
 monitors[++mni] = mnModel(filename="output/primates_BSBD.log",printgen=10, separator = TAB)
-monitors[++mni] = mnExtNewick(filename="output/primates_BSBD.trees", isNodeParameter=FALSE, printgen=10, separator = TAB, tree=timetree, avg_lambda, avg_mu)
-monitors[++mni] = mnScreen(printgen=10, event_rate, diversification_mean, turnover_mean, root_category, total_num_events)
+monitors[++mni] = mnExtNewick(filename="output/primates_BSBD.trees", isNodeParameter=FALSE, printgen=10, separator = TAB, tree=timetree, avg_lambda, avg_mu, avg_net, avg_rel)
+monitors[++mni] = mnScreen(printgen=10, event_rate, speciation_mean, extinction_mean, root_category, total_num_events)
 
 
 ################

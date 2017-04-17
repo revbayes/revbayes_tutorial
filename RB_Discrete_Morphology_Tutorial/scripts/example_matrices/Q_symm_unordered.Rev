@@ -1,0 +1,14 @@
+# rate parameters
+r <- 1.0
+
+# rate matrix structure
+rates := [ [0.0,   r,   r,   r],
+           [  r, 0.0,   r,   r],
+           [  r,   r, 0.0,   r],
+           [  r,   r,   r, 0.0] ]
+
+# rate matrix
+Q := fnFreeK(rates)
+
+# transition probabilities for branch of length 0.1
+P <- Q.getTransitionProbabilities(0.1)

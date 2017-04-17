@@ -116,6 +116,13 @@ history.txt
 TSWLatexianTemp*
 refs.bib.bak
 
+tutorial_TeX/RB_DiversificationRateIntro_Tutorial/*-encoding-backup.tex
+tutorial_TeX/RB_DiversificationRateIntro_Tutorial/figures/*-encoding-backup.pdf
+
+RB_DiversificationRate_Episodic_Tutorial/*.pdf
+RB_DiversificationRate_Episodic_Tutorial/output/*
 RB_TotalEvidenceDating_FBD_Tutorial/output/*
+RB_Discrete_Morphology_Tutorial/output/*
+RB_Biogeography_Tutorial/output/*
 .texpadtmp
 

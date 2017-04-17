@@ -1,0 +1,29 @@
+#NEXUS
+
+	Begin taxa;
+	Dimensions ntax=18;
+	Taxlabels
+		Agriarctos_spp
+		Ailurarctos_lufengensis
+		Ailuropoda_melanoleuca
+		Ballusia_elmensis
+		Helarctos_malayanus
+		Indarctos_arctoides
+		Indarctos_punjabiensis
+		Indarctos_vireti
+		Kretzoiarctos_beatrix
+		Melursus_ursinus
+		Tremarctos_ornatus
+		Ursavus_brevirhinus
+		Ursavus_primaevus
+		Ursus_americanus
+		Ursus_arctos
+		Ursus_maritimus
+		Ursus_thibetanus
+		Zaragocyon_daamsi
+		;
+End;
+
+Begin trees;
+tree TREE1 = [&U]((Ursus_americanus[&index=14]:0.415259,(Ursus_maritimus[&index=16]:1.051828,Ursus_arctos[&index=15]:0.089889)[&index=26]:0.744525)[&index=29]:1.658092,Ursus_thibetanus[&index=17]:0.469557,(((Tremarctos_ornatus[&index=11]:0.315990,(((Zaragocyon_daamsi[&index=18]:6.954241,Ballusia_elmensis[&index=4]:0.817795)[&index=31]:2.823942,Ursavus_primaevus[&index=13]:0.676413)[&index=33]:1.284189,(Ursavus_brevirhinus[&index=12]:1.092994,(Indarctos_vireti[&index=8]:0.059469,(Indarctos_arctoides[&index=6]:0.206464,(Kretzoiarctos_beatrix[&index=9]:0.815021,(Indarctos_punjabiensis[&index=7]:0.185374,((Ailuropoda_melanoleuca[&index=3]:0.313577,Ailurarctos_lufengensis[&index=2]:0.804202)[&index=23]:0.175215,Agriarctos_spp[&index=1]:0.614877)[&index=24]:0.476538)[&index=28]:0.204836)[&index=25]:0.401505)[&index=27]:1.342933)[&index=20]:1.138241)[&index=32]:0.676696)[&index=22]:9.214315)[&index=19]:2.197550,Melursus_ursinus[&index=10]:1.393646)[&index=30]:5.135327,Helarctos_malayanus[&index=5]:0.867013)[&index=21]:1.334401)[&index=34]:0.000000;
+End;

@@ -1,0 +1,63 @@
+################################################################################
+#
+# RevBayes Example: Inferring a Phylogeny of Fossil Bears Using the Mk Model
+# 
+# This file: Runs the full MCMC ...
+#
+# authors:  April M. Wright, Michael J. Landis
+#
+################################################################################
+
+#######################
+# Reading in the Data #
+#######################
+# Import the morphological character matrix #
+# this file contains only the taxa for which morphological characters are available #
+morpho <- readDiscreteCharacterData("Data/bears.covarion.nex")
+
+## helpers
+mvi = 1
+mni = 1
+taxa <- morpho.names()
+n_taxa <- taxa.size()
+n_branches <- 2 * n_taxa - 2
+
+# Load the model files
+source("scripts/model_mk_covarion.Rev") # Morphological character change model
+
+########
+# MCMC #
+########
+
+# initialize the model object #
+mymodel = model(phylogeny)
+# Create a vector of monitors #
+# 1. for the full model #
+monitors[mni++] = mnModel(filename="output/mk_covarion.log", printgen=10)
+# 2. the tree #
+monitors[mni++] = mnFile(filename="output/mk_covarion.trees", printgen=10, phylogeny)
+# 3. and a few select parameters to be printed to the screen #
+monitors[mni++] = mnScreen(printgen=10)
+# 4. add an ancestral state monitor
+monitors[mni++] = mnJointConditionalAncestralState(tree=phylogeny,
+                                                   ctmc=phyMorpho,
+                                                   filename="output/mk_covarion.states.txt",
+                                                   type="Standard",
+                                                   printgen=10,
+                                                   withStartStates=true)
+
+# Initialize the MCMC object #
+mymcmc = mcmc(mymodel, monitors, moves)
+
+# Run the MCMC #
+mymcmc.run(generations=10000)
+
+# Read in the tree trace and construct the consensus tree tree #
+trace = readTreeTrace("output/mk_covarion.trees", treetype="non-clock")
+trace.setBurnin(0.25)
+
+# Summarize tree trace and the consensus tree to file
+consensusTree(trace, file="output/mk_covarion.majrule.tre")
+
+# Quit RevBayes #
+q()
