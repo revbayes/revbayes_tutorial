@@ -1,0 +1,132 @@
+\section{Overview of Chromosome Number Evolution Models} \label{sec:chromo_basic_intro}
+
+
+Chromosome changes
+represent major evolutionary mechanisms that have long been a focal point of study.
+Changes in chromosome number such as the gain or loss of a single
+chromosome (dysploidy), or the doubling of the entire genome (polyploidy),
+can have phenotypic consequences,
+affect the rates of recombination,
+and increase reproductive isolation among lineages and thus drive diversification \citep{stebbins1971chromosomal}.
+Recently, evolutionary biologists have increasingly studied the macroevolutionary
+consequences of chromosome changes within a molecular phylogenetic framework,
+mostly utilizing the likelihood-based ChromEvol models of chromosome number evolution
+introduced by \citet{mayrose2010probabilistic}.
+The ChromEvol models have permitted phylogenetic studies
+of ancient whole genome duplication events,
+rapid ``catastrophic'' chromosome speciation,
+major reevaluations of the evolution of angiosperms,
+and new insights into the fate of polyploid lineages \citep[e.g.][]{pires2008renaissance, mayrose2011recently, tank2015nested}.
+
+
+Here we describe the ChromEvol model as implemented in \RevBayes,
+which except for one detail noted below 
+is the same mathematical model introduced in \citet{mayrose2010probabilistic}.
+In further sections, we will explore multiple extensions to this useful but basic model of chromosome number evolution.
+
+
+\subsection{The ChromEvol Model}
+
+
+In ChromEvol the evolution of chromosome number
+is represented as a continuous-time Markov process,
+similar to models of molecular evolution and discrete morphological evolution.
+The continuous-time Markov process is described by
+an instantaneous rate matrix $Q$ where the value of each element
+represents the instantaneous rate of change within a lineage
+from a genome of $i$ chromosomes to a genome of $j$ chromosomes.
+For all elements of $Q$ in which either $i = 0$ or $j = 0$
+we define $Q_{ij} = 0$.
+For the off-diagonal elements $i \neq j$ with positive values of $i$ and $j$,
+$Q$ is determined by:
+\begin{equation} \label{eq:anagenetic1}
+Q_{ij} = 
+    \begin{cases}
+        \gamma_a                          & j = i + 1,    \\
+        \delta_a                          & j = i - 1,    \\
+        \rho_a                                & j = 2i,       \\
+        \eta_a                                 & j = 1.5i,     \\
+        0                                   & \mbox{otherwise},   
+    \end{cases}
+\end{equation}
+where $\gamma_a$, $\delta_a$, $\rho_a$, and $\eta_a$ are the
+rates of chromosome gains, losses, polyploidizations, and
+demi-polyploidizations.
+
+
+If we are interested in modeling scenarios in which
+the probability of fusion or fission events
+are positively or negatively correlated with the number of chromosomes
+we can define $Q$ as:
+\begin{equation} \label{eq:anagenetic2}
+Q_{ij} = 
+    \begin{cases}
+        \gamma_a e^{\gamma_m (i - 1)}  & j = i + 1,    \\
+        \delta_a e^{\delta_m (i - 1)}     & j = i - 1,    \\
+        \rho_a                                & j = 2i,       \\
+        \eta_a                                 & j = 1.5i,     \\
+        0                                   & \mbox{otherwise},   
+    \end{cases}
+\end{equation}
+where $\gamma_m$ and $\delta_m$ are rate modifiers
+of chromosome gain and loss, respectively,
+that allow the rates of chromosome gain and loss to depend
+on the current number of chromosomes.
+If the rate modifier $\gamma_m = 0$, then
+$\gamma_a e^{0 (i - 1)} = \gamma_a$.
+If the rate modifier $\gamma_m > 0$, then
+$\gamma_a e^{\gamma_m (i - 1)} \geq \gamma_a$,
+and if $\gamma_m < 0$ then
+$\gamma_a e^{\gamma_m (i - 1)} \leq \gamma_a$.
+Note that this parameterization differs slightly from the original
+ChromEvol model; here we assume the rates of chromosome change
+can vary exponentially as a function of the current chromosome number,
+whereas ChromEvol as originally described by \citet{mayrose2010probabilistic} assumes
+a linear function.
+The theoretical reasons for this difference are described in \citet{freyman2016cladogenetic},
+however in practice on most empirical datasets the difference appears insignificant.
+
+
+Demi-polyploidization is the union of
+a reduced and an unreduced gametes that produces a cytotype 
+with 1.5 times the number of chromosomes.
+The number of chromosomes in a genome must of course be an integer, 
+so for odd values of $i$, $Q_{ij}$ is set to $\eta/2$
+for the two integer values of $j$ resulting when $j = 1.5i$ is rounded up and down.
+
+
+As in all continuous-time Markov models,
+the diagonal elements $i = j$ of $Q$ are defined as:
+\begin{equation}
+    Q_{ii} = - \sum_{i \neq j}^{C_m} Q_{ij}.
+\end{equation}
+The probability
+of anagenetically evolving from chromosome number $i$ to $j$ along a branch
+of length $t$ is then calculated by
+exponentiation of the instantaneous rate matrix:
+\begin{equation} \label{eq:anagenetic_probs}
+    P_{ij}(t) = e^{-Qt}.
+\end{equation}
+Given a phylogeny and chromosome counts of the extant lineages,
+this model can be used in either a maximum likelihood or Bayesian inference
+framework to estimate the rates of chromosome change and the ancestral
+chromosome numbers.
+
+
+\subsection{Next Steps}
+
+
+The basic ChromEvol model as described above can be extended in a number of useful ways 
+that will be covered in further sections.
+In the next section, however, we'll set up and run a simple \RevBayes analysis using the ChromEvol model
+before moving on to the more complex models.
+
+%In \RevBayes the ChromEvol model can be used jointly with a model of molecular evolution
+%enabling joint inference of the phylogeny and chromosome number evolution.
+%This enables the chromosome number analysis to take into account phylogenetic uncertainty
+%and allows the chromosome numbers to help inform the phylogeny.
+%Similarly we can test for correlated rates of phenotype and chromosome evolution, and allowing
+%for cladogenetic changes in chromosome number.
+ 
+
+\newpage
