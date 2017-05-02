@@ -1,0 +1,228 @@
+#########################################################################################################
+#
+# RevBayes Chromosome Evolution Tutorial:
+#
+# Joint Inference of Chromosome Number Evolution and Phylogeny
+#
+# by Will Freyman
+#
+#
+# This is an example using a basic ChromEvol continuous-time Markov chain (CTMC) model of chromosome 
+# number evolution simultaneously with the GTR model for nucleotide substitions. We'll use data from 
+# Ohi-Toma et al. 2006 (Systematic Botany) to jointly infer the phylogeny and ancestral chromosome 
+# numbers of the plant genus Aristolochia (commonly called Dutchman's pipe).
+#
+# Often ancestral state reconstruction is done after the phylogeny is estimated, however if we want
+# to incorporate phylogenetic uncertainty into the ancestral state estimates we can jointly estimate
+# phylogeny and ancestral states. Furthermore, since chromosome numbers are phylogenetically informative 
+# in some groups of organisms we may want to use them simultaneously with DNA sequence data to help 
+# inform the phylogeny.
+#
+#########################################################################################################
+
+
+######################
+# Read in the data 
+######################
+
+# We need to limit the maximum number of chromosomes,
+# so here we just use the largest chromosome count plus 10.
+max_chromo = 26
+
+# Get the chromosome counts from a tab-delimited file.
+chromo_data = readCharacterDataDelimited("data/aristolochia_chromosome_counts.tsv", stateLabels=(max_chromo + 1), type="NaturalNumbers", delimiter="\t", headers=FALSE)
+
+# Get the DNA sequence alignment for the matK chloroplast gene.
+dna_seq = readDiscreteCharacterData("data/aristolochia_matK.fasta")
+
+# Get some useful variables from the data. We need these later on.
+n_species = dna_seq.ntaxa()
+n_sites = dna_seq.nchar()
+taxa = dna_seq.names()
+n_branches = 2 * n_species - 2
+
+# Since we want to jointly infer ancestral states, we need to set an a priori
+# rooting constraint on our phylogeny. So here we set an ingroup and outgroup.
+outgroup = ["Aristolochia_serpantaria", "Aristolochia_arborea", "Aristolochia_wardiana",
+            "Aristolochia_californica", "Aristolochia_saccata", "Aristolochia_mollisima",
+            "Aristolochia_tomentosa", "Aristolochia_neolongifolia_SETS52", "Aristolochia_neolongifolia_SETS96"]
+
+# Here we loop through each taxon and if it is not present in the outgroup
+# defined above we add it to the ingroup.
+i = 1
+for (j in 1:taxa.size()) {
+    found = false
+    for (k in 1:outgroup.size()) {
+        if (outgroup[k] == taxa[j].getSpeciesName()) {
+            found = true
+            break
+        }
+    }
+    if (found == false) {
+        ingroup[i] = taxa[j].getSpeciesName()
+        i += 1
+    }
+}
+mi = 0
+
+# And now we make the vector of clade objects to constrain our tree topology.
+clade_ingroup = clade(ingroup)
+clade_outgroup = clade(outgroup)
+clade_constraints = [clade_ingroup, clade_outgroup]
+
+
+##############
+# Tree model #
+##############
+
+# We specify a uniform prior on the tree topology.
+topology ~ dnUniformTopology(taxa=taxa, constraints=clade_constraints, rooted=TRUE)
+
+# Initialize an index for our moves, and add moves on the topology.
+mvi = 1
+moves[mvi++] = mvNNI(topology, weight=10.0)
+
+# Create a stochastic node for each branch length.
+for (i in 1:n_branches) {
+
+    # The branch length priors will have an exponential distribution with rate 1.0.
+    br_lens[i] ~ dnExponential(10.0)
+
+    # And add a simple scaling move since the branch length is a positive real number.
+	moves[mvi++] = mvScale(br_lens[i], lambda=2, weight=1)
+
+}
+
+# Total tree length is a useful summary statistic, so we'll create a deterministic node.
+tree_length := sum(br_lens)
+
+# Finally, build the tree by combining the topology with the branch lengths.
+phylogeny := treeAssembly(topology, br_lens)
+
+
+
+######################
+# DNA Substitution Model 
+######################
+
+# We'll specify the GTR substitution model applied uniformly to all sites.
+
+# Use a flat Dirichlet prior for the exchange rates.
+er_prior <- v(1,1,1,1,1,1)
+er ~ dnDirichlet(er_prior)
+moves[mvi++] = mvSimplexElementScale(er, alpha=10, weight=3)
+
+# And also a flat Dirichlet prior for the stationary base frequencies.
+pi_prior <- v(1,1,1,1)
+pi ~ dnDirichlet(pi_prior)
+moves[mvi++] = mvSimplexElementScale(pi, alpha=10, weight=2)
+
+# Now create a deterministic variable for the nucleotide substitution rate matrix.
+Q_mol := fnGTR(er, pi)
+
+# Create a stochastic node for the sequence evolution continuous-time Markov chain (CTMC).
+dna_ctmc ~ dnPhyloCTMC(tree=phylogeny, Q=Q_mol, branchRates=1.0, type="DNA")
+
+# and attach the sequence data
+dna_ctmc.clamp(dna_seq)
+
+
+
+#######################
+# Chromosome Model
+#######################
+
+# We'll use exponential priors to model the rates of polyploidy and 
+# dysploidy events along the branches of the phylogeny
+
+# rate of chromosome gains
+gamma ~ dnExponential(10.0)
+
+# rate of chromosome losses
+delta ~ dnExponential(10.0)
+
+# rate of polyploidization
+rho ~ dnExponential(10.0)
+
+# Add moves for each of the rates.
+moves[mvi++] = mvScale(gamma, lambda=1, weight=1) 
+moves[mvi++] = mvScale(delta, lambda=1, weight=1) 
+moves[mvi++] = mvScale(rho, lambda=1, weight=1) 
+
+# Now we create the rate matrix for the chromosome evolution model.
+# Here we will use a simple ChromEvol model that includes 
+# only the rate of chromosome gain, loss, and polyploidization.
+Q_chromo := fnChromosomes(max_chromo, gamma, delta, rho)
+
+# Prameters for demi-polyploidization and rate modifiers could also
+# be added at this step for more complex models. For example we
+# could have included the rate of demi-polyploidization like this:
+# Q := fnChromosomes(max_chromo, gamma, delta, rho, eta)
+
+# Here we assume the frequency of chromosome numbers at the root of the tree
+# are equal. In future examples we will instead treat the root frequencies
+# as a free variable and estimate them from the observed data.
+root_frequencies := simplex(rep(1, max_chromo + 1))
+
+# Now another stochastic node for the chromosome evolution continuous-time Markov chain (CTMC).
+chromo_ctmc ~ dnPhyloCTMC(Q=Q_chromo, tree=phylogeny, rootFreq=root_frequencies,type="NaturalNumbers")
+
+# and clamp the chromosome counts data
+chromo_ctmc.clamp(chromo_data)
+
+# Finally we wrap our model into a single model object. 
+mymodel = model(phylogeny)
+
+
+##################
+# MCMC
+##################
+
+
+# Create the monitors:
+# First, a screen monitor:
+monitors[1] = mnScreen(printgen=10)
+
+# A file monitor for our trees:
+monitors[2] = mnFile(filename="output/ChromEvol_joint.trees", printgen=10, phylogeny)
+
+# The ancestral state monitor for sampling ancestral states:
+monitors[3] = mnJointConditionalAncestralState(filename="output/ChromEvol_joint_states.log", printgen=10, tree=phylogeny, ctmc=chromo_ctmc, type="NaturalNumbers")
+
+# And another monitor for all the model variables:
+monitors[4] = mnModel(filename="output/ChromEvol_joint_model.log", printgen=10)
+
+# Now set up the MCMC.
+mymcmc = mcmc(mymodel, monitors, moves)
+
+# Run the MCMC. Note that for a real analysis you'd want to run many more 
+# iterations and check for convergence.
+mymcmc.run(200)
+
+
+##################
+# Summarize the results
+##################
+
+
+# To summarize the results, first get the maximum a posteriori (MAP) tree.
+treetrace = readAncestralStateTreeTrace("output/ChromEvol_joint.trees", treetype="non-clock")
+map_tree = mapTree(treetrace, "output/ChromEvol_joint_map.tree")
+
+# Now let's summarize the ancestral chromosome numbers over the MAP tree.
+# Read in the ancestral state trace:
+anc_state_trace = readAncestralStateTrace("output/ChromEvol_joint_states.log")
+
+# Finally, summarize the values from the traces over the MAP tree.
+ancestralStateTree(map_tree, anc_state_trace, treetrace, "output/ChromEvol_joint_final.tree")
+
+#########################################################################################################
+#
+# Open ChromEvol_simple_final.tree in FigTree and look at the ancestral state node labels.
+# The 3 states with the highest posterior probabilities are given, along with their marginal
+# posterior probabilities.
+#
+# Finally, run the plot_ChromEvol_joint.R script to generate a nice pdf plot of the ancestral states
+# using the RevGadgets R package.
+#
+#########################################################################################################
