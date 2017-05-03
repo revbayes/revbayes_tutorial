@@ -126,7 +126,7 @@ ancestralStateTree(phylogeny, anc_state_trace, "output/ChromEvol_simple_final.tr
 # The 3 states with the highest posterior probabilities are given, along with their marginal
 # posterior probabilities.
 #
-# Finally, run the plot_ChromEvol_simple.R script to generate a nice pdf plot of the ancestral states
+# Finally, run the plot_ChromEvol_simple.R script to generate a PDF plot of the ancestral states
 # using the RevGadgets R package.
 #
 #########################################################################################################
