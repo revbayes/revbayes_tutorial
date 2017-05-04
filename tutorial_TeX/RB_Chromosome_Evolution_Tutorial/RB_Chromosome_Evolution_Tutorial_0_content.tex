@@ -6,16 +6,24 @@ been understood to play a fundamental role in evolution.
 This tutorial will introduce phylogenetic models of chromosome number evolution,
 and demonstrate how to use \RevBayes 
 to estimate the rates of chromosome number change and ancestral chromosome numbers.
-We will begin by providing an overview of the basic ChromEvol model and 
+We will also show how to use the \RevGadgets R package to make plots of ancestral
+chromosome number estimates and stochastic character maps of chromosome evolution.
+
+We will begin by providing an overview of the basic ChromEvol model \citep{mayrose2010probabilistic} and 
 an example \RevBayes analysis. 
 This is followed by a discussion of a number of model extensions 
 that enable joint inference of phylogeny
-and chromosome numbers, tests for correlated rates of phenotype and chromosome evolution,
-and allow for cladogenetic changes in chromosome number.
-Next, we will introduce the ChromoSSE model which jointly
+and chromosome numbers, 
+tests for correlated rates of phenotype and chromosome evolution \citep[the BiChroM model;][]{zenil2017testing},
+and incorporating cladogenetic changes in chromosome number.
+Next, we will introduce the ChromoSSE model \citep{freyman2016cladogenetic} which jointly
 estimates diversification rates and chromosome number evolution.
-Finally, we will demonstrate how to summarize the results of a \RevBayes
-chromosome number analysis and generate plots of ancestral chromosome numbers.
+Finally, we will briefly discuss comparing models of chromosome evolution using
+reversible-jump MCMC and Bayes factors.
+
+If you use \RevBayes for chromosome evolution analysis, please cite the original 
+papers that describe the chromosome evolution model as well as \citet{freyman2016cladogenetic}
+which describes in detail the \RevBayes implementation of these models.
 
 \subsection*{Contents}
 
@@ -27,6 +35,7 @@ The Chromosome Number Evolution tutorial contains several sections:
 \item Section \ref{sec:chromo_extensions}: Basic extensions of the model
 \item Section \ref{sec:chromo_sse_intro}: Overview of the ChromoSSE model
 \item Section \ref{sec:chromo_sse_analysis}: A simple ChromoSSE analysis
+\item Section \ref{sec:chromo_model_comparison}: Model comparison and hypothesis testing 
 \end{itemize}
 
 \subsection*{Recommended tutorials}
@@ -36,7 +45,7 @@ This tutorial assumes the reader is familiar with the content covered in the fol
 \begin{itemize}
 \item {\bf {\tt \large Rev} Basics}
 \item {\bf Molecular Models of Character Evolution}
-\item {\bf Discrete Morphology Models of Character Evolution.}
+\item {\bf Discrete Morphology Models of Character Evolution}
 \item {\bf Running and Diagnosing an MCMC Analysis}
 \end{itemize}
 

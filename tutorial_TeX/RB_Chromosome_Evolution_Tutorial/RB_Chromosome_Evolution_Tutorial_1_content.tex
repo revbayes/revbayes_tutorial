@@ -17,12 +17,15 @@ of ancient whole genome duplication events,
 rapid ``catastrophic'' chromosome speciation,
 major reevaluations of the evolution of angiosperms,
 and new insights into the fate of polyploid lineages \citep[e.g.][]{pires2008renaissance, mayrose2011recently, tank2015nested}.
-
+The basic ChromEvol model has been extended
+to examine the association of phenotype with chromosome evolution \citep[BiChroM;][]{zenil2017testing},
+and to incorporate cladogenetic changes and diversification rates \citep[ChromoSSE;][]{freyman2016cladogenetic}.
 
 Here we describe the ChromEvol model as implemented in \RevBayes,
 which except for one detail noted below 
 is the same mathematical model introduced in \citet{mayrose2010probabilistic}.
-In further sections, we will explore multiple extensions to this useful but basic model of chromosome number evolution.
+In further sections, we will show how to set up extensions
+such as BiChroM and ChromoSSE which build on the useful but basic ChromEvol model of chromosome number evolution.
 
 
 \subsection{The ChromEvol Model}
@@ -121,12 +124,5 @@ that will be covered in further sections.
 In the next section, however, we'll set up and run a simple \RevBayes analysis using the ChromEvol model
 before moving on to the more complex models.
 
-%In \RevBayes the ChromEvol model can be used jointly with a model of molecular evolution
-%enabling joint inference of the phylogeny and chromosome number evolution.
-%This enables the chromosome number analysis to take into account phylogenetic uncertainty
-%and allows the chromosome numbers to help inform the phylogeny.
-%Similarly we can test for correlated rates of phenotype and chromosome evolution, and allowing
-%for cladogenetic changes in chromosome number.
- 
 
 \newpage
