@@ -1,7 +1,7 @@
 library(plotrix)
 library(phytools)
 
-character_file = "output/sm.tree"
+character_file = "character.tree"
 
 write_pdf = TRUE
 

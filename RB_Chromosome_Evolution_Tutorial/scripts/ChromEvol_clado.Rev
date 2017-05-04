@@ -1,0 +1,166 @@
+#########################################################################################################
+#
+# RevBayes Chromosome Evolution Tutorial:
+# 
+# A Simple ChromEvol Analysis with Cladogenetic Changes
+#
+# by Will Freyman
+#
+#
+# This is an example using a ChromEvol continuous-time Markov chain (CTMC) model of chromosome 
+# number evolution to infer rates of chromosome evolution and ancestral chromosome numbers. We'll use 
+# data from Ohi-Toma et al. 2006 (Systematic Botany) for the plant genus Aristolochia (commonly called 
+# Dutchman's pipe).
+#
+# Here we have extended the basic ChromEvol model to incorporate cladogenetic changes.
+#
+# In this example the phylogeny is assumed known. See the ChromEvol_joint.Rev for an example of jointly 
+# estimating chromosome evolution and phylogeny.
+#
+#########################################################################################################
+
+
+#########################
+# Read in the data 
+#########################
+
+
+# Read in the phylogeny. In this example the phylogeny is assumed known.
+phylogeny <- readBranchLengthTrees("data/aristolochia.tree")[1]
+
+# We need to limit the maximum number of chromosomes,
+# so here we just use the largest chromosome count plus 10.
+max_chromo = 26
+
+# Get the chromosome counts from a tab-delimited file.
+chromo_data = readCharacterDataDelimited("data/aristolochia_chromosome_counts.tsv", stateLabels=(max_chromo + 1), type="NaturalNumbers", delimiter="\t", headers=FALSE)
+
+
+#########################
+# Chromosome Model
+#########################
+
+
+# We'll use exponential priors to model the rates of polyploidy and 
+# dysploidy events along the branches of the phylogeny
+
+# rate of chromosome gains
+gamma ~ dnExponential(10.0)
+
+# rate of chromosome losses
+delta ~ dnExponential(10.0)
+
+# rate of polyploidization
+rho ~ dnExponential(10.0)
+
+# Add MCMC moves for each of the rates.
+mvi = 1
+moves[mvi++] = mvScale(gamma, lambda=1, weight=1) 
+moves[mvi++] = mvScale(delta, lambda=1, weight=1) 
+moves[mvi++] = mvScale(rho, lambda=1, weight=1) 
+
+# Now we create the rate matrix for the chromosome evolution model.
+# Here we will use a simple ChromEvol model that includes
+# only the rate of chromosome gain, loss, and polyploidization.
+Q := fnChromosomes(max_chromo, gamma, delta, rho)
+
+# Parameters for demi-polyploidization and rate modifiers could also
+# be added at this step for more complex models. For example we
+# could have included the rate of demi-polyploidization like this:
+# Q := fnChromosomes(max_chromo, gamma, delta, rho, eta)
+
+# Cladogenetic changes are modeled here as a vector of probabilities 
+# that sum up to 1 (a simplex). Each element of the vector is the 
+# probability of a certain type of cladogenetic event occurring.
+# To set this up, we'll first draw a 'weight' for each type of 
+# cladogenetic event from an exponential distribution. To keep the
+# example simply we are excluding cladogenetic demi-polyploidization.
+# We then pass each 'weight' into a simplex to create the vector
+# of probabilities.
+clado_no_change_pr ~ dnExponential(10.0)
+clado_fission_pr ~ dnExponential(10.0)
+clado_fusion_pr ~ dnExponential(10.0)
+clado_polyploid_pr ~ dnExponential(10.0)
+clado_demipoly_pr <- 0.0
+clado_type := simplex([clado_no_change_pr, clado_fission_pr, clado_fusion_pr, clado_polyploid_pr, clado_demipoly_pr])
+
+# This function produces a matrix of cladogenetic probabilities. This is a very
+# large and sparse 3 dimensional matrix that contains the transition probabilities 
+# of every possible state of the parent lineage transitioning to every possible 
+# combination of states of the two daughter lineages.
+clado_prob := fnChromosomesCladoProbs(clado_type, max_chromo)
+
+# We can't forget to add moves for each cladogenetic event:
+moves[mvi++] = mvScale(clado_no_change_pr, lambda=1.0, weight=2)
+moves[mvi++] = mvScale(clado_fission_pr, lambda=1.0, weight=2)
+moves[mvi++] = mvScale(clado_fusion_pr, lambda=1.0, weight=2)
+moves[mvi++] = mvScale(clado_polyploid_pr, lambda=1.0, weight=2)
+
+
+# Here we assume the frequency of chromosome numbers at the root of the tree
+# are equal. In future examples we will instead treat the root frequencies
+# as a free variable and estimate them from the observed data.
+root_frequencies := simplex(rep(1, max_chromo + 1))
+
+# Now create the stochastic node for the chromosome evolution continuous-time Markov chain (CTMC).
+# Here we use a cladogenetic CTMC.
+chromo_ctmc ~ dnPhyloCTMCClado(Q=Q, tree=phylogeny, cladoProbs=clado_prob, rootFrequencies=root_frequencies, type="NaturalNumbers", nSites=1)
+
+# and clamp the observed chromosome counts data.
+chromo_ctmc.clamp(chromo_data)
+
+# Finally we wrap our model into a single model object.
+mymodel = model(phylogeny)
+
+
+#########################
+# MCMC
+#########################
+
+
+# Create the MCMC monitors:
+# First, a screen monitor with some useful variables:
+monitors[1] = mnScreen(printgen=10)
+
+# The ancestral state monitor for sampling ancestral states.
+# Note that here we specify 'withStartState=true' so that we sample the states both at
+# start and end of each branch which allows us to reconstruct cladogenetic events.
+monitors[2] = mnJointConditionalAncestralState(filename="output/ChromEvol_clado_anc_states.log", printgen=10, tree=phylogeny, ctmc=chromo_ctmc, withStartStates=true, type="NaturalNumbers")
+
+# And another monitor for all the model variables:
+monitors[3] = mnModel(filename="output/ChromEvol_clado_model.log", printgen=10)
+
+# Now set up the MCMC.
+mymcmc = mcmc(mymodel, monitors, moves)
+
+# Run the MCMC. Note that for a real analysis you'd want to run many more 
+# iterations and check for convergence.
+mymcmc.run(200)
+
+
+#########################
+# Summarize the results 
+#########################
+
+
+# Now let's summarize the sampled ancestral chromosome numbers.
+# First, read in the ancestral state trace:
+anc_state_trace = readAncestralStateTrace("output/ChromEvol_clado_anc_states.log")
+
+# Finally, summarize the values from the traces over the phylogeny.
+# Here we do a marginal reconstruction of the ancestral states, discarding the first 25% of samples
+# as burnin. Here also we specify 'include_start_states=true' so that we summarize cladogenetic changes.
+ancestralStateTree(phylogeny, anc_state_trace, "output/ChromEvol_clado_final.tree", include_start_states=true, burnin=0.25, reconstruction="marginal")
+
+
+#########################################################################################################
+#
+# Open ChromEvol_clado_final.tree in FigTree. You can see the start and end state of each branch.
+# The 3 states with the highest posterior probabilities are given, along with their marginal
+# posterior probabilities.
+#
+# Finally, run the plot_ChromEvol_clado.R script to generate a PDF plot of the ancestral states
+# using the RevGadgets R package. The start states of each lineage are plotted on the 'shoulders'
+# of the tree.
+#
+#########################################################################################################
