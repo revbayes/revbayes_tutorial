@@ -65,6 +65,7 @@ You can experiment with different weights for each MCMC move.
 \medskip
 \subsection{Stochastic Character Mapping of Chromosome Evolution}\label{subsect:stoch_mapping}
 
+
 In \RevBayes both ancestral states and stochastic character maps can be sampled from
 continuous-time Markov chain (CTMC) and state-dependent speciation and
 extinction (SSE) models of character evolution.
@@ -73,6 +74,17 @@ along the branches of the phylogeny, so they can be particularly useful
 for chromosome evolution estimates where the timing of, for example, whole genome duplication events
 might be of interest. This example is performed on a non-ultrametric tree, but
 the same analysis could be performed on time-calibrated trees.
+
+\begin{figure}[h!]
+\fbox{
+\begin{minipage}{\textwidth}\centering
+\includegraphics[width=0.92\textwidth,angle=0]{\ResourcePath figures/simmap}
+    \caption{\small 
+    An example of stochastic character mapping applied to chromosome number evolution using \RevBayes. Shown is the marginal maximum a posteriori chromosome evolution history of \textit{Aristolochia}
+    using the simple ChromEvol analysis from Section \ref{sec:chromo_basic_analysis}.}
+\end{minipage}}
+\label{fig:simmap}
+\end{figure}
 
 
 We have already shown how to sample ancestral states above, and here we show
@@ -108,17 +120,6 @@ characterMapTree(phylogeny, anc_state_trace, character_file="output/character.tr
 \end{lstlisting}
 \end{snugshade*}}
 Figure \ref{fig:simmap} is an example stochastic character map of our \textit{Aristolochia} analysis plotted using \textbf{phytools}. 
-
-\begin{figure}[h!]
-\fbox{
-\begin{minipage}{\textwidth}\centering
-\includegraphics[width=0.92\textwidth,angle=0]{\ResourcePath figures/simmap}
-    \caption{\small 
-    An example of stochastic character mapping applied to chromosome number evolution using \RevBayes. Shown is the marginal maximum a posteriori chromosome evolution history of \textit{Aristolochia}
-    using the simple ChromEvol analysis from Section \ref{sec:chromo_basic_analysis}.}
-\end{minipage}}
-\label{fig:simmap}
-\end{figure}
 
 \medskip
 \subsection{Joint Estimation of Phylogeny and Chromosome Evolution}\label{subsect:joint_estimation}
@@ -327,6 +328,28 @@ We have provided a full working example script \texttt{scripts/BiChroM.Rev}
 In this example the phylogeny is assumed known. One could combine this with the exercise above
 to jointly infer the phylogeny.
 
+\begin{figure}[h!]
+\fbox{
+\begin{minipage}{\textwidth}\centering
+\includegraphics[width=0.92\textwidth,angle=0]{\ResourcePath figures/BiChroM_rates}
+    \caption{\small Results of the example BiChroM analysis performed in \RevBayes. The rates of chromosome gains (\texttt{gamma}) and losses (\texttt{delta}) are higher for \textit{Aristolochia}
+    lineages with complex gynostemium subdivided into 5 to 24 lobes (state 0) compared
+    to lineages with simple 3 lobed gynostemium (state 1).}
+\end{minipage}}
+\label{fig:bichrom_rates}
+\end{figure}
+
+\begin{figure}[h!]
+\fbox{
+\begin{minipage}{\textwidth}\centering
+\includegraphics[width=0.92\textwidth,angle=0]{\ResourcePath figures/BiChroM}
+\caption{\small Maximum a posteriori estimates of ancestral chromosome number and gynostemium morphology for \textit{Aristolochia} inferred using the BiChroM model as implemented in \RevBayes. States 1-26 represent the haploid number $n$ of chromosome for lineages
+    with gynostemium subdivided in 5 to 24 lobes. States 27-52 represent the haploid number $n + 27$ of chromosomes 
+    for lineages with simple 3 lobed gynostemium. The ancestral state for the common ancestor of all \textit{Aristolochia} had a haploid number $n = 8$ and more complex 5 to 24 lobed gynostemium. An evolutionary reduction to 3 lobes is inferred in the lineage leading to the extant Isotrema clade.}
+\end{minipage}}
+\label{fig:bichrom}
+\end{figure}
+
 \subsubsection{Setting up the BiChroM model}
 
 The first step will be to read in the observed data. This is done as before,
@@ -461,27 +484,7 @@ leading to the Isotreme clade. The common ancestor for all
 \textit{Aristolochia} is inferred to have complex many lobed
 gynostemium which was reduced to a more simple 3-lobed form in Isotrema.  
 
-\begin{figure}[h!]
-\fbox{
-\begin{minipage}{\textwidth}\centering
-\includegraphics[width=0.92\textwidth,angle=0]{\ResourcePath figures/BiChroM_rates}
-    \caption{\small The rates of chromosome gains (\texttt{gamma}) and losses (\texttt{delta}) are higher for \textit{Aristolochia}
-    lineages with complex gynostemium subdivided into 5 to 24 lobes (state 0) compared
-    to lineages with simple 3 lobed gynostemium (state 1).}
-\end{minipage}}
-\label{fig:bichrom_rates}
-\end{figure}
 
-\begin{figure}[h!]
-\fbox{
-\begin{minipage}{\textwidth}\centering
-\includegraphics[width=0.92\textwidth,angle=0]{\ResourcePath figures/BiChroM}
-\caption{\small Maximum a posteriori estimates of ancestral chromosome number and gynostemium morphology for \textit{Aristolochia}. States 1-26 represent the haploid number $n$ of chromosome for lineages
-    with gynostemium subdivided in 5 to 24 lobes. States 27-52 represent the haploid number $n + 27$ of chromosomes 
-    for lineages with simple 3 lobed gynostemium. The ancestral state for the common ancestor of all \textit{Aristolochia} had a haploid number $n = 8$ and more complex 5 to 24 lobed gynostemium. An evolutionary reduction to 3 lobes is inferred in the lineage leading to the extant Isotrema clade.}
-\end{minipage}}
-\label{fig:bichrom}
-\end{figure}
 
 
 \subsection{Incorporating Cladogenetic and Anagenetic Chromosome Changes}\label{subsect:clado_simple}
@@ -511,6 +514,19 @@ changes.
 We have provided a full working example script \texttt{scripts/ChromEvol\_clado.Rev}
 
 \subsubsection{A Simple Cladogenetic Model}
+
+\begin{figure}[h!]
+\fbox{
+\begin{minipage}{\textwidth}\centering
+\includegraphics[width=0.92\textwidth,angle=0]{\ResourcePath figures/ChromEvol_clado}
+\caption{\small Maximum a posteriori ancestral chromosome numbers for \textit{Aristolochia}
+    estimated using a simple cladogenetic and anagenetic chromosome evolution model.
+    The start states of each lineage (the state after cladogenesis) are plotted
+    on the 'shoulders' of each lineage, and show where cladogenetic events occurred.
+    This example analysis did not fully converge and shows a very high number of cladogenetic events.}
+\end{minipage}}
+\label{fig:chromevol_clado}
+\end{figure}
 
 The anagenetic transition rate matrix should be set up just as before.
 The cladogenetic changes, though, are modeled as a vector of probabilities 
@@ -580,18 +596,6 @@ tree. The start states of each lineage (the state after cladogenesis) are plotte
 on the 'shoulders' of each lineage.
 You may want to try stochastic character mapping for a different and possibly better
 visualization of cladogenetic and anagenetic changes.
-\begin{figure}[h!]
-\fbox{
-\begin{minipage}{\textwidth}\centering
-\includegraphics[width=0.92\textwidth,angle=0]{\ResourcePath figures/ChromEvol_clado}
-\caption{\small Maximum a posteriori ancestral chromosome numbers for \textit{Aristolochia}
-    estimated using a simple cladogenetic and anagenetic chromosome evolution model.
-    The start states of each lineage (the state after cladogenesis) are plotted
-    on the 'shoulders' of each lineage, and show where cladogenetic events occurred.
-    This example analysis did not fully converge and shows a very high number of cladogenetic events.}
-\end{minipage}}
-\label{fig:chromevol_clado}
-\end{figure}
 
 
 \newpage

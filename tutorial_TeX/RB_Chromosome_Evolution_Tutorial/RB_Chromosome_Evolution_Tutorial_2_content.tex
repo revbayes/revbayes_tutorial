@@ -1,3 +1,15 @@
+
+\begin{figure}[h!]
+\fbox{
+\begin{minipage}{\textwidth}\centering
+\includegraphics[width=0.92\textwidth,angle=0]{\ResourcePath figures/ChromEvol_simple}
+\caption{\small Maximum a posteriori ancestral chromosome number estimates for \textit{Aristolochia}
+    inferred using \RevBayes and plotted using the \RevGadgets R package.
+    Section \ref{sec:chromo_basic_analysis} describes how to perform this analysis.}
+\end{minipage}}
+\label{fig:chromevol_simple}
+\end{figure}
+
 \section{Example: A Simple ChromEvol Analysis}\label{sec:chromo_basic_analysis}
 
 In this example, we will use molecular sequence data and chromosome counts from \citet{ohi2006molecular} of the plant genus \textit{Aristolochia} (commonly called Dutchman's pipe plants). 
@@ -312,14 +324,6 @@ Start R and set your working directory to the \cl{RB\_Chromsome\_Evolution\_Tuto
 directory. Now run the command
 \colorbox{black}{\strut\hspace{1mm}\textcolor[rgb]{0,1,1}{\cl{source("scripts/plot\_ChromEvol\_simple.R")}}} to generate Figure \ref{fig:chromevol_simple} below. There are many options to customize
 the look of the plot, for options take a look inside the R script.
-\begin{figure}[h!]
-\fbox{
-\begin{minipage}{\textwidth}\centering
-\includegraphics[width=0.92\textwidth,angle=0]{\ResourcePath figures/ChromEvol_simple}
-\caption{\small Maximum a posteriori ancestral chromosome number estimates for \textit{Aristolochia}.}
-\end{minipage}}
-\label{fig:chromevol_simple}
-\end{figure}
 
 \subsection{Next Steps}
 
