@@ -1,0 +1,197 @@
+#########################################################################################################
+#
+# RevBayes Chromosome Evolution Tutorial:
+# 
+# A Simple ChromoSSE Analysis
+#
+# by Will Freyman
+#
+#
+# This is an example using the ChromoSSE model of chromosome 
+# number evolution to infer rates of chromosome evolution and ancestral chromosome numbers. We'll use 
+# data from Ohi-Toma et al. 2006 (Systematic Botany) for the plant genus Aristolochia (commonly called 
+# Dutchman's pipe).
+#
+# See https://github.com/wf8/chromosse for more scripts with more advanced options.
+#
+#########################################################################################################
+
+
+#########################
+# Read in the data 
+#########################
+
+
+# Read in the phylogeny. In this example the phylogeny is assumed known.
+phylogeny <- readTrees("data/aristolochia-bd.tree")[1]
+
+# We need to limit the maximum number of chromosomes,
+# so here we just use the largest chromosome count plus 10.
+max_chromo = 26
+
+# Get the chromosome counts from a tab-delimited file.
+chromo_data = readCharacterDataDelimited("data/aristolochia_chromosome_counts.tsv", stateLabels=(max_chromo + 1), type="NaturalNumbers", delimiter="\t", headers=FALSE)
+
+
+#########################
+# Chromosome Model
+#########################
+
+#
+# Anagenetic changes:
+#
+
+# We'll use exponential priors to model the rates of polyploidy and 
+# dysploidy events along the branches of the phylogeny
+
+# rate of chromosome gains
+gamma ~ dnExponential(10.0)
+
+# rate of chromosome losses
+delta ~ dnExponential(10.0)
+
+# rate of polyploidization
+rho ~ dnExponential(10.0)
+
+# Add MCMC moves for each of the rates.
+mvi = 1
+moves[mvi++] = mvScale(gamma, lambda=1, weight=1) 
+moves[mvi++] = mvScale(delta, lambda=1, weight=1) 
+moves[mvi++] = mvScale(rho, lambda=1, weight=1) 
+
+# Now we create the rate matrix for the chromosome evolution model.
+# Here we will use a simple ChromEvol model that includes
+# only the rate of chromosome gain, loss, and polyploidization.
+Q := fnChromosomes(max_chromo, gamma, delta, rho)
+
+# Parameters for demi-polyploidization and rate modifiers could also
+# be added at this step for more complex models. For example we
+# could have included the rate of demi-polyploidization like this:
+# Q := fnChromosomes(max_chromo, gamma, delta, rho, eta)
+
+
+#
+# Cladogenetic changes:
+#
+
+# expected num species at time t under constant birth-death is
+# # E(N_t) = N_0 e^{rt}
+# # therefore net diversification r is
+# # r = ( ln N_t - ln N_0 ) / t
+# # we use r as the mean for the speciation prior
+taxa <- phylogeny.taxa()
+speciation_mean <- ln( taxa.size() ) / phylogeny.rootAge()
+speciation_pr <- 1 / speciation_mean
+
+# Each cladogenetic event type is assigned its own speciation rate.
+# We set the rate of demi-polyploidization to 0.0 for simplicity.
+clado_no_change ~ dnExponential(speciation_pr)
+clado_fission ~ dnExponential(speciation_pr)
+clado_fusion ~ dnExponential(speciation_pr)
+clado_polyploid ~ dnExponential(speciation_pr)
+clado_demipoly <- 0.0
+
+# MCMC moves for speciation rates
+moves[mvi++] = mvScale(clado_no_change, lambda=5.0, weight=1)
+moves[mvi++] = mvScale(clado_fission, lambda=5.0, weight=1)
+moves[mvi++] = mvScale(clado_fusion, lambda=5.0, weight=1)
+moves[mvi++] = mvScale(clado_polyploid, lambda=5.0, weight=1)
+
+# set a vector to hold the speciation rates
+speciation_rates := [clado_no_change, clado_fission, clado_fusion, clado_polyploid, clado_demipoly]
+total_speciation := sum(speciation_rates)
+
+# map the speciation rates to chromosome cladogenetic events
+clado_matrix := fnChromosomesCladoEventsBD(speciation_rates, max_chromo)
+
+# a stochastic variable to represent the turnover. 
+turnover ~ dnUniform(0, 1.0)
+turnover.setValue(0.4)
+moves[mvi++] = mvScale(turnover, lambda=5.0, weight=3.0)
+
+# Make a vector of extinction rates for each state.
+# In the basic ChromoSSE model we assume all chromosome 
+# numbers have the same extinction rate.
+for (i in 1:(max_chromo + 1)) {
+    extinction[i] := turnover * total_speciation 
+}
+
+# Here we assume the frequency of chromosome numbers at the root of the tree
+# are equal. In future examples we will instead treat the root frequencies
+# as a free variable and estimate them from the observed data.
+root_frequencies := simplex(rep(1, max_chromo + 1))
+
+# Here we set the probability of sampling species at the present.
+# We artificially use 1.0, but you should experiment with more realistic settings.
+rho_bd <- 1.0
+
+# Construct a variable for the tree and chromosomes drawn from a 
+# cladogenetic character state dependent birth death process
+chromo_bdp ~ dnCDCladoBDP( rootAge            = phylogeny.rootAge(),
+                    cladoEventMap             = clado_matrix,
+                    extinctionRates           = extinction, 
+                    Q                         = Q,
+                    delta                     = 1.0,
+                    pi                        = root_frequencies,
+                    rho                       = rho_bd,
+                    condition                 = "time",
+                    taxa                      = taxa )
+
+
+# and clamp the observed tree and the chromosome count data
+chromo_bdp.clamp(phylogeny)
+chromo_bdp.clampCharData(chromo_data)
+
+
+# Finally we wrap our model into a single model object.
+mymodel = model(phylogeny)
+
+
+#########################
+# MCMC
+#########################
+
+
+# Create the MCMC monitors:
+# First, a screen monitor with some useful variables:
+monitors[1] = mnScreen(printgen=10)
+
+# The ancestral state monitor for sampling ancestral states:
+monitors[2] = mnJointConditionalAncestralState(filename="output/ChromoSSE_anc_states.log", printgen=10, tree=phylogeny, cdbdp=chromo_bdp, withStartStates=true, type="NaturalNumbers")
+
+# And another monitor for all the model variables:
+monitors[3] = mnModel(filename="output/ChromoSSE_model.log", printgen=10)
+
+# Now set up the MCMC.
+mymcmc = mcmc(mymodel, monitors, moves)
+
+# Run the MCMC. Note that for a real analysis you'd want to run many more 
+# iterations and check for convergence.
+mymcmc.run(200)
+
+
+#########################
+# Summarize the results 
+#########################
+
+
+# Now let's summarize the sampled ancestral chromosome numbers.
+# First, read in the ancestral state trace:
+anc_state_trace = readAncestralStateTrace("output/ChromoSSE_anc_states.log")
+
+# Finally, summarize the values from the traces over the phylogeny.
+# Here we do a marginal reconstruction of the ancestral states, discarding the first 25% of samples
+# as burnin.
+ancestralStateTree(phylogeny, anc_state_trace, "output/ChromoSSE_final.tree", burnin=0.25, include_start_states=true, reconstruction="marginal")
+
+
+#########################################################################################################
+#
+# Open ChromoSSE_final.tree in FigTree and look at the ancestral state node labels.
+# The 3 states with the highest posterior probabilities are given, along with their marginal
+# posterior probabilities.
+#
+# Finally, run the plot_ChromoSSE.R script to generate a PDF plot of the ancestral states
+# using the RevGadgets R package.
+#
+#########################################################################################################

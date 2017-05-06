@@ -115,6 +115,53 @@ this model can be used in either a maximum likelihood or Bayesian inference
 framework to estimate the rates of chromosome change and the ancestral
 chromosome numbers.
 
+\subsection{Hypothesis Testing and Model Uncertainty}
+
+The ChromEvol model described above is actually a class of models;
+for example we could exclude demi-polyploidization by fixing it's rate to 0.
+A common use for different models of chromosome evolution is to test hypotheses.
+For example, are polyploidization events
+occuring primarily at speciation events and possibly driving diversification,
+or do polyploidization events occur within lineages and unassociated with lineage splitting?
+To answer this, one could use \RevBayes to set up two different models, one allowing cladogenetic
+polyploidization (see Section \ref{subsect:clado_simple}) and a second
+using a model with only anagenetic polyploidization (like the ChromEvol model described above).
+One could then calculate a Bayes factor to compare which model better explained the observed data.
+See the \RevBayes tutorial \textbf{Compute Marginal Likelihoods to Select Between Models}
+for more on how to calculate Bayes factors in \RevBayes.
+
+
+Another option in \RevBayes is to use Bayesian model averaging.
+Out of the class of all chromosome evolution models
+described here, it is possible that no single model
+will adequately describe the chromosome evolution
+of a given clade.
+To explore the entire space of all possible models of chromosome number evolution 
+one could specify a reversible jump Markov chain Monte Carlo \citep{green1995reversible} that samples across models of different dimensionality,
+drawing samples
+from chromosome evolution models in proportion to their posterior probability and
+enabling Bayes factors for each model to be calculated.
+This approach incorporates model uncertainty
+by permitting model-averaged inferences that do not condition on a single model;
+we draw estimates of ancestral chromosome numbers and rates of chromosome evolution
+from all possible models weighted by their posterior probability.
+For general reviews of this approach to model averaging see
+\cite{madigan1994model}, \cite{hoeting1999bayesian}, \cite{kass1995bayes},
+and for its use in phylogenetics see \citet{posada2004model}.
+Averaging over all models has been shown to
+provide a better average predictive ability
+than conditioning on a single model
+\citep{madigan1994model}.
+Conditioning on a single model ignores model uncertainty,
+which can lead to an underestimation in the uncertainty
+of inferences made from that model \citep{hoeting1999bayesian}.
+In our case, this can lead to overconfidence in estimates
+of ancestral chromosome numbers and chromosome
+evolution parameter value estimates.
+For details on how to implement Bayesian model averaging in \RevBayes
+with chromsome evolution see \citet{freyman2016cladogenetic}.
+
+
 
 \subsection{Next Steps}
 

@@ -8,15 +8,14 @@ and not leaving any extant descendants \citep{bokma2002detection},
 or due to incomplete sampling of lineages in the present.
 Teasing apart
 the phylogenetic signal for cladogenetic and anagenetic processes given
-unobserved speciation events is a major difficulty.
-While naive approaches to modeling cladogenetic change that ignore
-unobserved speciation 
-(like the ones discussed earlier in Section \ref{subsect:clado_simple} 
-are commonly used,
-the Cladogenetic State change Speciation and Extinction
-(ClaSSE) model \citep{goldberg2012tempo}
-accounts for unobserved speciation events
-by jointly modeling both character evolution
+unobserved speciation events is a major difficulty,
+and using a naive approach that does not account for unobserved speciation
+(like the ones discussed earlier in Section \ref{subsect:clado_simple}) 
+can bias the relative rates of cladogenetic and anagenetic change.
+The Cladogenetic State change Speciation and Extinction
+(ClaSSE) model \citep{goldberg2012tempo}, on the other hand,
+reduces this bias by explicitly incorporating unobserved speciation events.
+This is achieved by jointly modeling both character evolution
 and the phylogenetic birth-death process.
 Not only does the ClaSSE framework enable the modeling of
 unobserved speciation, but it also provides an easily extensible
@@ -71,7 +70,7 @@ However, simple extensions to the ChromoSSE model will enable explicit
 tests of different extinction rates for polyploid and diploid lineages,
 and testing different rates of chromosome speciation associated with phenotypes or habitat.
 
-\subsection{The ChromSSE Likelihood Calculation}
+\subsection{The ChromoSSE Likelihood Calculation}
 
 All the previous models of chromosome number evolution discussed in the tutorial used
 the standard pruning algorithm \citep{felsenstein81} to calculate
@@ -98,7 +97,7 @@ depending on ploidy or other character states.
 \subsection{Next Steps}
 
 
-In the next section we'll set up and run a simple \RevBayes analysis using the ChromSSE model
+In the next section we'll set up and run a simple \RevBayes analysis using the ChromoSSE model
 of cladogenetic and anagenetic chromsome evolution.
 
 
