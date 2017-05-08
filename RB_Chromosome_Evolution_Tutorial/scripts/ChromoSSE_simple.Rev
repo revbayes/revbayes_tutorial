@@ -12,7 +12,8 @@
 # data from Ohi-Toma et al. 2006 (Systematic Botany) for the plant genus Aristolochia (commonly called 
 # Dutchman's pipe).
 #
-# See https://github.com/wf8/chromosse for more scripts with more advanced options.
+# See https://github.com/wf8/chromosse for more scripts with more advanced options such as using
+# reversible-jump MCMC for Bayesian model averaging.
 #
 #########################################################################################################
 
