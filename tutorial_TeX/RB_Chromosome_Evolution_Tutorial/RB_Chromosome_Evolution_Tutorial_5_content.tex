@@ -14,6 +14,29 @@ The full script to run this ChromoSSE example is provided in the file \texttt{sc
 \bigskip
 \subsection{The Chromosome Evolution Model}
 
+\subsubsection{A Joint Model of the Tree and Chromosome Numbers}
+
+A major difference between the previously discussed models of chromosome number evolution
+and ChromoSSE is that ChromoSSE jointly describes the evolution of chromosome numbers
+and the tree. Since ChromoSSE assumes the tree is generated via a birth-death process
+you should use an ultrametric tree or time-calibrated tree.
+The tree may contain lineages that went extinct before the present,
+but the branch lengths should be in units of time, as opposed to 
+units of substitutions per site.
+So here we will swap out the tree used in previous examples for a tree
+that was time-calibrated. 
+The estimated rates of chromosome evolution will
+have the same unit of time as the branch lengths of our tree.
+In this example the tree ages are relative, but you could
+use a fossil-calibrated tree with absolute ages if you wanted
+rates of chromosome change in units of millions of years.
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+phylogeny <- readTrees("data/aristolochia-bd.tree")[1]
+\end{lstlisting}
+\end{snugshade*}
+}
+
 
 \subsubsection{Anagenetic Changes}
 
