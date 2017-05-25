@@ -11,12 +11,12 @@ source( model_file_name )
 mni = 0
 
 
-monitors[++mni] = mnModel(filename="output" + "/" + analysis_name + "_posterior.log",printgen=1000, separator = TAB)
-monitors[++mni] = mnFile(filename="output" + "/" + analysis_name + "_posterior.trees",printgen=1000, separator = TAB, phylogeny)
-monitors[++mni] = mnScreen(printgen=1000, TL)
-monitors[++mni] = mnStochasticVariable(filename="output" + "/" + analysis_name + "_posterior.var",printgen=1000)
+monitors[++mni] = mnModel(filename="output_" + model_name + "/" + analysis_name + "_posterior.log",printgen=100, separator = TAB)
+monitors[++mni] = mnFile(filename="output_" + model_name + "/" + analysis_name + "_posterior.trees",printgen=100, separator = TAB, phylogeny)
+monitors[++mni] = mnScreen(printgen=100, TL)
+monitors[++mni] = mnStochasticVariable(filename="output_" + model_name + "/" + analysis_name + "_posterior.var",printgen=100)
 
 
 mymcmc = mcmc(mymodel, monitors, moves, nruns=2)
 mymcmc.burnin(generations=2000,tuningInterval=10)
-mymcmc.run(generations=100000)
+mymcmc.run(generations=10000)
