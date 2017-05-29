@@ -61,6 +61,7 @@ moves[mvi++] = mvElementSwapSimplex(root_frequencies, weight=10)
 \end{snugshade*}}
 You can experiment with different weights for each MCMC move.
 
+\impmark Make the modifications to the root frequencies in the script \textbf{ChromoSSE\_simple.Rev} and run the analysis again? What are the estimates of the root frequency (you can see this by looking at the output in \Tracer)? Do the estimated ancestral states change?
 
 \medskip
 \subsection{Stochastic Character Mapping of Chromosome Evolution}\label{subsect:stoch_mapping}
@@ -103,8 +104,8 @@ The last column of the file is the full stochastic character map of the entire t
 in \textbf{SIMMAP} \citep{bollback2006simmap} format.
 These can be plotted using the \textbf{phytools} R package \citep{revell2012phytools}.
 
-After the MCMC, we can calculate the maximum a posteriori marginal, joint, or conditional
-character history. This process is similar to the ancestral state summaries.
+After the MCMC simulation, we can calculate the maximum a posteriori \emph{marginal}, \emph{joint}, or \emph{conditional} character history. 
+This process is similar to the ancestral state summaries.
 First we read in the stochastic character map trace.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
@@ -121,6 +122,9 @@ characterMapTree(phylogeny, anc_state_trace, character_file="output/character.tr
 \end{snugshade*}}
 Figure \ref{fig:simmap} is an example stochastic character map of our \textit{Aristolochia} analysis plotted using \textbf{phytools}. 
 
+
+\impmark Copy the script \texttt{ChromoSSE\_simple.Rev} and add stochastic character mapping monitor. Then, run the analysis and use the script \texttt{plot\_simmap.R} to visualize the character mappings. 
+
 \medskip
 \subsection{Joint Estimation of Phylogeny and Chromosome Evolution}\label{subsect:joint_estimation}
 
@@ -131,7 +135,7 @@ This enables the chromosome number analysis to take into account phylogenetic un
 and allows the chromosome numbers to help inform the phylogeny. 
 
 Setting up a model that jointly infers chromosome evolution and phylogeny requires mostly combining
-elements covered in the \textbf{Molecular Models of Character Evolution} tutorial with the
+elements covered in the \textbf{Molecular Models of Character Evolution} tutorial with
 what has already been covered in Section \ref{sec:chromo_basic_analysis} of this tutorial. We will not repeat how to set up the chromosome model
 component, but we'll step through what must be added to the example in Section \ref{sec:chromo_basic_analysis} above.
 Furthermore, we have provided a full working example script \texttt{scripts/ChromEvol\_joint.Rev}.
@@ -294,7 +298,7 @@ are conditional to the probability of the node existing.
 ancestralStateTree(map_tree, anc_state_trace, treetrace, "output/ChromEvol_joint_final.tree" burnin=0.25, reconstruction="marginal")
 \end{lstlisting}
 \end{snugshade*}}
-Like before, we can plot the results using the \RevGadgets R package.
+Like before, we can plot the results using the \RevGadgets R package using the script \texttt{plot\_ChromEvol\_joint.R}.
 
 \bigskip
 
@@ -305,7 +309,7 @@ are associated with a certain phenotype.
 Here we set up a binary phenotypic character and estimate separate rates of chromosome
 evolution for each state of the phenotype. 
 We'll use a model that describes the joint evolution of both the
-phenotypic character and chromosome evolution. This model (BiChroM) was introduced in \citet{zenil2017testing}. In RevBayes the BiChroM model can easily be extended to multistate phenotypes and/or 
+phenotypic character and chromosome evolution. This model (BiChroM) was introduced in \citet{zenil2017testing}. In \RevBayes, the BiChroM model can easily be extended to multistate phenotypes and/or 
 hidden states, plus cladogenetic changes could be incorporated into the model.
 
 In this example we will again use chromosome count data from \citet{ohi2006molecular} for the plant 
@@ -332,7 +336,9 @@ to jointly infer the phylogeny.
 \fbox{
 \begin{minipage}{\textwidth}\centering
 \includegraphics[width=0.92\textwidth,angle=0]{\ResourcePath figures/BiChroM_rates}
-    \caption{\small Results of the example BiChroM analysis performed in \RevBayes. The rates of chromosome gains (\texttt{gamma}) and losses (\texttt{delta}) are higher for \textit{Aristolochia}
+    \caption{\small Results of the example BiChroM analysis performed in \RevBayes. 
+    This plot shows the output from \texttt{.log} files when loaded into \Tracer.
+    The rates of chromosome gains (\texttt{gamma}) and losses (\texttt{delta}) are higher for \textit{Aristolochia}
     lineages with complex gynostemium subdivided into 5 to 24 lobes (state 0) compared
     to lineages with simple 3 lobed gynostemium (state 1).}
 \end{minipage}}
@@ -352,10 +358,10 @@ to jointly infer the phylogeny.
 
 \subsubsection{Setting up the BiChroM model}
 
-The first step will be to read in the observed data. This is done as before,
-with the exception that the data is set up a bit differently. The data matrix
-must now represent both the observed chromosome counts \textit{and} the observed
-phenotype. So in this file states 1-26 represent the haploid number $n$ of chromosome for lineages 
+The first step will be to read in the observed data. 
+This is done as before, with the exception that the data is set up a bit differently. 
+The data matrix must now represent both the observed chromosome counts \textit{and} the observed phenotype. 
+So in this file states 1-26 represent the haploid number $n$ of chromosome for lineages 
 with gynostemium subdivided in 5 to 24 lobes, and states 27-52 represent the haploid number $n + 27$
 for lineages with simple 3 lobed gynostemium.
 Note the \texttt{stateLabels} argument must now be set to 2 times the maximum number of chromosomes.
@@ -365,7 +371,7 @@ chromo_data = readCharacterDataDelimited("data/aristolochia_bichrom_counts.tsv",
 \end{lstlisting}
 \end{snugshade*}}
 Like before, we'll use exponential priors to model the rates of polyploidy and 
-dysploidy events along the branches of the phylogeny
+dysploidy events along the branches of the phylogeny.
 However, here we set up two rate parameters for each type of chromosome change --
 one for phenotype state 0 and one for phenotype state 1.
 {\tt \begin{snugshade*}
@@ -492,13 +498,13 @@ gynostemium which was reduced to a more simple 3-lobed form in Isotrema.
 Changes in chromosome number can increase reproductive isolation and may drive the diversification
 of some lineages \citep{stebbins1971chromosomal}. 
 To test for the association
-of chromosome changes with speciation we must extend our models to incorporate cladogenetic
-changes. Cladogenetic changes are changes that occur only at lineage splitting events.
-All the models of chromosome evolution we have examined so far model
-only anagenetic changes, changes that occur within a lineage. 
+of chromosome changes with speciation we must extend our models to incorporate cladogenetic changes \citep[for details see][]{freyman2016cladogenetic}. 
+Cladogenetic changes are changes that occur only at lineage splitting events.
+All models of chromosome evolution that we have examined so far model
+only anagenetic changes, \IE changes that occur within a lineage. 
 
 We introduce here a simple model of cladogenetic change that handles cladogenetic events
-similarly to the widely used Dispersal-Extinction-Cladogenesis \citep[DEC;][]{ree08} 
+similarly to the widely used Dispersal-Extinction-Cladogenesis \citep[DEC;][]{ree05,ree08} 
 models of biogeographic range evolution.
 A major limitation of such models is that they only model cladogenetic changes
 at the observed speciation events on the phylogeny.
@@ -506,7 +512,7 @@ Many other unobserved speciation events likely occurred, but are not present
 in the reconstructed phylogeny due to incomplete taxon sampling and lineages
 going extinct. This can bias the relative rates of anagenetic and cladogenetic change.
 In Section \ref{sec:chromosse_intro} we will introduce the
-ChromoSSE model, which reduces this bias by explicitly modeling unobserved speciation events but at the
+ChromoSSE model, which removes this bias by explicitly modeling unobserved speciation events but at the
 cost of additional model complexity.
 
 Much of this exercise is a repeat of what was already covered in Section \ref{sec:chromo_basic_analysis},
@@ -535,7 +541,7 @@ that sum up to 1 (a simplex). Each element of the vector is the
 probability of a certain type of cladogenetic event occurring.
 To set this up, we'll first draw a 'weight' for each type of 
 cladogenetic event from an exponential distribution. To keep the
-example simply we are excluding cladogenetic demi-polyploidization.
+example simple we are excluding cladogenetic demi-polyploidization.
 We then pass each 'weight' into a simplex to create the vector
 of probabilities.
 {\tt \begin{snugshade*}

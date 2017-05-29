@@ -55,7 +55,7 @@ Q_{ij} =
 where $\gamma_a$, $\delta_a$, $\rho_a$, and $\eta_a$ are the
 rates of chromosome gains, losses, polyploidizations, and
 demi-polyploidizations.
-
+We use the subscript $a$ for all these rates to differentiate the rates between anagenetic ($a$) and cladogenetic ($c$) events (see the ChromoSSE model in a later section).
 
 If we are interested in modeling scenarios in which
 the probability of fusion or fission events
@@ -78,9 +78,9 @@ on the current number of chromosomes.
 If the rate modifier $\gamma_m = 0$, then
 $\gamma_a e^{0 (i - 1)} = \gamma_a$.
 If the rate modifier $\gamma_m > 0$, then
-$\gamma_a e^{\gamma_m (i - 1)} \geq \gamma_a$,
+$\gamma_a e^{\gamma_m (i - 1)} \geq \gamma_a$ (\IE rates increase with more chromosomes),
 and if $\gamma_m < 0$ then
-$\gamma_a e^{\gamma_m (i - 1)} \leq \gamma_a$.
+$\gamma_a e^{\gamma_m (i - 1)} \leq \gamma_a$ (\IE rates decrease with more chromosomes).
 Note that this parameterization differs slightly from the original
 ChromEvol model; here we assume the rates of chromosome change
 can vary exponentially as a function of the current chromosome number,
@@ -128,7 +128,7 @@ polyploidization (see Section \ref{subsect:clado_simple}) and a second
 using a model with only anagenetic polyploidization (like the ChromEvol model described above).
 One could then calculate a Bayes factor to compare which model better explained the observed data.
 See the \RevBayes tutorial \textbf{Compute Marginal Likelihoods to Select Between Models}
-for more on how to calculate Bayes factors in \RevBayes.
+for more information on how to calculate Bayes factors in \RevBayes.
 
 
 Another option in \RevBayes is to use Bayesian model averaging.

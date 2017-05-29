@@ -60,13 +60,10 @@ framework for testing state-dependent speciation and extinction rates.
 \label{fig:chromosse_ode}
 \end{figure}
 
-The ChromoSSE model \citep{freyman2016cladogenetic}
-is a special case of the ClaSSE model that models chromosome
-changes.
-Compared to the previously discussed CTMC models of chromosome evolution,
-SSE models require additional complexity since they must also
-model the extinction and speciation processes.
-However, simple extensions to the ChromoSSE model will enable explicit 
+The ChromoSSE model \citep{freyman2016cladogenetic} is a special case of the ClaSSE model that models chromosome changes.
+Compared to the previously discussed CTMC models of chromosome evolution, SSE models require additional complexity since they must also
+model the speciation and extinction process.
+Simple extensions to the ChromoSSE model will enable explicit 
 tests of different extinction rates for polyploid and diploid lineages,
 and testing different rates of chromosome speciation associated with phenotypes or habitat.
 
@@ -90,15 +87,15 @@ These two differential equations are shown and explained in Figure \ref{fig:chro
 However, unlike the full ClaSSE model the
 extinction rate $\mu$ does not depend on the
 chromosome number $i$ of the lineage.
-This can easily be modified in \RevBayes to allow for different extinction/speciation rates
+This can easily be modified in \RevBayes to allow for different speciation and/or extinction rates
 depending on ploidy or other character states.
 
 
 \subsection{Next Steps}
 
 
-In the next section we'll set up and run a simple \RevBayes analysis using the ChromoSSE model
-of cladogenetic and anagenetic chromsome evolution.
+In the next section we'll set up and run a \RevBayes analysis using the ChromoSSE model
+of cladogenetic and anagenetic chromosome evolution.
 
 
 \newpage

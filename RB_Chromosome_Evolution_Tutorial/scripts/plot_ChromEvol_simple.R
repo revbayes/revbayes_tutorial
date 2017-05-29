@@ -1,7 +1,8 @@
-
 #
 # This R script plots the ancestral chromosome numbers estimated 
 # by a ChromoSSE RevBayes analysis.
+#
+# by Will Freyman
 #
 # Install the RevGadgets R package from:
 # https://github.com/revbayes/RevGadgets
