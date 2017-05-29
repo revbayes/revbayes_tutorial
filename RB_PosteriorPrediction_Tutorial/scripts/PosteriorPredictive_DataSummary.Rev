@@ -6,10 +6,11 @@
 # authors: Sebastian Hoehna
 #
 ################################################################################
-num_post_sims = listFiles(path="output/" + analysis_name + "_post_sims").size()
 
+outfileName = "results_" + model_name + "/simulated_data_" + analysis_name + ".csv"
  
-write(file="results_" + analysis_name + "_posterior_predictive_simulations.csv", 
+write(file=outfileName, 
+      "SimID",
       "Number Invariant Sites",
       "Number Invariant Sites Excluding Ambiguous",
       "Max GC", 
@@ -46,13 +47,20 @@ write(file="results_" + analysis_name + "_posterior_predictive_simulations.csv",
       "Tajima-D", 
       "Tajima-Pi", 
       "Segregating-Sites",
+      "Multinomial-Likelihood",
       sep=",", append=FALSE) 
 
-write(file="results_" + analysis_name + "_posterior_predictive_simulations.csv", "\n", append=TRUE) 
+write(file=outfileName, "\n", append=TRUE) 
 
-    
+
+################### calculate the pps stats here #########################
+
+## Iterate through all of the posterior tree files from the simulation analyses
 for ( i in 1:num_post_sims) {
-    sim_data <- readDiscreteCharacterData("output/" + analysis_name + "_post_sims/posterior_predictive_sim_" + i + "/seq.nex" )
+
+    inFileName = "output_" + model_name + "/posterior_predictive_sim_" + i + "/" + analysis_name + "_posterior.trees"
+    
+    sim_data <- readDiscreteCharacterData("output_" + model_name + "/" + analysis_name + "_post_sims/posterior_predictive_sim_" + i + "/seq.nex" )
     
     num_inv         = sim_data.getNumInvariantSites( excludeAmbiguous=FALSE )
     num_inv_amb     = sim_data.getNumInvariantSites( excludeAmbiguous=TRUE )
@@ -112,12 +120,15 @@ for ( i in 1:num_post_sims) {
     theta           = fnWattersonsTheta( sim_data )
     seg_sites       = fnSegregatingSites( sim_data )
     tajima_d        = fnTajimasD( sim_data )
-    tajima_pi       = fnTajimasPi( sim_data )
+    tajima_pi       = fnTajimasPi( sim_data )  
+    
+    mult_lnl        = sim_data.computeMultinomialProfileLikelihood()
 
     
     
     
-    write(file="results_" + analysis_name + "_posterior_predictive_simulations.csv", append=TRUE, sep=",",
+    write(file=outfileName, append=TRUE, sep=",",
+          i,
           num_inv,
           num_inv_amb,
           max_gc,
@@ -151,13 +162,14 @@ for ( i in 1:num_post_sims) {
           var_gc_3,
           var_gc_3_amb,
           theta,
-          seg_sites,
           tajima_d,
-          tajima_pi)
+          tajima_pi,
+          seg_sites,
+          mult_lnl)
 
 
 
-    write(file="results_" + analysis_name + "_posterior_predictive_simulations.csv", "\n", append=TRUE) 
+    write(file=outfileName, "\n", append=TRUE) 
 
 }
 
@@ -167,7 +179,9 @@ for ( i in 1:num_post_sims) {
 # Summary of data #
 ###################
 
-write(file="results_" + analysis_name + "_original_data.csv", sep=",", append=FALSE,
+outfileName = "results_" + model_name + "/empirical_data_" + analysis_name + ".csv"
+
+write(file=outfileName, sep=",", append=FALSE,
       "Number Invariant Sites",
       "Number Invariant Sites Excluding Ambiguous",
       "Max GC", 
@@ -201,74 +215,76 @@ write(file="results_" + analysis_name + "_original_data.csv", sep=",", append=FA
       "Var GC 3",
       "Var GC 3 Excluding Ambiguous",
       "Theta", 
+      "Segregating-Sites",
       "Tajima-D", 
       "Tajima-Pi", 
-      "Segregating-Sites")
-write("\n", file="results_" + analysis_name + "_original_data.csv", append=TRUE)
+      "Multinomial-Likelihood")
+write("\n", file=outfileName, append=TRUE)
 
-d = readDiscreteCharacterData("data_sim_8/" + analysis_name + ".nexus")
 
-num_inv         = d.getNumInvariantSites( excludeAmbiguous=FALSE )
-num_inv_amb     = d.getNumInvariantSites( excludeAmbiguous=TRUE )
+num_inv         = data.getNumInvariantSites( excludeAmbiguous=FALSE )
+num_inv_amb     = data.getNumInvariantSites( excludeAmbiguous=TRUE )
 
-max_gc          = d.maxGcContent( excludeAmbiguous=FALSE )
-max_gc_amb      = d.maxGcContent( excludeAmbiguous=TRUE )
+max_gc          = data.maxGcContent( excludeAmbiguous=FALSE )
+max_gc_amb      = data.maxGcContent( excludeAmbiguous=TRUE )
 
-min_inv_bl      = d.maxInvariableBlockLength( excludeAmbiguous=FALSE )    
-min_inv_bl_amb  = d.maxInvariableBlockLength( excludeAmbiguous=TRUE )
+min_inv_bl      = data.maxInvariableBlockLength( excludeAmbiguous=FALSE )    
+min_inv_bl_amb  = data.maxInvariableBlockLength( excludeAmbiguous=TRUE )
 
-max_pd          = d.maxPairwiseDifference( excludeAmbiguous=FALSE )
-max_pd_amb      = d.maxPairwiseDifference( excludeAmbiguous=TRUE )
+max_pd          = data.maxPairwiseDifference( excludeAmbiguous=FALSE )
+max_pd_amb      = data.maxPairwiseDifference( excludeAmbiguous=TRUE )
 
-max_var_bl      = d.maxVariableBlockLength( excludeAmbiguous=FALSE )
-max_var_bl_amb  = d.maxVariableBlockLength( excludeAmbiguous=TRUE )
+max_var_bl      = data.maxVariableBlockLength( excludeAmbiguous=FALSE )
+max_var_bl_amb  = data.maxVariableBlockLength( excludeAmbiguous=TRUE )
     
-min_gc          = d.minGcContent( excludeAmbiguous=FALSE )    
-min_gc_amb      = d.minGcContent( excludeAmbiguous=TRUE )
+min_gc          = data.minGcContent( excludeAmbiguous=FALSE )    
+min_gc_amb      = data.minGcContent( excludeAmbiguous=TRUE )
 
-min_pd          = d.minPairwiseDifference( excludeAmbiguous=FALSE )
-min_pd_amb      = d.minPairwiseDifference( excludeAmbiguous=TRUE )
+min_pd          = data.minPairwiseDifference( excludeAmbiguous=FALSE )
+min_pd_amb      = data.minPairwiseDifference( excludeAmbiguous=TRUE )
 
-n_inv_b         = d.numInvariableBlocks( excludeAmbiguous=FALSE )    
-n_inv_b_amb     = d.numInvariableBlocks( excludeAmbiguous=TRUE )    
+n_inv_b         = data.numInvariableBlocks( excludeAmbiguous=FALSE )    
+n_inv_b_amb     = data.numInvariableBlocks( excludeAmbiguous=TRUE )    
 
-mean_gc         = d.meanGcContent( excludeAmbiguous=FALSE )    
-mean_gc_amb     = d.meanGcContent( excludeAmbiguous=TRUE )    
+mean_gc         = data.meanGcContent( excludeAmbiguous=FALSE )    
+mean_gc_amb     = data.meanGcContent( excludeAmbiguous=TRUE )    
 
-mean_gc_1       = d.meanGcContentByCodonPosition(1, excludeAmbiguous=FALSE )    
-mean_gc_1_amb   = d.meanGcContentByCodonPosition(1, excludeAmbiguous=TRUE )
+mean_gc_1       = data.meanGcContentByCodonPosition(1, excludeAmbiguous=FALSE )    
+mean_gc_1_amb   = data.meanGcContentByCodonPosition(1, excludeAmbiguous=TRUE )
 
-mean_gc_2       = d.meanGcContentByCodonPosition(2, excludeAmbiguous=FALSE )    
-mean_gc_2_amb   = d.meanGcContentByCodonPosition(2, excludeAmbiguous=TRUE )    
+mean_gc_2       = data.meanGcContentByCodonPosition(2, excludeAmbiguous=FALSE )    
+mean_gc_2_amb   = data.meanGcContentByCodonPosition(2, excludeAmbiguous=TRUE )    
 
-mean_gc_3       = d.meanGcContentByCodonPosition(3, excludeAmbiguous=FALSE )    
-mean_gc_3_amb   = d.meanGcContentByCodonPosition(3, excludeAmbiguous=TRUE )   
+mean_gc_3       = data.meanGcContentByCodonPosition(3, excludeAmbiguous=FALSE )    
+mean_gc_3_amb   = data.meanGcContentByCodonPosition(3, excludeAmbiguous=TRUE )   
 
-var_gc          = d.varGcContent( excludeAmbiguous=FALSE )    
-var_gc_amb      = d.varGcContent( excludeAmbiguous=TRUE )    
+var_gc          = data.varGcContent( excludeAmbiguous=FALSE )    
+var_gc_amb      = data.varGcContent( excludeAmbiguous=TRUE )    
 
-var_gc_1        = d.varGcContentByCodonPosition(1, excludeAmbiguous=FALSE )    
-var_gc_1_amb    = d.varGcContentByCodonPosition(1, excludeAmbiguous=TRUE )
+var_gc_1        = data.varGcContentByCodonPosition(1, excludeAmbiguous=FALSE )    
+var_gc_1_amb    = data.varGcContentByCodonPosition(1, excludeAmbiguous=TRUE )
 
-var_gc_2        = d.varGcContentByCodonPosition(2, excludeAmbiguous=FALSE )    
-var_gc_2_amb    = d.varGcContentByCodonPosition(2, excludeAmbiguous=TRUE )    
+var_gc_2        = data.varGcContentByCodonPosition(2, excludeAmbiguous=FALSE )    
+var_gc_2_amb    = data.varGcContentByCodonPosition(2, excludeAmbiguous=TRUE )    
 
-var_gc_3        = d.varGcContentByCodonPosition(3, excludeAmbiguous=FALSE )    
-var_gc_3_amb    = d.varGcContentByCodonPosition(3, excludeAmbiguous=TRUE )   
+var_gc_3        = data.varGcContentByCodonPosition(3, excludeAmbiguous=FALSE )    
+var_gc_3_amb    = data.varGcContentByCodonPosition(3, excludeAmbiguous=TRUE )   
 
-n_taxa_50       = d.numTaxaMissingSequence( 0.5 )    
-n_taxa_30       = d.numTaxaMissingSequence( 0.3 )    
-n_taxa_10       = d.numTaxaMissingSequence( 0.1 )
+n_taxa_50       = data.numTaxaMissingSequence( 0.5 )    
+n_taxa_30       = data.numTaxaMissingSequence( 0.3 )    
+n_taxa_10       = data.numTaxaMissingSequence( 0.1 )
 
-theta           = fnWattersonsTheta( d )
-seg_sites       = fnSegregatingSites( d )
-tajima_d        = fnTajimasD( d )
-tajima_pi       = fnTajimasPi( d )
+theta           = fnWattersonsTheta( data )
+seg_sites       = fnSegregatingSites( data )
+tajima_d        = fnTajimasD( data )
+tajima_pi       = fnTajimasPi( data )
+
+mult_lnl        = data.computeMultinomialProfileLikelihood()
 
 
 
 
-write(file="results_" + analysis_name + "_original_data.csv", append=TRUE, sep=",",
+write(file=outfileName, append=TRUE, sep=",",
       num_inv,
       num_inv_amb,
       max_gc,
@@ -304,9 +320,10 @@ write(file="results_" + analysis_name + "_original_data.csv", append=TRUE, sep="
       theta,
       seg_sites,
       tajima_d,
-      tajima_pi)
+      tajima_pi,
+      mult_lnl)
 
 
-write(file="results_" + analysis_name + "_original_data.csv", "\n", append=TRUE) 
+write(file=outfileName, "\n", append=TRUE) 
     
 
