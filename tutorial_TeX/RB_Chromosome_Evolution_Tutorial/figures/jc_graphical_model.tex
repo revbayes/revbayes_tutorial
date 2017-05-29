@@ -1,0 +1,40 @@
+\definecolor{shc}{RGB}{183,207,237}
+\begin{tikzpicture}
+\node[obnode] (x) at (-5,1) {$seq$};
+\node (x_dist) at ($(x)+(0.8,-0.7)$) {PhyloCTMC};
+\draw (x) -- (x_dist) ;
+\node[constnode] (Q) at ($(x)+(2,2)$) {\Large $Q$};
+\node (Q_dist) at ($(Q)+(0.8,-0.7)$) {JC};
+\draw (Q) -- (Q_dist) ;
+\node[detnode] (psi) at ($(x)+(-2,2)$) {\Large $\Psi$};
+\node (psi_dist) at ($(psi)+(-0.8,-0.7)$) {Tree};
+\draw (psi) -- (psi_dist);
+\node[snode] (bl) at ($(psi)+(-1.0,2.0)$) {\Large $bl_i$};
+\node[snode] (tau) at ($(psi)+(1,2.0)$) {\LARGE $\tau$};
+\node (bl_dist) at ($(bl)+(-1.2,0.7)$) {Exponential};
+\node (tau_dist) at ($(tau)+(1.0,0.7)$) {Uniform};
+\draw (bl) -- (bl_dist);
+\draw (tau) -- (tau_dist);
+\node[constnode] (rate_bl) at ($(bl)+(0,1.5)$) {\Large $10$};
+\node[constnode] (N) at ($(tau)+(0,1.5)$) {\Large $N$};
+\node[rectangle,dashed, thick, inner sep=4mm, draw=black!100, fit = (rate_bl) (bl)] (bl_plate) {};
+\node[anchor=south west,inner sep=3pt] at (bl_plate.south west) {\small $i \in 2N-3$};
+\draw [taro] (rate_bl) -- (bl);
+\draw [taro] (N) -- (tau);
+\draw [dtaro] (tau) -- (psi);
+\draw [dtaro] (bl) -- (psi);
+\draw [taro] (Q) -- (x);
+\draw [taro] (psi) -- (x);
+\node (a1) at (4,0.25) { };
+\node (a2) at (4,7.0) { };
+\node (a3) at (13.0,2.75) { };
+\node[rectangle, very thick, inner sep=6mm, fill=shc, fit = (a1) (a2) (a3)] (console) {};
+\node (l1) at (4,5.95) [right]{\tt for (i in 1:n\_branches) \{};
+\node (l1) at (5.5,5.6) [right]{\tt bl[i] $\sim$ dnExponential(10.0)};
+\node (l1) at (4,5.25) [right]{\tt \}};
+\node (l1) at (4,4.9) [right]{\tt topology $\sim$ dnUniformTopology(taxa)};
+\node (l2) at (4,4.55) [right]{\tt psi := treeAssembly(topology, bl)};
+\node (l8) at (4,3.5) [right]{\tt Q <- fnJC(4) };
+\node (l9) at (4,2.6) [right]{\tt seq $\sim$ dnPhyloCTMC( tree=psi, Q=Q, type="DNA" ) };
+\node (l10) at (4,1.9) [right]{\tt seq.clamp( data ) };
+\end{tikzpicture}
