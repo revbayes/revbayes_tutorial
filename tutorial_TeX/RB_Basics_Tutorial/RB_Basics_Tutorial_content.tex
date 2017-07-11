@@ -16,7 +16,7 @@ The first section of this tutorial involves
 Then we will see how to perform statistical inference using \RevBayes and \Rev  by implementing a Monte Carlo algorithm. 
 Finally, we will see how \RevBayes 's built-in functions vastly simplify this inference task.
 
-All of the files for this analysis are provided for you and you can run these without significant effort using the \cl{source()} function in the \RevBayes console:
+All of the files for this analysis are provided for you, and you can run these without significant effort using the \cl{source()} function in the \RevBayes console:
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 source("RevBayes_scripts/basics.Rev")
@@ -141,6 +141,7 @@ str(a)                           # printing the structure information of 'a'
 |*   .methods = void function ()
 \end{lstlisting}
 \end{snugshade*}}
+% Maybe not all of the above info is shown anymore?  I see only _variable, _dagType, and _children.
 An additional quite useful built-in function in \RevBayes  is the \cl{type} function which gives you only the type information of the variable and thus is a subset of the \cl{str} function.
 {\tt \begin{snugshade*}
 \begin{lstlisting}    
@@ -233,7 +234,7 @@ Now you know everything there is about creating the different types of variables
 
 \subsubsection{Simple variable manipulation and other types of assignments}
 \Rev provides some convenience variable manipulation operations that are equivalent to variable manipulations in other programming languages such as C/C++, Java and Python.
-You can increment (\cl{++}) and decrement (\cl{--}) a variable.
+You can increment (\cl{++}) and decrement (\cl{-\,-}) a variable.
 The increment operation increases the current value of a variable by 1 and the decrement operation decreases the value by 1.
 A post increment (\cl{a++}) increases the value after returning the value, that is, the old value is returned.
 A pre increment (\cl{++a}) increases the value before returning the value, that is, the new value is returned.
@@ -257,7 +258,7 @@ These variable manipulations will come in very handy for indices of vectors/arra
 
 \subsubsection{Vectors}
 Common values in \RevBayes are of scalar types.
-That means, that not everything is a vector by default.
+That means that not everything is a vector by default.
 Instead, you can create a vector using three different ways.
 First, you can call the vector function.
 {\tt \begin{snugshade*}
@@ -318,7 +319,7 @@ v.size()
 \subsubsection{Control Structures}
 In this next part we will learn about control structures in \Rev. 
 The first control structure that we will look at is the \cl{for} loop.
-\cl{for} loop execute a single statement or a block of 
+A \cl{for} loop executes a single statement or a block of statements.
 {\tt \begin{snugshade*}
 \begin{lstlisting}    
 # loops
@@ -334,8 +335,8 @@ for (<variable> in <set of value>) {
 }
 \end{lstlisting}
 \end{snugshade*}}
-The statement(s) will be execute for each value of variable of the \cl{for} loop.
-A simple example is a \cl{for} loop that computes the sum of 
+The statement(s) will be executed for each value of variable of the \cl{for} loop.
+A simple example is a \cl{for} loop that computes the sum of a sequence.
 {\tt \begin{snugshade*}
 \begin{lstlisting}    
 sum <- 0
@@ -375,7 +376,7 @@ fib
 
 \subsubsection{User Defined Functions}
 In \Rev you can write your own functions as well.
-The syntax for writing function is:
+The syntax for writing a function is:
 {\tt \begin{snugshade*}
 \begin{lstlisting}    
 function <return value type> <function name> (<list of arguments>) { <statements> }
@@ -391,7 +392,7 @@ Since the square is always a positive real number, we choose the return to be \c
 function RealPos square ( Real x ) { x * x }
 \end{lstlisting}
 \end{snugshade*}}
-Now we can call our own function the same way as we call other already built-in function in \RevBayes.
+Now we can call our own function the same way as we call other already built-in functions in \RevBayes.
 {\tt \begin{snugshade*}
 \begin{lstlisting}    
 a <- square(5.0)
@@ -459,10 +460,10 @@ The focus here lies in the Metropolis algorithm, Bayesian inference, and model s
 After completing this computer exercise, you should be familiar with the basic Metropolis algorithm, analyzing output generated from a MCMC algorithm, and performing standard Bayesian inference.
 
 \subsection{Model and Data}
-We will use the data example from \cite{Gelman2003} (Table \ref{tab:airlineFatalities}). 
-A summary is given in table \ref{tab:airlineFatalities}.
+We will use the data example from \cite{Gelman2003}.
+A summary is given in Table~\ref{tab:airlineFatalities}.
 \begin{table}[!hbtp]
-\caption{Airline fatalities from 1976 to 1985. Reproduced from \cite[][Table 2.2 on p. 69]{gelman95}.}
+\caption{Airline fatalities from 1976 to 1985. Reproduced from \cite[][Table~2.2 on p.~69]{Gelman2003}.}
 \label{tab:airlineFatalities}
 \smallskip
 \centering
@@ -516,9 +517,9 @@ x <- 1976:1985 - mean(1976:1985)
 \end{snugshade*}}
 
 A common proposal distribution for $\alpha^{\prime} \sim P(\alpha[i-1])$ is the normal distribution with mean $\mu = \alpha[i-1]$ and standard deviation $\sigma = \delta_\alpha$:
-\begin{equation}
-\alpha^{\prime} \sim \text{norm}(alpha[i-1],delta\_alpha)
-\end{equation}
+% \begin{equation}
+% \alpha^{\prime} \sim \text{norm}(alpha[i-1],delta\_alpha)
+% \end{equation}
 
 {\tt \begin{snugshade*}
 \begin{lstlisting}    
@@ -532,10 +533,10 @@ delta_alpha <- 1.0
 delta_beta <- 1.0
 \end{lstlisting}
 \end{snugshade*}}
-After you looked at the output of the MCMC, play around to find appropriate values for $\delta_{\alpha}$ and $\delta_{\beta}$.
+After you look at the output of the MCMC (later), play around to find appropriate values for $\delta_{\alpha}$ and $\delta_{\beta}$.
 
 Now we need to set starting values for the MCMC algorithm.
-Usually, these are drawn from the prior distribution, but sometimes if the prior is very uninformative, then these parameter values result into a likelihood of 0.0 (or log-likelihood of -Inf).
+Usually, these are drawn from the prior distribution, but sometimes if the prior is very uninformative, then these parameter values result in a likelihood of 0.0 (or log-likelihood of -Inf).
 {\tt \begin{snugshade*}
 \begin{lstlisting}    
 alpha[1] <- -0.01     # you can also use runif(-1.0,1.0)
@@ -543,7 +544,7 @@ beta[1] <- -0.01      # you can also use runif(-1.0,1.0)
 \end{lstlisting}
 \end{snugshade*}}
 Next, create some output for our MCMC algorithm.
-The output will be written into a file that can be read into \R or Tracer \citep{rambaut09}.
+The output will be written into a file that can be read into \R or Tracer \citep{Rambaut2011}.
 {\tt \begin{snugshade*}
 \begin{lstlisting}    
 # create a file output
@@ -641,7 +642,7 @@ alpha ~ dnUnif(-10,10)
 beta ~ dnUnif(-10,10)
 \end{lstlisting}
 \end{snugshade*}}
-It may be good to set some reasonable starting values especially if you choose is very uninformative prior distribution.
+It may be good to set some reasonable starting values especially if you choose a very uninformative prior distribution.
 If by chance you had starting values that gave a likelihood of -Inf, then \RevBayes will try several times to propose new starting values drawn from the prior distribution.
 {\tt \begin{snugshade*}
 \begin{lstlisting} 
@@ -651,7 +652,7 @@ beta.setValue(0.0)
 \end{lstlisting}
 \end{snugshade*}}
 Our next step is to set up the moves.
-Moves are algorithms that propose new values and know how the reset the values if the proposals are rejected.
+Moves are algorithms that propose new values and know how to reset the values if the proposals are rejected.
 We use the same sliding window move as we implemented above by ourselves.
 {\tt \begin{snugshade*}
 \begin{lstlisting} 
@@ -671,7 +672,7 @@ for (i in 1:x.size() ) {
 }
 \end{lstlisting}
 \end{snugshade*}}
-We can now create the model by pulling the up the model graph from any variable that is connected to our model graph.
+We can now create the model by pulling up the model graph from any variable that is connected to our model graph.
 {\tt \begin{snugshade*}
 \begin{lstlisting} 
 mymodel = model( alpha )
@@ -705,7 +706,7 @@ And now we are done {\LARGE \smiley}
  
 Report the posterior mean and 95\% credible intervals for $\alpha$ and $\beta$. 
 Additionally, plot the posterior distribution of $\alpha$ and $\beta$ by plotting a histogram of the samples. 
-You can use the \R function
+% You can use the \R function
 % \RCode{
 % hist(alpha,nclass=20)
 % }
@@ -733,10 +734,10 @@ This means, for any iteration $i$ you simulate draws from the conditional distri
 Estimate the distribution of the mean of the posterior predictive distribution of the the number of fatalities in 2014. 
 Therefore, let us denote the expected value of the posterior distribution by $\mu$. 
 Since we do not know this value $\mu$ exactly, we can follow the Bayesian approach and associate a probability for each value $m$ as being the true expected value of the posterior distribution, given the observations $y$ ($P(m = \mu|y)$).
-You can be approximate this distribution by recording the expected value for the number of fatalities in 2014 ($\text{E}[\exp(\alpha+\beta*x)|y]$) in each iteration $i$ of the Metropolis algorithm. 
+You can approximate this distribution by recording the expected value for the number of fatalities in 2014 ($\text{E}[\exp(\alpha+\beta*x)|y]$) in each iteration $i$ of the Metropolis algorithm. 
 Plot a histogram of the expected values, compute the mean of the expected values and compare it to the previously obtained estimate of the mean of the posterior predictive distribution.
  
-Follow the same approach as for the posterior predictive distribution for $x = 2015$, but this time for $x = 2016$ and estimate the probability of no fatality. 
+Follow the same approach as for the posterior predictive distribution for $x = 2014$, but this time for $x = 2016$ and estimate the probability of no fatality.
  
  
  
@@ -752,7 +753,7 @@ The values are the dates of major (more than 10 casualties) coal-mining disaster
 
 \subsection{A model for disasters}
 
-A common model for the number of events that occur over a period of time is a Poisson process, in which the number of events in disjoint time-intervals are independent and Poisson-distributed. 
+A common model for the number of events that occur over a period of time is a Poisson process, in which the numbers of events in disjoint time-intervals are independent and Poisson-distributed. 
 We will discretize and look at the yearly number of accidents. 
 
 In order to take into account the possible change of rate, we will allow for different rates before and after year $\theta$, where $\theta$ is unknown to us. 
@@ -764,7 +765,7 @@ $y_t \sim Poisson(\lambda_t)$ with $t = 1851,\ldots,1962$ and
 \gamma & \mbox{if } t \geq \theta
 \end{cases}
 \end{eqnarray*}
-Thus, the rate $t$ is defined by three unknown parameters: $\beta$, $\gamma$ and $\theta$. A hierarchical choice of priors is given by
+Thus, the rate $\lambda_t$ is defined by three unknown parameters: $\beta$, $\gamma$ and $\theta$. A hierarchical choice of priors is given by
 \begin{eqnarray*}
  \eta & \sim & Gamma(10.0;20.0) \\ 
  \beta & \sim & Gamma(2.0;\eta) \\
@@ -772,8 +773,8 @@ Thus, the rate $t$ is defined by three unknown parameters: $\beta$, $\gamma$ and
  \theta & \sim & Uniform(1852,\ldots,1962)
 \end{eqnarray*}
 which brings an additional parameter $\eta$ in the model. 
-For $\theta$ we have used an uniform prior over the years, but excluded year 1851 in order to make sure at least one year has rate $\beta$. 
-The hierarchical prior carry the belief that $\beta$ and $\gamma$ are somewhat similar in size,
+For $\theta$ we have used a uniform prior over the years, but excluded year 1851 in order to make sure at least one year has rate $\beta$.
+The hierarchical prior carries the belief that $\beta$ and $\gamma$ are somewhat similar in size,
 since they both depend on $\eta$. 
 
 \subsection*{The model in \Rev}
@@ -806,7 +807,7 @@ moves[mi++] = mvScale(gamma)
 moves[mi++] = mvSlide(theta)
 \end{lstlisting}
 \end{snugshade*}}
-Then, we set-up the model by computing the conditional rate of the Poisson distribution, creating random variables for each observation and attaching (clamping) data to the variables.
+Then, we set up the model by computing the conditional rate of the Poisson distribution, creating random variables for each observation and attaching (clamping) data to the variables.
 {\tt \begin{snugshade*}
 \begin{lstlisting} 
 for (i in 1:year.size() ) {
