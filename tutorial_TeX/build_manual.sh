@@ -1,6 +1,7 @@
 pdflatex RB_Manual.tex
 bibtex RB_Getting_Started/RB_Getting_Started_content
 bibtex RB_Basics_Tutorial/RB_Basics_Tutorial_content
+bibtex RB_Data_Tutorial/RB_Data_Tutorial_content
 bibtex RB_CTMC_Tutorial/RB_CTMC_Tutorial_content
 bibtex RB_Partition_Tutorial/RB_Partition_Tutorial_content
 bibtex RB_MCMC_Intro_Tutorial/RB_MCMC_Intro_Tutorial_content
@@ -37,6 +38,10 @@ rm RB_Getting_Started/RB_Getting_Started_content.blg
 rm RB_Basics_Tutorial/RB_Basics_Tutorial_content.aux
 rm RB_Basics_Tutorial/RB_Basics_Tutorial_content.bbl
 rm RB_Basics_Tutorial/RB_Basics_Tutorial_content.blg
+
+rm RB_Data_Tutorial/RB_Data_Tutorial_content.aux
+rm RB_Data_Tutorial/RB_Data_Tutorial_content.bbl
+rm RB_Data_Tutorial/RB_Data_Tutorial_content.blg
 
 rm RB_MCMC_Intro_Tutorial/RB_MCMC_Intro_Tutorial_content.aux
 rm RB_MCMC_Intro_Tutorial/RB_MCMC_Intro_Tutorial_content.bbl

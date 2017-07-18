@@ -1,6 +1,6 @@
 \section{Overview}
 
-This very basic tutorial provides and introduction to Bayesian inference and Markov chain Monte Carlo (MCMC) algorithms.
+This very basic tutorial provides an introduction to Bayesian inference and Markov chain Monte Carlo (MCMC) algorithms.
 The tutorial explains the fundamental concepts of an MCMC algorithm, such as \emph{moves} and \emph{monitors}, which are ubiquitous in every other tutorial.
 After the tutorial you should be somewhat familiar with Bayesian inference (\EG what is a prior distribution, posterior distribution, and likelihood function) and MCMC simulation (\EG what are moves and monitors and why do we need them).
 
@@ -17,7 +17,7 @@ This is indeed the maximum likelihood estimate!
 
 From Bayes' theorem, the \emph{posterior distribution} of $p$ given $x$, $P(p \mid x)$, is:
 \begin{align*}
-\overbrace{P(p \mid x)}^{\text{posterior distribution}} = \frac{ \overbrace{P(x \mid p)}^{\text{likelihood}} \times \overbrace{P(x)}^{\text{prior}}}{\underbrace{P(x)}_{\text{marginal likelihood}}}
+\overbrace{P(p \mid x)}^{\text{posterior distribution}} = \frac{ \overbrace{P(x \mid p)}^{\text{likelihood}} \times \overbrace{P(p)}^{\text{prior}}}{\underbrace{P(x)}_{\text{marginal likelihood}}}
 \end{align*}
 The take-home message here is that, if we're interested in doing Bayesian inference for the coin flipping model, we need to specify a \emph{likelihood function} and a \emph{prior distribution} for $p$.
 In virtually all practical cases, we cannot compute the posterior distribution directly and instead use numerical procedures, such as a Markov chain Monte Carlo (MCMC) algorithm.
@@ -25,7 +25,7 @@ Therefore, we will also have to write an MCMC algorithm that samples parameter v
 
 We'll use a simple beta distribution as a prior on the parameter of the model, $p$.
 The beta distribution has two parameters, $\alpha$ and $\beta$ (Figure~\ref{fig:beta_distribution}).
-Different choice for $\alpha$ and $\beta$ represent different prior beliefs.
+Different choices for $\alpha$ and $\beta$ represent different prior beliefs.
 \begin{figure}[h!]
 \centering
 \fbox{\includegraphics[width=0.7\linewidth,angle=0]{\ResourcePath figures/beta.pdf}}
@@ -68,7 +68,7 @@ The Metropolis-Hastings MCMC algorithm \citep{Metropolis1953,Hastings1970} proce
 		R = \text{min}\left\{1, \frac{P(x \mid p^\prime)}{P(x \mid p)} \times \frac{P(p^\prime)}{P(p)} \times \frac{q(p)}{q(p^\prime)} \right\}
 	\end{align*}
 	\item Generate a uniform random number between 1 and 0. If it is less than $R$, accept the move (set $p = p^\prime$). Otherwise, keep the current value of $p$.
-	\item Store the values of the parameters in
+	\item Record the values of the parameters.
 	\item Return to step 2 many many times, keeping track of the value of $p$.
 \end{enumerate}
 
@@ -86,7 +86,7 @@ x <- 63	# the number of heads
 
 \subsection{Initializing the Markov chain}
 We have to start the MCMC off with some initial parameter values.
-One way to do this is to randomly draw values of the parameter (just $p$, in this case) from the prior distribution.
+One way to do this is to randomly draw values of the parameters (just $p$, in this case) from the prior distribution.
 We'll assume a ``flat'' beta prior distribution; that is, one with parameters $\alpha = 1$ and $\beta = 1$.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
@@ -140,7 +140,7 @@ write(0,p,"\n",file="binomial_MH.log",append=TRUE)
 \subsection{Writing the MH Algorithm}
 At long last, we can write our MCMC algorithm.
 First, let us define the frequency how often we print to file (\IE monitor), which is also often called thinning.
-If we set the variable \cl{printgen} to 1, then we will store the parameter values every single iteration; if we choose cl{printgen=10} instead, then only every $10^{th}$ iteration. 
+If we set the variable \cl{printgen} to 1, then we will store the parameter values every single iteration; if we choose \cl{printgen=10} instead, then only every $10^{th}$ iteration.
 {\tt \begin{snugshade*}
 \begin{lstlisting}    
 printgen = 10
@@ -211,8 +211,8 @@ Specifically, Figure~\ref{fig:mcmc_samples} shows the sample trace (left) and th
 There are other parameters, such as the posterior mean and the 95\% HPD (highest posterior density) interval, that you can obtain from \Tracer.
 \begin{figure}[h!]
 \centering
-\fbox{\includegraphics[width=0.45\linewidth,angle=0]{\ResourcePath figures/Binomial_MCMC_Trace.pdf}
-\includegraphics[width=0.45\linewidth,angle=0]{\ResourcePath figures/Binomial_MCMC_distribution.pdf}}
+\fbox{\includegraphics[width=0.45\linewidth,angle=0]{\ResourcePath figures/binomial_MCMC_Trace.pdf}
+\includegraphics[width=0.45\linewidth,angle=0]{\ResourcePath figures/binomial_MCMC_distribution.pdf}}
 \label{fig:mcmc_samples}
 \caption{Left: The \emph{Trace} of sample from an MCMC simulation. Right: The approximated posterior probability distribution for $p$.}
 \end{figure}
@@ -269,7 +269,7 @@ function move_uniform( Natural weight) {
 \end{lstlisting}
 \end{snugshade*}}
 There are a few things to consider in the function \cl{move\_uniform}.
-First, we do not have a return value because the move simply change the variable $p$ if the move is accepted.
+First, we do not have a return value because the move simply changes the variable $p$ if the move is accepted.
 Second, we expect an argument called \cl{weight} which will tell us how often we want to use this move.
 Otherwise, this function does exactly the same what was inside the for loop previously.
 
@@ -278,7 +278,7 @@ Otherwise, this function does exactly the same what was inside the for loop prev
 
 \subsection{Sliding-window move}
 As a second move we will write a sliding-window move.
-The sliding-window moves propose an update by drawing a random number from a normal distribution and then adds this random number to the current value (\IE centered on the previous value).
+The sliding-window moves propose an update by drawing a random number from a normal distribution and then adding this random number to the current value (\IE centered on the previous value).
 {\tt \begin{snugshade*}
 \begin{lstlisting}    
 function move_slide( RealPos delta, Natural weight) {
@@ -311,7 +311,7 @@ Conversely, if \cl{delta} is small, then the proposed values are more likely to 
 
 \impmark Experiment with different values for \cl{delta} and check how the effective sample size (ESS) changes.
 
-There is, a priori, no good method on knowing what values of \cl{delta} are most efficient.
+There is, a priori, no good method for knowing what values of \cl{delta} are most efficient.
 However, there are some algorithms implemented in \RevBayes, called \emph{auto-tuning}, that will estimate good values for \cl{delta}.
 
 
@@ -334,14 +334,14 @@ We can do that by reflecting any proposals outside of that region back into the 
 \end{snugshade*}}
 However, this reflection procedure would have to be repeated until the values fall inside the acceptable range.
 Another alternative, as implicitly used here, is that the prior and/or likelihood will return \emph{nan} if the parameter values are outside the allowed range.
-There are just more rejected, and thus wasted, proposal.
+There are just more rejected, and thus wasted, proposals.
 
 
 \subsection{Scaling move}
 As a third and final move we will write a scaling move.
-The scaling move proposes an update by drawing a random number from a uniform(-0.5,0.5) distribution, exponentiates the random number, and then multiplies this scaling factor to the current value.
-An interesting feature of this move is that it is not symmetrical and thus needs a Hasting ratio.
-The Hastings ratio is rather trivial in this case and one only needs to multiply the scaling factor to the acceptance rate.
+The scaling move proposes an update by drawing a random number from a uniform(-0.5,0.5) distribution, exponentiating the random number, and then multiplying this scaling factor by the current value.
+An interesting feature of this move is that it is not symmetrical and thus needs a Hastings ratio.
+The Hastings ratio is rather trivial in this case, and one only needs to multiply the acceptance rate by the scaling factor.
 {\tt \begin{snugshade*}
 \begin{lstlisting}    
 function move_scale( RealPos lambda, Natural weight) {
@@ -407,7 +407,7 @@ However, this MCMC algorithm is \emph{very} specific to our binomial model and t
 \section{The Metropolis-Hastings Algorithm with the \emph{Real} \RevBayes}
 We'll now specify the exact same model in \Rev using the built-in modeling functionality.
 It turns out that the \Rev code to specify the above model is extremely simple and similar to the one we used before.
-Again, we start by ``reading in'' (\emph{i.e.},making up) our data.
+Again, we start by ``reading in'' (\emph{i.e.}, making up) our data.
 
 {\tt \begin{snugshade*}
 \begin{lstlisting}    
@@ -465,7 +465,7 @@ monitors[2] = mnScreen(printgen=100, p)
 \end{lstlisting}
 \end{snugshade*}}
 
-Finally, we assemble the analysis object (which contains the model, the monitors and the moves), and execute the run using the \texttt{.run} command:
+Finally, we assemble the analysis object (which contains the model, the monitors, and the moves) and execute the run using the \texttt{.run} command:
 {\tt \begin{snugshade*}
 \begin{lstlisting}    
 # Make the analysis object

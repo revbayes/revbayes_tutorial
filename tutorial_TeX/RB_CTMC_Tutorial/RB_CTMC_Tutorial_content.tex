@@ -12,7 +12,9 @@ Q = \begin{pmatrix} -\mu_A & \mu_{GA} & \mu_{CA} & \mu_{TA} \\
 \mu_{AT} & \mu_{GT} & \mu_{CT} & -\mu_T 
 \end{pmatrix} \mbox{  ,}
 \end{equation*}
-where $\mu_{ij}$ represents the instantaneous rate of substitution from state $i$ to state $j$. Given the instantaneous-rate matrix, $Q$, we can compute the corresponding transition probabilities for a branch of length $t$, $P(t)$, by exponentiating the rate matrix:
+where $\mu_{ij}$ represents the instantaneous rate of substitution from state $i$ to state $j$.
+The diagonal elements $\mu_i$ are the rates of \emph{not} changing out of state $i$, equal to the sum of the elements in the corresponding row.
+Given the instantaneous-rate matrix, $Q$, we can compute the corresponding transition probabilities for a branch of length $t$, $P(t)$, by exponentiating the rate matrix:
 \begin{equation*}
 P(t) = \begin{pmatrix}          
 p_{AA}(t) & p_{GA}(t) & p_{CA}(t) & p_{TA}(t) \\
@@ -27,7 +29,7 @@ Each specific substitution model has a uniquely defined instantaneous-rate matri
 In this tutorial you will perform phylogeny inference under common models of DNA sequence evolution: JC, F81, HKY85, GTR, GTR+Gamma and GTR+Gamma+I.
 For all of these substitution models, you will perform an MCMC analysis to estimate phylogeny and other model parameters.
 The estimated trees will be unrooted trees with independent branch-length parameters. 
-We will provide comments how to modify the tutorial if you wish to estimate rooted, clock-like trees.
+We will provide comments on how to modify the tutorial if you wish to estimate rooted, clock-like trees.
 All the assumptions will be covered more in detail later in this tutorial.
 
 \subsection{Requirements}
@@ -76,7 +78,7 @@ The first section of this exercise involves:
 The graphical model shows the dependencies between the parameters.
 Here, the rate matrix $Q$ is a constant variable because it is fixed and does not depend on any parameters.
 The only free parameters of this model, the Jukes-Cantor model, are the tree $\Psi$ including the node ages.}
-\label{fig:jc}
+\label{fig:jc0}
 \end{figure}
 
 We first consider the simplest substitution model described by \cite{Jukes1969}.
@@ -179,8 +181,8 @@ With the data loaded, we can now proceed to specify our Jukes-Cantor substitutio
 \subsection{Jukes-Cantor Substitution Model}
 
 A given substitution model is defined by its corresponding instantaneous-rate matrix, $Q$.
-The Jukes-Cantor substitution model does not have any free parameters (as the substitution rates are all assumed to be equal), so we can define it as a constant variable.
-The function \cl{fnJC(n)} will create an instantaneous-rate matrix for character with $n$ states.
+The Jukes-Cantor substitution model does not have any free parameters (as the substitution rates are all assumed to be equal, and there is a separate parameter that scales their overall magnitude), so we can define it as a constant variable.
+The function \cl{fnJC(n)} will create an instantaneous-rate matrix for a character with $n$ states.
 Since we use DNA data here, we create a 4x4 instantaneous-rate matrix:
 {\tt \begin{snugshade*}
 \begin{lstlisting}
@@ -303,7 +305,7 @@ root_age <- 10.0
 \end{lstlisting}
 \end{snugshade*}}
 Here we simply assumed that the tree is 10.0 time units old. 
-We could also specify a prior on the root age if we have fossil calibrations (see \href{https://github.com/revbayes/revbayes_tutorial/raw/master/tutorial_TeX/RB_DivergenceTime_Calibration_Tutorial/RB_DivergenceTime_Calibration_Tutorial.pdf}{Divergence Time and Calibration Tutorial})
+We could also specify a prior on the root age if we have fossil calibrations (see \href{https://github.com/revbayes/revbayes_tutorial/raw/master/tutorial_TeX/RB_DivergenceTime_Calibration_Tutorial/RB_DivergenceTime_Calibration_Tutorial.pdf}{Divergence Time and Calibration Tutorial}).
 Next, we specify the \cl{tree} stochastic variable by passing in the taxon information \cl{taxa} to the \cl{dnUniformTimeTree()} distribution:
 {\tt \begin{snugshade*}
 \begin{lstlisting}
@@ -314,7 +316,7 @@ psi ~ dnUniformTimeTree(rootAge=root_age, taxa=taxa)
 Some types of stochastic nodes can be updated by a number of alternative moves. 
 Different moves may explore parameter space in different ways, and it is possible to use multiple different moves for a given parameter to improve mixing (the efficiency of the MCMC simulation). 
 In the case of our rooted tree, for example, we can use both a nearest-neighbor interchange move without and with changing the node ages (\cl{mvNarrow} and \cl{mvNNI}) and a fixed-nodeheight subtree-prune and regrafting move (\cl{mvFNPR}) and its Metropolized-Gibbs variant (\cl{mvGPR}) \citep{Hoehna2008,Hoehna2012}. 
-We also need moves that change the ages of the internal nodes; which are for example the \cl{mvSubtreeScale} and \cl{mvNodeTimeSlideUniform}.
+We also need moves that change the ages of the internal nodes, for example, \cl{mvSubtreeScale} and \cl{mvNodeTimeSlideUniform}.
 These moves do not have tuning parameters associated with them, thus you only need to pass in the \cl{psi} node and proposal \cl{weight}. 
 {\tt \begin{snugshade*}
 \begin{lstlisting}
@@ -503,7 +505,7 @@ The numbers at the nodes show the posterior probabilities for the clades.
 We have rooted the tree at the outgroup \emph{Galeopterus\_variegatus}}
 \label{fig:jc_tree}
 \end{figure}
-\noindent \\ \impmark Look at the file called \cl{output/primates\_cytb\_JC.tree} in \texttt{FigTree}. We show it in Figure~\ref{fig:jc_tree}.
+\noindent \\ \impmark Look at the file called \cl{output/primates\_cytb\_JC\_MAP.tree} in \texttt{FigTree}. We show it in Figure~\ref{fig:jc_tree}.
 
 
 \noindent \\ \impmark Fill in the following table as you go through the tutorial.
@@ -659,7 +661,7 @@ This should be all for the HKY model.
 \subsection{Exercise 2}
 
 \begin{itemize}
-\item With figure \ref{fig:jc} as your guide, draw the probabilistic graphical model of the HKY model. 
+\item With figure \ref{fig:jc0} as your guide, draw the probabilistic graphical model of the HKY model.
 \item Copy the file called  \cl{mcmc\_JC.Rev} and modify it by including the necessary parameters to specify the HKY substitution model.
 \item Run an MCMC analysis to estimate the posterior distribution under the HKY substitution model.
 \item Are the resulting estimates of the base frequencies equal? 
@@ -730,7 +732,7 @@ The expectation and variance for each variable are related to the sum of the sha
 The prior we specified above is a `flat' or symmetric Dirichlet distribution; all of the shape parameters are equal (1,1,1,1,1,1).
 This describes a model that allows for equal rates of change between nucleotides, such that the expected rate for each is equal to $\frac{1}{6}$ (Figure \ref{dirichletFig}a).
 We might also parameterize the Dirichlet distribution such that all of the shape parameters were equal to 100, which would also specify a prior with an expectation of equal exchangeability rates (Figure \ref{dirichletFig}b). 
-However, by increasing the values of the shape parameters, \cl{er\_prior <- v(100,100,100,100,100,100)}, the Dirichlet distribution will more strongly favor equal exchangeability rates; ({\it i.e.}, providing is a relatively {\em informative} prior). 
+However, by increasing the values of the shape parameters, \cl{er\_prior <- v(100,100,100,100,100,100)}, the Dirichlet distribution will more strongly favor equal exchangeability rates; ({\it i.e.}, a relatively {\em informative} prior).
 Alternatively, we might consider an asymmetric Dirichlet parameterization that could reflect a strong prior belief that transition and transversion substitutions occur at different rates.
 For example, we might specify the prior density \cl{er\_prior <- v(4,8,4,4,8,4)}.   
 Under this model, the expected rate for transversions would be $\frac{4}{32}$ and that for transitions would be $\frac{8}{32}$, and there would be greater prior probability on sets of GTR rates that matched this configuration (Figure \ref{dirichletFig}c). 
@@ -785,7 +787,7 @@ Q := fnGTR(er,pi)
 
 
 
-\subsection{Execise 3}
+\subsection{Exercise 3}
 
 \begin{itemize}
 \item Use one of your previous analysis files---either the \cl{mcmc\_JC.Rev} or \cl{HKY.Rev}---to specify a GTR analysis in a new file called \cl{mcmc\_GTR.Rev}.
@@ -836,7 +838,7 @@ Finally, the shape of the lognormal prior is governed by the mean and standard d
 \begin{figure}[h!]
 \centering
 \fbox{\includegraphics[width=\textwidth,angle=0]{\ResourcePath figures/gtrg_graphical_model.pdf}}
-\caption{\small Graphical model representation of the General Time Reversible (GTR) + Gamma phylogenetic model.}
+\caption{\small Graphical model representation of the General Time Reversible (GTR) + Gamma phylogenetic model with invariable sites.}
 \label{fig:gtrg}
 \end{figure}
 
@@ -888,7 +890,7 @@ seq ~ dnPhyloCTMC(tree=psi, Q=Q, siteRates=gamma_rates, type="DNA")
 \end{snugshade*}}
 
 
-\subsection{Execise 4}
+\subsection{Exercise 4}
 
 Modify the previous GTR analysis to specify the GTR+Gamma model. 
 Run an MCMC simulation to estimate the posterior distribution.
@@ -938,7 +940,7 @@ moves[++mvi] = mvSlide(pinvar)
 \end{lstlisting}
 \end{snugshade*}}
 
-Finally, that you need to call the \cl{PhyloCTMC} constructor to include the new\cl{pinvar} parameter:
+Finally, you need to call the \cl{PhyloCTMC} constructor to include the new\cl{pinvar} parameter:
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 seq ~ dnPhyloCTMC(tree=psi, Q=Q, siteRates=gamma_rates, pInv=pinvar, type="DNA")
