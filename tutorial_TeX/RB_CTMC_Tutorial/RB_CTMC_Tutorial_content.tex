@@ -12,7 +12,9 @@ Q = \begin{pmatrix} -\mu_A & \mu_{GA} & \mu_{CA} & \mu_{TA} \\
 \mu_{AT} & \mu_{GT} & \mu_{CT} & -\mu_T 
 \end{pmatrix} \mbox{  ,}
 \end{equation*}
-where $\mu_{ij}$ represents the instantaneous rate of substitution from state $i$ to state $j$. Given the instantaneous-rate matrix, $Q$, we can compute the corresponding transition probabilities for a branch of length $t$, $P(t)$, by exponentiating the rate matrix:
+where $\mu_{ij}$ represents the instantaneous rate of substitution from state $i$ to state $j$.
+The diagonal elements $\mu_i$ are the rates of \emph{not} changing out of state $i$, equal to the sum of the elements in the corresponding row.
+Given the instantaneous-rate matrix, $Q$, we can compute the corresponding transition probabilities for a branch of length $t$, $P(t)$, by exponentiating the rate matrix:
 \begin{equation*}
 P(t) = \begin{pmatrix}          
 p_{AA}(t) & p_{GA}(t) & p_{CA}(t) & p_{TA}(t) \\
@@ -179,7 +181,7 @@ With the data loaded, we can now proceed to specify our Jukes-Cantor substitutio
 \subsection{Jukes-Cantor Substitution Model}
 
 A given substitution model is defined by its corresponding instantaneous-rate matrix, $Q$.
-The Jukes-Cantor substitution model does not have any free parameters (as the substitution rates are all assumed to be equal), so we can define it as a constant variable.
+The Jukes-Cantor substitution model does not have any free parameters (as the substitution rates are all assumed to be equal, and there is a separate parameter that scales their overall magnitude), so we can define it as a constant variable.
 The function \cl{fnJC(n)} will create an instantaneous-rate matrix for a character with $n$ states.
 Since we use DNA data here, we create a 4x4 instantaneous-rate matrix:
 {\tt \begin{snugshade*}
@@ -836,7 +838,7 @@ Finally, the shape of the lognormal prior is governed by the mean and standard d
 \begin{figure}[h!]
 \centering
 \fbox{\includegraphics[width=\textwidth,angle=0]{\ResourcePath figures/gtrg_graphical_model.pdf}}
-\caption{\small Graphical model representation of the General Time Reversible (GTR) + Gamma phylogenetic model.}
+\caption{\small Graphical model representation of the General Time Reversible (GTR) + Gamma phylogenetic model with invariable sites.}
 \label{fig:gtrg}
 \end{figure}
 

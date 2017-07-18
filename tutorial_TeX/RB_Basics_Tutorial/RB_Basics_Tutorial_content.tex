@@ -228,6 +228,9 @@ y.lnProbability()                # print the log-probability if 'y'
 str(y)                           # printing all the information of 'y'
 \end{lstlisting}
 \end{snugshade*}}
+
+Variables that are not part of a model are assigned with \cl{=}, for example, \cl{i = 0}.
+
 Now you know everything there is about creating the different types of variables and the different ways in which these variables behave.
 
 
@@ -508,6 +511,7 @@ The source file for this sub-exercise \cl{airline\_fatalities\_part1.Rev}.
 Let us construct a Metropolis algorithm that simulates from the posterior distribution $P(\alpha,\beta|y)$. 
 We will construct this algorithm explicitly, without using the high-level functions existing in \RevBayes  to perform MCMC. 
 In the next section, we will repeat the same analysis, this time using the high-level functions.
+(More background on MCMC is provided in the \href{https://github.com/revbayes/revbayes_tutorial/raw/master/tutorial_TeX/RB_MCMC_Intro_Tutorial/RB_MCMC_Intro_Tutorial.pdf}{Introduction to Markov Chain Monte Carlo Algorithms tutorial}.)
  
 For simplicity of the calculations you can ``normalize'' the years, e.g. 
 {\tt \begin{snugshade*}
