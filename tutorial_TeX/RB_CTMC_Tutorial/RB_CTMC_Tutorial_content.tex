@@ -78,7 +78,7 @@ The first section of this exercise involves:
 The graphical model shows the dependencies between the parameters.
 Here, the rate matrix $Q$ is a constant variable because it is fixed and does not depend on any parameters.
 The only free parameters of this model, the Jukes-Cantor model, are the tree $\Psi$ including the node ages.}
-\label{fig:jc0}
+\label{fig:jc}
 \end{figure}
 
 We first consider the simplest substitution model described by \cite{Jukes1969}.
@@ -661,7 +661,7 @@ This should be all for the HKY model.
 \subsection{Exercise 2}
 
 \begin{itemize}
-\item With figure \ref{fig:jc0} as your guide, draw the probabilistic graphical model of the HKY model.
+\item With figure \ref{fig:jc} as your guide, draw the probabilistic graphical model of the HKY model.
 \item Copy the file called  \cl{mcmc\_JC.Rev} and modify it by including the necessary parameters to specify the HKY substitution model.
 \item Run an MCMC analysis to estimate the posterior distribution under the HKY substitution model.
 \item Are the resulting estimates of the base frequencies equal? 
