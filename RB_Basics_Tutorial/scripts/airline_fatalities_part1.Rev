@@ -21,8 +21,8 @@ alpha[1] <- -0.01     # you can also use runif(-1.0,1.0)
 beta[1] <- -0.01      # you can also use runif(-1.0,1.0)
 
 # create a file output
-write("iteration","alpha","beta",file="output/airline_fatalities.log")
-write(0,alpha[1],beta[1],file="output/airline_fatalities.log",append=TRUE)
+write("iteration","alpha","beta","\n",file="output/airline_fatalities.log")
+write(0,alpha[1],beta[1],"\n",file="output/airline_fatalities.log",append=TRUE)
 
 for (i in 2:1000) {
    alpha_prime <- rnorm(1,alpha[i-1],delta_alpha)[1]
@@ -44,7 +44,7 @@ for (i in 2:1000) {
    }
 
    # output to a log-file
-   write(i-1,alpha[i],beta[i],file="output/airline_fatalities.log",append=TRUE)
+   write(i-1,alpha[i],beta[i],"\n",file="output/airline_fatalities.log",append=TRUE)
 
 # output to the screen
 #   write("alpha[",i,"] = ",alpha[i],sep="")
