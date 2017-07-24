@@ -20,7 +20,7 @@ Execute the \RevBayes binary. If this program is in your path, then you can simp
 \exs{\cl{\$ rb}}
 
 When you execute the program, you will see a brief program information, including the current version number. 
-Remember that more information can be obtained from \href{www.RevBayes.com}{ww.RevBayes.com}.
+Remember that more information can be obtained from \href{www.RevBayes.com}{www.RevBayes.com}.
 When you execute the program with an additional filename, \EG
 \exs{\cl{\$ rb my\_analysis.Rev}}
 then \RevBayes will run all commands specified in your file.
@@ -55,7 +55,8 @@ The various \RevBayes commands and syntax within the text are specified using \c
 Most tutorials also includes hyperlinks: bibliographic citations are {\textcolor{citescol}{medium sea green}} and link to the full citation in the references, external URLs are {\textcolor{urlscol}{cerulean}}, and internal references to figures and equations are {\textcolor{linkscol}{forest green}}.
 
 The various exercises in this tutorial take you through the steps required to perform phylogenetic analyses of the example datasets. 
-In addition, we have provided the \Rev scripts and output files for some exercise so you can verify your results. (Note that since the MCMC runs you perform will start from different random seeds, the output files resulting from your analyses \textit{will not} be identical to the ones we provide you.)
+In addition, we have provided the \Rev scripts and output files for some exercises so you can verify your results.
+(Note that since the MCMC runs you perform will start from different random seeds, the output files resulting from your analyses \textit{will not} be identical to the ones we provide you.)
 
 
 \bigskip
@@ -103,7 +104,7 @@ $$\mathbb{P}(M,\sigma \mid \boldsymbol{x}, \alpha, \beta, \lambda) = \frac{\math
 This parameter is log-normally distributed with parameters $\mu$ and $\sigma$ (log mean and standard deviation, respectively). 
 The parameter $\mu$ is a deterministic node that is calculated from the stochastic nodes $M$ (the mean of the distribution) and $\sigma$. 
 Dotted arrows indicate deterministic functions and are used to connect deterministic nodes to their parent variables. 
-A gamma distribution is applied as a hyper prior on $M$ with constant nodes for the shape $\alpha$ and rate $\beta$. 
+A gamma distribution is applied as a hyperprior on $M$ with constant nodes for the shape $\alpha$ and rate $\beta$.
 The stochastic variable $\sigma$ is exponentially distributed with fixed value for the rate $\lambda$.
 }
 \label{simpleGM}
@@ -156,7 +157,7 @@ Thus, typically the first variables that are instantiated are \emph{constant var
 Constant variables require you to assign a fixed value using the \cl{<-} operator. 
 Stochastic variables are initialized using the \cl{\rbdn} operator followed by the constructor function for a distribution. 
 In \Rev, the naming convention for distributions is \cl{dn*}, where \cl{*} is a wildcard representing the name of the distribution. 
-Each distribution function requires hyper-parameters passed in as arguments. 
+Each distribution function requires hyperparameters passed in as arguments.
 This is effectively linking nodes using arrows in the graphical model.
 The following code snippet creates a stochastic variable called \cl{M} which is assigned a gamma-distributed hyperprior, with shape \cl{alpha} and rate \cl{beta}:
 {\tt \begin{snugshade*}
@@ -180,7 +181,7 @@ M ~ dnBimodalLognormal(mean_1, mean_2, sd_1, sd_2, weight)
 \end{lstlisting}
 \end{snugshade*}}
 
-\Rev does allow you to specify constant-variable values in the distribution constructor function, therefore this also works:
+\Rev does allow you to specify constant-variable values in the distribution constructor function; therefore this also works:
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 M ~ dnBimodalLognormal(0.5, 2.0, 1.0, 1.0, 0.5)

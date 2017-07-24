@@ -77,7 +77,7 @@ data <- readDiscreteCharacterData("data/primates_cytb.nex")
 \end{lstlisting}
 \end{snugshade*}}
 
-\subsection{Querrying Dataset Attributes}
+\subsection{Querying Dataset Attributes}
 When a dataset has been loaded into \RevBayes, we can query relevant \Rev variables. 
 To report the current value of any variable, simply type the variable name and press enter. 
 For example, the \cl{data} variable returns general information about the sequence alignment:
@@ -150,6 +150,7 @@ Available \textit{member functions} for the data variable are listed in Table \r
  	\cl{size} 	 						& 	 Natural function ()				\\ 
 	\bottomrule
 \end{tabularx}
+% Looks like this table needs updating.
 \end{table}
 
 
@@ -234,7 +235,7 @@ For example, we could exclude the first site in our concatenated primate alignme
 
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-excludeCharacter([1])
+data.excludeCharacter([1])
 \end{lstlisting}
 \end{snugshade*}}
 [Note that sites of an alignment are indexed from 1 to $N$.]
@@ -300,7 +301,7 @@ It is also possible to exclude/include all sites using the \cl{excludeAll} and \
 
 \section{Biogeographical Data}
 
-For concreteness, this section focuses on the Hawaiian {\it Psychotria} dataset used in \citet{ree08}.
+For concreteness, this section focuses on the Hawaiian {\it Psychotria} dataset used in \citet{Ree2008}.
 
 \subsection{Nexus file}
 
@@ -387,7 +388,7 @@ Here, the {\tt latitude} and {\tt longitude} change in each of the four epochs, 
 In addition, each area is marked as habitable or not using the {\tt dispersalValues} array.
 The elements in the array correspond to the other areas defined in the analysis.
 For example, in {\tt epoch1}, Kauai's {\tt dispersalValues} is equal to {\tt [ 1,0,0,0 ]}, which indicates Kauai exists at that point in time but it is not in contact with any other areas, i.e. the range in that area cannot expand into other areas.
-The {\tt dispersalValues} for Oahu, Maui, and Hawaii are all equal to {\tt [ 0,0,0,0 ]}, meaning no species may be present in that area during the time interval of {\t epoch1} during ages from 10.0 to 3.7. In contrast, {\tt epoch4}, from ages 0.5 to the present, range expansions may occur between any pair of areas and any area may be included in a species' range.
+The {\tt dispersalValues} for Oahu, Maui, and Hawaii are all equal to {\tt [ 0,0,0,0 ]}, meaning no species may be present in that area during the time interval of {\tt epoch1} during ages from 10.0 to 3.7. In contrast, {\tt epoch4}, from ages 0.5 to the present, range expansions may occur between any pair of areas and any area may be included in a species' range.
 
 
 \bibliographystyle{sysbio}

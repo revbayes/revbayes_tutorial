@@ -1,0 +1,198 @@
+
+\section{Example: A Simple ChromoSSE Analysis}\label{sec:chromosse_analysis}
+
+In this example, we will again use molecular sequence data and chromosome counts from \citet{ohi2006molecular} of the plant genus \textit{Aristolochia}. 
+We will use a ChromoSSE model to infer rates of chromosome evolution and ancestral chromosome numbers.
+For more complex examples utilizing ChromoSSE with Bayesian model averaging and reversible-jump
+MCMC, see the scripts and explanations at \url{https://github.com/wf8/chromosse}.
+
+Like in previous examples, we will here only highlight the major differences between a ChromoSSE
+analysis and the ChromEvol analysis set up in Section \ref{sec:chromo_basic_analysis}.
+The full script to run this ChromoSSE example is provided in the file \texttt{scripts/ChromoSSE\_simple.Rev}.
+
+
+\bigskip
+\subsection{The Chromosome Evolution Model}
+
+\subsubsection{A Joint Model of the Tree and Chromosome Numbers}
+
+A major difference between the previously discussed models of chromosome number evolution
+and ChromoSSE is that ChromoSSE jointly describes the evolution of chromosome numbers
+and the tree. Since ChromoSSE assumes the tree is generated via a birth-death process
+you should use an ultrametric tree or time-calibrated tree.
+The tree may contain lineages that went extinct before the present,
+but the branch lengths should be in units of time, as opposed to 
+units of substitutions per site.
+So here we will swap out the tree used in previous examples for a tree
+that was time-calibrated. 
+The estimated rates of chromosome evolution will
+have the same unit of time as the branch lengths of our tree.
+In this example the node ages are relative, but you could
+use a fossil-calibrated tree with absolute ages if you wanted
+rates of chromosome change in units of millions of years.
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+phylogeny <- readTrees("data/aristolochia-bd.tree")[1]
+\end{lstlisting}
+\end{snugshade*}
+}
+
+
+\subsubsection{Anagenetic Changes}
+
+The anagenetic part of the chromosome number evolution model involves populating the \texttt{Q} transition rate matrix with the rates of anagenetic chromosome number changes.
+This is set up exactly the same as in the ChromEvol analyses before.
+
+\subsubsection{Cladogenetic Changes}
+
+At each lineage splitting event a number of different types of cladogenetic events could occur, including no change in chromosome numbers, a dysploid gain or loss in a single daughter lineage, or a change in ploidy in a single daughter lineage.
+So we must set up a separate speciation rate for each type of cladogenetic event.
+
+For each speciation rate, we will use an exponential prior with the mean value set to $r$, where $r$ is an approximation of the net diversification rate.
+We calculate this approximation using $E(N_t) = N_0 e^{rt}$,
+which describes the expected number of species $N_t$ 
+at time $t$ under a constant rate birth-death process
+where $N_0$ is the number of species at $t=0$ \citep{nee94}. 
+The equation can be rearranged to arrive at
+$r = ( \ln(N_t) - \ln(N_0) ) / t$.
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+taxa <- phylogeny.taxa()
+speciation_mean <- ln( taxa.size() ) / phylogeny.rootAge()
+speciation_pr <- 1 / speciation_mean
+\end{lstlisting}
+\end{snugshade*}
+}
+Each cladogenetic event type is assigned its own speciation rate.
+We set the rate of demi-polyploidization to 0.0 for simplicity.
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+clado_no_change ~ dnExponential(speciation_pr)
+clado_fission ~ dnExponential(speciation_pr)
+clado_fusion ~ dnExponential(speciation_pr)
+clado_polyploid ~ dnExponential(speciation_pr)
+clado_demipoly <- 0.0
+\end{lstlisting}
+\end{snugshade*}
+}
+Like usual, we must add MCMC moves for the speciation rates.
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+moves[mvi++] = mvScale(clado_no_change, lambda=5.0, weight=1)
+moves[mvi++] = mvScale(clado_fission, lambda=5.0, weight=1)
+moves[mvi++] = mvScale(clado_fusion, lambda=5.0, weight=1)
+moves[mvi++] = mvScale(clado_polyploid, lambda=5.0, weight=1)
+\end{lstlisting}
+\end{snugshade*}
+}
+We next create a vector to hold the speciation rates,
+and also create a deterministic node \texttt{total\_speciation}
+which will be a convenient way to monitor the total speciation rate
+of the birth-death process.
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+speciation_rates := [clado_no_change, clado_fission, clado_fusion, clado_polyploid, clado_demipoly]
+total_speciation := sum(speciation_rates)
+\end{lstlisting}
+\end{snugshade*}
+}
+Finally, we map the speciation rates to the chromosome cladogenetic events.
+The function \texttt{fnChromosomesCladoEventsBD}
+produces a matrix of speciation rates. This is a very
+large and sparse 3 dimensional matrix that contains the speciation rates 
+for all possible cladogenetic events.
+It contains the speciation rate for
+every possible state of the parent lineage transitioning to every possible
+combination of states of the two daughter lineages.
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+clado_matrix := fnChromosomesCladoEventsBD(speciation_rates, max_chromo)
+\end{lstlisting}
+\end{snugshade*}
+}
+
+\subsubsection{Extinction Rate}
+
+Next, we create a stochastic variable to represent the relative-extinction rate.
+Here, we define relative-extinction as extinction divided by speciation,
+so we use a uniform prior on the interval $\{0,1\}$.
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+rel_extinction ~ dnUniform(0, 1.0)
+rel_extinction(0.4)
+moves[mvi++] = mvScale(rel_extinction, lambda=5.0, weight=3.0)
+\end{lstlisting}
+\end{snugshade*}
+}
+We then make a vector of extinction rates for each state.
+In the basic ChromoSSE model we assume all chromosome 
+numbers have the same extinction rate.
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+for (i in 1:(max_chromo + 1)) {
+    extinction[i] := rel_extinction * total_speciation
+}
+\end{lstlisting}
+\end{snugshade*}
+}
+
+\subsubsection{The State-Dependent Speciation and Extinction Model}
+
+We are now nearly ready to create the stochastic node that represents
+the state-dependent speciation and extinction process.
+First, though, we must set the probability of sampling species at the present.
+We artificially use 1.0 here, but you should experiment with more realistic settings
+as this will affect the overall speciation and extinction rates estimated.
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+rho_bd <- 1.0
+\end{lstlisting}
+\end{snugshade*}
+}
+Now we construct a variable that describes the evolution of both the tree and chromosome
+numbers drawn from a cladogenetic state-dependent birth-death process.
+The \texttt{dnCDCladoBDP} distribution is named for a
+character-dependent cladogenetic birth-death process, which is
+another name for a cladogenetic state-dependent speciation and extinction process.
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+chromo_bdp ~ dnCDCladoBDP( rootAge            = phylogeny.rootAge(),
+                    cladoEventMap             = clado_matrix,
+                    extinctionRates           = extinction,
+                    Q                         = Q,
+                    delta                     = 1.0,
+                    pi                        = root_frequencies,
+                    rho                       = rho_bd,
+                    condition                 = "time",
+                    taxa                      = taxa )
+\end{lstlisting}
+\end{snugshade*}
+}
+Since ChromoSSE is a joint model of both the tree and the chromosome numbers,
+we must of course clamp both the observed tree and the chromosome count data.
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+chromo_bdp.clamp(phylogeny)
+chromo_bdp.clampCharData(chromo_data)
+\end{lstlisting}
+\end{snugshade*}
+}
+
+\medskip 
+\subsection{Finishing the ChromoSSE Analysis}
+
+The rest of the analysis is nearly identical to the other examples we have worked through,
+except for one detail when setting up the ancestral state monitor.
+Now we must specify that we are using a state-dependent speciation and extinction
+process (as mentioned above this is also called a character-dependent birth-death process, or \texttt{cdbdp})
+instead of a continuous-time Markov process (\texttt{ctmc}) like we use before.
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+monitors[2] = mnJointConditionalAncestralState(filename="output/ChromoSSE_anc_states.log", printgen=10, tree=phylogeny, cdbdp=chromo_bdp, withStartStates=true, type="NaturalNumbers")
+\end{lstlisting}
+\end{snugshade*}
+}
+And that's it! The results can be plotted using the same R script 
+demonstrated before to plot the cladogenetic ChromEvol analysis.
+
+\newpage

@@ -1,0 +1,67 @@
+\section*{Introduction}
+
+A central organizing component of the higher-order architecture of the
+genome is chromosome number, and changes in chromosome number have long
+been understood to play a fundamental role in evolution.
+This tutorial will introduce phylogenetic models of chromosome number evolution,
+and demonstrate how to use \RevBayes 
+to estimate the rates of chromosome number change and ancestral chromosome numbers.
+We will also show how to use the \RevGadgets R package to make plots of ancestral
+chromosome number estimates and stochastic character maps of chromosome evolution.
+
+We will begin by providing an overview of the basic ChromEvol model \citep{mayrose2010probabilistic} and 
+an example \RevBayes analysis. 
+This is followed by a discussion of a number of model extensions 
+that enable joint inference of phylogeny
+and chromosome numbers, 
+tests for correlated rates of phenotype and chromosome evolution \citep[the BiChroM model;][]{zenil2017testing},
+and incorporating cladogenetic changes in chromosome number.
+Next, we will introduce the ChromoSSE model \citep{freyman2016cladogenetic} which jointly
+estimates diversification rates and chromosome number evolution.
+We also briefly discuss testing hypotheses of chromosome evolution by
+comparing different models using reversible-jump MCMC and Bayes factors.
+
+If you use \RevBayes for chromosome evolution analyses, please cite the original 
+papers that describe the chromosome evolution models as well as \citet{freyman2016cladogenetic}
+which describes in detail the \RevBayes implementation of these models.
+
+\subsection*{Contents}
+
+The Chromosome Number Evolution tutorial contains several sections:
+
+\begin{itemize}
+\item Section \ref{sec:chromo_basic_intro}: Overview of chromosome number evolution models
+\item Section \ref{sec:chromo_basic_analysis}: A simple ChromEvol analysis
+\item Section \ref{sec:chromo_extensions}: Basic extensions of the model
+    \begin{itemize}
+    \item \ref{subsect:root_freq}: Improved root frequences
+    \item \ref{subsect:stoch_mapping}: Stochastic character mapping of chromosome evolution
+    \item \ref{subsect:joint_estimation}: Joint estimation of phylogeny and chromosome evolution
+    \item \ref{subsect:bichrom}: Associating chromosome evolution with phenotype: BiChroM
+    \item \ref{subsect:clado_simple}: Incorporating cladogenetic and anagenetic chromosome changes
+    \end{itemize}
+\item Section \ref{sec:chromosse_intro}: Overview of the ChromoSSE model
+\item Section \ref{sec:chromosse_analysis}: A simple ChromoSSE analysis
+\end{itemize}
+
+\subsection*{Example scripts and data}
+
+The data and the full scripts used for all the examples can be found on the \RevBayes website:
+
+\begin{itemize}
+\item \href{http://rawgit.com/revbayes/revbayes_tutorial/master/RB_Chromosome_Evolution_Tutorial/scripts.zip}{\cl{scripts.zip}}
+\item \href{http://rawgit.com/revbayes/revbayes_tutorial/master/RB_Chromosome_Evolution_Tutorial/data.zip}{\cl{data.zip}}
+\end{itemize}
+
+\subsection*{Recommended tutorials}
+
+This tutorial assumes the reader is familiar with the content covered in the following \RevBayes tutorials:
+
+\begin{itemize}
+\item {\bf {\tt \large Rev} Basics}
+\item {\bf Molecular Models of Character Evolution}
+\item {\bf Discrete Morphology Models of Character Evolution}
+\item {\bf Running and Diagnosing an MCMC Analysis}
+\end{itemize}
+
+\newpage
