@@ -83,11 +83,14 @@ seq.clamp(data)
 
 mymodel = model(psi)
 
+# write model DAG to file
+mymodel.graph("gtr_gm.dot")
+
 # add monitors
 mni = 1
 monitors[mni++] = mnScreen(TL, printgen=1000)
-monitors[mni++] = mnFile(psi, filename="output/primates_cytb.trees", printgen=10)
-monitors[mni++] = mnModel(filename="output/primates_cytb.log",printgen=10)
+monitors[mni++] = mnFile(psi, filename="output/primates_cytb_gtr.trees", printgen=10)
+monitors[mni++] = mnModel(filename="output/primates_cytb_gtr.log",printgen=10)
 
 # run the analysis
 mymcmc = mcmc(mymodel, moves, monitors, nruns=2)
@@ -96,10 +99,10 @@ mymcmc.run(30000)
 
 
 # summarize output
-treetrace = readTreeTrace("output/primates_cytb.trees")
+treetrace = readTreeTrace("output/primates_cytb_gtr.trees")
 #treetrace.summarize()
 
-map_tree = mapTree(treetrace,"output/primates_cytb_map.tre")
+map_tree = mapTree(treetrace,"output/primates_cytb_gtr_map.tre")
 
 
 # you may want to quit RevBayes now
