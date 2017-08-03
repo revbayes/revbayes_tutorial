@@ -43,7 +43,7 @@ In the \cl{data} folder, you will find the following files:
         Habitat data (also from \citealt{MagnusonFord2012}).
 
     \item \href{https://github.com/revbayes/revbayes_tutorial/raw/master/RB_DiversificationRate_CharacterDependent_Tutorial/data/primates_morph.nex}{primates\_morph.nex}:
-        A larger set of discrete morphological characters.
+        A larger set of discrete characters.
         The characters are described in the file \href{https://github.com/revbayes/revbayes_tutorial/raw/master/RB_DiversificationRate_CharacterDependent_Tutorial/data/primates_morph_description.txt}{primates\_morph\_description.txt}.
 
 \end{itemize}
@@ -236,30 +236,30 @@ Root probabilities are either weighted using equal probabilities (uniformly), by
 %%%%%%%%%%%%%%%%%%%%%%
 \section{Using state-dependent diversification models with \RevBayes} \label{sec:CDBDP}
 
-% todo: explain cdbdp
 Now let's start to analyze an example in \RevBayes using the BiSSE model.
+In \RevBayes, it's called ``CDBDP,'' meaning Character Dependent Birth Death Process.
 
-\subsection{Read the tree}
+\subsection{Read in the data}
 
-Begin by reading in the observed tree and the morphological data. 
+Begin by reading in the observed tree and the character state data.
 We have both stored in separate nexus files.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 observed_phylogeny <- readTrees("data/primates_tree.nex")[1]
-data <- readCharacterData("data/primates_solitariness.nex")
+data <- readCharacterData("data/primates_activity_period.nex")
 \end{lstlisting}
 \end{snugshade*}}
 Note, the character-dependent birth-death process currently uses always the first character/site in the alignment file.
-We have therefore split the morphological dataset into several small files that include only one morphological character each.
+We have therefore split the character dataset into several small files that include only one character each.
 
-From the tree, we can get some helpful variables:
+It will be convenient to pull out the list of tip names from the tree:
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 taxa <- observed_phylogeny.taxa()
 \end{lstlisting}
 \end{snugshade*}}
 
-Additionally, we can initialize an iterator variable for our vector of moves and monitors:
+Our vectors of moves and monitors will be defined later, but here we initialize iterator variables for them:
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 mvi = 0
@@ -267,36 +267,34 @@ mni = 0
 \end{lstlisting}
 \end{snugshade*}}
 
-Finally, we create a helper variable that specifies the number of states that the morphological character has.
+Finally, we create a helper variable that specifies the number of states that the observed character has:
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 NUM_STATES = 2
 \end{lstlisting}
 \end{snugshade*}}
-Using this variable we can easily change our script to use a different morphological character with a different number of states.
-We will also use this variable in our second example on hidden-state speciation and extinction model. 
+Using this variable we can easily change our script to use a different character with a different number of states.
+(This will also be handy in our later example with the hidden-state speciation and extinction model.)
 
+\subsection{Specify the model}
 
+The basic idea behind the model in this example is that speciation and extinction rates are dependent on a binary character, and the character transitions between its two possible states \citep{Maddison2007}.
 
-\subsection{Specifying the model}
+\subsubsection{Priors on the rates}
 
-The basic idea behind the model in this example is that speciation and extinction rates are dependent on a binary character \citep{Maddison2007}.
-
-
-\subsubsection{Priors on rates}
 We start by specifying prior distributions on the diversification rates.
-We will assume here an identical prior distribution on the speciation and extinction rate.
-Furthermore, we will use a normal distribution as the prior distribution on the log of the speciation and extinction rate.
-Hence, we will use a mean of $\frac{\ln(\frac{\text{\#Taxa}}{2})}{\text{tree-age}}$ which is the expected net-diversification rate.
+We will assume here an identical prior distribution on each of the speciation and extinction rates.
+Furthermore, we will use a normal distribution as the prior distribution on the log of each speciation and extinction rate.
+Hence, we will use a mean of $\ln(\frac{\text{\#Taxa}}{2}) / \text{tree-age}$ which is the expected net diversification rate.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 rate_mean <- ln( ln(367.0/2.0) / observed_phylogeny.rootAge() )
 rate_sd <- 2.0
 \end{lstlisting}
 \end{snugshade*}}
-Now we can specify our character-specific specification and extinction rate parameters.
-As we just said before, we are going to use normal distributions for the prior on the log-speciation and log-extinction rate.
-Here we will use a \cl{for}-loop to specify speciation and extinction parameters for each character, \EG two in a binary state case.
+Now we can specify our character-specific speciation and extinction rate parameters.
+Because we will use the same prior for each rate, it's easy to specify them all in a \cl{for}-loop.
+We set up moves at the same time; a sliding move is good for a log-transformed variable.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 for (i in 1:NUM_STATES) {
@@ -314,14 +312,11 @@ for (i in 1:NUM_STATES) {
 }
 \end{lstlisting}
 \end{snugshade*}}
-Great! Now we have create our main variables of interest, the state-specific speciation and extinction rate variables with some meaningful prior distributions. 
-Additionally, we have already created moves on these variables.
-So we can now turn our focus on the remaining variables of the model.
 
-Next, we specify the transition rates $q_{01}$ and $q_{10}$ between the two states 0 and 1.
-Each transition rate between observed states is drawn rom an exponential distribution with a mean of 10 character state transitions over the entire tree. 
-We hope that this is a reasonable prior but also leaves enough uncertainty in our prior knowledge.
-(You may want to compare the posterior to the prior and/or check the resulting posterior estimates for different choices of the prior!)
+Next we specify the transition rates between the states 0 and 1, $q_{01}$ and $q_{10}$.
+As a prior, we choose that each transition rate is drawn from an exponential distribution with a mean of 10 character state transitions over the entire tree. 
+This is reasonable because we use this kind of model for traits that transition not-infrequently, and it leaves a fair bit of uncertainty.
+(You may want to compare the posterior to the prior and/or check the resulting posterior estimates for different choices of the prior.)
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 rate_pr := observed_phylogeny.treeLength() / 10
@@ -329,23 +324,21 @@ rate_12 ~ dnExponential(rate_pr)
 rate_21 ~ dnExponential(rate_pr)
 \end{lstlisting}
 \end{snugshade*}}
-For both rate variable we specify a scaling move.
+For both transition rate variables we specify a scaling move.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 moves[++mvi] = mvScale( rate_12, weight=2 )
 moves[++mvi] = mvScale( rate_21, weight=2 )
 \end{lstlisting}
 \end{snugshade*}}
-Finally, we build a rate matrix for the relative-rate of change between categories.
-This is because we need a rate matrix in our state-dependent birth-death process.
+Finally, we put the rates into a matrix, because this is what's needed by the function for the state-dependent birth-death process.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 rate_matrix := fnFreeBinary( [rate_12, rate_21 ], rescaled=false)
 \end{lstlisting}
 \end{snugshade*}}
-A specific note here is that we do not rescale the rate matrix. 
-This is very important because otherwise rate matrices, as used for molecular evolution, are always rescaled to have an average rate of 1.0.
-If such a rescaled rate matrix was used, then you need to provide an overall rate scalar $\delta$.
+Note that we do not ``rescale'' the rate matrix.
+Rate matrices for molecular evolution are rescaled to have an average rate of 1.0, but for this model we want estimates of the transition rates with the same time scale as the diversification rates.
 
 \subsubsection{Prior on the root state}
 Create a variable with the prior probabilities of each rate category at the root.
@@ -360,10 +353,10 @@ moves[++mvi] = mvDirichletSimplex(rate_category_prior,tune=true,weight=2)
 \end{lstlisting}
 \end{snugshade*}}
 
-\subsubsection{Incomplete Taxon Sampling}
+\subsubsection{Incomplete taxon sampling}
 
 We know that we have sampled 233 out of 367 living primate species. 
-To account for this we can set the sampling parameter as a constant node with a value of 233/367
+To account for this we can set the sampling parameter as a constant node with a value of 233/367.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 rho <- observed_phylogeny.ntips()/367
@@ -374,8 +367,7 @@ rho <- observed_phylogeny.ntips()/367
 \subsubsection{Root age}
 
 The birth-death process requires a parameter for the root age.
-In this exercise we use a fix tree and thus we know the age of the tree.
-Hence, we can get the value for the root from the \citet{MagnusonFord2012} tree.
+In this exercise we use a fixed tree and thus we know the age of the tree.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 root <- observed_phylogeny.rootAge()
@@ -384,7 +376,7 @@ root <- observed_phylogeny.rootAge()
 
 \subsubsection{The time tree}
 
-Now we have all of the parameters we need to specify the full state-dependent birth-death model. 
+Now we have all of the parameters we need to specify the full character state-dependent birth-death model.
 We initialize the stochastic node representing the time tree.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
@@ -407,35 +399,38 @@ timetree.clampCharData( data )
 \end{lstlisting}
 \end{snugshade*}}
 
-Finally, we create a workspace object of our whole model using the \cl{model()} function. 
+Finally, we create a workspace object of our whole model.
+The \cl{model()} function traverses all of the connections and finds all of the nodes we specified.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 mymodel = model(rate_matrix)
 \end{lstlisting}
 \end{snugshade*}}
 
-The \cl{model()} function traversed all of the connections and found all of the nodes we specified. 
-
-
 \subsection{Running an MCMC analysis}
 
-\subsubsection{Specifying Monitors}
+\subsubsection{Specifying monitors}
 
 For our MCMC analysis, we set up a vector of \emph{monitors} to record the states of our Markov chain. 
-The first monitor will model all numerical variables, specifically we are interested in speciation rates $\lambda_0$ and $\lambda_1$ as well as the extinction rates $\mu_0$ and $\mu_1$.
+The first monitor will model all numerical variables; we are particularly interesed in the rates of speciation, extinction, and transition.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 monitors[++mni] = mnModel(filename="output/primates_BiSSE.log", printgen=1)
 \end{lstlisting}
 \end{snugshade*}}
+
 The second monitor is a new type of monitor: an joint-ancestral-states monitor.
-This monitor takes a draw from joint posterior distribution of the ancestral states.
+This monitor takes a draw from the joint posterior distribution of the ancestral states.
 Thus, with this output file we will be able to make a nice plot with ancestral states.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 monitors[++mni] = mnJointConditionalAncestralState(tree=timetree, cdbdp=timetree, type="Standard", printgen=1, withTips=true, withStartStates=false, filename="output/anc_states_primates_BiSSE.log")
 \end{lstlisting}
 \end{snugshade*}}
+(Note that this is a bit different than the marginal ancestral state reconstructions commonly produced by, e.g., Mesquite or various R packages.
+These joint draws are a self-consistent set of states across all nodes.
+\citet{Pagel1999} discusses the differences.)
+
 Finally, we add a screen monitor showing some updates during the MCMC run.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
@@ -443,7 +438,7 @@ monitors[++mni] = mnScreen(printgen=10, rate_12, rate_21, speciation, extinction
 \end{lstlisting}
 \end{snugshade*}}
 
-\subsubsection{Initializing and Running the MCMC Simulation}
+\subsubsection{Initializing and running the MCMC simulation}
 
 With a fully specified model, a set of monitors, and a set of moves, we can now set up the MCMC algorithm that will sample parameter values in proportion to their posterior probability. 
 The \cl{mcmc()} function will create our MCMC object:
@@ -467,8 +462,8 @@ mymcmc.run(generations=20000)
 \end{lstlisting}
 \end{snugshade*}}
 
-
 \subsubsection{Summarizing ancestral states}
+
 After our MCMC run has finished, we read-in again our samples from the joint-ancestral-state posterior distribution.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
@@ -518,13 +513,13 @@ ggsave(output_file, width = 11, height = 9)
 The resulting plot is shown in Figure~\ref{fig:anc_states_BiSSE}.
 We see both the maximum \emph{a posteriori} (MAP) estimate for each node as well as the posterior probability of the states represented by the size of the dots.
 
-
 \subsubsection{Plotting diversification rates}
+
 Now let us plot the diversification rate estimates.
 Again, we are going to use \R for our plotting.
 Specifically, we will use the package \texttt{ggplot2} but you can also use any other package that you prefer.
 We are only taking advantage of reading in the tab-delimited file as a table and plot the different diversification rate parameters.
-Note that we also rely on another provided \R script for plotting multiply plots in one file.
+Note that we also rely on another provided \R script for plotting multiple plots in one file.
 \definecolor{shadecolor}{RGB}{200,200,200}
 {\tt \begin{snugshade*}
 \begin{lstlisting}
@@ -552,8 +547,8 @@ dev.off()
 \begin{figure}[h!]
 \centering
 \fbox{\includegraphics[width=\textwidth]{\ResourcePath figures/RevBayes_BiSSE_Results_activity_period.pdf}}
-\caption{\small Estimated diversification rate for activity period (state 1 = Diurnal and state 2 = Nocturnal). We see that there is a nice difference in the estimated speciation rates but only little difference in the estimated}
-\label{fig:anc_states_BiSSE}
+\caption{\small Estimated diversification rate for activity period (state 1 = Diurnal and state 2 = Nocturnal). We see that there is a noticeable difference in the estimated speciation rates but only little difference in the estimated extinction rates.}
+\label{fig:div_rates_BiSSE}
 \end{figure}
 
 
@@ -569,7 +564,7 @@ dev.off()
 \item Run an MCMC simulation to estimate the posterior distribution of the speciation rate and extinction rate.
 \item Visualize the state-specific diversification rates using \R.
 \item Do you see evidence for rate differences between the two states?
-\item Repeat this analysis for a different binary morphological character.
+\item Repeat this analysis for a different binary character.
 \end{enumerate}
 
 
@@ -592,7 +587,7 @@ Then we will show how to run this analysis in \RevBayes.
 
 \begin{table}[t!]
 	\centering
-	\caption{\bf{\HiSSE model parameters and their interpretation}} \label{tab:param}
+	\caption{\bf{\HiSSE model parameters and their interpretation}} \label{tab:Hparam}
 	\begin{tabular}{ l l l }
 		\toprule
 		Parameter & Interpretation \\
@@ -618,7 +613,7 @@ We have both stored in separate nexus files.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 observed_phylogeny <- readTrees("data/primates_tree.nex")[1]
-data <- readCharacterData("data/primates_solitariness.nex")
+data <- readCharacterData("data/primates_activity_period.nex")
 \end{lstlisting}
 \end{snugshade*}}
 Note, the character-dependent birth-death process currently uses always the first character/site in the alignment file.
@@ -916,7 +911,7 @@ dev.off()
 \centering
 \fbox{\includegraphics[width=\textwidth]{\ResourcePath figures/RevBayes_HiSSE_Results.pdf}}
 \caption{\small Estimated diversification rate for activity period (state 1 = Diurnal and state 2 = Nocturnal). We see that there is a nice difference in the estimated speciation rates but only little difference in the estimated}
-\label{fig:anc_states_BiSSE}
+\label{fig:div_rates_HiSSE}
 \end{figure}
 
 
