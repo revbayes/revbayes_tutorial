@@ -1,0 +1,244 @@
+################################################################################
+#
+# RevBayes Analysis: Bayesian inference of diversification rates under a
+#                    cladogenetic character-dependent birth-death model (also
+#                    called Cladogenetic State Speciation and Extinction or 
+#                    ClaSSE). In this example we use ClaSSE to model biogeographic 
+#                    range evolution similar to the DEC models. Unlike the DEC 
+#                    model, ClaSSE accounts for speciation events unobserved due 
+#                    to extinction or incomplete sampling.
+#
+# authors: Will Freyman
+#
+################################################################################
+
+
+
+#######################
+# Reading in the Data #
+#######################
+
+# Get the tree
+observed_phylogeny <- readTrees("data/primates_biogeo.tre")[1]
+ 
+# Get the taxa in the tree. We'll need this later on.
+taxa <- observed_phylogeny.taxa()
+
+# Read biogeographic range data
+data_biogeo = readCharacterDataDelimited("data/primates_biogeo.tsv", stateLabels="0123", type="NaturalNumbers", delimiter="\t", headers=TRUE)
+
+# set my move index
+mvi = 0
+mni = 0
+
+
+
+################################################
+# Set up the anagenetic transition rate matrix #
+################################################
+
+# states:
+# 0 = 00 = the null state with no range
+# 1 = 10 = New World only
+# 2 = 01 = Old World only
+# 3 = 11 = both New and Old World
+
+# Each transition rate between observed states are drawn
+# from an exponential distribution with a mean of 2
+# character state transitions over the tree. 
+rate_pr := observed_phylogeny.treeLength() / 2
+
+# rates of dispersal:
+rate_13 ~ dnExp(rate_pr) # disperse from New to Old World 10 -> 11
+rate_23 ~ dnExp(rate_pr) # disperse from Old to New World 01 -> 11
+
+# rates of extirpation:
+rate_31 ~ dnExp(rate_pr) # local extinction in Old World 11 -> 10
+rate_32 ~ dnExp(rate_pr) # local extinction in New World 11 -> 01
+
+# add MCMC moves for each anagenetic transition
+moves[++mvi] = mvScale( rate_13, weight=2 )
+moves[++mvi] = mvScale( rate_23, weight=2 )
+moves[++mvi] = mvScale( rate_31, weight=2 )
+moves[++mvi] = mvScale( rate_32, weight=2 )
+
+# now set up the rate matrix
+
+# first initalize rates to 0.0
+for (i in 1:4) {
+    for (j in 1:4) {
+        r[i][j] <- 0.0
+    }
+}
+
+# populate non-zero rates
+r[2][4] := rate_13
+r[3][4] := rate_23
+r[4][2] := rate_31
+r[4][3] := rate_32
+
+ana_rate_matrix := fnFreeK(r, rescaled=false)
+
+
+
+##################################################
+# Set up the cladogenetic speciation rate matrix #
+##################################################
+
+# now we set up the speciation and extinction rates
+
+# first, create the constant prior parameters of the diversification rates
+num_species <- 424 # approximate total number of primate species
+rate_mean <- ln( ln(num_species/2.0) / observed_phylogeny.rootAge() )
+rate_sd <- 1.0
+
+# here we need to define each cladogenetic event type in the form
+# [ancestor_state, daughter1_state, daughter2_state]
+# and assign each cladogenetic event type a corresponding 
+# speciation rate:
+
+# widespread sympatric cladogenesis is where the biogeographic range does
+# not change; that is the daughter lineages inherit the same range as
+# the ancestor. we'll set all these events to have the same speciation rate:
+speciation_wide_sympatry ~ dnLognormal(rate_mean, rate_sd)
+moves[++mvi] = mvSlide(speciation_wide_sympatry, delta=1.0, weight=4)
+
+# define the cladogenetic events with no change
+clado_events[1] = [1, 1, 1] # 10 -> 10, 10
+clado_events[2] = [2, 2, 2] # 01 -> 01, 01
+clado_events[3] = [3, 3, 3] # 11 -> 11, 11
+
+# and assign each the same speciation rate:
+speciation_rates[1] := speciation_wide_sympatry/3
+speciation_rates[2] := speciation_wide_sympatry/3
+speciation_rates[3] := speciation_wide_sympatry/3
+
+# subset sympatry is where one daughter lineage inherits the full
+# ancestral range but the other lineage inherites only a single region.
+speciation_sub_sympatry ~ dnLognormal(rate_mean, rate_sd)
+moves[++mvi] = mvSlide(speciation_sub_sympatry, delta=1.0, weight=4)
+
+clado_events[4] = [3, 3, 1] # 11 -> 11, 10 
+clado_events[5] = [3, 1, 3] # 11 -> 10, 11
+clado_events[6] = [3, 3, 2] # 11 -> 11, 01
+clado_events[7] = [3, 2, 3] # 11 -> 01, 11
+speciation_rates[4] := speciation_sub_sympatry/4
+speciation_rates[5] := speciation_sub_sympatry/4
+speciation_rates[6] := speciation_sub_sympatry/4
+speciation_rates[7] := speciation_sub_sympatry/4
+
+# allopatric cladogenesis is when the two daughter lineages
+# split the ancestral range:
+speciation_allopatry ~ dnLognormal(rate_mean, rate_sd)
+moves[++mvi] = mvSlide(speciation_allopatry, delta=1.0, weight=4)
+
+clado_events[8] = [3, 1, 2] # 11 -> 10, 01
+clado_events[9] = [3, 2, 1] # 11 -> 01, 10
+speciation_rates[8] := speciation_allopatry/2
+speciation_rates[9] := speciation_allopatry/2
+
+# let's create a deterministic variable to monitor the overall speciation rate
+total_speciation := sum(speciation_rates)
+
+# now we construct the cladogenetic speciation rate
+# matrix from the cladogenetic event types and the speciation rates
+clado_matrix := fnCladogeneticSpeciationRateMatrix(clado_events, speciation_rates, 4)
+
+# let's view the cladogenetic matrix to see if we have set it up correctly:
+clado_matrix
+ 
+# As the model is specified, we did not allow cladogenetic long
+# distance (jump) dispersal, for example 01 -> 01, 10
+# As an exercise try implementing a model with cladogenetic 
+# long distance dispersal and see which model fits the data better.
+
+
+
+###############################
+# Set up the extinction rates #
+###############################
+
+# finally, we need to set up vector of extinction rates, one for each character state.
+# here we have chosen to allow a lineage to go extinct immediately even if it is in both
+# the New and Old World at the same time (like a global extinction event). As an alternative,
+# you could restrict the model so that a lineage can only go extinct if it's range is limited to
+# one area.
+extinction_rates[1] := 0.0 # the null state should never be entered
+extinction_rates[2] ~ dnLognormal(rate_mean, rate_sd) # extinction when the lineage is in New World
+extinction_rates[3] ~ dnLognormal(rate_mean, rate_sd) # extinction when the lineage is in Old World
+extinction_rates[4] ~ dnLognormal(rate_mean, rate_sd) # extinction when in both
+
+moves[++mvi] = mvSlide(extinction_rates[2], delta=1.0, weight=4)
+moves[++mvi] = mvSlide(extinction_rates[3], delta=1.0, weight=4)
+moves[++mvi] = mvSlide(extinction_rates[4], delta=1.0, weight=4)
+
+
+
+########################################################################
+# Set up the cladogenetic character state dependent birth death process #
+#########################################################################
+
+# For simplicity we will fix the root frequences to be equal except for the null state
+# which has probability of 0.
+root_frequencies <- simplex([0, 1, 1, 1])
+
+# rho is the probability of sampling species at the present
+rho <- observed_phylogeny.ntips()/num_species
+
+
+# construct a stochastic variable drawn from the cladogenetic 
+# character state dependent birth death process (more commonly
+# called ClaSSE)
+classe ~ dnCDCladoBDP( rootAge         = observed_phylogeny.rootAge(),
+                       cladoEventMap   = clado_matrix,
+                       extinctionRates = extinction_rates,
+                       Q               = ana_rate_matrix,
+                       delta           = 1.0,
+                       pi              = root_frequencies,
+                       rho             = rho,
+                       condition       = "time",
+                       taxa            = taxa )
+
+# clamp the model with the observed data
+classe.clamp( observed_phylogeny )
+classe.clampCharData( data_biogeo )
+
+
+
+#############
+# The Model #
+#############
+
+# workspace model wrapper
+mymodel = model(classe)
+
+# set up the monitors that will output parameter values to file and screen 
+monitors[++mni] = mnModel(filename="output/primates_ClaSSE.log", printgen=1)
+monitors[++mni] = mnJointConditionalAncestralState(tree=observed_phylogeny, cdbdp=classe, type="NaturalNumbers", printgen=1, withTips=true, withStartStates=true, filename="output/anc_states_primates_ClaSSE.log")
+monitors[++mni] = mnScreen(printgen=1, speciation_wide_sympatry, speciation_sub_sympatry, speciation_allopatry, extinction_rates)
+
+
+
+################
+# The Analysis #
+################
+
+# workspace mcmc
+mymcmc = mcmc(mymodel, monitors, moves)
+
+# pre-burnin to tune the proposals
+mymcmc.burnin(generations=200,tuningInterval=5)
+
+# run the MCMC
+mymcmc.run(generations=1000)
+
+
+
+##############################
+# Summarize ancestral states #
+##############################
+
+anc_states = readAncestralStateTrace("output/anc_states_primates_ClaSSE.log")
+anc_tree = ancestralStateTree(tree=observed_phylogeny, ancestral_state_trace_vector=anc_states, include_start_states=true, file="output/anc_states_primates_ClaSSE_results.tree", burnin=0, summary_statistic="MAP", site=0)
+
+q()
