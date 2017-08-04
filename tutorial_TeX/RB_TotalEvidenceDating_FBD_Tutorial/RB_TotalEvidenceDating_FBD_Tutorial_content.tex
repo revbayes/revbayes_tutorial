@@ -18,7 +18,7 @@ The exercise provided also requires additional programs for editing text files a
 The following are very useful tools for working with \RevBayes:
 \begin{itemize}[noitemsep,topsep=0pt]
 \item A good text editor -- if you do not already have one that you like, we recommend one that has features for syntax coloring, easy navigation between different files, line numbers, etc.
-A good option is \href{http://www.sublimetext.com/}{\tt Sublime Text}, which is available for Mac OSX, Windows, and Linux.
+Good options include \href{http://www.sublimetext.com/}{\tt Sublime Text} or \href{https://atom.io/}{Atom}, which are available for Mac OSX, Windows, and Linux.
 \item \href{http://tree.bio.ed.ac.uk/software/tracer/}{\tt Tracer} -- for visualizing and assessing numerical parameter samples from \RevBayes
 \item \href{http://tgvaughan.github.io/icytree/}{\tt IcyTree} -- a web-hosted phylogenetic tree visualization tool that is supported for \href{https://www.mozilla.org/en-US/firefox/products/}{\tt Firefox} or \href{https://www.google.com/chrome/}{\tt Google Chrome} browsers 
 \item \href{http://tree.bio.ed.ac.uk/software/figtree/}{\tt FigTree} -- a tree visualization program
@@ -118,28 +118,37 @@ In the example (Fig.\ \ref{fig:example-tree}), several of the fossils have sampl
 %TODO more intro on this section, maybe
 
 \bigskip
-\subsection{Incorporating Fossil Stratigraphic Range Data}\label{subsect:Intro-TipSampling}
+\subsection{Incorporating Fossil Occurrence Time Uncertainty}\label{subsect:Intro-TipSampling}
 
-In order to account for uncertainty in the ages of our fossil species, we can incorporate stratigraphic range information from the fossil record.
-We do this by assuming each fossil can occur with uniform probability anywhere within its observed stratigraphic range.
+In order to account for uncertainty in the ages of our fossil species, we can incorporate intervals on the ages of our represented fossil species.
+These intervals can be stratigraphic ranges or measurement standard error.
+We do this by assuming each fossil can occur with uniform probability anywhere within its observed interval.
 This is somewhat different from the typical approach to node calibration.
 Here, instead of treating the calibration density as an additional prior distribution on the tree, we treat it as the \textit{likelihood} of our fossil data given the tree parameter.
-Specifically, we assume the likelihood of a particular fossil observation $\mathcal{F}_i$ is equal to one if the fossil's inferred age on the tree $t_i$ falls within its observed stratigraphic range $(a_i,b_i)$, and zero otherwise:
+Specifically, we assume the likelihood of a particular fossil observation $\mathcal{F}_i$ is equal to one if the fossil's inferred age on the tree $t_i$ falls within its observed time interval $(a_i,b_i)$, and zero otherwise:
 $$f[\mathcal{F}_i \mid a_i, b_i, t_i] = \begin{cases}
 1 & \text{if } a_i < t_i < b_i\\
 0 & \text{otherwise}
 \end{cases}$$
-In other words, we assume the likelihood is equal to one if the inferred age is consistent with the fossil record.
-We can represent this likelihood in \RevBayes using any uniform distribution that is proportional to the likelihood, \IE non-zero when the likelihood is equal to one (Fig. \ref{fig:tipsampling_gm}).
+In other words, we assume the likelihood is equal to one if the inferred age is consistent with the data observed.
+We can represent this likelihood in \RevBayes using a distribution that is proportional to the likelihood, \IE non-zero when the likelihood is equal to one (Fig. \ref{fig:tipsampling_gm}).
 This model component represents the observed \textsf{Fossil Occurrence Time Data} in the modular graphical model shown in figure \ref{fig:module-gm}.
 \begin{figure}[h!]
 \fbox{%
 \begin{minipage}{\textwidth}\centering
 \includegraphics[scale=0.25,angle=0]{\ResourcePath figures/tikz/tipsampling_gm}
-\caption{\small A graphical model of the fossil age likelihood model used in this tutorial. The likelihood of fossil observation $\mathcal{F}_i$ is uniform and non-zero when the inferred fossil age $t_i$ falls within the observed stratigraphic range $(a_i,b_i)$.}
+\caption{\small A graphical model of the fossil age likelihood model used in this tutorial. The likelihood of fossil observation $\mathcal{F}_i$ is uniform and non-zero when the inferred fossil age $t_i$ falls within the observed time interval $(a_i,b_i)$.}
 \end{minipage}}
 \label{fig:tipsampling_gm}
 \end{figure}
+
+%\subsubsection{Modeling Stratigraphic Ranges}
+
+It is worth noting that this is not technically the appropriate way to model fossil data that are actually observed as stratigraphic ranges. 
+In paleontology, a stratigraphic range represents the interval of time between the first and last appearences of a fossilized species. 
+Thus, this range typically represents multiple fossil specimens observed at different times along a single lineage. 
+An extension of the fossilized birth-death process that is a distribution on stratigraphic ranges has been described by \citet{Stadler2017}. 
+This model is not yet fully implemented in \RevBayes.
 
 
 \subsection{Nucleotide Sequence Evolution}\label{subsect:Intro-GTR}
@@ -170,12 +179,13 @@ Another possible uncorrelated relaxed clock model is the uncorrelated lognormal 
 For the vast majority of extinct species, fossil morphology is the primary source of phylogenetically informative characters.
 Therefore, an appropriate model of morphological character evolution is needed to reliably infer the positions of these species in a phylogenetic analysis.
 The Mk model \citep{Lewis2001} uses a generalized Jukes-Cantor matrix to allow for the incorporation of morphology into likelihood and Bayesian analyses.
-One key assumption of this model is that characters exhibit symmetrical change - that a given character is as likely to transition from a one state to another as it is to reverse.
-In this tutorial we will consider only binary morphological characters, \IE characters that are coded as being in one of two states, 0 or 1.
-For example, the assumption of the Mk model applied to our binary character would mean that a change from a 0 state to a 1 state is as likely as a change from a 1 state to a 0 state.
+In its simplest form, this model assumes that characters change states symmetrically---that a given character is as likely to transition from a one state to another as it is to reverse.
+In this tutorial we will consider only binary morphological characters, \IE characters that are observed in one of two states, 0 or 1.
+For example, the assumption of the single-rate Mk model applied to our binary character would mean that a change from a 0 state to a 1 state is as likely as a change from a 1 state to a 0 state.
 This assumption is equivalent to assuming that the stationary probability of being in a 1 state is equal to $1/2$.
 
-In this tutorial, we will use Mk to model our data. If you are interested in how we can relax the assumptions in the previous paragraph, please see \href{https://github.com/revbayes/revbayes_tutorial/raw/master/tutorial_TeX/RB_Discrete_Morphology_Tutorial/RB_Discrete_Morphology.pdf}{Discrete Morphology tutorial}.
+In this tutorial, we will apply a single-rate Mk model as a prior on binary morphological character change. 
+If you are interested extensions of the Mk model that relax the assumptions of symmetric state change, please see \href{https://github.com/revbayes/revbayes_tutorial/raw/master/tutorial_TeX/RB_Discrete_Morphology_Tutorial/RB_Discrete_Morphology.pdf}{Discrete Morphology tutorial}.
 
 
 Because of the way morphological data are collected, we need to exercise caution in how we model the data. 
@@ -189,7 +199,6 @@ Therefore, it is important to use models that can condition on this data-acquisi
 
 \subsubsection{The Morphological Clock}\label{subsub:Intro-MorphClock}
 
-%TODO write about the morphological clock
 
 
 Just like with the molecular data (section \ref{subsub:Intro-GTR-UExp}), our observations of discrete morphological characters are conditional on the rate of change along each branch in the tree. 
@@ -215,7 +224,6 @@ In this exercise, we will combine different types of data from 22 species of ext
 We have molecular sequence data for ten species, which represent all of the eight living bears and two extinct species sequenced from sub-fossil specimens (\textit{Arctodus simus, Ursus spelaeus}).
 The sequence alignment provided is a 1,000 bp fragment of the cytochrome-b mitochondrial gene \citep{krause2008}.
 The morphological character matrix unites 18 taxa (both fossil and extant) with 62 binary (states \cl{0} or \cl{1}) characters \citep{abella12}.
-%Further, we must provide an occurrence time for each taxon sampled from the fossil record.
 For the fossil species, occurrence times are obtained from the literature or fossil databases like the \href{http://fossilworks.org/}{Fossilworks PaleoDB} or the \href{http://fossilcalibrations.org/}{Fossil Calibration Database}, or from your own paleontological expertise. 
 The 14 fossil species used in this analysis are listed in Table \ref{bearFossilTable} along with the age range for the species and relevant citation.
 %For this exercise, we will fix the ages to a value within the age range provided in Table \ref{bearFossilTable}. 
@@ -282,7 +290,7 @@ Because of this, we recommend that you type the instructions in this tutorial or
 \subsection{Data and Files}\label{subsect:Exercise-DataFiles}
 
 {\begin{framed}
-On your own computer, create a directory called {\textcolor{red}{\cl{RB\_TotalEvidenceDating\_FBD\_Tutorial}}} (or any name you like). 
+On your own computer or your remote machine, create a directory called {\textcolor{red}{\cl{RB\_TotalEvidenceDating\_FBD\_Tutorial}}} (or any name you like). 
 
 In this directory download and unzip the archive containing the data files: \href{https://github.com/revbayes/revbayes_tutorial/raw/master/RB_TotalEvidenceDating_FBD_Tutorial/data.zip}{\cl{data.zip}}.
 
@@ -307,7 +315,7 @@ In the \cl{data} folder, you will find the following files:
 Create a new directory (in \cl{RB\_TotalEvidenceDating\_FBD\_Tutorial}) called {\textcolor{red}{\cl{scripts}}}. (If you do not have this folder, please refer to the directions in section \ref{subsect:Exercise-DataFiles}.)
 \end{framed}}
 
-When you execute \RevBayes in this exercise, you will do so within the main directory you created (\cl{RB\_TotalEvidenceDating\_FBD\_Tutorial}), thus, if you are using a Unix-based operating system, we recommend that you add the \RevBayes binary to your path.
+When you execute \RevBayes in this exercise, you will do so within the main directory you created, \cl{RB\_TotalEvidenceDating\_FBD\_Tutorial}, thus, if you are using a Unix-based operating system, we recommend that you add the \RevBayes binary to your path.
 
 %TODO Stuff about how to start or Rev basics?
 
@@ -375,7 +383,8 @@ taxa <- readTaxonData("data/bears_taxa.tsv")
 \end{lstlisting}
 \end{snugshade*}
 This function reads a tab-delimited file and creates a variable called \cl{taxa} that is a list of all of the taxon names relevant to this analysis. 
-This list includes all of the fossil and extant bears.
+This list includes all of the fossil and extant bear species names in the first columns and a single age value in the second column.
+The ages provided are either \cl{0.0} for extant species or the average of the age range for fossil species (see Table \ref{bearFossilTable}).
 
 
 
@@ -479,7 +488,7 @@ extinction_rate ~ dnExponential(10)
 For every stochastic node we declare, we must also specify proposal algorithms (called \textit{moves}) to sample the value of the parameter in proportion to its posterior probability.
 If a move is not specified for a stochastic node, then it will not be estimated, but fixed to its initial value. 
 
-The rate parameters for extinction and speciation are both real, positive numbers (\IE floating point variables). 
+The rate parameters for extinction and speciation are both positive, real numbers (\IE non-negative floating point variables). 
 For both of these nodes, we will use a scaling move (\cl{mvScale()}), which proposes multiplicative changes to a parameter.
 Many moves also require us to set a \textit{tuning value}, called \cl{lambda} for \cl{mvScale()}, which determine the size of the proposed change. 
 Here, we will use three scale moves for each parameter with  different values of lambda. 
@@ -1305,7 +1314,7 @@ Why might a node with a sampled ancestor be referred to as a singleton?
 
 \QUEST How can you see the names of the fossils that are putative sampled ancestors?
 
-\QUEST Try mousing over different branches (see Fig\ \ref{fig:IcyTreeScreenshort}).
+\QUEST Try mousing over different branches (see Fig.\ \ref{fig:IcyTreeScreenshort}).
 What are the fields telling you?
 %Is the age of the \textit{Kretzoiarctos beatrix} fossil the same as what was shown in {\tt Tracer}? 
 

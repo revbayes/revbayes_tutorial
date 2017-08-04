@@ -6,7 +6,7 @@ This history can differ from the species history, because several alleles can pe
 In all cases, incongruence between the gene tree and the species tree occurs when alleles persist over the course of several speciation events.
 When reconstructing a gene tree, one therefore gets the history of the alleles that have been sampled (at best), not the history of the species. 
 
-In 2003, Rannala and Yang proposed a powerful way to model the sorting of alleles along a phylogeny of several species \citep{Rannala2003a}, the multispecies coalescent (Fig. \ref{fig2}).
+In 2003, Rannala and Yang proposed a powerful way to model the sorting of alleles along a phylogeny of several species \citep{Rannala2003}, the multispecies coalescent (Fig. \ref{fig2}).
 This model is at the origin of most model-based approaches to reconstruct gene and species trees \citep{Edwards2007,Heled2010}.
 The multispecies coalescent appropriately models the evolution of a population of alleles along a species tree.
 Along the species tree, it allows different branch lengths, in units of time, and also allows different effective population sizes.
@@ -36,7 +36,7 @@ Once branch lengths on the species tree are measured in coalescent time units, i
 \begin{figure}[h!]
 \centering
 \fbox{\includegraphics[width=5.8in,angle=0]{\ResourcePath figures/RannalaYang.pdf}}
-\caption{\small The multispecies coalescent. A) A gene tree, including 3 human alleles, 2 Chimp alleles, one Gorilla allele, and one Orang-outan allele. $\tau$ parameters are speciation times, $t$ parameters are divergence time in the gene tree, the grey squares represent the ancestral populations, with their respeciive sizes.  B) The corresponding species tree. In this model, the speciation times define minimal boundaries for allele divergence times. [Replicated from Fig.~1 in \citet{Rannala2003a}.]}
+\caption{\small The multispecies coalescent. A) A gene tree, including 3 human alleles, 2 Chimp alleles, one Gorilla allele, and one Orang-outan allele. $\tau$ parameters are speciation times, $t$ parameters are divergence time in the gene tree, the grey squares represent the ancestral populations, with their respeciive sizes.  B) The corresponding species tree. In this model, the speciation times define minimal boundaries for allele divergence times. [Replicated from Fig.~1 in \citet{Rannala2003}.]}
 \label{fig2}
 \end{figure}
 
@@ -180,7 +180,7 @@ for (i in 1:num_loci) {
 \item Now we have gene trees, complete with branch lengths. 
 The next element we need is a clock rate which transforms/scales the branch times into branch lengths that represent the expected number of substitutions.
 Here we will assume for simplicity that every gene evolves under a global strict clock but has its own independent clock rate.
-You can later look into the estimate to see how much the clock rate estimates actually differ.
+You can later look into the estimate to see how much the clock rate estimates actually differ across genes.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 for ( i in 1:num_loci ) { 
@@ -293,13 +293,14 @@ mapTree(treetrace,"output/primates_root_calibration.tree")
 
 
 \section{Things to think about}
-How did the different methods perform? 
-Did you expect to see these differences?
-It has been shown that the concatenation approach could be inconsistent under some conditions of population size and of divergence times \citep{Degnan2006}. 
-Do you find that concatenation performs worse that its competitors?
-Which models seem to "mix" better?
-In particular, does the full multispecies coalescent mix well?
-Why can we expect this model in particular would have difficulties mixing?
+%How did the different methods perform? 
+%Did you expect to see these differences?
+%It has been shown that the concatenation approach could be inconsistent under some conditions of population size and of divergence times \citep{Degnan2006}. 
+%Do you find that concatenation performs worse that its competitors?
+%Which models seem to "mix" better?
+%In particular, does the full multispecies coalescent mix well?
+%Why can we expect this model in particular would have difficulties mixing?
+Do you find that the full multispecies coalescent mixes well?
 
 
 \bibliographystyle{sysbio}
