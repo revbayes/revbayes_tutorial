@@ -574,17 +574,29 @@ dev.off()
 \bigskip
 \section{Accommodating uncorrelated diversification rate changes: the HiSSE model}\label{sec:HiSSE_Theory}
 
-\RevBayes implements the multi-state extension of \BiSSE, just as implemented in \diversitree. 
-The main differences are just which priors you use on the parameters and the inference procedure, \IE the specifics of the MCMC algorithm.
-Here we will first describe the general theory about the model, borrowing heavily from the supplementary material of \cite{Moore2016}.
-You may want to skip over this section if you are not interested in math behind.
-Then we will show how to run this analysis in \RevBayes.
+BiSSE and MuSSE are powerful approaches for testing the association of a character
+with diversification rate heterogeneity.
+However, BiSSE has been shown to be prone to falsely identifying a positive association
+when diversification rate shifts are correlated with a character \textit{not} included in the model \cite{Rabosky2015}.
+One approach to reduce the possibility of falsely associating a character with diversification rate
+heterogeneity is to incorporate a second, unobserved character into the model  \citep[i.e.\ a Hidden State-Dependent Speciation and Extinction (HiSSE) model;][]{Beaulieu2016}.
+The changes in the unobserved character's state represent background diversification rate changes
+that are not correlated with the oberved character.
+See Figure \ref{fig:hisse} for a schematic overview of the HiSSE model, and Table \ref{tab:Hparam} for an explanation of the HiSSE model parameters.
+Now let's set up and run a HiSSE analysis in \RevBayes.
+
 \begin{figure}[h!]
 \centering
 \fbox{\includegraphics[width=\textwidth]{\ResourcePath figures/HiSSE.pdf}}
-\caption{\small A schematic overview of the \HiSSE model. Each lineage has a binary state associated to it and thus can either be in state 0 (blue) or state 1 (red). When a lineage is in state 0 (blue), it can either (a) speciate with rate $\lambda_0$ which results into two descendant lineage both being in state 0 (blue); (b) it can go extinct with rate $\mu_0$; or (c) it can switch the state to 1 (red) with rate $q_{01}$. The same type of events are possible when a lineage is in state 1 (red) but with rate $\lambda_1$, $\mu_1$, and $q_{10}$ respectively.}
+\caption{\small A schematic overview of the \HiSSE model. Each lineage has an observed binary state associated to it: state 0 (blue) or state 1 (red). 
+Furthermore, there is a second, unobserved (hidden), binary character with states A or B.
+The HiSSE model describes jointly the evolution of both of these two characters; a lineage
+    must be in one of four different states: 0A, 0B, 1A, or 1B.
+    We estimate separate speciation and extinction rates for each of these four states.
+    Note that just like BiSSE can easily be extended to MuSSE,
+    \RevBayes allows you to extend HiSSE models beyond binary observed and unobserved characters.}
 \label{fig:HiSSE_Schematic}
-\end{figure}
+\end{figure} \label{fig:hisse}
 
 
 
@@ -597,14 +609,18 @@ Then we will show how to run this analysis in \RevBayes.
 		\midrule
 		$\Psi$ & Phylogenetic tree with divergence times.\\
 		\rowcolor{gray!15} $T$ & The root age.\\
-%		\rowcolor{gray!15} $\gamma$ & Prior mean of the Poisson rate $\Lambda$.\\
-%		$\Lambda$ & Prior mean of the Poisson-distributed number $k$ of shift events.\\
-		$q_{01}$ & The rate of shifts from 0 to 1.\\
-		\rowcolor{gray!15} $q_{10}$ & The rate of shifts from 1 to 0.\\
-		$\lambda_0$ & Speciation rate for state 0.\\
-		\rowcolor{gray!15} $\mu_0$ & Extinction rate for state 0.\\
-		$\lambda_1$ & Speciation rate for state 1.\\
-		\rowcolor{gray!15} $\mu_1$ & Extinction rate for state 1.\\
+		$q_{01}$ & The rate of shifts between observed states 0 to 1.\\
+		\rowcolor{gray!15} $q_{10}$ & The rate of shifts between observed states 1 to 0.\\
+		$q_{AB}$ & The rate of shifts between hidden states A to B.\\
+		\rowcolor{gray!15} $q_{BA}$ & The rate of shifts between hidden states B to A.\\
+        $\lambda_{0A}$ & Speciation rate for state 0A.\\
+        \rowcolor{gray!15} $\mu_{0A}$ & Extinction rate for state 0A.\\
+        $\lambda_{1A}$ & Speciation rate for state 1A.\\
+        \rowcolor{gray!15} $\mu_{1A}$ & Extinction rate for state 1A.\\
+        $\lambda_{0B}$ & Speciation rate for state 0B.\\
+        \rowcolor{gray!15} $\mu_{0B}$ & Extinction rate for state 0B.\\
+        $\lambda_{1B}$ & Speciation rate for state 1B.\\
+        \rowcolor{gray!15} $\mu_{1B}$ & Extinction rate for state 1B.\\
 	\end{tabular}
 \end{table}
 
