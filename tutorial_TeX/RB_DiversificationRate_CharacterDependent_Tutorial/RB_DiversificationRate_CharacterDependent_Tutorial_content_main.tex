@@ -1,6 +1,7 @@
 %%%%%%%%%%%%%%%%%%%%
 %%%    THEORY    %%%
 %%%%%%%%%%%%%%%%%%%%
+\newpage
 \section{Theory behind state-dependent diversification models} \label{sec:BiSSE_Theory}
 
 The Binary State Speciation and Extinction model (BiSSE; \citealt{Maddison2007}) was introduced because of two problems identified by \citet{Maddison2006b}.
@@ -232,6 +233,8 @@ The resulting differential equations within the branches are:
     \frac{\mathrm{d}D_{N,i}(t)}{\mathrm{d}t} &= - \left(\lambda_i + \mu_i + \sum\limits_{j \neq i}^k q_{ij} \right)D_{N,i}(t) + \sum\limits_{j \neq i}^k q_{ij} D_{N,j}(t) + 2\lambda_iE_i(t)D_{N,i}(t) \\
     \frac{\mathrm{d}E_i(t)}{\mathrm{d}t} &= \mu_i - \left(\lambda_i + \mu_i + \sum\limits_{j \neq i}^k q_{ij} \right)E_i(t) + \sum\limits_{j \neq i}^k q_{ij} E_j(t) + \lambda_i E_i(t)^2
 \end{align*}
+
+\newpage
 
 %%%%%%%%%%%%%%%%%%%%%%
 %%  Using RevBayes  %%
@@ -571,7 +574,7 @@ dev.off()
 \end{enumerate}
 
 
-\bigskip
+\newpage
 \section{Accommodating uncorrelated diversification rate changes: the HiSSE model}\label{sec:HiSSE_Theory}
 
 BiSSE and MuSSE are powerful approaches for testing the association of a character
@@ -953,8 +956,7 @@ $
 \end{enumerate}
 
 
-
-\bigskip
+\newpage
 \section{Accommodating both cladogenetic and anagenetic changes: the ClaSSE model}\label{sec:ClaSSE}
 
 In the previous examples we have modeled all character state transitions
@@ -1357,5 +1359,6 @@ anc_tree = ancestralStateTree(tree=observed_phylogeny, ancestral_state_trace_vec
     long distance dispersal and see which model fits the data better.
 \end{enumerate}
 
+\newpage
 \bibliographystyle{sysbio}
 \bibliography{\GlobalResourcePath refs}
