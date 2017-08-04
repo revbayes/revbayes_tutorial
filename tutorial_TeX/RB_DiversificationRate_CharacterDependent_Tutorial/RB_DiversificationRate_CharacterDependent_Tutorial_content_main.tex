@@ -923,13 +923,13 @@ p4 <- ggplot(dat_rel, aes(x = dens, fill = Type)) + labs(title = "Relative Extin
 multiplot(p1, p2, p3, p4)
 dev.off()
 
-
+$
 \end{lstlisting}
 \end{snugshade*}}
 \begin{figure}[h!]
 \centering
 \fbox{\includegraphics[width=\textwidth]{\ResourcePath figures/RevBayes_HiSSE_Results.pdf}}
-\caption{\small Estimated diversification rate for activity period (state 1 = Diurnal and state 2 = Nocturnal). We see that there is a nice difference in the estimated speciation rates but only little difference in the estimated}
+\caption{\small Estimated diversification rate for activity period (state 1 = Diurnal and state 2 = Nocturnal).}
 \label{fig:div_rates_HiSSE}
 \end{figure}
 
@@ -955,8 +955,43 @@ dev.off()
 \bigskip
 \section{Accommodating both cladogenetic and anagenetic changes: the ClaSSE model}\label{sec:ClaSSE}
 
+In the previous examples we have modeled all character state transitions
+as anagenetic changes.
+Anagenetic changes occur along the branches of a phylogeny, within a lineage.
+Cladogenetic changes, on the other hand, occur only at speciation events.
+They represent changes in a character state that may be associated with speciation events
+due to increased reproductive isolation,
+for example colonizing a new geographic area or a shift in chromosome number.
 
-\bigskip
+A major challenge for all phylogenetic models of cladogenetic character change
+is accounting
+for unobserved speciation events due to lineages going extinct
+and not leaving any extant descendants \citep{Bokma2002},
+or due to incomplete sampling of lineages in the present.
+Teasing apart
+the phylogenetic signal for cladogenetic and anagenetic processes given
+unobserved speciation events is a major difficulty.
+Commonly used biographic models like the
+dispersal-extinction-cladogenesis \citep[DEC;][]{Ree2008} simply ignore
+unobserved speciation events and so result in biased
+estimates of cladogenetic versus anagenetic change.
+
+This bias can be avoided by using the 
+Cladogenetic State change Speciation and Extinction
+(ClaSSE) model \citep{Goldberg2012},
+which accounts for unobserved speciation events
+by jointly modeling both character evolution
+and the phylogenetic birth-death process.
+ClaSSE models extend other SSE models by incorporating both cladogenetic 
+and anagenetic character evolution.
+This approach has been used to model biogeographic range evolution \citep{Goldberg2011}
+and chromosome number evolution \citep{Freyman2017}.
+
+Here we will use \RevBayes to examine biogeographic range evolution in the primates.
+We will model biogeographic range evolution similar to a DEC model, 
+however we will use ClaSSE at to account for speciation events unobserved due 
+to extinction or incomplete sampling.
+
 
 \bibliographystyle{sysbio}
 \bibliography{\GlobalResourcePath refs}
