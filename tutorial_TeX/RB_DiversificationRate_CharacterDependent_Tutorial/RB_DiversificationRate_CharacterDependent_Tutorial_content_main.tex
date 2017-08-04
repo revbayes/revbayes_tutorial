@@ -625,7 +625,9 @@ The HiSSE model describes jointly the evolution of both of these two characters;
 \end{table}
 
 
-\subsection{Read the tree}
+\subsection{Setting up the analysis}
+
+\subsubsection{Reading in the data}
 
 Begin by reading in the observed tree and the morphological data. 
 We have both stored in separate nexus files.
@@ -989,9 +991,371 @@ and chromosome number evolution \citep{Freyman2017}.
 
 Here we will use \RevBayes to examine biogeographic range evolution in the primates.
 We will model biogeographic range evolution similar to a DEC model, 
-however we will use ClaSSE at to account for speciation events unobserved due 
+however we will use ClaSSE to account for speciation events unobserved due 
 to extinction or incomplete sampling.
 
+\subsection{Setting up the analysis}
+
+\subsubsection{Reading in the data}
+
+Begin by reading in the observed tree and the morphological data. 
+We have both stored in separate nexus files.
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+observed_phylogeny <- readTrees("data/primates_biogeo.tre")[1]
+\end{lstlisting}
+\end{snugshade*}}
+Note, the character-dependent birth-death process currently uses always the first character/site in the alignment file.
+We have therefore split the morphological dataset into several small files that include only one morphological character each.
+
+Begin by reading in the observed tree.
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+observed_phylogeny <- readTrees("data/primates_biogeo.tre")[1]
+\end{lstlisting}
+\end{snugshade*}}
+
+Get the taxa in the tree. We'll need this later on.
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+taxa <- observed_phylogeny.taxa()
+\end{lstlisting}
+\end{snugshade*}}
+
+Now let's read in the biogeographic range data. The areas are represented as the following character states:
+\begin{itemize}
+\item 0 = 00 = the null state with no range
+\item 1 = 01 = New World only
+\item 2 = 10 = Old World only
+\item 3 = 11 = both New and Old World
+\end{itemize}
+For consistency, we have chosen to use the same representation of beogeographic ranges used in the \RevBayes biogeography/DEC tutorial.
+Each range is represented as both a natural number (0, 1, 2, 3) and a corresponding bitset (00, 01, 10, 11).
+The null state (state 0) is used in DEC models to represent a lineage that has no biogeographic range and is therefore extinct.
+Our model will include this null state as well, however, we will explicitly model extinction as part of the birth-death
+process so our character will never enter state 0.
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+data_biogeo = readCharacterDataDelimited("data/primates_biogeo.tsv", stateLabels="0123", type="NaturalNumbers", delimiter="\t", headers=TRUE)
+\end{lstlisting}
+\end{snugshade*}}
+
+Also we need to set the move and monitor indices.
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+mvi = 0
+mni = 0
+\end{lstlisting}
+\end{snugshade*}}
+
+\subsubsection{Set up the extinction rates}
+
+We are going to draw both anagenetic transition rates
+and diversification rates from a lognormal distribution.
+The mean of the prior distribution will be 
+$\ln(\frac{\text{\#Taxa}}{2}) / \text{tree-age}$
+which is the expected net 
+diversification rate, and the SD will be 1.0 so the 95\% 
+prior interval ranges well over 2 orders of magnitude.
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+num_species <- 424 # approximate total number of primate species
+rate_mean <- ln( ln(num_species/2.0) / observed_phylogeny.rootAge() )
+rate_sd <- 1.0
+\end{lstlisting}
+\end{snugshade*}}
+
+The extinction rates will be stored in a vector where each element represents
+the extinction rate for the corresponding character state. 
+We have chosen to allow a lineage to go extinct in both the New and Old World 
+at the same time (like a global extinction event). As an alternative, you could 
+restrict the model so that a lineage can only go extinct if it's range is limited 
+to one area.
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+extinction_rates[1] <- 0.0 # the null state (state 0)
+extinction_rates[2] ~ dnLognormal(rate_mean, rate_sd) # extinction when the lineage is in New World (state 1)
+extinction_rates[3] ~ dnLognormal(rate_mean, rate_sd) # extinction when the lineage is in Old World (state 2)
+extinction_rates[4] ~ dnLognormal(rate_mean, rate_sd) # extinction when in both (state 3)
+\end{lstlisting}
+\end{snugshade*}}
+Note Rev vectors are indexed starting with 1, yet our character states start
+at 0. So \texttt{extinction\_rate[1]} will represent the extinction rate for character
+state 0.
+
+Add MCMC moves for each extinction rate.
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+moves[++mvi] = mvSlide( extinction_rates[2], weight=4 )
+moves[++mvi] = mvSlide( extinction_rates[3], weight=4 )
+moves[++mvi] = mvSlide( extinction_rates[4], weight=4 )
+\end{lstlisting}
+\end{snugshade*}}
+
+Let's also create a deterministic variable to monitor the overall extinction rate.
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+total_speciation := sum(extinction_rates)
+\end{lstlisting}
+\end{snugshade*}}
+
+\subsubsection{Set up the anagenetic transition rate matrix}
+
+First, let's create the rates of anagenetic dispersal:
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+anagenetic_dispersal_13 ~ dnLognormal(rate_mean, rate_sd) # disperse from New to Old World 01 -> 11
+anagenetic_dispersal_23 ~ dnLognormal(rate_mean, rate_sd) # disperse from Old to New World 10 -> 11
+\end{lstlisting}
+\end{snugshade*}}
+
+Now add MCMC moves for each anagenetic dispersal rate.
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+moves[++mvi] = mvSlide( anagenetic_dispersal_13, weight=4 )
+moves[++mvi] = mvSlide( anagenetic_dispersal_23, weight=4 )
+\end{lstlisting}
+\end{snugshade*}}
+
+The anagenetic transitions will be stored in a 4 by 4
+instantaneous rate matrix. We will construct this by
+first creating a vector of vectors. Let's begin by 
+initalizing all rates to 0.0:
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+for (i in 1:4) {
+    for (j in 1:4) {
+        r[i][j] <- 0.0
+    }
+}
+\end{lstlisting}
+\end{snugshade*}}
+
+Now we can populate non-zero rates into the anagenetic transition rate matrix:
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+r[2][4] := anagenetic_dispersal_13
+r[3][4] := anagenetic_dispersal_23
+r[4][2] := extinction_rates[3]
+r[4][3] := extinction_rates[2]
+\end{lstlisting}
+\end{snugshade*}}
+Note that we have modeled the rate of 11 $\rightarrow$ 01 (3 $\rightarrow$ 1) as being
+the rate of going extinct in area 2, and the rate of 11 $\rightarrow$ 10 (3 $\rightarrow$ 2) 
+as being the rate of going extinct in area 1. 
+
+Now we pass our vector of vectors into the fnFreeK function to create
+the instaneous rate matrix.
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+ana_rate_matrix := fnFreeK(r, rescaled=false)
+\end{lstlisting}
+\end{snugshade*}}
+
+\subsubsection{Set up the cladogenetic speciation rate matrix}
+
+Here we need to define each cladogenetic event type in the form
+\texttt{[ancestor\_state, daughter1\_state, daughter2\_state]}
+and assign each cladogenetic event type a corresponding 
+speciation rate.
+
+The first type of cladogenetic event we'll specify is widespread sympatry.
+Widespread sympatric cladogenesis is where the biogeographic range does
+not change; that is the daughter lineages inherit the same range as
+the ancestor. In this example we are not going to allow the speciation events like
+11 $\rightarrow$ 11, 11, as it seems biologically implausible. However if you wanted 
+you could add this to your model.
+
+Define the speciation rate for widespread sympatric cladogenesis events:
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+speciation_wide_sympatry ~ dnLognormal(rate_mean, rate_sd)
+moves[++mvi] = mvSlide( speciation_wide_sympatry, weight=4 )
+\end{lstlisting}
+\end{snugshade*}}
+
+Define the widespread sympatric cladogenetic events:
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+clado_events[1] = [1, 1, 1] # 01 -> 01, 01
+clado_events[2] = [2, 2, 2] # 10 -> 10, 10
+\end{lstlisting}
+\end{snugshade*}}
+
+and assign each the same speciation rate:
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+speciation_rates[1] := speciation_wide_sympatry/2
+speciation_rates[2] := speciation_wide_sympatry/2
+\end{lstlisting}
+\end{snugshade*}}
+
+Subset sympatry is where one daughter lineage inherits the full
+ancestral range but the other lineage inherits only a single region.
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+speciation_sub_sympatry ~ dnLognormal(rate_mean, rate_sd)
+moves[++mvi] = mvSlide( speciation_sub_sympatry, weight=4 )
+\end{lstlisting}
+\end{snugshade*}}
+
+Define the subset sympatry events and assign each a speciation rate:
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+clado_events[3] = [3, 3, 1] # 11 -> 11, 01 
+clado_events[4] = [3, 1, 3] # 11 -> 10, 11
+clado_events[5] = [3, 3, 2] # 11 -> 11, 10
+clado_events[6] = [3, 2, 3] # 11 -> 10, 11
+speciation_rates[3] := speciation_sub_sympatry/4
+speciation_rates[4] := speciation_sub_sympatry/4
+speciation_rates[5] := speciation_sub_sympatry/4
+speciation_rates[6] := speciation_sub_sympatry/4
+\end{lstlisting}
+\end{snugshade*}}
+
+Allopatric cladogenesis is when the two daughter lineages
+split the ancestral range:
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+speciation_allopatry ~ dnLognormal(rate_mean, rate_sd)
+moves[++mvi] = mvSlide( speciation_allopatry, weight=4 )
+\end{lstlisting}
+\end{snugshade*}}
+
+Define the allopatric events:
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+clado_events[7] = [3, 1, 2] # 11 -> 01, 10
+clado_events[8] = [3, 2, 1] # 11 -> 10, 01
+speciation_rates[7] := speciation_allopatry/2
+speciation_rates[8] := speciation_allopatry/2
+\end{lstlisting}
+\end{snugshade*}}
+
+Now let's create a deterministic variable to monitor the overall speciation rate
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+total_speciation := sum(speciation_rates)
+\end{lstlisting}
+\end{snugshade*}}
+
+Finally, we construct the cladogenetic speciation rate
+matrix from the cladogenetic event types and the speciation rates.
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+clado_matrix := fnCladogeneticSpeciationRateMatrix(clado_events, speciation_rates, 4)
+\end{lstlisting}
+\end{snugshade*}}
+
+Let's view the cladogenetic matrix to see if we have set it up correctly:
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+clado_matrix
+\end{lstlisting}
+\end{snugshade*}}
+
+\subsubsection{Set up the cladogenetic character state dependent birth death process}
+
+For simplicity we will fix the root frequences to be equal except for the null state
+which has probability of 0.
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+root_frequencies <- simplex([0, 1, 1, 1])
+\end{lstlisting}
+\end{snugshade*}}
+
+\texttt{rho} is the probability of sampling species at the present:
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+rho <- observed_phylogeny.ntips()/num_species
+\end{lstlisting}
+\end{snugshade*}}
+
+Now we construct a stochastic variable drawn from the cladogenetic 
+character state dependent birth death process.
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+classe ~ dnCDCladoBDP( rootAge         = observed_phylogeny.rootAge(),
+                       cladoEventMap   = clado_matrix,
+                       extinctionRates = extinction_rates,
+                       Q               = ana_rate_matrix,
+                       delta           = 1.0,
+                       pi              = root_frequencies,
+                       rho             = rho,
+                       condition       = "time",
+                       taxa            = taxa )
+\end{lstlisting}
+\end{snugshade*}}
+
+Clamp the model with the observed data.
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+classe.clamp( observed_phylogeny )
+classe.clampCharData( data_biogeo )
+\end{lstlisting}
+\end{snugshade*}}
+
+\subsubsection{Finalize the model}
+
+Just like before, we must create a workspace model object.
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+mymodel = model(classe)
+\end{lstlisting}
+\end{snugshade*}}
+
+\subsection{Set up and run the MCMC}
+
+First, set up the monitors that will output parameter values to file and screen.
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+monitors[++mni] = mnModel(filename="output/primates_ClaSSE.log", printgen=1)
+monitors[++mni] = mnJointConditionalAncestralState(tree=observed_phylogeny, cdbdp=classe, type="NaturalNumbers", printgen=1, withTips=true, withStartStates=true, filename="output/anc_states_primates_ClaSSE.log")
+monitors[++mni] = mnScreen(printgen=1, speciation_wide_sympatry, speciation_sub_sympatry, speciation_allopatry, extinction_rates)
+\end{lstlisting}
+\end{snugshade*}}
+
+Now define our workspace MCMC object.
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+mymcmc = mcmc(mymodel, monitors, moves)
+\end{lstlisting}
+\end{snugshade*}}
+
+We will perform a pre-burnin to tune the proposals
+and then run the MCMC. Note that for a real analysis you would
+want to run the MCMC for many more iterations.
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+mymcmc.burnin(generations=200,tuningInterval=5)
+mymcmc.run(generations=1000)
+\end{lstlisting}
+\end{snugshade*}}
+
+\subsection{Summarize ancestral states}
+
+When the analysis has completd you now summarize the ancestral states. 
+The ancestral states are estimated both for the ``begining'' and ``end''
+state of each branch, so that the cladogenetic changes that occurred at speciation events
+are distinguished from the changes that occurred anagenetically along branches.
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+anc_states = readAncestralStateTrace("output/anc_states_primates_ClaSSE.log")
+anc_tree = ancestralStateTree(tree=observed_phylogeny, ancestral_state_trace_vector=anc_states, include_start_states=true, file="output/anc_states_primates_ClaSSE_results.tree", burnin=0, summary_statistic="MAP", site=0)
+\end{lstlisting}
+\end{snugshade*}}
+
+
+\subsection{Exercise}
+
+\begin{enumerate}
+\item Using either R or Tracer, visualize the posterior estimates for different types of cladogenetic events. 
+    What kind of speciation events are most common?
+\item As we have specified the model, we did not allow cladogenetic long
+    distance (jump) dispersal, for example 01 $\rightarrow$ 01, 10.
+    Modify this script to include cladogenetic 
+    long distance dispersal and see which model fits the data better.
+\end{enumerate}
 
 \bibliographystyle{sysbio}
 \bibliography{\GlobalResourcePath refs}
