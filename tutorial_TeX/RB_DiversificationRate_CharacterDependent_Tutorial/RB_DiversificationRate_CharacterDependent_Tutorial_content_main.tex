@@ -1340,6 +1340,7 @@ When the analysis has completd you now summarize the ancestral states.
 The ancestral states are estimated both for the ``begining'' and ``end''
 state of each branch, so that the cladogenetic changes that occurred at speciation events
 are distinguished from the changes that occurred anagenetically along branches.
+Make sure the \texttt{include\_start\_states} argument is set to \texttt{true}.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 anc_states = readAncestralStateTrace("output/anc_states_primates_ClaSSE.log")
@@ -1347,6 +1348,48 @@ anc_tree = ancestralStateTree(tree=observed_phylogeny, ancestral_state_trace_vec
 \end{lstlisting}
 \end{snugshade*}}
 
+\subsubsection{Plotting ancestral states}
+
+Like before, we'll plot the ancestral states 
+using the \RevGadgets \R package.
+Execute the script \texttt{plot\_anc\_states\_ClaSSE.R} in \R.
+The results can be seen in Figure \ref{fig:results_ClaSSE}.
+The maximum \emph{a posteriori} (MAP) estimate for each node is shown as well as the posterior probability of the states represented by the size of the dots.
+
+\definecolor{shadecolor}{RGB}{200,200,200}
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+library(RevGadgets)
+
+tree_file = "output/anc_states_primates_ClaSSE_results.tree"
+
+plot_ancestral_states(tree_file, summary_statistic="MAPRange",
+                      tip_label_size=3,
+                      tip_label_offset=1,
+                      xlim_visible=c(0,100),
+                      node_label_size=0,
+                      shoulder_label_size=0,
+                      include_start_states=TRUE,
+                      show_posterior_legend=TRUE,
+                      node_size_range=c(4, 7),
+                      alpha=0.75)
+
+output_file = "RevBayes_Anc_States_ClaSSE.pdf"
+ggsave(output_file, width = 11, height = 9)
+\end{lstlisting}
+\end{snugshade*}}
+\definecolor{shadecolor}{RGB}{183,207,237}
+
+\begin{figure}[h!]
+\centering
+\fbox{\includegraphics[width=\textwidth]{\ResourcePath figures/RevBayes_Anc_States_ClaSSE.pdf}}
+\caption{\small Maximum a posteriori estimate of biogeographic range evolution of the primates. 
+    The most recent common ancestor of the primates is inferred to be in the Old World (green).
+    Approximately 70 Mya one lineage dispersed to be in both New and Old World (blue).
+    This widespread lineage underwent allopatric cladogenesis, resulting in one
+    daughter lineage in the Old World and one in the New World (green).}
+\label{fig:results_ClaSSE}
+\end{figure}
 
 \subsection{Exercise}
 
@@ -1356,7 +1399,8 @@ anc_tree = ancestralStateTree(tree=observed_phylogeny, ancestral_state_trace_vec
 \item As we have specified the model, we did not allow cladogenetic long
     distance (jump) dispersal, for example 01 $\rightarrow$ 01, 10.
     Modify this script to include cladogenetic 
-    long distance dispersal and see which model fits the data better.
+    long distance dispersal and calculate Bayes factors to see which model fits the data better.
+    How does this affect the ancestral state estimate?
 \end{enumerate}
 
 \newpage

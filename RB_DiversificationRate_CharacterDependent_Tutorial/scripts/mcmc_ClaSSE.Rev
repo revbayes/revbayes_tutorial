@@ -236,10 +236,10 @@ monitors[++mni] = mnScreen(printgen=1, speciation_wide_sympatry, speciation_sub_
 mymcmc = mcmc(mymodel, monitors, moves)
 
 # pre-burnin to tune the proposals
-#mymcmc.burnin(generations=200,tuningInterval=5)
+mymcmc.burnin(generations=300,tuningInterval=5)
 
 # run the MCMC
-mymcmc.run(generations=1000)
+mymcmc.run(generations=3000)
 
 
 
