@@ -6,10 +6,10 @@
 # authors: Sebastian Hoehna
 #
 ################################################################################
-num_post_sims = listFiles(path="output/" + analysis_name + "_post_sims").size()
 
+outfileName = "results_" + model_name + "/simulated_data_" + analysis_name + ".tsv"
  
-write(file="results_" + analysis_name + "_posterior_predictive_simulations.csv", 
+write(file=outfileName, 
       "Number Invariant Sites",
       "Number Invariant Sites Excluding Ambiguous",
       "Max GC", 
@@ -48,11 +48,18 @@ write(file="results_" + analysis_name + "_posterior_predictive_simulations.csv",
       "Segregating-Sites",
       sep=",", append=FALSE) 
 
-write(file="results_" + analysis_name + "_posterior_predictive_simulations.csv", "\n", append=TRUE) 
+write(file=outfileName, "\n", append=TRUE) 
 
-    
+
+#num_post_sims = 10
+################### calculate the pps stats here #########################
+
+## Iterate through all of the posterior tree files from the simulation analyses
 for ( i in 1:num_post_sims) {
-    sim_data <- readDiscreteCharacterData("output/" + analysis_name + "_post_sims/posterior_predictive_sim_" + i + "/seq.nex" )
+
+    inFileName = "output_" + model_name + "/posterior_predictive_sim_" + i + "/" + analysis_name + "_posterior.trees"
+    
+    sim_data <- readDiscreteCharacterData("output_" + model_name + "/" + analysis_name + "_post_sims/posterior_predictive_sim_" + i + "/seq.nex" )
     
     num_inv         = sim_data.getNumInvariantSites( excludeAmbiguous=FALSE )
     num_inv_amb     = sim_data.getNumInvariantSites( excludeAmbiguous=TRUE )
@@ -117,7 +124,7 @@ for ( i in 1:num_post_sims) {
     
     
     
-    write(file="results_" + analysis_name + "_posterior_predictive_simulations.csv", append=TRUE, sep=",",
+    write(file=outfileName, append=TRUE, sep=",",
           num_inv,
           num_inv_amb,
           max_gc,
@@ -157,7 +164,7 @@ for ( i in 1:num_post_sims) {
 
 
 
-    write(file="results_" + analysis_name + "_posterior_predictive_simulations.csv", "\n", append=TRUE) 
+    write(file=outfileName, "\n", append=TRUE) 
 
 }
 
@@ -167,7 +174,9 @@ for ( i in 1:num_post_sims) {
 # Summary of data #
 ###################
 
-write(file="results_" + analysis_name + "_original_data.csv", sep=",", append=FALSE,
+outfileName = "results_" + model_name + "/empirical_data_" + analysis_name + ".tsv"
+
+write(file=outfileName, sep=",", append=FALSE,
       "Number Invariant Sites",
       "Number Invariant Sites Excluding Ambiguous",
       "Max GC", 
@@ -204,7 +213,7 @@ write(file="results_" + analysis_name + "_original_data.csv", sep=",", append=FA
       "Tajima-D", 
       "Tajima-Pi", 
       "Segregating-Sites")
-write("\n", file="results_" + analysis_name + "_original_data.csv", append=TRUE)
+write("\n", file=outfileName, append=TRUE)
 
 d = readDiscreteCharacterData("data_sim_8/" + analysis_name + ".nexus")
 
@@ -268,7 +277,7 @@ tajima_pi       = fnTajimasPi( d )
 
 
 
-write(file="results_" + analysis_name + "_original_data.csv", append=TRUE, sep=",",
+write(file=outfileName, append=TRUE, sep=",",
       num_inv,
       num_inv_amb,
       max_gc,
@@ -307,6 +316,6 @@ write(file="results_" + analysis_name + "_original_data.csv", append=TRUE, sep="
       tajima_pi)
 
 
-write(file="results_" + analysis_name + "_original_data.csv", "\n", append=TRUE) 
+write(file=outfileName, "\n", append=TRUE) 
     
 
