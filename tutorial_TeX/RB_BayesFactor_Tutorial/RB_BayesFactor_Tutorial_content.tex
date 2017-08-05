@@ -25,9 +25,9 @@ You may only need the \href{https://github.com/revbayes/revbayes_tutorial/raw/ma
 %%%%%%%%
 \section{Data and files}
 
-We provide several data files that we will use in this tutorial.
+We provide the data file that we will use in this tutorial.
 Of course, you may want to use your own dataset instead.
-In the \cl{data} folder, you will find the following files
+In the \cl{data} folder, you will find the following file:
 \begin{itemize}
 \item
 \cl{primates\_and\_galeopterus\_cytb.nex}: Alignment of the \textit{cytochrome b} subunit from 23 primates representing 14 of the 16 families (\textit{Indriidae} and \textit{Callitrichidae} are missing).
@@ -74,7 +74,7 @@ Decisive& $>100$ & $>4.6$ & $>2$ \\
 \end{table}
 
 
-Unfortunately, it is generally not possible to directly calculate the posterior odds to prior odds ratio. 
+Unfortunately, it is generally not possible to directly calculate the posterior odds to prior odds ratios.
 However, we can further define the posterior odds ratio as:
 \begin{align*}
 \frac{\mathbb{P}(M_0 \mid \mathbf X)}{\mathbb{P}(M_1 \mid \mathbf X)} = \frac{\mathbb{P}(M_0)}{\mathbb{P}(M_1)} \frac{\mathbb{P}(\mathbf X \mid M_0)}{\mathbb{P}(\mathbf X \mid M_1)},
@@ -115,12 +115,12 @@ To specify the model please consult the previous exercise. Specifically, you wil
 
 We will estimate the marginal likelihood of a given model using a `stepping-stone' (or `path-sampling') algorithm.
 These algorithms are similar to the familiar MCMC algorithms, which are intended to sample from (and estimate) the joint posterior probability of the model parameters.
-Stepping-stone algorithms are like a series of MCMC simulations that iteratively sample from a specified number of discrete steps between the posterior and the prior probability distributions.
+Stepping-stone algorithms are like a series of MCMC simulations that iteratively sample from a specified number of distributions that are discrete steps between the posterior and the prior probability distributions.
 The basic idea is to estimate the probability of the data for all points between the posterior and the prior---effectively summing the probability of the data over the prior probability of the parameters to estimate the marginal likelihood. 
-Technically, the steps correspond to a series of \cl{powerPosteriors()}: where the likelihood is iteratively raised to a series of numbers between 1 and 0.
+Technically, the steps correspond to a series of \cl{powerPosteriors()}, where the likelihood is iteratively raised to a series of numbers between 1 and 0 (Figure~\ref{fig:ss}).
 When the likelihood is raised to the power of 1 (typically the first stepping stone), samples are drawn from the (untransformed) posterior.
 By contrast, when the likelihood is raised to the power of 0 (typically the last stepping stone), samples are drawn from the prior.
-To perform a stepping-stone simulation, we need to specify (1) the number of stepping stones (power posteriors) that we will use to traverse the path between the posterior and the prior (\EG we specify 50 or 100 stones), (2) the spacing of the stones between the posterior and prior (\EG we may specify that the stones are distributed according to a beta distribution), (3) the number of samples to (and thinning) of samples to be drawn from each stepping stone, and (4) the direction we will take (\IE from the posterior to the prior or vice versa).
+To perform a stepping-stone simulation, we need to specify (1) the number of stepping stones (power posteriors) that we will use to traverse the path between the posterior and the prior (\EG we specify 50 or 100 stones), (2) the spacing of the stones between the posterior and prior (\EG we may specify that the stones are distributed according to a beta distribution), (3) the number of samples (and their thinning) to be drawn from each stepping stone, and (4) the direction we will take (\IE from the posterior to the prior or vice versa).
 
 
 
@@ -133,13 +133,13 @@ MCMC algorithms target the posterior probability density, which is typically con
 Accordingly, standard MCMC simulation cannot provide unbiased estimates of the marginal likelihood because it will typically fail to explore most of the prior density.
 (B) Stepping-stone algorithms estimate the marginal likelihood by means of a series of MCMC-like simulations, where the likelihood is iteratively raised to a series of powers, effectively forcing the simulation to more fully explore the prior density of the model parameters.
 Here, six uniformly spaced stones span the posterior, where the power posterior is $\beta=6/6=1$, to the prior, where the power posterior is $\beta=0/6=0$.}
-\label{fig:jc}
+\label{fig:ss}
 \end{figure}
 
 
 This method computes a vector of powers from a beta distribution, then executes an MCMC run for each power step while raising the likelihood to that power. In this implementation, the vector of powers starts with 1, sampling the likelihood close to the posterior and incrementally sampling closer and closer to the prior as the power decreases. 
 
-Just to be safe, it is better to clear the workspace (if you did not just restart \RevBayes)
+Just to be safe, it is better to clear the workspace (if you did not just restart \RevBayes):
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 clear()

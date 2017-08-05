@@ -14,33 +14,47 @@ The full script to run this ChromoSSE example is provided in the file \texttt{sc
 \bigskip
 \subsection{The Chromosome Evolution Model}
 
+\subsubsection{A Joint Model of the Tree and Chromosome Numbers}
+
+A major difference between the previously discussed models of chromosome number evolution
+and ChromoSSE is that ChromoSSE jointly describes the evolution of chromosome numbers
+and the tree. Since ChromoSSE assumes the tree is generated via a birth-death process
+you should use an ultrametric tree or time-calibrated tree.
+The tree may contain lineages that went extinct before the present,
+but the branch lengths should be in units of time, as opposed to 
+units of substitutions per site.
+So here we will swap out the tree used in previous examples for a tree
+that was time-calibrated. 
+The estimated rates of chromosome evolution will
+have the same unit of time as the branch lengths of our tree.
+In this example the node ages are relative, but you could
+use a fossil-calibrated tree with absolute ages if you wanted
+rates of chromosome change in units of millions of years.
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+phylogeny <- readTrees("data/aristolochia-bd.tree")[1]
+\end{lstlisting}
+\end{snugshade*}
+}
+
 
 \subsubsection{Anagenetic Changes}
 
-The anagenetic part of the chromosome number evolution model 
-involves populating the \texttt{Q} transition rate matrix
-with the rates of anagenetic chromosome number changes.
+The anagenetic part of the chromosome number evolution model involves populating the \texttt{Q} transition rate matrix with the rates of anagenetic chromosome number changes.
 This is set up exactly the same as in the ChromEvol analyses before.
 
 \subsubsection{Cladogenetic Changes}
 
-At each lineage splitting event a number of different
-types of cladogenetic events could occur, including
-no change in chromosome numbers,
-a dysploid gain or loss in a single daughter lineage, or
-a change in ploidy in a single daughter lineage.
-So we must set up a separate speciation rate for each type of
-cladogenetic event.
+At each lineage splitting event a number of different types of cladogenetic events could occur, including no change in chromosome numbers, a dysploid gain or loss in a single daughter lineage, or a change in ploidy in a single daughter lineage.
+So we must set up a separate speciation rate for each type of cladogenetic event.
 
-For each speciation rate, we will use an exponential prior
-with the mean value set to $r$, where $r$ is an approximation
-of the net diversification rate.
+For each speciation rate, we will use an exponential prior with the mean value set to $r$, where $r$ is an approximation of the net diversification rate.
 We calculate this approximation using $E(N_t) = N_0 e^{rt}$,
 which describes the expected number of species $N_t$ 
 at time $t$ under a constant rate birth-death process
 where $N_0$ is the number of species at $t=0$ \citep{nee94}. 
 The equation can be rearranged to arrive at
-$r = ( ln N_t - ln N_0 ) / t$.
+$r = ( \ln(N_t) - \ln(N_0) ) / t$.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 taxa <- phylogeny.taxa()
@@ -99,15 +113,14 @@ clado_matrix := fnChromosomesCladoEventsBD(speciation_rates, max_chromo)
 
 \subsubsection{Extinction Rate}
 
-Next, we create
-a stochastic variable to represent the turnover.
-Here, we define turnover as extinction divided by speciation,
+Next, we create a stochastic variable to represent the relative-extinction rate.
+Here, we define relative-extinction as extinction divided by speciation,
 so we use a uniform prior on the interval $\{0,1\}$.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-turnover ~ dnUniform(0, 1.0)
-turnover.setValue(0.4)
-moves[mvi++] = mvScale(turnover, lambda=5.0, weight=3.0)
+rel_extinction ~ dnUniform(0, 1.0)
+rel_extinction(0.4)
+moves[mvi++] = mvScale(rel_extinction, lambda=5.0, weight=3.0)
 \end{lstlisting}
 \end{snugshade*}
 }
@@ -117,7 +130,7 @@ numbers have the same extinction rate.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 for (i in 1:(max_chromo + 1)) {
-    extinction[i] := turnover * total_speciation
+    extinction[i] := rel_extinction * total_speciation
 }
 \end{lstlisting}
 \end{snugshade*}
@@ -140,7 +153,7 @@ Now we construct a variable that describes the evolution of both the tree and ch
 numbers drawn from a cladogenetic state-dependent birth-death process.
 The \texttt{dnCDCladoBDP} distribution is named for a
 character-dependent cladogenetic birth-death process, which is
-another name for a cladogeneti state-dependent speciation and extinction process.
+another name for a cladogenetic state-dependent speciation and extinction process.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 chromo_bdp ~ dnCDCladoBDP( rootAge            = phylogeny.rootAge(),

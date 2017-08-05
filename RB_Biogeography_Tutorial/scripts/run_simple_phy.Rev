@@ -35,7 +35,7 @@ dat_range_n = formatDiscreteCharacterData(dat_range_01, "DEC", n_states)
 
 # epoch times
 time_bounds <- readDataDelimitedFile(file=times_fn, delimiter=" ")
-n_epochs <- time_bounds.size()
+n_epochs <- time_bounds.nrows()
 
 # area distances
 distances <- readDataDelimitedFile(file=dist_fn, delimiter=" ")
@@ -188,8 +188,8 @@ P_DEC := fnDECCladoProbs(eventProbs=clado_event_probs,
                          maxRangeSize=max_areas)
 
 # root frequencies
-rf_DEC    <- rep(1, n_states)
-rf_DEC    <- simplex(rf_DEC)
+rf_DEC_tmp <- rep(1, n_states)
+rf_DEC     <- simplex(rf_DEC_tmp)
 
 # the phylogenetic CTMC with cladogenetic events
 m_bg ~ dnPhyloCTMCClado(tree=phy,

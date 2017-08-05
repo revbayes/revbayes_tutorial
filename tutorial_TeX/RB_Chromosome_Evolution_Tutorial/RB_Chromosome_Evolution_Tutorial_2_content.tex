@@ -48,7 +48,7 @@ Because of this, we recommend that you type the instructions in this tutorial or
 {\begin{framed}
 On your own computer, create a directory called {\textcolor{red}{\cl{RB\_Chromosome\_Evolution\_Tutorial}}} (or any name you like). 
 
-In this directory download and unzip the archive containing the data files: \href{https://github.com/revbayes/revbayes_tutorial/tree/master/RB_Chromosome_Evolution_Tutorial/data.zip}{\cl{data.zip}}.
+In this directory download and unzip the archive containing the data files: \href{http://rawgit.com/revbayes/revbayes_tutorial/master/RB_Chromosome_Evolution_Tutorial/data.zip}{\cl{data.zip}}.
 
 This will create a folder called \cl{data} that contains the files necessary to complete this exercise.
 
@@ -62,13 +62,13 @@ This will create a folder called \cl{data} that contains the files necessary to 
 Create a new directory (in \cl{RB\_Chromosome\_Evolution\_Tutorial}) called {\textcolor{red}{\cl{scripts}}}. (If you do not have this folder, please refer to the directions in section \ref{subsect:Exercise-DataFiles}.)
 \end{framed}}
 
-When you execute \RevBayes in this exercise, you will do so within the main directory you created (\cl{RB\_Chromosome\_Evolution\_Tutorial}), thus, if you are using a Unix-based operating system, we recommend that you add the \RevBayes binary to your path.
+When you execute \RevBayes in this exercise, you should do so within the main directory you created (\cl{RB\_Chromosome\_Evolution\_Tutorial}), thus, if you are using a Unix-based operating system, we recommend that you add the \RevBayes binary to your path.
 \bigskip
 
 For complex models and analyses, it is best to create \Rev script files that will contain all of the model parameters, moves, and functions. 
 In this first section, you will create a file called \textcolor{red}{\texttt{ChromEvol\_simple.Rev}} from scratch and save it in the \cl{scripts} directory.
 
-The full scripts for these examples are also provided in the \RevBayes tutorial repository\footnote{\url{https://github.com/revbayes/revbayes_tutorial/tree/master/RB_Chromosome_Evolution_Tutorial/scripts}}. 
+The full scripts for these examples are also provided in the \RevBayes tutorial repository\footnote{\url{http://rawgit.com/revbayes/revbayes_tutorial/master/RB_Chromosome_Evolution_Tutorial/scripts.zip}}. 
 Please refer to these files to verify or troubleshoot your own scripts. 
 
 {\begin{framed}
@@ -111,7 +111,7 @@ chromo_data = readCharacterDataDelimited("data/aristolochia_chromosome_counts.ts
 \subsection{The Chromosome Evolution Model}
 
 
-We'll use exponential priors to model the rates of polyploidy and 
+We'll use exponential priors with prior mean 0.1 to model the rates of polyploidy and 
 dysploidy events along the branches of the phylogeny.
 \texttt{gamma} is the rate of chromosome gains,
 \texttt{delta} is the rate of chromosome losses, and
@@ -153,9 +153,9 @@ Q := fnChromosomes(max_chromo, gamma, delta, rho, eta, gamma_l, delta_l)
 \end{lstlisting}
 \end{snugshade*}}
 
-Here we assume the frequency of chromosome numbers at the root of the tree
-are equal. Alternatively, we could have treated the root frequencies
-as a free variable and estimated them from the observed data. 
+Here we assume an equal prior probability for the frequency of chromosome numbers at the root of the tree. 
+This does not mean that the frequencies are actually equal, we just give it an equal prior probability.
+Alternatively, we could have treated the root frequencies as a free variable and estimated them from the observed data. 
 This approach will be illustrated in further examples.
 {\tt \begin{snugshade*}
 \begin{lstlisting}

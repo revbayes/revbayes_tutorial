@@ -106,15 +106,15 @@ total_speciation := sum(speciation_rates)
 clado_matrix := fnChromosomesCladoEventsBD(speciation_rates, max_chromo)
 
 # a stochastic variable to represent the turnover. 
-turnover ~ dnUniform(0, 1.0)
-turnover.setValue(0.4)
-moves[mvi++] = mvScale(turnover, lambda=5.0, weight=3.0)
+rel_extinction ~ dnUniform(0, 1.0)
+rel_extinction.setValue(0.4)
+moves[mvi++] = mvScale(rel_extinction, lambda=5.0, weight=3.0)
 
 # Make a vector of extinction rates for each state.
 # In the basic ChromoSSE model we assume all chromosome 
 # numbers have the same extinction rate.
 for (i in 1:(max_chromo + 1)) {
-    extinction[i] := turnover * total_speciation 
+    extinction[i] := rel_extinction * total_speciation 
 }
 
 # Here we assume the frequency of chromosome numbers at the root of the tree
