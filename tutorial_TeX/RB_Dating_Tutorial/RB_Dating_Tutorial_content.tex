@@ -297,11 +297,12 @@ timetree ~ dnConstrainedTopology(treeDistribution=bd_tree_dn,constraints=constra
 \end{lstlisting}
 \end{snugshade*}}
 
-\begin{framed}
-\textbf{\textit{Sidebar: Using a Starting Tree}}
+%\begin{framed}
+%\textbf{\textit{Sidebar: Using a Starting Tree}}
 
 For some trees, it may be difficult to draw a starting tree topology and branching times that are consistent with the constraints and node age calibrations. 
 Thus, we can use a starting tree to initialize our run.
+Additionally, for model testing, we may want to fix those analyses to the same topology.
 
 {\tt \begin{snugshade*}
 \begin{lstlisting}
@@ -309,7 +310,7 @@ timetree.setValue(T)
 \end{lstlisting}
 \end{snugshade*}}
 
-\end{framed}
+%\end{framed}
 
 \subsubsection{Calibrating Constrained Nodes}
 

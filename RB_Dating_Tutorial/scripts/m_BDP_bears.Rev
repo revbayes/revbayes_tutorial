@@ -72,8 +72,8 @@ timetree ~ dnConstrainedTopology(treeDistribution=bd_tree_dn,constraints=constra
 
 ### Occassionally, it is difficult to initialize the tree parameter so that the starting state
 ### is consistent with our constraints and node age distributions, so we can use a starting tree
-### to set the initial value of the time tree to the dos Reis et al. (2013) tree simply enter 
-#timetree.setValue(T)
+### to set the initial value of the time tree to the dos Reis et al. (2013) we use the .setValue() method 
+timetree.setValue(T)
 
 ####### Internal node constraints #######
 
