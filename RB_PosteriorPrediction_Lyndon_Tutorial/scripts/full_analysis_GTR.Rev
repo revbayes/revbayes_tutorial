@@ -1,0 +1,79 @@
+################################################################################
+#
+# RevBayes Example: Bayesian model testing using posterior predictive simulation
+#
+# authors: Lyndon M. Coghill, Sebastian Hoehna and Jeremy M. Brown
+#
+################################################################################
+
+## EMPIRICAL MCMC
+inFile = "data/primates_and_galeopterus_cytb.nex"
+analysis_name = "primates"
+data <- readDiscreteCharacterData(inFile)
+model_name = "GTR"
+model_file_name = "scripts/"+model_name+"_Model.Rev"
+source("scripts/MCMC_Simulation.Rev")
+clear()
+
+## POSTERIOR PREDICTIVE DATA SIMULATION
+inFile = "data/primates_and_galeopterus_cytb.nex"
+analysis_name = "primates"
+data <- readDiscreteCharacterData(inFile)
+model_name = "GTR"
+model_file_name = "scripts/"+model_name+"_Model.Rev"
+source("scripts/PosteriorPredictive_Simulation.Rev")
+clear()
+
+## POSTERIOR PREDICTIVE MCMC
+inFile = "data/primates_and_galeopterus_cytb.nex"
+analysis_name = "primates"
+data <- readDiscreteCharacterData(inFile)
+model_name = "GTR"
+model_file_name = "scripts/"+model_name+"_Model.Rev"
+source("scripts/PosteriorPredictive_MCMC.Rev")
+clear()
+
+## CALCULATE INFERENCE SUMMARY STATISTICS
+inFile = "data/primates_and_galeopterus_cytb.nex"
+analysis_name = "pps_example"
+model_name = "GTR"
+model_file_name = "scripts/"+model_name+"_Model.Rev"
+num_post_sims = listFiles(path="output_"+model_name+"/" + analysis_name + "_post_sims").size()
+data <- readDiscreteCharacterData(inFile)
+source("scripts/PosteriorPredictive_TreeSummary.Rev")
+clear()
+
+## CALCULATE INFERENCE P-VALUES
+analysis_name = "pps_example"
+model_name = "GTR"
+emp_pps_file = "results_" + model_name + "/empirical_inference_" + analysis_name + ".csv"
+sim_pps_file = "results_" + model_name + "/simulated_inference_" + analysis_name + ".csv"
+outfileName = "results_" + model_name + "/inference_pvalues_effectsizes_" + analysis_name + ".csv"
+statID = v("", "mean_rf", "quantile25", "quantile50", "quantile75", "quantile99", "quantile999", "mean_tl", "var_tl", "entropy")
+source("scripts/PosteriorPredictive_PValues.Rev")
+clear()
+
+## CALCULATE DATA SUMMARY STATISTICS
+inFile = "data/primates_and_galeopterus_cytb.nex"
+analysis_name = "pps_example"
+model_name = "GTR"
+model_file_name = "scripts/"+model_name+"_Model.Rev"
+num_post_sims = listFiles(path="output_"+model_name+"/" + analysis_name + "_post_sims").size()
+data <- readDiscreteCharacterData(inFile)
+source("scripts/PosteriorPredictive_DataSummary.Rev")
+clear()
+
+## CALCULATE DATA P-VALUES
+analysis_name = "pps_example"
+model_name = "GTR"
+emp_pps_file = "results_" + model_name + "/empirical_data_" + analysis_name + ".csv"
+sim_pps_file = "results_" + model_name + "/simulated_data_" + analysis_name + ".csv"
+outfileName = "results_" + model_name + "/data_pvalues_effectsizes_" + analysis_name + ".csv"
+statID = v("", "Number Invariant Sites", "Number Invariant Sites Excluding Ambiguous", "Max GC", "Max GC Excluding Ambiguous", "Max Invariant Block Length", "Max Invariant Block Length Excluding Ambiguous", "Max Pairwise Difference", "Max Pairwise Difference Excluding Ambiguous", "Max Variable Block Length", "Max Variable Block Length Excluding Ambiguous", "Min GC", "Min GC Excluding Ambiguous", "Min Pairwise Difference", "Min Pairwise Difference Excluding Ambiguous", "Number Invariable Block", "Number Invariable Block Excluding Ambiguous", "Mean GC", "Mean GC Excluding Ambiguous", "Mean GC 1", "Mean GC 1 Excluding Ambiguous", "Mean GC 2", "Mean GC 2 Excluding Ambiguous", "Mean GC 3", "Mean GC 3 Excluding Ambiguous", "Var GC", "Var GC Excluding Ambiguous", "Var GC 1", "Var GC 1 Excluding Ambiguous", "Var GC 2", "Var GC 2 Excluding Ambiguous", "Var GC 3", "Var GC 3 Excluding Ambiguous", "Theta", "Tajima-D", "Tajima-Pi", "Segregating-Sites", "Multinomial-Likelihood")
+source("scripts/PosteriorPredictive_PValues.Rev")
+clear()
+
+# END IT ALL
+q()
+# END IT ALL
+q()

@@ -1,0 +1,18 @@
+################################################################################
+#
+# RevBayes Example: Bayesian model testing using posterior predictive simulation
+#
+# authors: Lyndon M. Coghill, Sebastian Hoehna and Jeremy M. Brown
+#
+################################################################################
+
+source( model_file_name )
+
+# "Reading Trace"
+trace = readStochasticVariableTrace("output_" + model_name + "/" + analysis_name + "_posterior.var", delimiter=TAB)
+
+# "Creating Posterior Predictive Simulation"
+pps = posteriorPredictiveSimulation(mymodel, directory="output_" + model_name + "/" + analysis_name + "_post_sims", trace)
+
+# "Running the posterior predictive simulation"
+pps.run(thinning=2)
