@@ -54,8 +54,8 @@ The alignment in file \cl{data/bears\_irbp.nex} contains interphotoreceptor reti
 \subsection{Creating Rev Files}
 
 This tutorial sets up three different relaxed clock models and a calibrated birth-death model. 
-Because of the complexity of the various models, this exercise is best performed by specifying the models and samplers in different \Rev~files.
-At the beginning of each section, you will be given a suggested name for each component file; these names correspond to the provided \Rev~scripts that reproduce these commands.
+Because of the complexity of the various models, this exercise is best performed by specifying the models and samplers in different \Rev files.
+At the beginning of each section, you will be given a suggested name for each component file; these names correspond to the provided \Rev scripts that reproduce these commands.
 
 \textbf{\textit{Directory Structure}}
 
@@ -80,7 +80,7 @@ Save the tree and alignment files downloaded above (Section \ref{gettingStarted}
 
 The second subdirectory will contain the \Rev~files you write to execute the exercises in this tutorial. 
 \begin{framed}
-Create a directory called {\textcolor{red}{\cl{RevBayes\_scripts}}} in your tutorial directory. 
+Create a directory called {\textcolor{red}{\cl{scripts}}} in your tutorial directory. 
 \end{framed}
 This tutorial will guide you through creating all of the files necessary to execute the analyses without typing the \Rev~language syntax directly in the \RevBayes~console. 
 Since the scripts must point to model and analysis files in a modular way, it is important to be aware of you directory structure and if you choose to do something different, make sure that the file paths given throughout the tutorial are correct.
@@ -92,7 +92,7 @@ Create a directory called {\textcolor{red}{\cl{output}}} in your tutorial direct
 \end{framed}
 
 The only files you need for this exercise are now in the \cl{data} directory. Otherwise, you will create all of the \Rev~files specifying the models and analyses. 
-All of the \Rev~files you write for this tutorial are available on the \href{https://github.com/revbayes/revbayes_tutorial}{\RevBayes~Tutorial GitHub repository} at this URL: \href{http://bit.ly/1e7Nzgv}{http://bit.ly/1e7Nzgv}.
+All of the \Rev~files you write for this tutorial are available on the \href{https://github.com/revbayes/revbayes_tutorial}{\RevBayes~Tutorial GitHub repository} in the \href{https://github.com/revbayes/revbayes_tutorial/tree/master/RB_Dating_Tutorial/scripts}{scripts directory of the Dating Tutorial}.
 You can refer to these examples to verify your own work.
 
 \bigskip
@@ -112,7 +112,7 @@ Thus, approaches that condition the birth-death process on the calibrated nodes 
 
 In \RevBayes, calibration densities are applied in a different way, treating fossil observation times like data. 
 The graphical model in Figure \ref{m_BDCal:fig} illustrates how calibrated nodes are specified in the directed acyclic graph (DAG).
-Here, the age of the calibration node (i.e., the internal node specified as the MRCA of the fossil and a set of living species) is a deterministic node---e.g., denoted $o_1$ for fossil $\mathcal{F}_1$---and acts as an offset on the stochastic node representing the age of the fossil specimen.
+Here, the age of the calibration node (\IE the internal node specified as the MRCA of the fossil and a set of living species) is a deterministic node---\EG denoted $o_1$ for fossil $\mathcal{F}_1$---and acts as an offset on the stochastic node representing the age of the fossil specimen.
 The fossil age, $\mathcal{F}_i$, is specified as a stochastic node and clamped to its \textit{observed} age in the fossil record. 
 The node $\mathcal{F}_i$ is modeled using a distribution that describes the waiting time from the speciation event to the appearance of the observed fossil. 
 Thus, if the MCMC samples any state of $\Psi$ for which the age of $\mathcal{F}_i$ has a probability of 0, then that state will always be rejected, effectively calibrating the birth-death process without applying multiple prior densities to any calibrated node (Fig.~\ref{m_BDCal:fig}).
@@ -120,6 +120,7 @@ Thus, if the MCMC samples any state of $\Psi$ for which the age of $\mathcal{F}_
 The root age is treated differently, however. 
 Here, we condition the birth-death process on the speciation time of the root, thus this variable is not part of the time-tree parameter. 
 The root age can thus be given any parametric distribution over positive real numbers (Fig.~\ref{m_BDCal:fig}).
+In this tutorial, we use a lognormal distribution as a prior on the root age parameter.
 
 \begin{figure}[h!]
 \centering
@@ -131,23 +132,24 @@ The root age can thus be given any parametric distribution over positive real nu
 \textbf{\textit{Create the Rev File}}
 
 {\begin{framed}
-Open your text editor and create the birth-death model file called {\textcolor{red}{\cl{m\_BDP\_bears.Rev}}} in the \cl{RevBayes\_scripts} directory.
+Open your text editor and create the birth-death model file called {\textcolor{red}{\cl{m\_BDP\_bears.Rev}}} in the \cl{scripts} directory.
 
 Enter the \Rev~code provided in this section in the new model file.
 \end{framed}}
 
 
-\textbf{\textit{Read in the Starting Tree}}
+\textbf{\textit{Read in a Tree from a Previous Study}}
 
-When calibrating nodes in the birth-death process, it is very helpful to have a starting tree that is consistent with the topology constraints and calibration priors, otherwise, the probability of the model would be 0 and the MCMC cannot run.
-For a starting tree we will use the tree estimated by \citet{dosReis2012}. 
+When calibrating nodes in the birth-death process, it is often helpful to have a starting tree that is consistent with the topology constraints and calibration priors.
+Alternatively, perhaps there are nodes in the tree from the previous study that we wish to compare our estimates to. 
+We will read in the tree estimated by \citet{dosReis2012}. 
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 T <- readTrees("data/bears_dosReis.tre")[1]
 \end{lstlisting}
 \end{snugshade*}}
 
-From the tree we can initialize some useful variables.
+From the tree we can initialize some useful variables. (These can also be created from the data matrix using the same methods.)
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 n_taxa <- T.ntips()
@@ -167,10 +169,10 @@ taxa <- taxa()
 We will begin by setting up the model parameters and proposal mechanisms of the birth-death model. 
 Note that we have not initialized the workspace iterator \cl{mi} yet. 
 Because of this, if you typed these lines in the \RevBayes~console, you would get an error. 
-Since this code is intended to be in a sourced \Rev~file, we are assuming that you would initialize \cl{mi} before calling \cl{source("RevBayes\_scripts/m\_BDP\_Tree\_bears.Rev")}.
+Since this code is intended to be in a sourced \Rev~file, we are assuming that you would initialize \cl{mi} before calling \cl{source("scripts/m\_BDP\_Tree\_bears.Rev")}.
 
 We will use the parameterization of the birth-death process specifying the diversification and turnover.
-For a more detailed tutorial on the simple birth-death model, please refer to the tutorial in the \RevBayes~repository: \href{http://bit.ly/1McUEu5}{http://bit.ly/1McUEu5}.
+For a more detailed tutorial on the simple birth-death model, please refer to the \href{https://github.com/revbayes/revbayes_tutorial/blob/master/tutorial_TeX/RB_DiversificationRate_Tutorial/RB_DiversificationRate_Tutorial.pdf}{Basic Diversification Rate Estimation} tutorial.
 
 \textbf{\textit{Diversification}}
 
@@ -206,8 +208,8 @@ denom := abs(1.0 - turnover)
 Now, the rates will both be positive real numbers that are variable transformations of the stochastic variables.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-birth_rate := diversification / (denom)
-death_rate := (turnover * diversification) / (denom)
+birth_rate := diversification / denom
+death_rate := (turnover * diversification) / denom
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -295,14 +297,24 @@ timetree ~ dnConstrainedTopology(treeDistribution=bd_tree_dn,constraints=constra
 \end{lstlisting}
 \end{snugshade*}}
 
-\subsubsection{Calibrating Constrained Nodes}
+\begin{framed}
+\textbf{\textit{Sidebar: Using a Starting Tree}}
 
-In order that our tree is consistent with the calibration ages, we must first set the value of the time-tree node to our starting tree.
+For some trees, it may be difficult to draw a starting tree topology and branching times that are consistent with the constraints and node age calibrations. 
+Thus, we can use a starting tree to initialize our run.
+
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 timetree.setValue(T)
 \end{lstlisting}
 \end{snugshade*}}
+
+\end{framed}
+
+\subsubsection{Calibrating Constrained Nodes}
+
+
+
 
 To begin specifying the calibration density on the MRCA of all ursids, we must first create the deterministic node representing the age of the MRCA.
 The way in which these densities work requires the offset to be negative. 
@@ -409,7 +421,7 @@ The global molecular clock assumes that the rate of substitution is constant ove
 \textbf{\textit{Create the Rev File}}
 
 {\begin{framed}
-Open your text editor and create the global molecular clock model file called {\textcolor{red}{\cl{m\_GMC\_bears.Rev}}} in the \cl{RevBayes\_scripts} directory.
+Open your text editor and create the global molecular clock model file called {\textcolor{red}{\cl{m\_GMC\_bears.Rev}}} in the \cl{scripts} directory.
 
 Enter the \Rev~code provided in this section in the new model file. Keep in mind that we are creating modular model files that can be sourced by different analysis files. Thus, the \Rev~code below will still depend on variable initialized in different files.
 \end{framed}}
@@ -470,7 +482,7 @@ phySeq.clamp(D)
 This is all we will include in the global molecular clock model file. 
 
 {\begin{framed}
-Save and close the file called {\textcolor{red}{\cl{m\_GMC\_bears.Rev}}} in the \cl{RevBayes\_scripts} directory.
+Save and close the file called {\textcolor{red}{\cl{m\_GMC\_bears.Rev}}} in the \cl{scripts} directory.
 \end{framed}}
 
 
@@ -490,7 +502,7 @@ Now we can use the model files we created and estimate the marginal likelihood u
 You can enter the following commands directly in the \RevBayes~console, or you can create another \Rev~script. 
 
 {\begin{framed}
-Open your text editor and create the marginal-likelihood analysis file under the global molecular clock model. Call the file: {\textcolor{red}{\cl{mlnl\_GMC\_bears.Rev}}} and save it in the \cl{RevBayes\_scripts} directory.
+Open your text editor and create the marginal-likelihood analysis file under the global molecular clock model. Call the file: {\textcolor{red}{\cl{mlnl\_GMC\_bears.Rev}}} and save it in the \cl{scripts} directory.
 \end{framed}}
 
 
@@ -506,7 +518,7 @@ mi = 1
 \textit{The Calibrated Time-Tree Model} --- Load the calibrated tree model from file using the \cl{source()} function. Note that this file does not have moves that operate on the tree topology, which is helpful when you plan to estimate the marginal likelihoods and compare different relaxed clock models.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-source("RevBayes_scripts/m_BDP_bears.Rev")
+source("scripts/m_BDP_bears.Rev")
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -514,7 +526,7 @@ source("RevBayes_scripts/m_BDP_bears.Rev")
 
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-source("RevBayes_scripts/m_GMC_bears.Rev")
+source("scripts/m_GMC_bears.Rev")
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -561,11 +573,19 @@ ps.marginal()
 
 If you have entered all of this directly in the \RevBayes~console, you will see the marginal likelihoods under each method printed to screen. 
 Otherwise, if you have created the separate \Rev~file 
-{\textcolor{red}{\cl{m\_GMC\_bears.Rev}}} in the \cl{RevBayes\_scripts} directory, you now have to directly source this file in \RevBayes (after saving the up-to-date content). 
+{\textcolor{red}{\cl{m\_GMC\_bears.Rev}}} in the \cl{scripts} directory, you now have to directly source this file in \RevBayes (after saving the up-to-date content). 
+
+{\begin{framed}
+Begin by running the \RevBayes executable. In Unix systems, type the following in your terminal (if the \RevBayes binary is in your path):
+
+\colorbox{black}{\strut\hspace{1mm}\textcolor[rgb]{0,1,1}{\cl{rb}}\hspace{0.925\textwidth}}
+\end{framed}}
+
+Now load your \RevBayes analysis:
 
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-source("RevBayes_scripts/mlnl_GMC_bears.Rev")
+source("scripts/mlnl_GMC_bears.Rev")
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -615,7 +635,7 @@ In Figure \ref{m_UCLN:fig}, we can represent the vector of $N$ branch rates usin
 \textbf{\textit{Create the Rev File}}
 
 {\begin{framed}
-Open your text editor and create the uncorrelated-lognormal relaxed-clock model file called {\textcolor{red}{\cl{m\_UCLN\_bears.Rev}}} in the \cl{RevBayes\_scripts} directory.
+Open your text editor and create the uncorrelated-lognormal relaxed-clock model file called {\textcolor{red}{\cl{m\_UCLN\_bears.Rev}}} in the \cl{scripts} directory.
 
 Enter the \Rev~code provided in this section in the new model file. Keep in mind that we are creating modular model files that can be sourced by different analysis files. Thus, the \Rev~code below will still depend on variable initialized in different files.
 \end{framed}}
@@ -741,7 +761,7 @@ phySeq.clamp(D)
 \end{snugshade*}}
 
 {\begin{framed}
-Save and close the file called {\textcolor{red}{\cl{m\_UCLN\_bears.Rev}}} in the \cl{RevBayes\_scripts} directory.
+Save and close the file called {\textcolor{red}{\cl{m\_UCLN\_bears.Rev}}} in the \cl{scripts} directory.
 \end{framed}}
 
 
@@ -751,12 +771,12 @@ Save and close the file called {\textcolor{red}{\cl{m\_UCLN\_bears.Rev}}} in the
 Just as we did for the strict clock model, we can execute a power-posterior analysis to compute the marginal likelihood under the UCLN model. 
 
 {\begin{framed}
-Open your text editor and create the marginal-likelihood analysis file under the global molecular clock model. Call the file: {\textcolor{red}{\cl{mlnl\_UCLN\_bears.Rev}}} and save it in the \cl{RevBayes\_scripts} directory.
+Open your text editor and create the marginal-likelihood analysis file under the global molecular clock model. Call the file: {\textcolor{red}{\cl{mlnl\_UCLN\_bears.Rev}}} and save it in the \cl{scripts} directory.
 \end{framed}}
 
 Refer to the section describing this process for the GMC model above.
 Write your own \Rev~language script to estimate the marginal likelihood under the UCLN model. 
-Be sure to change the file names in all of the relevant places (e.g., your output file for the \cl{powerPosterior()} function should be \colorbox{shadecolor}{\cl{UCLN\_bears\_powp.out}} and be sure to \cl{source()} the correct model file \colorbox{shadecolor}{\cl{source("RevBayes\_scripts/m\_UCLN\_bears.Rev")}}).
+Be sure to change the file names in all of the relevant places (e.g., your output file for the \cl{powerPosterior()} function should be \colorbox{shadecolor}{\cl{UCLN\_bears\_powp.out}} and be sure to \cl{source()} the correct model file \colorbox{shadecolor}{\cl{source("scripts/m\_UCLN\_bears.Rev")}}).
 
 {\begin{framed}
 Once you have completed this analysis, record the marginal likelihoods under the UCLN model in Table \ref{ssTable}.
@@ -1008,7 +1028,7 @@ After computing the Bayes factors and determining the relative support of each m
 The next step, then, is to use MCMC to jointly estimate the tree topology and branch times. 
 
 {\begin{framed}
-Open your text editor and create the MCMC analysis file under the your favorite clock model. Call the file: {\textcolor{red}{\cl{mcmc\_TimeTree\_bears.Rev}}} and save it in the \cl{RevBayes\_scripts} directory.
+Open your text editor and create the MCMC analysis file under the your favorite clock model. Call the file: {\textcolor{red}{\cl{mcmc\_TimeTree\_bears.Rev}}} and save it in the \cl{scripts} directory.
 \end{framed}}
 
 This file will contain much of the same initial \Rev~code as the files you wrote for the marginal-likelihood analyses. 
@@ -1032,7 +1052,7 @@ These moves can be added right after the birth-death model is sourced.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 ### set up the birth-death model from file
-source("RevBayes_scripts/m_BDP_bears.Rev")
+source("scripts/m_BDP_bears.Rev")
 
 ### and moves for the tree topology
 moves[mi++] = mvNNI(timetree, weight=8.0)
@@ -1045,7 +1065,7 @@ Next load the file containing your favorite model (where the wildcard \cl{*} ind
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 ### load the model from file 
-source("RevBayes_scripts/m_*_bears.Rev")
+source("scripts/m_*_bears.Rev")
 
 ### workspace model wrapper ###
 mymodel = model(er)
@@ -1136,8 +1156,8 @@ mapTree(tt, "output/TimeTree_bears_mcmc_MAP.tre")
 \end{snugshade*}}
 
 {\begin{framed}
-Save and close the file called {\textcolor{red}{\cl{mcmc\_TimeTree\_bears.Rev}}} in the \cl{RevBayes\_scripts} directory. 
-Then, execute the MCMC analysis using: \colorbox{shadecolor}{\cl{source("RevBayes\_scripts/mcmc\_TimeTree\_bears.Rev")}}
+Save and close the file called {\textcolor{red}{\cl{mcmc\_TimeTree\_bears.Rev}}} in the \cl{scripts} directory. 
+Then, execute the MCMC analysis using: \colorbox{shadecolor}{\cl{source("scripts/mcmc\_TimeTree\_bears.Rev")}}
 \end{framed}}
 
 
