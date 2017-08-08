@@ -1,11 +1,3 @@
-\bigskip
-\begin{center}
-\textbf{\Large \color{red}This tutorial is currently under construction/revision.}
-\end{center}
-\bigskip
-
-
-
 \section{Overview}
 
 
@@ -105,28 +97,11 @@ Now, on to the MH algorithm:
 We will call the set of model parameters $\theta$. The initial parameter values might be specified arbitrarily, or might be drawn from the corresponding prior probability density for each parameter.}
 
 \item{Select a single parameter (or set of parameters) to alter according to its proposal probability. 
-For example, here are the default proposal probabilities used by \MrBayes:
-{\tt \scriptsize \begin{framed}
-\begin{lstlisting}
-      The MCMC sampler will use the following moves:
-         With prob.  Chain will use move
-            1.00 %   Dirichlet(Revmat)
-            1.00 %   Slider(Revmat)
-            1.00 %   Dirichlet(Pi)
-            1.00 %   Slider(Pi)
-            2.00 %   Multiplier(Alpha)
-           10.00 %   ExtSPR(Tau,V)
-           10.00 %   ExtTBR(Tau,V)
-           10.00 %   NNI(Tau,V)
-           10.00 %   ParsSPR(Tau,V)
-           40.00 %   Multiplier(V)
-           10.00 %   Nodeslider(V)
-            4.00 %   TLMultiplier(V)
-\end{lstlisting}
-\end{framed}}
-
-We can see that $\sim 1\%$ of the time ({\it i.e.}, with probability $\sim 0.01$), the MCMC will propose changes to the exchangeability (`revmat') and stationary frequency (`pi') parameters using a `Dirichlet' proposal mechanism, and an equal effort proposing changes to the same parameters using something called a `Slider' proposal mechanism.
-Conversely, $\sim 10\%$ of the time ({\it i.e.}, with probability $\sim 0.1$), the MCMC will propose changes to the tree and branch lengths (`Tau and V') using the `extending SPR' proposal mechanism, and with equal probability using the `extending TBR', `extending NNI' and the `parsimony SPR' proposal mechanisms.
+%For example, here are the default proposal probabilities used by \MrBayes:
+%
+%
+%We can see that $\sim 1\%$ of the time ({\it i.e.}, with probability $\sim 0.01$), the MCMC will propose changes to the exchangeability (`revmat') and stationary frequency (`pi') parameters using a `Dirichlet' proposal mechanism, and an equal effort proposing changes to the same parameters using something called a `Slider' proposal mechanism.
+%Conversely, $\sim 10\%$ of the time ({\it i.e.}, with probability $\sim 0.1$), the MCMC will propose changes to the tree and branch lengths (`Tau and V') using the `extending SPR' proposal mechanism, and with equal probability using the `extending TBR', `extending NNI' and the `parsimony SPR' proposal mechanisms.
 
 For the moment, we won't worry about the details of these proposal mechanisms---they basically involve different ways of `poking' the current parameter value, $\theta$, to generate a new (proposed) parameter value, $\theta ^{\prime}$. 
 The important question at the moment is: Where do these proposal probabilities come from? 
@@ -162,7 +137,7 @@ All proposal mechanisms must be:
 R = \text{min}\Bigg[1, \underbrace{\frac{P(X \mid \theta ^{\prime})}{P(X \mid \theta )}}_{\text{likelihood ratio}} \cdot \underbrace{\frac{ P(\theta ^{\prime})}{P(\theta)}}_\text{prior ratio} \cdot \underbrace{\frac{P(\theta \mid \theta ^{\prime})}{P(\theta ^{\prime} \mid \theta)}}_\text{proposal ratio} \Bigg]
 \end{align}
 
-The acceptance probability, $R$, is either equal to one or the product of three ratios—so long as that product is less than one (because $R$ is a probability, so it cannot be greater than one). 
+The acceptance probability, $R$, is either equal to one or the product of three ratios' so long as that product is less than one (because $R$ is a probability, so it cannot be greater than one). 
 So, what are these three ratios?
 
 \textbf{Likelihood ratio:} the likelihood ratio is simply the likelihood of the observations given the proposed value of the parameter, divided by the likelihood of the observations given the current value of the parameter. 
@@ -222,11 +197,13 @@ There are three closely related issues associated with MCMC performance: (1) con
 
 \subsubsection{Data \& Model}
 
-This is an analysis of 13 species within the genus \emph{Fagus} (the beeches), based 
-$2576$ sites sampled from one nuclear gene region (ITS) and two chloroplast gene regions
-(rbcL and matK).
-Here we assume a GTR+$\Gamma$+I substitution model that is uniformly shared by all sites:
-we refer to this as the `uniform' partition scheme, or PS0 for short.
+We provide the data file(s) which we will use in this tutorial.
+You may want to use your own data instead.
+In the \cl{data} folder, you will find the following files
+\begin{itemize}
+\item
+\cl{primates\_and\_galeopterus\_cytb.nex}: Alignment of the \textit{cytochrome b} subunit from 23 primates representing 14 of the 16 families (\textit{Indriidae} and \textit{Callitrichidae} are missing). Note that there is one outgroup species included: \emph{Galeopterus variegatus}.
+\end{itemize}
 This is the same data and model as we used previously in the CTMC tutorial.
 
 Look at Model file \& MCMC file in a text editor.
@@ -250,8 +227,7 @@ The first analysis which we perform is specified as follows:
 You can run this analysis directly using
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-source("RevBayes_scripts/analysis/mcmc_run1_PS0.Rev")
-mymcmc.operatorSummary()
+source("scripts/mcmc_run1.Rev")
 \end{lstlisting}
 \end{snugshade*}}
 The operator summary provides you with an overview of the moves that you have used for this MCMC run.
@@ -261,7 +237,7 @@ For discrete characters, such as the phylogeny, there is no rule of thumb what g
 Instead, the acceptance rate of tree topology proposal strongly depends on the current data.
 
 Now let us open the generated output file in \verb!Tracer!.
-The file should be called output/fagus\_ps0\_posterior\_run1.log.
+The file should be called output/primates\_cytb\_test1.log.
 
 What you may notice is that the ESS are very low and the MCMC is mixing very poor.
 This is not good. 
@@ -274,50 +250,49 @@ The new setting is:
 \item{flat \& low proposal weights}
 \item{no-pre-burnin}
 \end{itemize}
-You can run this analysis in \RevBayes~using
+We achieve this by setting \cl{moveschedule="random"} (which is the default) as an argument for the MCMC algorithm.
+You can run this analysis in \RevBayes using
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-source("RevBayes_scripts/analysis/mcmc_run2_PS0.Rev")
-mymcmc.operatorSummary()
+source("scripts/mcmc_run2.Rev")
 \end{lstlisting}
 \end{snugshade*}}
 Look at the output in \verb!Tracer! again.
 You should see that the ESS values are still very low and the chain is still not mixing well.
 
-One issue that you see is that the probability of a site being invariant is update not often enough.
+One issue that you see is that shape and rate parameter \cl{alpha} for the among-site-rate-variation is updated not often enough.
 It is quite likely that our move proposed too many bad new parameters.
-So let us change the window size for the sliding window move applied on the probability of invariant sites from
+So let us change the window size for the scaling move applied on \cl{alpha} from
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-moves[mi++] <- mvSlide(pinvar, delta=10.0, tune=false, weight=1.0)
+moves[++mvi] = mvScale(alpha, lambda=50.0, weight=2.0)
 \end{lstlisting}
 \end{snugshade*}}
 to
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-moves[mi++] <- mvSlide(pinvar, delta=1.0, tune=false, weight=1.0)
+moves[++mvi] = mvScale(alpha, lambda=1.0, weight=2.0)
 \end{lstlisting}
 \end{snugshade*}}
 This will give us now the following set-up:
 \begin{itemize}
 \item{uniform GTR+I+G}
 \item{multiple moves per cycle}
-\item{\it smaller proposals for Pinv}
+\item{\it smaller proposals for \cl{alpha}}
 \item{flat \& low proposal weights}
 \item{no-pre-burnin}
 \end{itemize}
-Run the analysis file and look how often the Sliding Move is now accepted.
+Run the analysis file and look how often the scaling Move is now accepted.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-source("RevBayes_scripts/analysis/mcmc_run3_PS0.Rev")
-mymcmc.operatorSummary()
+source("scripts/mcmc_run3.Rev")
 \end{lstlisting}
 \end{snugshade*}}
 Open the output and look at it in \verb!Tracer!.
 We are now getting better ESS values and better mixing of the MCMC.
 
 That worked quite well but it seems to be cumbersome to adjust all the tuning parameters of the moves manually.
-Instead, let us allow \RevBayes~to auto-tune the moves.
+Instead, let us allow \RevBayes to auto-tune the moves.
 Just change \cl{tune=true} for all moves where it was \cl{tune=false} before.
 Now, also include a pre-burnin.
 The pre-burnin runs if you say \cl{mymcmc.burnin(generations=1000,tuningInterval=100)}.
@@ -334,8 +309,7 @@ Here is the new model set-up:
 Run the analysis in \RevBayes:
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-source("RevBayes_scripts/analysis/mcmc_run4_PS0.Rev")
-mymcmc.operatorSummary()
+source("scripts/mcmc_run4.Rev")
 \end{lstlisting}
 \end{snugshade*}}
 Look at the output given by the operator summary.
@@ -343,94 +317,77 @@ Notice how the tuning parameters have been updated.
 Also look at the output in \verb!Tracer!.
 You will see that the ESS values are much better because the chain is mixing better.
 
-In the next step we chain the proposal weights so that moves are used more often, especially for the parameters that are not mixing well.
-Our new setting is:
-\begin{itemize}
-\item{uniform GTR+I+G}
-\item{multiple moves per cycle}
-\item{\it variable proposal weights}
-\item{pre-burnin (with scale adjusted from previous)}
-\end{itemize}
-Run the \RevBayes~analysis.
-{\tt \begin{snugshade*}
-\begin{lstlisting}
-source("RevBayes_scripts/analysis/mcmc_run5_PS0.Rev")
-mymcmc.operatorSummary()
-\end{lstlisting}
-\end{snugshade*}}
-When you look at the output you will see that it now mixing fairly well.
-So let us focus on the approximated posterior distribution.
-Specifically, what is the posterior mean of the tree-length (\cl{TL})?
-This tree-length is surprisingly large. 
-We could specify a prior distribution with a lower expectation (mean) on the tree-length.
-\begin{itemize}
-\item{uniform GTR+I+G}
-\item{multiple moves per cycle}
-\item{variable proposal weights}
-\item{pre-burnin (with scale adjusted from previous)}
-\item{\it branch length prior to \cl{dnExponential(20.0)} (mean 0.05)}
-\end{itemize}
-Run the new analysis in \RevBayes.
-{\tt \begin{snugshade*}
-\begin{lstlisting}
-source("RevBayes_scripts/analysis/mcmc_run6_PS0.Rev")
-mymcmc.operatorSummary()
-\end{lstlisting}
-\end{snugshade*}}
-If you look at the results from this analysis, you will notice that the tree-length estimates are better.
-However, if you look at the joint posterior density of the tree-length (\cl{TL}) and the probability of a site being invariant (\cl{pinvar}), then you will notice that there is a very high correlation between these two.
-It seems as if our model is over-parameterized.
-To resolve this issue we need to remove/fix some of our parameters.
-Open the data file and look how variable each site is. What is your impression on how many sites are invariant?
+%In the next step we chain the proposal weights so that moves are used more often, especially for the parameters that are not mixing well.
+%Our new setting is:
+%\begin{itemize}
+%\item{uniform GTR+I+G}
+%\item{multiple moves per cycle}
+%\item{\it variable proposal weights}
+%\item{pre-burnin (with scale adjusted from previous)}
+%\end{itemize}
+%Run the \RevBayes~analysis.
+%{\tt \begin{snugshade*}
+%\begin{lstlisting}
+%source("scripts/analysis/mcmc_run5_PS0.Rev")
+%mymcmc.operatorSummary()
+%\end{lstlisting}
+%\end{snugshade*}}
+%When you look at the output you will see that it now mixing fairly well.
+%So let us focus on the approximated posterior distribution.
+%Specifically, what is the posterior mean of the tree-length (\cl{TL})?
+%This tree-length is surprisingly large. 
+%We could specify a prior distribution with a lower expectation (mean) on the tree-length.
+%\begin{itemize}
+%\item{uniform GTR+I+G}
+%\item{multiple moves per cycle}
+%\item{variable proposal weights}
+%\item{pre-burnin (with scale adjusted from previous)}
+%\item{\it branch length prior to \cl{dnExponential(20.0)} (mean 0.05)}
+%\end{itemize}
+%Run the new analysis in \RevBayes.
+%{\tt \begin{snugshade*}
+%\begin{lstlisting}
+%source("RevBayes_scripts/analysis/mcmc_run6_PS0.Rev")
+%mymcmc.operatorSummary()
+%\end{lstlisting}
+%\end{snugshade*}}
+%If you look at the results from this analysis, you will notice that the tree-length estimates are better.
+%However, if you look at the joint posterior density of the tree-length (\cl{TL}) and the probability of a site being invariant (\cl{pinvar}), then you will notice that there is a very high correlation between these two.
+%It seems as if our model is over-parameterized.
+%To resolve this issue we need to remove/fix some of our parameters.
+%Open the data file and look how variable each site is. What is your impression on how many sites are invariant?
+%
+%We remove the gamma distributed rate variation among sites because most sites either seem to be fixed or evolve under our GTR model.
+%We also reset the branch length priors to \cl{dnExponential(10.0)}.
+%\begin{itemize}
+%\item{uniform GTR+I}
+%\item{multiple moves per cycle}
+%\item{variable proposal weights}
+%\item{pre-burnin (with scale adjusted from previous)}
+%\end{itemize}
+%Run the new script in \RevBayes.
+%{\tt \begin{snugshade*}
+%\begin{lstlisting}
+%source("RevBayes_scripts/analysis/mcmc_run7_PS0.Rev")
+%mymcmc.operatorSummary()
+%\end{lstlisting}
+%\end{snugshade*}}
+%Look again at output in \verb!Tracer!.
+%We seem to be doing a pretty good job with one chain.
+%This is our visual method to inspect the MCMC output. 
 
-We remove the gamma distributed rate variation among sites because most sites either seem to be fixed or evolve under our GTR model.
-We also reset the branch length priors to \cl{dnExponential(10.0)}.
-\begin{itemize}
-\item{uniform GTR+I}
-\item{multiple moves per cycle}
-\item{variable proposal weights}
-\item{pre-burnin (with scale adjusted from previous)}
-\end{itemize}
-Run the new script in \RevBayes.
-{\tt \begin{snugshade*}
-\begin{lstlisting}
-source("RevBayes_scripts/analysis/mcmc_run7_PS0.Rev")
-mymcmc.operatorSummary()
-\end{lstlisting}
-\end{snugshade*}}
-Look again at output in \verb!Tracer!.
-We seem to be doing a pretty good job with one chain.
-This is our visual method to inspect the MCMC output. 
-
+\subsection{Comparing your output to the prior}
 Next, let's compare it to the prior.
 Here we want to see how much information we actually have from the data and how much our prior influenced our posterior estimates.
 Run now an analysis that does not use the data.
-You can do this in \RevBayes the exact same way as running an MCMC on the exact same model, you only need to call \cl{ymmcmc.run(1000,underPrior=true)}.
+You can do this in \RevBayes the exact same way as running an MCMC on the exact same model, you only need to call \cl{mymcmc.run(1000,underPrior=true)}.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-source("RevBayes_scripts/analysis/mcmc_run8_1_prior_PS0.Rev")
-mymcmc.operatorSummary()
+source("scripts/mcmc_run_prior.Rev")
 \end{lstlisting}
 \end{snugshade*}}
 Load both the MCMC output under the prior and the posterior into \verb!Tracer!.
 Compare the approximated distributions on each parameter between both outputs.
-
-Since we are doing fine for a single run, try multiple runs to check if the results are reproducible.
-{\tt \begin{snugshade*}
-\begin{lstlisting}
-source("RevBayes_scripts/analysis/mcmc_run7_1_PS0.Rev")
-source("RevBayes_scripts/analysis/mcmc_run7_2_PS0.Rev")
-source("RevBayes_scripts/analysis/mcmc_run7_3_PS0.Rev")
-\end{lstlisting}
-\end{snugshade*}}
-...and the prior...
-{\tt \begin{snugshade*}
-\begin{lstlisting}
-source("RevBayes_scripts/analysis/mcmc_run8_2_prior_PS0.Rev")
-source("RevBayes_scripts/analysis/mcmc_run8_3_prior_PS0.Rev")
-source("RevBayes_scripts/analysis/mcmc_run8_4_prior_PS0.Rev")
-\end{lstlisting}
-\end{snugshade*}}
 
 
 
@@ -447,7 +404,7 @@ Apply multiple-run diagnostics:
 \bigskip
 \section{Semi-automatic MCMC diagnosis using bonsai}
 
-\definecolor{shadecolor}{RGB}{183,207,237}
+\definecolor{shadecolor}{RGB}{183,107,137}
 Diagnosing MCMC performance manually can be extremely cumbersome, especially for more complex models.
 The R package bonsai performs a standard set of diagnostics on MCMC output and generates a report that highlights potentially pathological MCMC behaviors.
 To use bonsai, download the package source from \href{https://github.com/mikeryanmay/bonsai}{https://github.com/mikeryanmay/bonsai}, launch the R console, and install the package from source by following the instructions on the bonsai main page (making sure to install the packages that bonsai relies on as well):
