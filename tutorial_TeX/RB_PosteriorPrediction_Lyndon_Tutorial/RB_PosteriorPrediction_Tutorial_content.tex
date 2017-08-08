@@ -39,22 +39,22 @@ In the \cl{data} folder, you will find the following files
 \item \textbf{data/primates\_and\_galeopterus\_cytb.nex}: A simple dataset consisting of 8 taxa with 500 characters simulated under the GTR model.
 \end{itemize}
 
-%\section{Specific Style Notes For This Tutorial}
-%Throughout this tutorial you will see code snippets in various boxes like this: 
-%{\tt \begin{snugshade*}
-%\begin{lstlisting}
-%CODE SNIPPET IN FILE
-%\end{lstlisting}
-%\end{snugshade*}}
-%
-%if the snippet is in a grey box like the one above, that is code you should inspect or tweak in a \textbf{.Rev} file.
-%If the code is in blue like this: 
-%{\tt \begin{Snugshade}[184,207,236]
-%\begin{lstlisting}
-%CODE SNIPPET TO TYPE DIRECTLY INTO RevBayes
-%\end{lstlisting}
-%\end{Snugshade}}
-%you should type this code directly into the \RevBayes prompt in your terminal window.
+\section{Specific Style Notes For This Tutorial}
+Throughout this tutorial you will see code snippets in various boxes like this: 
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+CODE SNIPPET IN FILE
+\end{lstlisting}
+\end{snugshade*}}
+
+if the snippet is in a grey box like the one above, that is code you should inspect or tweak in a \textbf{.Rev} file.
+If the code is in blue like this: 
+{\tt \begin{Snugshade}[184,207,236]
+\begin{lstlisting}
+CODE SNIPPET TO TYPE DIRECTLY INTO RevBayes
+\end{lstlisting}
+\end{Snugshade}}
+you should type this code directly into the \RevBayes prompt in your terminal window.
 
 \section{Introduction}
 Assessing the fit of an evolutionary model to the data is critical as using a model with poor fit can lead to 
@@ -67,40 +67,16 @@ generate these possible outcomes, is to sample parameters from the posterior dis
 to simulate new replicate datasets (Fig. 1). If these simulated datasets differ from the empirical dataset in a
 meaningful way, the model is failing to capture some salient feature of the evolutionary process. 
 
-\begin{figure}[t!]
+\begin{figure}[h!]
 \centering
-\includegraphics[width=\textwidth,angle=0]{figures/brown_2014.png}
-\caption{\small 
-    %A cartoon schematic showing the process of assessing model fit with posterior predictive simulation built into P\sur{3} and \RevBayes. \label{"Figure 1"}}
-A schematic representation of data- versus inference-based approaches to assessing model plausibility with posterior predictive
-simulation. Most statistics proposed for testing model plausibility compare data-based characteristics of the original data set to the posterior
-    predictive data sets (e.g., variation in GC-content across species). 
-    \RevBayes additionally implements test statistics that compare the inferences
-    resulting from different data sets (e.g., the distribution of posterior probability across topologies). Multiple sequence alignments (MSAs) are
-    represented as shaded matrices and arrows originating from MSAs point to the MCMC samples of tree topologies and scalar model parameters
-    ($\theta$) resulting from Bayesian analysis of that MSA. Subscripts of MCMC samples taken during analysis of the original data index the samples $(1,
-    ..., n)$. Subscripts for each posterior predictive data set indicate which MCMC sample was used in its simulation. Subscripts for MCMC samples
-    resulting from analysis of a posterior predictive data set first indicate the posterior predictive data set that was analyzed and next index the
-    MCMC samples from analysis of that particular data set $(1, ..., m)$.
-    \label{"Figure 1"}}
-%\end{centering}
+\includegraphics[width=\textwidth,angle=0]{figures/pps.png}
+\caption{\small A cartoon schematic showing the process of assessing model fit with posterior predictive simulation built into P\sur{3} and \RevBayes. \label{"Figure 1"}}
 \end{figure}
+\end{centering}
 The framework to construct posterior predictive distributions, and compare them to the posterior distribution is 
 conveniently built in to \RevBayes. In this tutorial we will walk you through using this functionality to perform
 a complete posterior predictive simulation on an example dataset.  
 
-\subsection{Data- Versus Inference-Based Comparisons}
-
-Most statistics proposed for testing model plausibility compare data-based characteristics of the original data set to the posterior
-    predictive data sets (e.g., variation in GC-content across species).
-    In data-based assessments of model fit one compares the empirical data to data simulated from samples of the posterior distribution.
-    \RevBayes additionally implements test statistics that compare the inferences
-        resulting from different data sets (e.g., the distribution of posterior probability across topologies).
-        These are called inference-based assessments of model fit. For these assessments one must run an MCMC analysis
-        on each simulated data set, and then compare the inferences made from the simulated data to the inference made from the empirical data.
-
-Due to time constraints, in today's tutorial we will only cover the data-based method of assessing model plausibility. 
-The inference-based method can be a powerful tool that you may want to explore at another time.
 
 \bigskip
 \subsection{Substitution Models}\label{secUnif} 
@@ -118,16 +94,16 @@ To specify the model please consult the previous exercise. Specifically, you wil
 \bigskip
 \section{Assessing Model Fit with Posterior Prediction}
 
-The entire process of posterior prediction can be executed by using the \textbf{data\_pp\_analysis\_JC.Rev} script in the \textbf{scripts}
+The entire process of posterior prediction can be executed by using the \textbf{full\_analysis.Rev} script in the \textbf{scripts}
 folder. If you were to type the following command into \RevBayes:
 
-{\tt \begin{Snugshade}[184,207,236]
+{\tt \begin{snugshade*}
 \begin{lstlisting}
-source("scripts/data_pp_analysis_JC.Rev")
+source("scripts/full_analysis_JC.Rev")
 \end{lstlisting}
-\end{Snugshade}}
+\end{snugshade*}}
 
-the entire data-based posterior prediction process would run on the example dataset. However, in this tutorial, we 
+the entire posterior prediction process would run on the example dataset. However, in this tutorial, we 
 will walk through each step of this process on an example dataset. 
 
 \subsection{Empirical MCMC Analysis}
@@ -136,132 +112,146 @@ To begin, we first need to generate a posterior distribution from which to sampl
 This is the normal, and often only, step conducted in phylogenetic studies. Here we will specify our 
 dataset, evolutionary model, and run a traditional MCMC analysis. 
 
-This code is all in the \textbf{data\_pp\_analysis\_JC.Rev} file.
+In the the \textbf{full\_analysis\_JC.Rev} script, this step is conducted with the following lines of RevScript:
 
-\subsubsection{Set up the workspace}
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+## EMPIRICAL MCMC
+inFile = "data/primates_and_galeopterus_cytb.nex"
+analysis_name = "pps_example"
+data <- readDiscreteCharacterData(inFile)
+model_name = "JC"
+model_file_name = "scripts/"+model_name+"_Model.Rev"
+source("scripts/MCMC_Simulation.Rev")
+\end{lstlisting}
+\end{snugshade*}}
 
-First, let's set up some workspace variables we'll need.
-We'll specify a general name to apply to your analysis. This will be used for future output files, so make sure it's something clear and easy to understand.
-{\tt \begin{Snugshade}[184,207,236]
+Let's break down each of these lines and the scripts they call in order to better understand what is 
+happening. 
+
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+inFile = "data/primates_and_galeopterus_cytb.nex"
+\end{lstlisting}
+\end{snugshade*}}
+
+This line is just specifying an input file name. This is your data, in NEXUS format.
+
+{\tt \begin{snugshade*}
 \begin{lstlisting}
 analysis_name = "pps_example"
+\end{lstlisting}
+\end{snugshade*}}
+
+This line is just specifying a general name to apply to your analysis. This will be used for future output files, so make sure it's something clear and easy to understand.
+
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+data <- readDiscreteCharacterData(inFile)
+\end{lstlisting}
+\end{snugshade*}}
+
+This line reads in the data file into a data object in \RevBayes. 
+
+ 
+{\tt \begin{snugshade*}
+\begin{lstlisting}
 model_name = "JC"
 model_file_name = "scripts/"+model_name+"_Model.Rev"
 \end{lstlisting}
-\end{Snugshade}}
+\end{snugshade*}}
 
-Now specify and read in the input file. This is your sequence alignment in NEXUS format.
-{\tt \begin{Snugshade}[184,207,236]
-\begin{lstlisting}
-in_file = "data/primates_and_galeopterus_cytb.nex"
-data <- readDiscreteCharacterData(in_file)
-\end{lstlisting}
-\end{Snugshade}}
-
-\subsubsection{Specify the model}
-
-Now we'll call a separate script \textbf{JC\_Model.Rev} that specifies the JC model:
-{\tt \begin{Snugshade}[184,207,236]
-\begin{lstlisting}
-source( model_file_name ) 
-\end{lstlisting}
-\end{Snugshade}}
-
-If we open the \textbf{JC\_Model.Rev} 
-script, most of this script should look familiar from the RB\_MCMC\_Tutorial. There are a couple of specific 
+Here we are specifying an evolutionary substitution model to use with the MCMC analysis. In this specific
+case, we are using the Jukes-Cantor (JC) model for this example. If we open the \textbf{JC\_Model.Rev} 
+script, most of this script should look familiar from the \item RB\_MCMC\_Tutorial. There are a couple of specific 
 lines we can look at that might be a little different though, as we are using a unrooted tree for this
 analysis. 
 
-{\tt \begin{Snugshade}[184,207,236]
+{\tt \begin{snugshade*}
 \begin{lstlisting}
 Q <-fnJC(4)
 \end{lstlisting}
-\end{Snugshade}}
+\end{snugshade*}}
 
 Here we are specifying that we should use the Jukes-Cantor model, and have it applied uniformly to all sites in 
 the dataset. While this obviously is not likely to be a good fitting model for most datasets, we are using it for 
 simplicity of illustrating the process. 
 
-{\tt \begin{Snugshade}[184,207,236]
+{\tt \begin{snugshade*}
 \begin{lstlisting}
 topology ~ dnUniformTopology(names)
 \end{lstlisting}
-\end{Snugshade}}
+\end{snugshade*}}
 This sets a uniform prior on the tree topology.
-{\tt \begin{Snugshade}[184,207,236]
+{\tt \begin{snugshade*}
 \begin{lstlisting}
 br_lens[i] ~ dnExponential(10.0)
 \end{lstlisting}
-\end{Snugshade}}
+\end{snugshade*}}
 This sets an exponential distribution as the branch length prior.
-{\tt \begin{Snugshade}[184,207,236]
+{\tt \begin{snugshade*}
 \begin{lstlisting}
 phylogeny := treeAssembly(topology, br_lens)
 \end{lstlisting}
-\end{Snugshade}}
+\end{snugshade*}}
 This builds the tree by combining the topology with branch length support values.
 
-\subsubsection{Run the MCMC}
-
-Now let's run MCMC on our empirical dataset, just like
-a normal phylogenetic analysis. Here we use the Jukes-Cantor
-substition model.
-{\tt \begin{Snugshade}[184,207,236]
-\begin{lstlisting}
-mcmc_gen = 10000
-burnin_gen = 2000
-source("scripts/MCMC_Empirical.Rev")
-\end{lstlisting}
-\end{Snugshade}}
-
-
-After specifying a model, we will conduct the MCMC analysis with the script  \textbf{MCMC\_Empirical.Rev}. 
+After specifying a model, we will conduct the MCMC analysis with the script  \textbf{MCMC\_Simulation.Rev}. 
 Much of that script should look familiar from the \textbf{RB\_CTMC\_Tutorial}, but let's take a look at 
 the script and break down and revisit some of the major pieces as a refresher. Much of this will be a 
 familiar to you from the \textbf{RB\_CTMC\_Tutorial}. 
 
+Here we specify the model we want to use. This is the name we specified earlier, in this case it's the 
+variable holding the value \textbf{JC\_Model.Rev}. This is just telling the MCMC script to use the
+Jukes-Cantor model we just reviewed. 
 
-First we need to specify some monitors. 
-{\tt \begin{Snugshade}[184,207,236]
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+source( model_file_name )
+\end{lstlisting}
+\end{snugshade*}}
+
+Now we need to specify some simple moves and monitors. 
+{\tt \begin{snugshade*}
 \begin{lstlisting}
 mni = 0
 monitors[++mni] = mnModel(filename="output" + n + "/" + analysis_name + "_posterior.log",printgen=2500, separator = TAB)
 \end{lstlisting}
-\end{Snugshade}}
-{\tt \begin{Snugshade}[184,207,236]
+\end{snugshade*}}
+{\tt \begin{snugshade*}
 \begin{lstlisting}
 monitors[++mni] = mnFile(filename="output" + n + "/" + analysis_name + "_posterior.trees",printgen=2500, separator = TAB, phylogeny)
 \end{lstlisting}
-\end{Snugshade}}
-{\tt \begin{Snugshade}[184,207,236]
+\end{snugshade*}}
+{\tt \begin{snugshade*}
 \begin{lstlisting}
 monitors[++mni] = mnScreen(printgen=2500, TL)
 \end{lstlisting}
-\end{Snugshade}}
-{\tt \begin{Snugshade}[184,207,236]
+\end{snugshade*}}
+{\tt \begin{snugshade*}
 \begin{lstlisting}
 monitors[++mni] = mnStochasticVariable(filename="output" + n + "/" + analysis_name + "_posterior.var",printgen=2500)
 \end{lstlisting}
-\end{Snugshade}}
+\end{snugshade*}}
 
 Here the monitors are just being advanced by the value of mni which is being incremented each generation.
 
 Next, we will call the MCMC function, passing it the model, monitors and moves we specified above to set 
 to build our mymcmc object.
  
-{\tt \begin{Snugshade}[184,207,236]
+{\tt \begin{snugshade*}
 \begin{lstlisting}
 mymcmc = mcmc(mymodel, monitors, moves, nruns=2)
 \end{lstlisting}
-\end{Snugshade}}
+\end{snugshade*}}
 
 Specify a burnin for this run.
 
-{\tt \begin{Snugshade}[184,207,236]
+{\tt \begin{snugshade*}
 \begin{lstlisting}
-mymcmc.burnin(generations=burnin_gen,tuningInterval=100)
+mymcmc.burnin(generations=2500,tuningInterval=100)
 \end{lstlisting}
-\end{Snugshade}}
+\end{snugshade}}
 
 Finally, we will execute the run for a specified number of generations. Here we are only using a small
 number of generations for the tutorial, however with empirical data you will most likely need a much
@@ -271,19 +261,30 @@ When we simulate datasets in the next step, we can only simulate 1 dataset per s
 while the number of posterior samples will almost always be larger than the number of datasets we will want
 to simulate, it's something to keep in mind.
 
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+mymcmc.run(generations=50000)
+\end{lstlisting}
+\end{snugshade*}}
 
-Now let's actually run the MCMC in \RevBayes. 
-This process should take approximately 15-20 minutes depending on the speed of your computer.
+
+Let's actually execute this step of the process in \RevBayes by typing the full command at the \RevBayes 
+prompt: 
 
 {\tt \begin{Snugshade}[184,207,236]
 \begin{lstlisting}
-mymcmc.run(generations=mcmc_gen)
+inFile = "data/primates_and_galeopterus_cytb.nex"
+analysis_name = "pps_example"
+data <- readDiscreteCharacterData(inFile)
+model_name = "JC"
+model_file_name = "scripts/"+model_name+"_Model.Rev"
+source("scripts/MCMC_Simulation.Rev")
 \end{lstlisting}
 \end{Snugshade}}
 
-\subsubsection{MCMC output}
+This process should take approximately 15-20 minutes depending on the speed of your computer.
 
-After the process completes, the results can be found in the \textbf{output\_JC} folder. You should see a 
+After the process completes, the results can be found in the \textbf{output} folder. You should see a 
 number of familiar looking files, all with the name we provided under the \textbf{analysis\_name} variable, 
 \textbf{pps\_example} in this case. Since we set the number of runs (nruns=2) in our MCMC, there will be two files 
 of each type (.log .trees .var) with an \_\textit{N} where \textit{N} is the run number. You will also see 3 files without 
@@ -293,35 +294,60 @@ samples. This was produced by our number of generations (250,000) divided by our
 (2500) what we specified earlier. This is important to note, as we will need to thin these samples 
 appropriately in the next step to get the proper number of simulated datasets. 
 
+Once you have examined the data files and are confident they are correct, go ahead clear() \RevBayes.
+
+{\tt \begin{Snugshade}[184,207,236]
+\begin{lstlisting}
+clear()
+\end{lstlisting}
+\end{Snugshade}}
 
 \subsection{Posterior Predictive Data Simulation}
 The next step of posterior predictive simulation is to simulate new datasets by drawing samples and 
 parameters from the posterior distribution generated from the empirical MCMC anlaysis. 
 
-In the \textbf{data\_pp\_analysis\_JC.Rev} script, that is conducted using the following lines of RevScript: 
-{\tt \begin{Snugshade}[184,207,236]
+In the \textbf{full\_analysis\_JC.Rev} script, that is conducted using the following lines of RevScript: 
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+inFile = "data/primates_and_galeopterus_cytb.nex"
+analysis_name = "pps_example"
+data <- readDiscreteCharacterData(inFile)
+model_name = "JC"
+model_file_name = "scripts/"+model_name+"_Model.Rev"
+source("scripts/PosteriorPredictive_Simulation.Rev")
+\end{lstlisting}
+\end{snugshade*}}
+
+Most of these lines are the same as outlined above. Let's break down the new \textbf{source} call in detail though.  
+
+{\tt \begin{snugshade*}
 \begin{lstlisting}
 source("scripts/PosteriorPredictive_Simulation.Rev")
 \end{lstlisting}
-\end{Snugshade}}
-
-Let's take a look at each of the calls in the \textbf{PosteriorPredictive\_Simulation.Rev} script so 
+\end{snugshade*}}
+This is the script that simulates the datasets. Let's take a look at each of the calls in the \textbf{PosteriorPredictive\_Simulation.Rev} script so 
 that we can understand what is occurring. 
 
-First, we read in the trace file of the Posterior Distribution of Variables.
-{\tt \begin{Snugshade}[184,207,236]
+{\tt \begin{snugshade*}
 \begin{lstlisting}
+source( model_file_name )
 trace = readStochasticVariableTrace("output" + "/" + analysis_name + "_posterior.var", delimiter=TAB)
 \end{lstlisting}
-\end{Snugshade}}
+\end{snugshade*}}
+These lines set the model and read in the trace file of the Posterior Distribution of Variables.
 
-Now we call the \textbf{posteriorPredictiveSimulation()} function, which accepts any valid model of sequence evolution, and output directory, and a trace. For each line in the trace, it will simulate a new dataset under the specified model.
-{\tt \begin{Snugshade}[184,207,236]
+{\tt \begin{snugshade*}
 \begin{lstlisting}
 pps = posteriorPredictiveSimulation(mymodel, directory="output" + "/" + analysis_name + "_post_sims", trace)
 \end{lstlisting}
-\end{Snugshade}}
+\end{snugshade*}}
+This line calls the \textbf{posteriorPredictiveSimulation()} function, which accepts any valid model of sequence evolution, and output directory, and a trace. For each line in the trace, it will simulate a new dataset under the specified model.
 
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+pps.run(thinning=2)
+\end{lstlisting}
+\end{snugshade*}}
 Now we run the posterior predictive simulation, generating a new dataset for each line in the trace file 
 that was read in. This is the part where we need to decide how many simulated datasets we want to generate.
 If we just use the pps.run() command, one dataset will be generated for each sample in our posterior distribution.
@@ -330,82 +356,240 @@ samples, it would generate 200 simulated datasets. If you want to generate fewer
 you need to use the thinning argument as above. In this case, we are thinning the output by 2, that is
 we are dividing our number of samples by 2. So that in our example case, we will end up simulating 100 
 new datasets.
+
+Let's go ahead and run the simulation step. At your \RevBayes prompt, execute the following commands: 
 {\tt \begin{Snugshade}[184,207,236]
 \begin{lstlisting}
-pps.run(thinning=2)
+inFile = "data/primates_and_galeopterus_cytb.nex"
+analysis_name = "pps_example"
+data <- readDiscreteCharacterData(inFile)
+model_name = "JC"
+model_file_name = "scripts/"+model_name+"_Model.Rev"
+source("scripts/PosteriorPredictive_Simulation.Rev")
 \end{lstlisting}
 \end{Snugshade}}
 
-
-This process should finish in just a minute or two. If you look in the \textbf{output\_JC} folder, there should be 
+This process should finish in just a minute or two. If you look in the \textbf{output} folder, there should be 
 another folder called \textbf{pps\_example\_post\_sims}. This folder is where the simulated datasets are saved. 
 If you open it up, you should see 100 folders named posterior\_predictive\_sim\_\textit{N}. Where \textit{N} 
 is the number of the simulated dataset. In each of these folders, you should find a seq.nex file. If you 
 open one of those files, you'll see it's just a basic NEXUS file. These will be the datasets we analyze 
 in the next step.
 
-
-\subsection{Calculating the Test Statistics}
-
-Now we will calculate the test statistics from the 
-empirical data and the simulated data sets. The part in the \textbf{data\_pp\_analysis\_JC.Rev}
-script that generates the test statistics is the following line:
+Once you have examined the data files and are confident they are correct, go ahead \textbf{clear()} \RevBayes.
 
 {\tt \begin{Snugshade}[184,207,236]
 \begin{lstlisting}
-num_post_sims = listFiles(path="output_"+model_name+"/" + analysis_name + "_post_sims").size()
-source("scripts/PosteriorPredictive_DataSummary.Rev")
+clear()
 \end{lstlisting}
 \end{Snugshade}}
 
+\subsection{Posterior Predictive MCMC}
 
-We will look at the 
-major concepts of the \textbf{PosteriorPredictive\_DataSummary.Rev} to better understand how it works. For a more complete discussion of the 
+The next step is to analyze the new simulated datasets that were generated in the above step. In the 
+\textbf{full\_analysis\_JC.Rev} script that is accomplished using the following calls:
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+## POSTERIOR PREDICTIVE MCMC
+inFile = "data/primates_and_galeopterus_cytb.nex"
+analysis_name = "pps_example"
+data <- readDiscreteCharacterData(inFile)
+model_name = "JC"
+model_file_name = "scripts/"+model_name+"_Model.Rev"
+source("scripts/PosteriorPredictive_MCMC.Rev")
+clear()
+\end{lstlisting}
+\end{snugshade*}}
+
+Again, most of these commands were covered earlier. Let's take a closer look at the new \textbf(source) call though.
+
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+source("scripts/PosteriorPredictive_MCMC.Rev")
+\end{lstlisting}
+\end{snugshade*}}
+
+Hopefully, this command is looking very familiar by now. This line is calling the 
+\textbf{PosteriorPredictive\_MCMC.Rev} script in the scripts folder. This script will perform an MCMC 
+analysis on each of the simulated datasets we generated in the previous step. This step is the most 
+time-consuming part of the analysis, so proceed with caution. While this script is mostly a standard 
+MCMC analysis, there are some small changes. Let's briefly look at changes in this script for a better 
+understanding.
+
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+mymcmc = mcmc(mymodel, monitors, moves, nruns=1)
+\end{lstlisting}
+\end{snugshade*}}
+This line sets up the mcmc object. This should look familiar, we are just calling the \cl{mcmc()} function and 
+passing it our model, monitors, moves, and number of runs to build a mymcmc object.
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+directory = "output" + "/" + analysis_name + "_post_sims"
+\end{lstlisting}
+\end{snugshade*}}
+This is a new command that specifies the output directory where the simulated datasets we generated in
+the previous section are found.
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+my_pps_mcmc = posteriorPredictiveAnalysis(mymcmc, directory)
+\end{lstlisting}
+\end{snugshade*}}
+This is also a new command. Last time we just called the .run() method of the mcmc object. This time 
+we need to first call the \cl{posteriorPredictiveAnalysis()} function. This function accepts our mcmc object, 
+and an input directory that we specified in the previous command. 
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+my_pps_mcmc.run(generations=50000) 
+\end{lstlisting}
+\end{snugshade*}}
+Finally, we call the run method on the my\_pps\_mcmc object we created above. We specify the desired 
+number of generations, and the .run() method will execute the complete MCMC analysis on each dataset in 
+the directory we specified earlier. As you might expect, this process can take quite a long time if you 
+are conducting an entire MCMC analysis on a large number of simulated datasets. This is one of the steps 
+in which taking advantage of the MPI functionality of \RevBayes is critical in a real analysis. There is 
+also ongoing work looking at faster approximations to speed up this entire process, so keep an eye out 
+for those changes. For this tutorial, let's set our number of generations to something that will run in 
+a reasonable amount of time, say 50,000. 
+
+Let's go ahead and run this step of the process. Execute the following commands at your \RevBayes prompt: 
+
+{\tt \begin{Snugshade}[184,207,236]
+\begin{lstlisting}
+inFile = "data/primates_and_galeopterus_cytb.nex"
+analysis_name = "pps_example"
+data <- readDiscreteCharacterData(inFile)
+model_name = "JC"
+model_file_name = "scripts/"+model_name+"_Model.Rev"
+source("scripts/PosteriorPredictive_MCMC.Rev")
+\end{lstlisting}
+\end{Snugshade}}
+
+This part of the process should take around 45 minutes depending on the speed of your computer. 
+
+If you look the output folder, you should see 100 analysis folders names posterior\_predictive\_sim\_\textit{N} 
+where \textit{N} is a number corresponding to the seq.nex dataset that was analyzed. A quick look inside those 
+folders should show a \textbf{pps\_example\_posterior.log} file, and a \textbf{pps\_example\_posterior.trees} 
+file. This time, if you look at these files, you should see 100 samples in each file. While this is 
+probably not what you'd want to do in a real analysis, for the sake of this tutorial it will work fine. 
+
+Once you have examined the data files and are confident they are correct, go ahead \cl{clear()} \RevBayes.
+
+{\tt \begin{Snugshade}[184,207,236]
+\begin{lstlisting}
+clear()
+\end{lstlisting}
+\end{Snugshade}}
+
+\subsection{Calculating the Inference-Based Test Statistics}
+This is the final step, where we will calculate the test statistics from the posterior 
+distributions generated in the previous round of MCMC analyses. We will calculate both the inference-based
+test statistics from the posterior distribution of \textbf{trees} and the test statistics from the data-based 
+posterior distributions generated during the analysis process. The part in the \textbf{full\_analysis\_JC.Rev} 
+script that generates the test statistics is the following line:
+
+First, we will calculate the inference-based test statistics, which is done with the following lines:
+
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+## CALCULATE INFERENCE SUMMARY STATISTICS
+inFile = "data/primates_and_galeopterus_cytb.nex"
+analysis_name = "pps_example"
+model_name = "JC"
+model_file_name = "scripts/"+model_name+"_Model.Rev"
+num_post_sims = listFiles(path="output_"+model_name+"/" + analysis_name + "_post_sims").size()
+data <- readDiscreteCharacterData(inFile)
+source("scripts/PosteriorPredictive_TreeSummary.Rev")
+clear()
+\end{lstlisting}
+\end{snugshade*}}
+
+The main script here is the \textbf{PosteriorPredictive\_TreeSummary.Rev} script. We will look at the 
+major concepts of this script to better understand how it works. For a more complete discussion of the 
 statistics involved, please review \cite{Brown2014-mb, Doyle2015-qb}. In general, this script and these 
 statistics work by calculating the statistics of interest across each posterior distribution from the 
 simulated datasets, and comparing those values to the values from the empirical posterior distribution.
 
-The current version of this script generates over 30 summary statistics including: 
+The current version of this script generates several summary statistics: 
 \begin{itemize}
-\item Number Invariant Sites
-\item Max Pairwise Difference
-\item Max GC Content
-\item Min GC Content
-\item Mean GC Content
+\item 25th Quantile
+\item 50th Quantile
+\item 75th Quantile
+\item 99th Quantile
+\item 999th Quantile
+\item Mean Tree Length
+\item Tree Length Variance
+\item Mean Robinson-Foulds Distance
+\item Entropy
 \end{itemize}
 
-There are functions built-in to \RevBayes to calculate these values for you. Here are some examples
-from the \textbf{PosteriorPredictive\_DataSummary.Rev} script: 
+The quantiles and Mean RF are calculated using the unweighted Robinson-Foulds distances calculated in a pairwise fashion
+between all trees in a posterior distribution (Fig. 2).
 
-{\tt \begin{Snugshade}[184,207,236]
+\newpage
+
+\begin{figure}[h!]
+\centering
+\includegraphics[width=\textwidth,angle=0]{figures/teststats.png}
+\caption{\small A diagram showing an example of calculating the inference-based test statistics for a single posterior predictive simulation \citep{Brown2014-mb}.
+\label{"Figure 2"}}
+\end{figure}
+\end{centering}
+
+There are functions built-in to \Revbayes to calculate these values for you. Here are some examples
+from the \textbf{PosteriorPredictive\_TreeSummary.Rev} script: 
+
+{\tt \begin{snugshade*}
 \begin{lstlisting}
-max_pd          = sim_data.maxPairwiseDifference( excludeAmbiguous=FALSE )
-mean_gc_1       = sim_data.meanGcContentByCodonPosition(1, excludeAmbiguous=FALSE )
-var_gc_1        = sim_data.varGcContentByCodonPosition(1, excludeAmbiguous=FALSE )
+rf_dists <- sim_tree_trace.computePairwiseRFDistances(credibleTreeSetSize=1.0,verbose=FALSE)
+mean_rf <- mean(rf_dists)
+quantile\_N = quantile(rf_dists, N)
 \end{lstlisting}
-\end{Snugshade}}
+\end{snugshade*}}
 
 \smallbreak
+For posterior predictive simulation, statistical entropy is analogous to the uncertainty associated 
+with sampling from the prior or posterior. As the data provide more information and the posterior probabilities of various topologies
+become increasingly uneven, entropy decreases causing the difference between the entropy of the prior and the posterior to increase.
+Assuming a uniform prior on topologies, the change in entropy can be calculated as:
+
+
+\begin{equation *} 
+$$T_e(X,M_c)=ln[B(N)]+\sum_{i=1}^{B(N)} p(\tau_i|X)ln[p(\tau_i|X)]$$
+\end{equation}
+
+The statistical entropy is calculated with the following function call: 
+
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+sim_tree_trace = readTreeTrace(inFileName,treetype="non-clock")
+entropy <- sim_tree_trace.computeEntropy(credibleTreeSetSize=1.0,verbose=FALSE)
+\end{lstlisting}
+\end{snugshade*}}
+
 These same statistics are calculated for both the posterior distributions from the simulated datasets
 and the posterior distribution from the empirical dataset.
 
-\subsection{Calculating \textit{P}-values and effect sizes}
-
 Once we have the test statistics calculated for the simulated and empirical posterior distributions, 
 we can compare the simulated to the empirical to get a goodness-of-fit. One simple way to do this is to calculate a posterior 
-predictive \textit{P}\-value for each of the test statistics of interest. This is done in the \textbf{data\_pp\_analysis\_JC.Rev} with the following lines :
+predictive \textit{P}\-value for each of the test statistics of interest. This is done in the \textbf{full\_analysis\_JC.Rev} with the following lines :
 
-{\tt \begin{Snugshade}[184,207,236]
+{\tt \begin{snugshade*}
 \begin{lstlisting}
-emp_pps_file = "results_" + model_name + "/empirical_data_" + analysis_name + ".tsv"
-sim_pps_file = "results_" + model_name + "/simulated_data_" + analysis_name + ".tsv"
-outfileName = "results_" + model_name + "/data_pvalues_effectsizes_" + analysis_name + ".tsv"
+## CALCULATE INFERENCE P-VALUES
+analysis_name = "pps_example"
+model_name = "JC"
+emp_pps_file = "results_" + model_name + "/empirical_inference_" + analysis_name + ".csv"
+sim_pps_file = "results_" + model_name + "/simulated_inference_" + analysis_name + ".csv"
+outfileName = "results_" + model_name + "/inference_pvalues_effectsizes_" + analysis_name + ".csv"
+statID = v("", "mean_rf", "quantile25", "quantile50", "quantile75", "quantile99", "quantile999", "mean_tl", "var_tl", "entropy")
 source("scripts/PosteriorPredictive_PValues.Rev")
+clear()
 \end{lstlisting}
-\end{Snugshade}}
+\end{snugshade*}}
 
 The 3 posterior predictive \textit{P}\-values currently
-calculated by \RevBayes are: 
+calculated by \Revbayes are: 
 
 \begin{itemize}
 \item Lower 1-tailed 
@@ -416,31 +600,30 @@ calculated by \RevBayes are:
 The posterior predictive \textit{P}\-value for a lower one-tailed test is the proportion of samples in the distribution
 where the value is less than or equal to the observed value, calculated as:
 
-\begin{equation*} 
-    p_l=p(T(X_{rep})\leqslant T(X)|(X)
-\end{equation*}
+\begin{equation *} 
+$$p_l=p(T(X_r_e_p)\leqslant T(X)|(X)$$
+\end{equation}
 
 The posterior predictive \textit{P}\-value for a lower one-tailed test is the proportion of samples in the distribution
 where the value is greater than or equal to the observed value, calculated as:
 
-\begin{equation*} 
-    p_u=p(T(X_{rep})\geqslant T(X)|(X)
-\end{equation*}
+\begin{equation *} 
+$$p_u=p(T(X_r_e_p)\geqslant T(X)|(X)$$
+\end{equation *}
 
 and the two-tailed posterior predictive \textit{P}\-value is simply twice the minimum of the corresponding one-tailed tests
 calculated as:
 
-\begin{equation*} 
-p_2=2min(p_l,p_u)
-\end{equation*}
+\begin{equation *} 
+$$p_2=2min(p_l,p_u)$$
+\end{equation}
 
 Let's take a look at the \textbf{PosteriorPredictive\_PValues.Rev} script to get a better idea of what is 
 happening.
 
-Using the equations outlined above, this script reads in the simulated and empirical data we just calculated, and calls a few simple functions
-for each of the test statistics:
+Using the equations outlined above, this script reads in the simulated and empirical data we just calculated, and calls a few simple functions: 
 
-{\tt \begin{Snugshade}[184,207,236]
+{\tt \begin{snugshade*}
 \begin{lstlisting}
 ## Calculate and return a vector of lower, equal, and upper pvalues for a given test statistic
 p_values <- posteriorPredictiveProbability(numbers, empValue)
@@ -456,7 +639,7 @@ midpoint_p_value = lower_p_value + 0.5*equal_p_value
 ## 2-tailed
 two_tail_p_value = 2 * (min(v(lower_p_value, upper_p_value)))
 \end{lstlisting}
-\end{Snugshade}}
+\end{snugshade*}}
 
 these snippets calculate the various p-values of interest to serve as our goodness-of-fit test. 
 
@@ -467,17 +650,34 @@ empirical value and the distribution of posterior predictive values. The test st
 absolute value of the difference between the median posterior predictive value and the empirical value divided by 
 the standard deviation of the posterior predictive distribution \citep{Doyle2015-qb}. Effect sizes are calculated automatically for the inference based test statistics in the P\sur{3} analysis. The effect sizes for each test statistics are stored in the same output file as the \textit{P}\-values. 
 
-{\tt \begin{Snugshade}[184,207,236]
+{\tt \begin{snugshade*}
 \begin{lstlisting}
 effect_size = abs((m - empValue) / stdev(numbers))
 \end{lstlisting}
-\end{Snugshade}}
+\end{snugshade*}}
 
 
 calculates the effect size of a given test statistic. 
 
 
-\subsection{Viewing the Results}
+
+Let's go ahead and calculate the inference-based test statistics now. At your \RevBayes prompt, type the 
+following commands: 
+
+{\tt \begin{Snugshade}[184,207,236]
+\begin{lstlisting}  
+analysis_name = "pps_example"
+model_name = "JC"
+emp_pps_file = "results_" + model_name + "/empirical_inference_" + analysis_name + ".csv"
+sim_pps_file = "results_" + model_name + "/simulated_inference_" + analysis_name + ".csv"
+outfileName = "results_" + model_name + "/inference_pvalues_effectsizes_" + analysis_name + ".csv"
+statID = v("", "mean_rf", "quantile25", "quantile50", "quantile75", "quantile99", "quantile999", "mean_tl", "var_tl", "entropy")
+source("scripts/PosteriorPredictive_PValues.Rev")
+clear()
+\end{lstlisting}
+\end{Snugshade}}
+
+Depending on your computer and how densely you sampled the posterior this process can take from a few minutes to a few hours. If you followed along our tutorial suggestions, this step should take less than 30 minutes to complete. 
 
 Once execution of the script is complete, you should see a new directory, names \textbf{results\_JC}. In this folder there should be 3 files. Each of these is a simple tab-delimited (TSV) file containing the test statistic calculation output.
 
@@ -487,24 +687,13 @@ Once execution of the script is complete, you should see a new directory, names 
 \item pvalues\_pps\_example.tsv
 \end{itemize}
 
-If you have these 3 files, and there are results in them, you can go ahead and quit \RevBayes.
+If you have these 3 files, and there are results in them, you can go ahead and clear() \RevBayes.
 
 {\tt \begin{Snugshade}[184,207,236]
 \begin{lstlisting}  
-q()
+clear()
 \end{lstlisting}
 \end{Snugshade}}
-
-\begin{figure}[!t]
-\centering
-\includegraphics[width=\textwidth,angle=0]{figures/mean_gc.pdf}
-\caption{\small 
-The distribution of mean GC values calculated from the simulated data sets
-is shown. The dotted line represents the mean GC calculated from the empirical data set.
-The Jukes-Cantor model does not adequately describe the empirical data.
-    This plot was generated in \R using the \textbf{scripts/plot\_results.R} script.
-    }
-\end{figure}
 
 You can get an estimate of how the model performed by examining the \textit{P}\-values in the 
 \textbf{inference\_pvalues\_effectsizes\_pps\_example.csv} and \textbf{data\_pvalues\_effectsizes\_pps\_example.csv} files. In this example, a quick view shows us that most of the statistics show a value less than 0.05. This leads to a rejection of the model, suggesting 
@@ -514,20 +703,24 @@ of the sensitivity of this method, showing how relatively short runtimes and a l
 still detect poor fit. 
 
 
-You can also use \R to plot the results. Run the \R script \textbf{scripts/plot\_results.R}.
-This will generate a pdf plot for every test statistic.
-
-
-
-
 \subsection{Additional Exercises}
 
 Included in the \textbf{scripts} folder is a second model script called \textbf{GTR\_Model.Rev}. 
 As a personal exercise and a good test case, take some time now, and run the same analysis, substituting
 the \textbf{GTR\_Model.Rev} model script for the \textbf{JC\_Model.Rev} script we used in the earlier example.
+This is a good chance to run the full anlaysis using the single-run script by calling \textbf{full\_analysis\_GTR.Rev} script.  
 You should get different results, this is an excellent chance to explore the results and think about what
 they suggest about the fit of the specified model to the dataset. 
 
+Once you have made the necessary changes, you should be able to execute the full PPS analysis by typing:
+
+{\tt \begin{Snugshade}[184,207,236]
+\begin{lstlisting}  
+source("scripts/full_analysis.Rev")
+\end{lstlisting}
+\end{Snugshade}}
+
+\newpage
 \subsubsection{Additional Exercises}
 \textbf{Some Questions to Keep in Mind:}
 \begin{itemize}
@@ -536,6 +729,15 @@ they suggest about the fit of the specified model to the dataset.
   \item Other than \textit{P}\-values, what other ways might you explore the test statistic distributions to identify poor fit?
 \end{itemize}
 
+\begin{figure}[h]
+\centering
+\includegraphics[width=\textwidth,angle=0]{figures/dist.png}
+\caption{\small A cartoon showing a hypothesized distribution of a posterior predictive test statistic. The red
+line represents the empirical value in a poorly fitting model, the green line represents the empirical value in
+a reasonable model. Exploring the fit of a model to the data in a graphical way can often be the easiest way to 
+identify a model with a poor fit. \label{"Figure 3"}}
+\end{figure}
+\end{centering}
 
 \newpage
 \section{For your consideration...}
