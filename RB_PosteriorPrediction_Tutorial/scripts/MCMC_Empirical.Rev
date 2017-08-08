@@ -6,7 +6,6 @@
 #
 ################################################################################
 
-source( model_file_name )
 
 mni = 0
 
@@ -18,5 +17,5 @@ monitors[++mni] = mnStochasticVariable(filename="output_" + model_name + "/" + a
 
 
 mymcmc = mcmc(mymodel, monitors, moves, nruns=2)
-mymcmc.burnin(generations=2000,tuningInterval=10)
-mymcmc.run(generations=10000)
+mymcmc.burnin(generations=burnin_gen,tuningInterval=10)
+mymcmc.run(generations=mcmc_gen)
