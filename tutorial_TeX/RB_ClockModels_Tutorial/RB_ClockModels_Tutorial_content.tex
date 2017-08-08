@@ -21,11 +21,10 @@ This tutorial will provide a general overview of divergence time estimation usin
 The various exercises in this tutorial take you through the steps required to perform phylogenetic analyses of the example datasets. 
 In addition, we have provided the output files for every exercise so you can verify your results. (Note that since the MCMC runs you perform will start from different random seeds, the output files resulting from your analyses \textit{will not} be identical to the ones we provide you.)
 
-% TODO: fix URLs
 \begin{framed}
 %Download the starting tree file: %\href{http://bit.ly/1DnJKdB}{http://bit.ly/1DnJKdB}
 
-Download the alignment file: %\href{http://bit.ly/1KdGsP2}{http://bit.ly/1KdGsP2}
+Download the data files [\href{https://github.com/revbayes/revbayes_tutorial/tree/master/RB_ClockModels_Tutorial/data}{LINK}]
 \end{framed}
 
 The alignment in file \cl{data/bears\_irbp.nex} contains interphotoreceptor retinoid-binding protein (irbp) sequences for each extant species.
@@ -82,16 +81,13 @@ Create a directory called {\textcolor{red}{\cl{output}}} in your tutorial direct
 \end{framed}
 
 The only files you need for this exercise are now in the \cl{data} directory. Otherwise, you will create all of the \Rev~files specifying the models and analyses. 
-All of the \Rev~files you write for this tutorial are available on the \href{https://github.com/revbayes/revbayes_tutorial}{\RevBayes~Tutorial GitHub repository} in the \href{https://github.com/revbayes/revbayes_tutorial/tree/master/RB_ClockModels_Tutorial/scripts}{scripts directory of the Dating Tutorial}.
+All of the \Rev~files you write for this tutorial are available on the \href{https://github.com/revbayes/revbayes_tutorial}{\RevBayes~Tutorial GitHub repository} in the \href{https://github.com/revbayes/revbayes_tutorial/tree/master/RB_ClockModels_Tutorial/scripts}{scripts directory of the Clock Models Tutorial}.
 You can refer to these examples to verify your own work.
 
 \bigskip
 \subsection{The Birth-Death Model}\label{brMods} 
 
- 
-Here, we condition the birth-death process on the speciation time of the root, thus this variable is not part of the time-tree parameter. 
-The root age can thus be given any parametric distribution over positive real numbers (Fig.~\ref{m_BDCal:fig}).
-In this tutorial, we use a lognormal distribution as a prior on the root age parameter.
+The birth-death process we will use is a constant-rate process conditioned on the age of the root of the tree (Fig.~\ref{m_BDCal:fig}).
 
 \begin{figure}[h!]
 \centering
@@ -228,6 +224,9 @@ root_time ~ dnLognormal(mu_ra, stdv_ra, offset=tHesperocyon)
 
 \subsubsection{Time Tree Stochastic Node}
 
+Now that we have specified all of the parameters of the birth-death process, we can create our stochastic node representing the tree topology and divergence times.
+
+
 % TODO finish tree stuff
 
 %Now we have all of the elements needed to create a distribution object that will act as the generating model for our time tree. We need a separate distribution in the workspace because we have to create a separate stochastic node to represent the {\em constrained} time tree.
@@ -258,6 +257,10 @@ timetree ~ dnBDP(lambda=birth_rate, mu=death_rate, rho=rho, rootAge=root_time, s
 
 \subsubsection{Creating a Node-Age Variable}
 
+We may be interested in a particular node in the tree and thus wish to save the age of that node to a log file.
+To do this, we can create a deterministic node for that node age. 
+First, define the node by a set of taxa using the \cl{clade()} function.
+This will not restrict this node to be monophyletic, but just create a node that is the MRCA of the taxa listed (even if that node has descendants that are not named).
 
 % TODO Finish node-age
 
@@ -266,6 +269,15 @@ timetree ~ dnBDP(lambda=birth_rate, mu=death_rate, rho=rho, rootAge=root_time, s
 clade_Ursidae <- clade("Ailuropoda_melanoleuca","Tremarctos_ornatus","Helarctos_malayanus", "Ursus_americanus","Ursus_thibetanus","Ursus_arctos","Ursus_maritimus","Melursus_ursinus")
 \end{lstlisting}
 \end{snugshade*}}
+
+Once we have defined the node, we can create a deterministic node to monitor its age.
+
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+tmrca_Ursidae := tmrca(timetree,clade_Ursidae)
+\end{lstlisting}
+\end{snugshade*}}
+
 
 \subsubsection{Proposals on the Time Tree}
 
@@ -279,7 +291,7 @@ moves[mi++] = mvTreeScale(tree=timetree, rootAge=root_time, delta=1.0, tune=true
 \end{lstlisting}
 \end{snugshade*}}
 
-And these change the tree topology. If we wish to keep the topology constant, then we can leave these moves out. Note that for some relaxed clock models (autocorrelated rates, DPP, random-local clock) tree topology moves often induce very long mixing times.
+Then, we will add moves that will propose changes to the tree topology. 
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 moves[mi++] = mvNNI(timetree, weight=8.0)
@@ -988,10 +1000,10 @@ monitors[2] = mnFile(filename="output/TimeTree_bears_mcmc.trees", printgen=10, t
 
 
 Finally, we will create a monitor in charge of writing information to the screen: \cl{mnScreen}.
-We will report the root age to the screen. If there is anything else you'd like to see in your screen output (e.g., the mean rate of the UCLN or ACLN model), feel free to add them to the list of parameters give to this model.
+We will report the root age and the age of the MRCA of all Ursidae to the screen. If there is anything else you'd like to see in your screen output (e.g., the mean rate of the UCLN or ACLN model), feel free to add them to the list of parameters give to this model.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-monitors[3] = mnScreen(printgen=10, root_time)
+monitors[3] = mnScreen(printgen=10, root_time, tmrca_Ursidae)
 \end{lstlisting}
 \end{snugshade*}}
 
