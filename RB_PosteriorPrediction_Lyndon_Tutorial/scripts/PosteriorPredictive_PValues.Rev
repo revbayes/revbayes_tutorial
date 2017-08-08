@@ -35,10 +35,10 @@ for (x in 2:simData.ncolumns()) {
     p_values <- posteriorPredictiveProbability(numbers, empValue)
     
     ## 1-tailed
-    lower_p_value <- p_values[1] 
-	equal_p_value <- p_values[2] 
-    upper_p_value <- p_values[3] 
-	
+    lower_p_value <- p_values[1]
+    equal_p_value <- p_values[2]
+    upper_p_value <- p_values[3]
+
     ## mid-point
     midpoint_p_value = lower_p_value + 0.5*equal_p_value
 

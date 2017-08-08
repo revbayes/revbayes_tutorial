@@ -44,9 +44,9 @@ moves[index++] = mvMultivariatePhyloProcessTranslation(process=X,lambda=0.1,tune
 # condition Brownian model on quantitative trait data
 # i.e. clamp the process at the tips of the tree, ot the values observed in extant taxa
 # you need to do this trait by trait
-for (i in 1:nTraits)	{
-	# here we say that the ith entry of the Brownian process should map to the ith. quantitative trait
-	X.clampAt(contData,i,i)
+for (i in 1:nTraits) {
+    # here we say that the ith entry of the Brownian process should map to the ith. quantitative trait
+    X.clampAt(contData,i,i)
 }
 
 # get useful functions of the covariance matrix, to be monitored
@@ -62,25 +62,25 @@ r23 := Sigma.correlation(2,3)
 pr23 := Sigma.partialCorrelation(2,3)
 
 # you can also get these variables as a vector
-for (i in 1:nTraits)	{
-	var[i] := Sigma.covariance(i,i)
+for (i in 1:nTraits) {
+    var[i] := Sigma.covariance(i,i)
 }
 
 k <- 1;
-for (i in 1:(nTraits-1))	{
-	for (j in (i+1):nTraits)	{
-		correl[k] := Sigma.correlation(i,j)
-		pCorrel[k] := Sigma.partialCorrelation(i,j)
-		k <- k+1
-	}
+for (i in 1:(nTraits-1)) {
+    for (j in (i+1):nTraits) {
+        correl[k] := Sigma.correlation(i,j)
+        pCorrel[k] := Sigma.partialCorrelation(i,j)
+        k <- k+1
+    }
 }
 
 # get useful outputs from the brownian process
 # the mean and the variance across the tree, for each trait
-for (i in 1:nTraits)	{
-	# mean and stdev of each trait
-	meanX[i] := X.mean(i)
-	stdevX[i] := X.stdev(i)
+for (i in 1:nTraits) {
+    # mean and stdev of each trait
+    meanX[i] := X.mean(i)
+    stdevX[i] := X.stdev(i)
 }
 
 # create the model
@@ -93,19 +93,19 @@ mymodel = model(kappa)
 monitors[1] = mnScreen(printgen=10000, var2, correl, meanX)
 
 # a trace monitor: like the screen monitor, but directly into file
-monitors[2] = mnFile(filename="output/plactraits.trace", printgen=10, separator = "	", var2, correl, meanX)
+monitors[2] = mnFile(filename="output/plactraits.trace", printgen=10, separator = "\t", var2, correl, meanX)
 
 # file monitors for the correlation and partial correlation coefficients
-monitors[3] = mnFile(filename="output/plactraits.correl",printgen=10, separator = "	", correl, pCorrel)
+monitors[3] = mnFile(filename="output/plactraits.correl",printgen=10, separator = "\t", correl, pCorrel)
 
 # a file monitor for the complete covariance matrix
-monitors[4] = mnFile(filename="output/plactraits.cov",printgen=10, separator = "	", Sigma)
+monitors[4] = mnFile(filename="output/plactraits.cov",printgen=10, separator = "\t", Sigma)
 
 # a file monitor for the evolution of traits along the tree (in newick format)
-monitors[5] = mnFile(filename="output/plactraits.traits",printgen=10, separator = "	", X)
+monitors[5] = mnFile(filename="output/plactraits.traits",printgen=10, separator = "\t", X)
 
 # a model monitor
-monitors[6] = mnModel(filename="output/plactraits.log",printgen=10, separator = "	")
+monitors[6] = mnModel(filename="output/plactraits.log",printgen=10, separator = "\t")
  
 mymcmc = mcmc(mymodel, monitors, moves)
 
