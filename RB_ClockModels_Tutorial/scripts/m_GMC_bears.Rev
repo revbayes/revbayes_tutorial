@@ -1,0 +1,23 @@
+############################################################################################
+#   File: timetree tutorial global molecular clock model specification file
+############################################################################################
+
+###########################################################
+############ Strict clock model on branch rates ###########
+###########################################################
+
+### the clock rate applied to every branch in the tree
+### with a gamma prior and a scale move
+clock_rate ~ dnGamma(2.0,4.0)
+moves[mi++] = mvScale(clock_rate,lambda=0.5,tune=true,weight=5.0)
+
+### set up the GTR model and instantaneous rate matrix from file
+source("scripts/m_GTR.Rev")
+
+### the full phylogenetic CTMC
+phySeq ~ dnPhyloCTMC(tree=timetree, Q=Q, branchRates=clock_rate, nSites=n_sites, type="DNA")
+
+### attach the observed sequence data
+phySeq.clamp(D)
+
+
