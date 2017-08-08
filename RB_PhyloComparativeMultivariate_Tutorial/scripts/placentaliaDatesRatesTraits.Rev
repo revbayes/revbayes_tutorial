@@ -73,31 +73,31 @@ rate := expbranchtree(tree=psi,process=X,traitindex=1)
 # other copmonents of the Brownian process correspond to life-history traits
 # so we clamp the process at the tips of the tree, at the values observed in extant taxa
 # you need to do this trait by trait
-for (i in 1:nTraits)	{
+for (i in 1:nTraits) {
 
-	# here we say that the (i+1)th entry of the Brownian process should map to the ith. quantitative trait
-	X.clampAt(contData,i+1,i)
+    # here we say that the (i+1)th entry of the Brownian process should map to the ith. quantitative trait
+    X.clampAt(contData,i+1,i)
 }
 
 # get useful functions of the covariance matrix, to be monitored
-for (i in 1:covdim)	{
-	var[i] := Sigma.covariance(i,i)
+for (i in 1:covdim) {
+    var[i] := Sigma.covariance(i,i)
 }
 
 k <- 1;
-for (i in 1:(covdim-1))	{
-	for (j in (i+1):covdim)	{
-		correl[k] := Sigma.correlation(i,j)
-		pCorrel[k] := Sigma.partialCorrelation(i,j)
-		k <- k+1
-	}
+for (i in 1:(covdim-1)) {
+    for (j in (i+1):covdim) {
+        correl[k] := Sigma.correlation(i,j)
+        pCorrel[k] := Sigma.partialCorrelation(i,j)
+        k <- k+1
+    }
 }
 
 # get useful outputs from the brownian process
 # the mean and the variance across the tree, for each trait
-for (i in 1:covdim)	{
-	meanX[i] := X.mean(i)
-	stdevX[i] := X.stdev(i)
+for (i in 1:covdim) {
+    meanX[i] := X.mean(i)
+    stdevX[i] := X.stdev(i)
 }
 
 

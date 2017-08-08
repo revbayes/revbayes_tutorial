@@ -6,8 +6,6 @@
 #
 ################################################################################
 
-source( model_file_name )
-
 # "Reading Trace"
 trace = readStochasticVariableTrace("output_" + model_name + "/" + analysis_name + "_posterior.var", delimiter=TAB)
 
