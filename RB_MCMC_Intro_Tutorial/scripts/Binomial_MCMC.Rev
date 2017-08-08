@@ -1,7 +1,7 @@
 # Make up some coin flips!
 # Feel free to change these numbers
 n <- 100 # the number of flips
-x <- 63	# the number of heads
+x <- 63  # the number of heads
 
 # Specify the prior distribution
 alpha <- 1

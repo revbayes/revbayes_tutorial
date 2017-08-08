@@ -89,7 +89,7 @@ for (i in 1:n_branches) {
     br_lens[i] ~ dnExponential(10.0)
 
     # And add a simple scaling move since the branch length is a positive real number.
-	moves[mvi++] = mvScale(br_lens[i], lambda=2, weight=1)
+    moves[mvi++] = mvScale(br_lens[i], lambda=2, weight=1)
 
 }
 
