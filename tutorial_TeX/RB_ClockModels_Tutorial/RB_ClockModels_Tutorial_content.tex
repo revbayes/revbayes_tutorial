@@ -659,7 +659,7 @@ moves[mi++] = mvSimplexElementScale(sf, alpha=10.0, tune=true, weight=3.0)
 Now, we can put the whole model together in the phylogenetic CTMC and clamp that node with our sequence data.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-phySeq ~ dnPhyloCTMC(tree=timetree, Q=Q, branchRates=branch_subrates, nSites=n_sites, type="DNA")
+phySeq ~ dnPhyloCTMC(tree=timetree, Q=Q, branchRates=branch_rates, nSites=n_sites, type="DNA")
 attach the observed sequence data
 phySeq.clamp(D)
 \end{lstlisting}
