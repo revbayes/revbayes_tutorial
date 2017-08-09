@@ -120,7 +120,7 @@ From the tree we can initialize some useful variables. (These can also be create
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 n_taxa <- T.ntips()
-taxa <- taxa()
+taxa <- T.taxa()
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -415,7 +415,7 @@ Open your text editor and create the marginal-likelihood analysis file under the
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 D <- readDiscreteCharacterData(file="data/bears_irbp.nex")
-n_sites <- D.nchar(1)
+n_sites <- D.nchar()
 mi = 1
 \end{lstlisting}
 \end{snugshade*}}
