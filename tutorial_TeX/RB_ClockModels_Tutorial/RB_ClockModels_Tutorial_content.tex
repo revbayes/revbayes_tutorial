@@ -379,7 +379,7 @@ moves[mi++] = mvSimplexElementScale(sf, alpha=10.0, tune=true, weight=3.0)
 And instantiate the phyloCTMC.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-phySeq ~ dnPhyloCTMC(tree=timetree, Q=Q, branchRates=abs_clock_rt, nSites=n_sites, type="DNA")
+phySeq ~ dnPhyloCTMC(tree=timetree, Q=Q, branchRates=clock_rate, nSites=n_sites, type="DNA")
 phySeq.clamp(D)
 \end{lstlisting}
 \end{snugshade*}}
