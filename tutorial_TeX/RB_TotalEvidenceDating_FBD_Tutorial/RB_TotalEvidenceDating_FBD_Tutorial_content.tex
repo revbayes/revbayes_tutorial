@@ -1228,7 +1228,7 @@ In Unix systems, type the following in your terminal (if the \RevBayes binary is
 Read in the MCMC sample of trees from file.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-trace = readTreeTrace("output/bears.trees")
+trace = readTreeTrace("output/bears.trees",burnin=0)
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -1275,7 +1275,7 @@ Then we create a second tree trace containing the pruned trees using the \cl{tre
 
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-trace_pruned = treeTrace(trees)
+trace_pruned = treeTrace(trees,burnin=0.5)
 \end{lstlisting}
 \end{snugshade*}}
 
