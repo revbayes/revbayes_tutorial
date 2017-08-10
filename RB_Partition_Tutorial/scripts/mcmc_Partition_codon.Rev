@@ -1,7 +1,7 @@
 ################################################################################
 #
 # RevBayes Example: Bayesian inference of phylogeny using a GTR+Gamma+Inv
-#			substitution model for a codon specific substitution models
+#                   substitution model for a codon specific substitution models
 #
 # authors: Michael Landis, Sebastian Hoehna, Tracy A. Heath and Brian R. Moore
 #
@@ -88,7 +88,7 @@ for (i in 1:n_data_subsets) {
 ##############
 
 out_group = clade("Galeopterus_variegatus")
-# Prior distribution on the tree topology	
+# Prior distribution on the tree topology
 topology ~ dnUniformTopology(taxa, outgroup=out_group)
 moves[++mvi] = mvNNI(topology, weight=5.0)
 moves[++mvi] = mvSPR(topology, weight=1.0)
@@ -96,11 +96,11 @@ moves[++mvi] = mvSPR(topology, weight=1.0)
 # Branch length prior
 for (i in 1:n_branches) {
     bl[i] ~ dnExponential(10.0)
-	moves[++mvi] = mvScale(bl[i])
+    moves[++mvi] = mvScale(bl[i])
 }
 
 TL := sum(bl)
-	
+
 psi := treeAssembly(topology, bl)
 
 

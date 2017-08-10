@@ -19,10 +19,10 @@
 #######################
 
 # Get the tree
-observed_phylogeny <- readTrees("data/primates_biogeo.tre")[1]
+observed_phylogeny <- readTrees("../data/primates_biogeo.tre")[1]
  
 # Get the taxa in the tree. We'll need this later on.
-taxa <- observed_phylogeny.taxa()
+taxa = observed_phylogeny.taxa()
 
 # Read biogeographic range data. The areas are represented as the
 # following character states:
@@ -30,7 +30,7 @@ taxa <- observed_phylogeny.taxa()
 # 1 = 01 = New World only
 # 2 = 10 = Old World only
 # 3 = 11 = both New and Old World
-data_biogeo = readCharacterDataDelimited("data/primates_biogeo.tsv", stateLabels="0123", type="NaturalNumbers", delimiter="\t", headers=TRUE)
+data_biogeo = readCharacterDataDelimited("../data/primates_biogeo.tsv", stateLabels="0123", type="NaturalNumbers", delimiter="\t", headers=TRUE)
 
 # set the move and monitor indices
 mvi = 0
@@ -72,7 +72,7 @@ moves[++mvi] = mvSlide( extinction_rates[3], weight=4 )
 moves[++mvi] = mvSlide( extinction_rates[4], weight=4 )
 
 # Let's also create a deterministic variable to monitor the overall extinction rate
-total_speciation := sum(extinction_rates)
+total_extinction := sum(extinction_rates)
 
 
 ################################################
@@ -236,10 +236,10 @@ monitors[++mni] = mnScreen(printgen=1, speciation_wide_sympatry, speciation_sub_
 mymcmc = mcmc(mymodel, monitors, moves)
 
 # pre-burnin to tune the proposals
-#mymcmc.burnin(generations=200,tuningInterval=5)
+mymcmc.burnin(generations=300,tuningInterval=5)
 
 # run the MCMC
-mymcmc.run(generations=1000)
+mymcmc.run(generations=3000)
 
 
 

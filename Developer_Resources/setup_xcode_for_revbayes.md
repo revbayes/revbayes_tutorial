@@ -18,6 +18,7 @@ In order to develop in RevBayes, lets grab a fresh copy of the source code.
     	* ```revbayes/src/core```
     	* ```revbayes/src/libs```
     * directories and click **Add**.
+    * _Note:_ On some versions of XCode, you may need to click on the "Options" Tab, and choose "Create Groups" for the import to work properly. This is the default behavior on most XCode installs.
   * Add the boost library to your Xcode project 
     * Select the RevBayes project and go to the **Build Settings**. 
     * Search for or Scroll down to the **Search Paths** heading and find the sub-heading named **Header Search Paths**.
@@ -27,7 +28,13 @@ In order to develop in RevBayes, lets grab a fresh copy of the source code.
 * Add the RevBayes Preprocessor Macro to your Xcode project 
     * Select the RevBayes project and go to the **Build Settings**. 
     * Search for or Scroll down to the ***Apple LLVM X.X - Preprocessing*** heading and find the sub-heading named **Preprocessor Macros**. 
-    * Double click on right hand column, click on the **+** and enter ```RB_XCODE```.
+    * Double click on right hand column, click on the **+** and enter ```RB_XCODE```. Do not replace the debug flag that is already present.
+    
+* Check C++ language options
+    * Select the RevBayes project and go to the **Build Settings**. 
+    * Search or scroll to: ***Apple LLVM X.X - C++ - Language ***.
+    * Make sure C++ Language Dialect is set to ***Gnu++ 98***.
+    * Make sure C++ Standard Library is set to ***libstdc++(Gnu C++)***
 
 
 At this point, if everything has been setup correctly, you should be able to build the project. You can try by clicking on **Product - Build** or by using **[CMD]B**.

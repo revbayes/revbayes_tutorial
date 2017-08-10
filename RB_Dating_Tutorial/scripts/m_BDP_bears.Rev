@@ -70,8 +70,9 @@ bd_tree_dn = dnBDP(lambda=birth_rate, mu=death_rate, rho=rho, rootAge=root_time,
 
 timetree ~ dnConstrainedTopology(treeDistribution=bd_tree_dn,constraints=constraints)
 
-### set the initial value of the time tree to the dos Reis et al. (2013) tree
-### this is needed because the starting value must be consistent with our internal node constraints
+### Occassionally, it is difficult to initialize the tree parameter so that the starting state
+### is consistent with our constraints and node age distributions, so we can use a starting tree
+### to set the initial value of the time tree to the dos Reis et al. (2013) we use the .setValue() method 
 timetree.setValue(T)
 
 ####### Internal node constraints #######

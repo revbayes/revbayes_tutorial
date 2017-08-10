@@ -1,6 +1,6 @@
 ############################################################################################
 #   File: diversification tutorial model specification and sampler setup for estimating marginal
-#		  likelihoods under the pure birth (Yule) model 
+#         likelihoods under the pure birth (Yule) model
 ############################################################################################
 
 ## read in the tree 
