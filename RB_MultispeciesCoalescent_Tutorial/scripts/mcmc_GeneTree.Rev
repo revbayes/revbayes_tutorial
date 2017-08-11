@@ -4,6 +4,9 @@
 #
 #
 # This file: reconstructs an ultrametric gene tree for gene tree "i".
+# If you want to use it to reconstruct a gene tree, you need to add a line setting the value of i.
+# For instance, to reconstruct a gene tree for gene "GHRmeredith", you need to set i=3 before line 28.
+# This script is launched by the bash script "construct_all_GeneTrees.sh" to construct all 10 gene trees.
 #
 # authors: Bastien Boussau and Sebastian Hoehna
 #
