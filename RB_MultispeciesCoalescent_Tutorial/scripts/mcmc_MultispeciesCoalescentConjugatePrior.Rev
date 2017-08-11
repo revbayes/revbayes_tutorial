@@ -1,0 +1,277 @@
+################################################################################
+#
+# RevBayes Example: Species tree inference using the multispecies coalescent.
+#
+#
+# This file: specifies the multispecies coalescent, with different effective population sizes for each branch of the species tree, and with a calibration on the root node.
+# 			 We assume the species tree is drawn from a constant birth-death process.
+#			 Along the branches of the species tree, a multispecies coalescent process generates gene trees.
+#			 Along each gene tree, gene sequences are evolved according to an HKY model with a strict clock.
+#            Here, we run an MCMC on this model, using data from 10 genes in 23 mammalian species.
+#
+# authors: Bastien Boussau and Sebastian Hoehna
+#
+################################################################################
+
+#######################
+# Reading in the Data #
+#######################
+
+### Read in sequence data for all genes
+
+locus_names = ["COIII", "FGA", "GHRmeredith", "lrpprc_169", "npas3", "sim1", "tex2", "ttr", "zfy", "zic3"]
+
+num_loci = locus_names.size()
+
+# read in each data matrix separately
+for ( i in 1:num_loci ) {
+    data[i] <- readDiscreteCharacterData("data/" + locus_names[i] + ".fasta")
+}
+# alternatively we could have read in from data/merged.nex too (although that contains the empty sequences ...)
+
+# Get some useful variables from a species tree.
+# We need these variables later on, but we will not use the species tree as starting value.
+primate_tree = readTrees("data/primates.tree")[1]
+n_species <- primate_tree.ntips()
+taxa <- primate_tree.taxa()
+n_branches <- 2 * n_species - 1 # number of branches in a rooted tree
+
+# set my move index
+mi = 0
+
+
+
+######################
+# Species-Tree model #
+######################
+
+# Specify a prior on the diversification and turnover rate
+speciation ~ dnGamma(2,2)
+relativeExtinction ~ dnBeta(1,1)
+
+# now transform the diversification and turnover rates into speciation and extinction rates
+extinction := speciation * relativeExtinction
+
+# specify a prior on the root age (our informed guess is about 75-80 mya)
+root ~ dnNormal(mean=75,sd=2.5,min=0.0, max=Inf)
+
+sampling_fraction <- 23 / 450 # 23 out of the ~ 450 primate species
+
+# create some moves that change the stochastic variables
+# all moves are sliding and scaling proposals
+moves[++mi] = mvSlide(speciation,tune=true,weight=2)
+moves[++mi] = mvSlide(relativeExtinction,tune=true,weight=2)
+moves[++mi] = mvScale(speciation,lambda=1,tune=true,weight=2)
+moves[++mi] = mvScale(relativeExtinction,lambda=1,tune=true,weight=2)
+
+
+# construct a variable for the tree drawn from a birth death process
+psi ~ dnBDP(lambda=speciation, mu=extinction, rootAge=root, rho=sampling_fraction, taxa=taxa )
+
+##### Set the species tree to a good starting value:
+
+# read in each gene tree separately
+j=1
+for ( i in 1:num_loci ) {
+    gene_trees[i] <- readTrees("output_GeneTrees/" + locus_names[i] + "_MAP.tree")[1]
+    print("Gene tree "+i+ " has "+ gene_trees[i].ntips() + " tips.")
+}
+
+# We set the species tree to a good starting value.
+# This good starting value is obtained from the Maximum Tree method (Liu, 2006).
+# The same method is used in BEST to obtain a good starting species tree.
+recTree <- maximumTree(gene_trees)
+psi.setValue(recTree)
+root.setValue(recTree.rootAge())
+
+write("\t\tProposed starting species tree: ")
+write( psi)
+write("\t\tWith root age: " + root)
+
+
+
+###################
+# Gene-Tree model #
+###################
+
+
+# We assume independent effective population size parameters for each branch of the species tree.
+
+# We use a conjugate prior for effective population sizes.
+
+mean_Ne ~ dnGamma(shape=1.0,rate=1.0)
+moves[++mi] = mvScale(mean_Ne,1,true,2.0)
+
+shape <- 3.0
+rate := 2.0 * mean_Ne
+
+
+for (i in 1:num_loci) {
+
+   # We need to read in files providing the link between gene names and species names
+   taxon_map = readTaxonData("data/species_maps/primates_" + locus_names[i] + "_species_map.txt")
+
+   # The gene tree from the multispecies coalescent process
+   # Note that if Ne had been a vector of effective population sizes,
+   # allowing 1 parameter per branch of the species tree, the same line would work.
+   geneTree[i] ~ dnMultiSpeciesCoalescentInverseGamma(speciesTree=psi, shape=shape, rate=rate, taxa=taxon_map)
+   # We set a good starting value
+   geneTree[i].setValue(gene_trees[i])
+
+}
+
+
+###################
+# Moves on trees  #
+###################
+
+## General tree moves used on the species tree
+moves[++mi] = mvNarrow(psi, weight=5.0)
+moves[++mi] = mvNNI(psi, weight=1.0)
+moves[++mi] = mvFNPR(psi, weight=3.0)
+moves[++mi] = mvGPR(psi, weight=3.0)
+moves[++mi] = mvSubtreeScale(psi, weight=3.0)
+moves[++mi] = mvNodeTimeSlideUniform(psi, weight=5.0)
+
+## Joint species tree/gene tree moves
+move_species_narrow_exchange = mvSpeciesNarrow( speciesTree=psi, weight=20 )
+move_species_subtree_scale_beta = mvSpeciesSubtreeScaleBeta(psi, weight=5)
+move_species_subtree_scale = mvSpeciesSubtreeScale(psi, weight=5)
+
+## Moves that alter gene trees
+for (i in 1:num_loci) {
+
+    # moves on each gene tree
+    moves[++mi] = mvNNI(geneTree[i], 5.0)
+    moves[++mi] = mvNarrow(geneTree[i], 5.0)
+    moves[++mi] = mvFNPR(geneTree[i], 3.0)
+    moves[++mi] = mvGPR(geneTree[i], 2.0)
+    moves[++mi] = mvSubtreeScale(geneTree[i], 5.0)
+    moves[++mi] = mvTreeScale(geneTree[i], 1.0, true, 3.0)
+    moves[++mi] = mvNodeTimeSlideUniform(geneTree[i], 20.0)
+
+    # Associating the joint species tree/gene tree moves to each gene tree
+    move_species_narrow_exchange.addGeneTreeVariable( geneTree[i] )
+    move_species_subtree_scale_beta.addGeneTreeVariable( geneTree[i] )
+    move_species_subtree_scale.addGeneTreeVariable( geneTree[i] )
+
+}
+
+## We must not forget to include the joint moves into the vector of moves!
+moves[++mi] = move_species_narrow_exchange
+moves[++mi] = move_species_subtree_scale_beta
+moves[++mi] = move_species_subtree_scale
+
+###############
+# Clock Model #
+###############
+
+for ( i in 1:num_loci ) {
+   clock_rate[i] ~ dnExponential(1.0)
+   moves[++mi] = mvScale(clock_rate[i], weight=2.0)
+   moves[++mi] = mvSlide(clock_rate[i], weight=3.0)
+}
+
+
+######################
+# Substitution Model #
+######################
+
+
+for ( i in 1:num_loci ) {
+
+    #### specify the HKY substitution model applied uniformly to all sites ###
+    kappa[i] ~ dnLognormal(0,1)
+    moves[++mi] = mvScale(kappa[i],weight=1.0)
+    moves[++mi] = mvSlide(kappa[i], weight=1.0)
+
+    pi_prior[i] <- v(1,1,1,1)
+    pi[i] ~ dnDirichlet(pi_prior[i])
+    moves[++mi] = mvSimplexElementScale(pi[i],weight=2.0)
+
+    #### create a deterministic variable for the rate matrix ####
+    Q[i] := fnHKY(kappa[i],pi[i])
+
+}
+
+
+
+
+#############################
+# Among Site Rate Variation #
+#############################
+
+# We avoid this to save some computing time.
+
+#for ( i in 1:num_loci ) {
+#
+#    alpha_prior[i] <- 0.05
+#    alpha[i] ~ dnExponential( alpha_prior[i] )
+#    gamma_rates[i] := fnDiscretizeGamma( alpha[i], alpha[i], 4, false )
+#
+#    # add moves for the shape parameter
+#    moves[++mi] = mvScale(alpha[i],weight=2)
+#
+#}
+
+###################
+# PhyloCTMC Model #
+###################
+
+
+
+for ( i in 1:num_loci ) {
+    # the sequence evolution model
+    seq[i] ~ dnPhyloCTMC(tree=geneTree[i], Q=Q[i], branchRates=clock_rate[i], type="DNA")
+
+# if instead we were using rate heterogeneity across sites:
+#    seq[i] ~ dnPhyloCTMC(tree=geneTree[i], Q=Q[i], branchRates=clock_rate[i], siteRates=gamma_rates[i], type="DNA")
+
+    # attach the data
+    seq[i].clamp(data[i])
+}
+
+
+
+
+#############
+# THE Model #
+#############
+
+# We get a handle on our model.
+# We can use any node of our model as a handle, here we choose to use the topology.
+mymodel = model(psi)
+
+output_folder = "output_MSC_ConjugatePrior/"
+
+# Monitors to check the progression of the program
+monitors[1] = mnScreen(printgen=100, psi)
+monitors[2] = mnModel(filename=output_folder+"posterior_MSC_primates.log",printgen=10, separator = TAB)
+monitors[3] = mnFile(filename=output_folder+"posterior_MSC_primates.trees",printgen=10, separator = TAB, psi)
+for ( i in 1:num_loci ) {
+    # We add a monitor for each gene tree
+    monitors[i+3] = mnFile(filename=output_folder+"geneTrees/posterior_" + locus_names[i] + ".trees",printgen=10, separator = TAB, geneTree[i])
+}
+
+# Here we use a plain MCMC. You could also set nruns=2 for an analysis with 2 replicates,
+# or use mcmcmc with heated chains.
+mymcmc = mcmc(mymodel, monitors, moves, nruns=1)
+
+# Ideally one would run more MCMC samples.
+# In the interest of time it may be worth running the analysis under the prior.
+mymcmc.burnin(generations=1000,tuningInterval=50)#, underPrior=true)
+mymcmc.run(generations=3000)#, underPrior=true)
+
+mymcmc.operatorSummary()
+
+
+# Now, we will analyze the tree output.
+# Let us start by reading in the tree trace
+treetrace = readTreeTrace(output_folder+"posterior_MSC_primates.trees", treetype="clock")
+# and get the summary of the tree trace
+treetrace.summarize()
+
+mapTree(treetrace,output_folder+"posterior_MSC_primates_MAP.tree")
+
+# you may want to quit RevBayes now
+q()
