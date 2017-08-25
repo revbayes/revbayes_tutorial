@@ -71,7 +71,16 @@ On your own computer or your remote machine, create a directory called {\textcol
 
 \end{framed}}
 
-In this tutorial we will be simulating our own data using RevBayes. Explain how to simulate data in Rev. 
+In this tutorial we will be simulating our own data using \RevBayes. Explain how to simulate data in Rev. We will be simulating data. Let's assume from the above archery example that our archer's true ability has their arrows landing with a mean of 0 and a variance of 1. Let's say they shoot six arrows. We do this in \RevBayes like this:
+
+ {\tt \begin{snugshade*}
+\begin{lstlisting}
+num_arrows <- 6
+mu <- 0.0
+var <- 1
+\end{lstlisting}
+\end{snugshade*}}
+
 
 
 \bigskip
@@ -81,7 +90,82 @@ Explain what MCMC does here.
 
 \subsubsection{Metropolis-Hastings algorithm}
 
-Go through outline of algorithm steps. explain proposal distributions. Then go into a step-by-step on how to write a MH-algorithm in Rev. First write the functions for the likelihood and the prior. Set the number of iterations, draw intitial values for prior. And then write the for loop defining the algorithm itself. 
+Go through outline of algorithm steps. explain proposal distributions. Then go into a step-by-step on how to write a MH-algorithm in Rev. First write the functions for the likelihood and the prior. 
+
+Likelihood function:
+
+ {\tt \begin{snugshade*}
+\begin{lstlisting}
+function Real likelihood(mu, sigma){
+	nu = 0
+	for(i in 1:num_arrows){
+		nu += (arrows[i] - mu)^2 
+	}
+	nu = nu / num_arrows
+	l = (sigma^2)^(-num_arrows/2) * exp(-(num_arrows / (2 * sigma^2)) * (nu))
+	return l
+}
+\end{lstlisting}
+\end{snugshade*}}
+
+Prior function: 
+
+{\tt \begin{snugshade*}
+ \begin{lstlisting}
+function RealPos priorVar(v_prime){
+	pv_inv = dgamma(v, alpha, beta, log=false)
+	pv = 1 / pv_inv # we would like inv gamma distribution
+	return pv
+}
+\end{lstlisting}
+\end{snugshade*}}
+
+
+
+Set the number of iterations, draw intitial values for prior. And then write the for loop defining the algorithm itself. 
+Draw an initial value for our prior:
+
+{\tt \begin{snugshade*}
+ \begin{lstlisting}
+alpha <- 1
+beta <- 1
+
+v <- 1 / rgamma(1, a, b)[1]
+\end{lstlisting}
+\end{snugshade*}}
+
+Set number of iterations of our MCMC and setup writing our ouput:
+
+{\tt \begin{snugshade*}
+ \begin{lstlisting}
+niter = 10000
+write("iteration","p","\n",file="archery_MH.log")
+write(0,v,"\n",file="archery_MH.log",append=TRUE)
+\end{lstlisting}
+\end{snugshade*}}
+
+
+Metropolis Hastings Algorithm:
+
+{\tt \begin{snugshade*}
+ \begin{lstlisting}
+for(i in 1:niter){
+	v_prime <- rnorm(n=1, v, 1.0)[1]
+	if(v_prime < 0){
+		v_prime <- abs(v_prime)
+	}
+	R <- (likelihood(mu, v_prime) / likelihood(mu, v)) * ( priorVar(v_prime) / priorVar(v))
+	u <- runif(1,0,1)[1]
+	if(u < R){
+		v <- v_prime
+	}
+
+	write(rep,v,"\n",file="archery_MH.log",append=TRUE)
+}
+\end{lstlisting}
+\end{snugshade*}}
+
+
 
 %TODO Stuff about how to start or Rev basics?
 
@@ -103,10 +187,13 @@ Go through outline of algorithm steps. explain proposal distributions. Then go i
 
 \bigskip
 
+\section{Exercises}
+
 \subsection{Using different priors}
 
-What happens when we change our priors. Why would we want to do that? What exactly are priors? Should explain these things here. Running under the prior will be explained here. 
+Suppose we know little about the variance of some archer. In that case, we have little prior belief and a very flat prior might be a good choice. Our conjugate prior is convenient here as the Inverse-Gamma distribution is relatively flat when $\alpha = \beta$ are very small. Estimate the posterior density with alpha and beta as very small values (perhaps try 0.001). compare with your previous posterior distribution.
 
+Another flat distribution may be more obvious (the uniform) try this one as well. What are some limitations to the Uniform? 
 
 \subsection{Defining different MCMC moves}
 

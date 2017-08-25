@@ -6,8 +6,51 @@
 
 
 # Simulate some data (i.e. shoot some arrows)
+# First we need some prior on our mean and variance
+num_arrows <- 6 # number of arrows shot
+# prior mean on how far the arrows will land from the target
+mu <- 0.0
+# prior variance 
+alpha <- 1
+beta <- 1 
+true_var <- 1
+# simulate some data
+arrows <- rnormal(num_arrows, mu, true_var)
 
-arrows <- rnorm(100, 0, 1)
+v <- 1 / rgamma(1, alpha, beta)[1]
 
+# define the prior function on the variance 
+function RealPos priorVar(v_prime){
+	pv_inv = dgamma(v, alpha, beta, log=false)
+	pv = 1 / pv_inv # we would like inv gamma distribution
+	return pv
+}
 
+function Real likelihood(mu, sigma){
+	nu = 0
+	for(i in 1:num_arrows){
+		nu += (arrows[i] - mu)^2 
+	}
+	nu = nu / num_arrows
+	l = (sigma^2)^(-num_arrows/2) * exp(-(num_arrows / (2 * sigma^2)) * (nu))
+	return l
+}
 
+write("iteration","p","\n",file="archery_MH.log")
+write(0,v,"\n",file="archery_MH.log",append=TRUE)
+
+reps = 1000
+
+for(rep in 1:reps){
+	v_prime <- rnorm(n=1, v, 1.0)[1]
+	if(v_prime < 0){
+		v_prime <- abs(v_prime)
+	}
+	R <- (likelihood(mu, v_prime) / likelihood(mu, v)) * ( priorVar(v_prime) / priorVar(v))
+	u <- runif(1,0,1)[1]
+	if(u < R){
+		v <- v_prime
+	}
+
+	write(rep,v,"\n",file="archery_MH.log",append=TRUE)
+}
