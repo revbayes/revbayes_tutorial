@@ -17,22 +17,20 @@ true_var <- 1
 # simulate some data
 arrows <- rnormal(num_arrows, mu, true_var)
 
-v <- 1 / rgamma(1, alpha, beta)[1]
+v <- 1 / rgamma(1, alpha, beta)[1] # this is the precision really
 
 # define the prior function on the variance 
 function RealPos priorVar(v_prime){
-	pv_inv = dgamma(v, alpha, beta, log=false)
-	pv = 1 / pv_inv # we would like inv gamma distribution
-	return pv
+	pv_inv = 1 / dgamma(v, alpha, beta, log=false)
+	return pv_inv
 }
 
-function Real likelihood(mu, sigma){
+function RealPos likelihood(v){
 	nu = 0
 	for(i in 1:num_arrows){
-		nu += (arrows[i] - mu)^2 
+		nu += (arrows[i] - mu)^2
 	}
-	nu = nu / num_arrows
-	l = (sigma^2)^(-num_arrows/2) * exp(-(num_arrows / (2 * sigma^2)) * (nu))
+	l = 1 / dgamma(v, (num_arrows + 2*alpha) / 2, (num_arrows + 2*beta) / 2)
 	return l
 }
 
@@ -41,4 +39,12 @@ write(0,v,"\n",file="archery_MH.log",append=TRUE)
 
 reps = 1000
 
-for(rep in 1:reps){v_prime <- rnorm(n=1, v, 1.0)[1] if(v_prime < 0){v_prime <- abs(v_prime) } R <- (likelihood(mu, v_prime) / likelihood(mu, v)) * ( priorVar(v_prime) / priorVar(v)) u <- runif(1,0,1)[1] if(u < R){v <- v_prime } write(rep,v,"\n",file="archery_MH.log",append=TRUE) }
+for(rep in 1:reps){
+	v_prime <- rexp(n=1, 1.0)[1] 
+	R <- (likelihood(v_prime) / likelihood(v)) * ( priorVar(v_prime) / priorVar(v)) 
+	u <- runif(1,0,1)[1] 
+	if(u < R){
+		v <- v_prime 
+	} 
+	write(rep,v,"\n",file="archery_MH.log",append=TRUE) 
+}

@@ -96,15 +96,15 @@ Likelihood function:
 
  {\tt \begin{snugshade*}
 \begin{lstlisting}
-function Real likelihood(mu, sigma){
+function RealPos likelihood(v){
 	nu = 0
 	for(i in 1:num_arrows){
-		nu += (arrows[i] - mu)^2 
+		nu += (arrows[i] - mu)^2
 	}
-	nu = nu / num_arrows
-	l = (sigma^2)^(-num_arrows/2) * exp(-(num_arrows / (2 * sigma^2)) * (nu))
+	l = 1 / dgamma(v, (num_arrows + 2*alpha) / 2, (num_arrows + 2*beta) / 2)
 	return l
 }
+
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -150,11 +150,9 @@ Metropolis Hastings Algorithm:
 {\tt \begin{snugshade*}
  \begin{lstlisting}
 for(i in 1:niter){
-	v_prime <- rnorm(n=1, v, 1.0)[1]
-	if(v_prime < 0){
-		v_prime <- abs(v_prime)
-	}
-	R <- (likelihood(mu, v_prime) / likelihood(mu, v)) * ( priorVar(v_prime) / priorVar(v))
+	v_prime <- rexp(n=1, 1.0)[1]
+    
+	R <- (likelihood(v_prime) / likelihood(v)) * ( priorVar(v_prime) / priorVar(v))
 	u <- runif(1,0,1)[1]
 	if(u < R){
 		v <- v_prime
