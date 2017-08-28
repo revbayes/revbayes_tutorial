@@ -1015,7 +1015,7 @@ The MCMC object that we named \cl{mymcmc} has a member method called \cl{.run()}
 This will execute our analysis and we will set the chain length to \cl{10000} cycles using the \cl{generations} option.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-mymcmc.run(generations=10000)
+mymcmc.run(generations=10000,tuningInterval=0)
 \end{lstlisting}
 \end{snugshade*}}
 
