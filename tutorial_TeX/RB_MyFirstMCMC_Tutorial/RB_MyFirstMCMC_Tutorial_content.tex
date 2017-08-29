@@ -78,6 +78,9 @@ In this tutorial we will be simulating our own data using \RevBayes. Explain how
 num_arrows <- 6
 mu <- 0.0
 var <- 1
+
+arrows <- rnormal(num_arrows, mu, true_var)
+
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -88,7 +91,7 @@ var <- 1
 
 Explain what MCMC does here.
 
-\subsubsection{Metropolis-Hastings algorithm}
+\subsubsection{Metropolis-Hastings algorithm by hand}
 
 Go through outline of algorithm steps. explain proposal distributions. Then go into a step-by-step on how to write a MH-algorithm in Rev. First write the functions for the likelihood and the prior. 
 
@@ -150,7 +153,7 @@ Metropolis Hastings Algorithm:
 {\tt \begin{snugshade*}
  \begin{lstlisting}
 for(i in 1:niter){
-	v_prime <- rexp(n=1, 1.0)[1]
+	v_prime <- runif(n=1, 0, 10.0)[1]
     
 	R <- (likelihood(v_prime) / likelihood(v)) * ( priorVar(v_prime) / priorVar(v))
 	u <- runif(1,0,1)[1]
@@ -163,6 +166,97 @@ for(i in 1:niter){
 \end{lstlisting}
 \end{snugshade*}}
 
+
+Here we used a uniform move. 
+
+\subsubsection{Metropolis-Hastings using \RevBayes}
+
+Now imagine a new archer arrives on the range and we have no prior belief about what the mean of the distribution of their shots would be, or about the variance of that distribution. Now we need a prior on both the mean and the variance. First, we need to simulate data. Let's say that the new archer is a beginner who tends to shoot to the right of target and with quite high variance:
+
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+num_arrows <- 6
+true_mu <- 1.5
+true_var <- 2.0
+
+arrows <- rnormal(num_arrows, true_mu, true_var)
+\end{lstlisting}
+\end{snugshade*}}
+
+Now that we have data we can precede once again with setting up our model. However, this time we will use the builtin RevBayes tools. Here we use a stochastic node to put a gamma distribution on our precision and then use a deterministic node to transform the precision into variance:
+
+{\tt \begin{snugshade*}
+ \begin{lstlisting}
+alpha <- 1
+beta <- 1
+p ~ dnGamma(alpha, beta)
+v := 1 / p
+\end{lstlisting}
+\end{snugshade*}}
+
+Now for convience sake let's assume that the mean (conditional on our variance) follows a normal distribution similar to our data model now this prior has one parameters we need to specify, the prior mean, which we will set to 0 for simplicity, again we use a stochastic node to draw the mean from a normal distribution:
+
+{\tt \begin{snugshade*}
+ \begin{lstlisting}
+ 
+c = 0
+ 
+mu ~ dnNormal(c, v)
+\end{lstlisting}
+\end{snugshade*}}
+
+Now set the data model and then clamp the data to that node.
+
+{\tt \begin{snugshade*}
+ \begin{lstlisting}
+a ~ dnNormal(mu, v)
+
+a.clamp(arrows)
+\end{lstlisting}
+\end{snugshade*}}
+
+Now we construct our model:
+
+{\tt \begin{snugshade*}
+ \begin{lstlisting}
+my_model = model(a)
+\end{lstlisting}
+\end{snugshade*}}
+
+
+We still need to define moves on our parameters. Ensure that you place the move on the stochastic nodes only. Moves cannot be performed on deterministic or clamped nodes. Here we will use what is called a sliding moves (explain what that is) on the mean, $\mu$, and the precision. The weights here represent how often these moves are performed on average per iteration of our MCMC so this case each move is done on average 0.5 times per iteration. 
+
+
+{\tt \begin{snugshade*}
+ \begin{lstlisting}
+ moves[1] = mvSlide(mu, delta = 0.1, weight = 2)
+ moves[2] = mvSlide(p, delta = 0.1, weight = 2)
+ \end{lstlisting}
+\end{snugshade*}}
+
+
+Monitors to keep trach of our MCMC
+{\tt \begin{snugshade*}
+ \begin{lstlisting}
+monitors[1] = mnModel(filename = "archery_2params_MCMC.log", printgen = 10, separator = TAB)
+monitors[2] = mnScreen(printgen = 100, mu)
+ \end{lstlisting}
+\end{snugshade*}}
+
+Finally, assemble our mcmc analysis and run it.
+
+{\tt \begin{snugshade*}
+ \begin{lstlisting}
+mymcmc = mcmc(my_model, monitors, moves)
+
+mymcmc.run(100000, tuningInterval = 0)
+
+
+mymcmc.operatorSummary()
+ \end{lstlisting}
+\end{snugshade*}}
+
+Now try adding a burnin
 
 
 %TODO Stuff about how to start or Rev basics?
@@ -193,9 +287,11 @@ Suppose we know little about the variance of some archer. In that case, we have 
 
 Another flat distribution may be more obvious (the uniform) try this one as well. What are some limitations to the Uniform? 
 
+
+
 \subsection{Defining different MCMC moves}
 
-Previously, we had been using random draws from (whatever) distribution for the prior. There are lots of possibilities for doing this. We can test how efficient these moves are at sampling our target distributions. Some are far more efficient than others. Code up all of the moves in RevBayes.
+Previously, we had been using random draws from (whatever) distribution for the prior. There are lots of possibilities for doing this. We can test how efficient these moves are at sampling our target distributions. Some are far more efficient than others. Code up all of the moves in \RevBayes.
 
 \subsubsection{Random draw}
 introduce weights here. (maybe have an aside explaining using a 2 parameter model?)
@@ -205,7 +301,10 @@ Explain about $\delta$ (the tuning parameter). What values are good/bad for this
 \subsubsection{Scaling move}
 Similarly, explain the tuning parameter for this move. Also, this move is asymmetric so explain more about the calculation of the Hastings ratio. 
 
-Compare the three different moves in tracer.
+Compare the three different moves in your two parameter model in tracer. Questions include: is one move better than the other according to ESS? what happens when the tuning parameter is set very high? very low? why does this happen? 
+
+
+After show the autotuning option in \RevBayes
 %\subsection{Creating \Rev Files}\label{subsect:Exercise-CreatingFiles}
 %
 %{\begin{framed}

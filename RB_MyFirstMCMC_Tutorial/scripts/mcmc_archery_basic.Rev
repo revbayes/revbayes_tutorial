@@ -21,7 +21,7 @@ v <- 1 / rgamma(1, alpha, beta)[1] # this is the precision really
 
 # define the prior function on the variance 
 function RealPos priorVar(v_prime){
-	pv_inv = 1 / dgamma(v, alpha, beta, log=false)
+	pv_inv = 1 / dgamma(v_prime, alpha, beta, log=false)
 	return pv_inv
 }
 
@@ -37,10 +37,13 @@ function RealPos likelihood(v){
 write("iteration","p","\n",file="archery_MH.log")
 write(0,v,"\n",file="archery_MH.log",append=TRUE)
 
+
 reps = 1000
 
 for(rep in 1:reps){
-	v_prime <- rexp(n=1, 1.0)[1] 
+
+	v_prime <- runif(n=1, 0, 10)[1] 
+
 	R <- (likelihood(v_prime) / likelihood(v)) * ( priorVar(v_prime) / priorVar(v)) 
 	u <- runif(1,0,1)[1] 
 	if(u < R){
@@ -48,3 +51,8 @@ for(rep in 1:reps){
 	} 
 	write(rep,v,"\n",file="archery_MH.log",append=TRUE) 
 }
+
+
+
+
+
