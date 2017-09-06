@@ -51,6 +51,7 @@ write(file=outfileName,
 write(file=outfileName, "\n", append=TRUE) 
 
 
+#num_post_sims = 10
 ################### calculate the pps stats here #########################
 
 ## Iterate through all of the posterior tree files from the simulation analyses
@@ -214,7 +215,7 @@ write(file=outfileName, sep=",", append=FALSE,
       "Segregating-Sites")
 write("\n", file=outfileName, append=TRUE)
 
-d = readDiscreteCharacterData(in_file)
+d = readDiscreteCharacterData("data_sim_8/" + analysis_name + ".nexus")
 
 num_inv         = d.getNumInvariantSites( excludeAmbiguous=FALSE )
 num_inv_amb     = d.getNumInvariantSites( excludeAmbiguous=TRUE )

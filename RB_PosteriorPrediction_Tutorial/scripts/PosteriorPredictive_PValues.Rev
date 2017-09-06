@@ -7,7 +7,7 @@
 #
 ################################################################################
 
-statID = v("", "Number Invariant Sites", "Number Invariant Sites Excluding Ambiguous", "Max GC", "Max GC Excluding Ambiguous", "Max Invariant Block Length", "Max Invariant Block Length Excluding Ambiguous", "Max Pairwise Difference", "Max Pairwise Difference Excluding Ambiguous", "Max Variable Block Length", "Max Variable Block Length Excluding Ambiguous", "Min GC", "Min GC Excluding Ambiguous", "Min Pairwise Difference", "Min Pairwise Difference Excluding Ambiguous", "Number Invariable Block", "Number Invariable Block Excluding Ambiguous", "Mean GC", "Mean GC Excluding Ambiguous", "Mean GC 1", "Mean GC 1 Excluding Ambiguous", "Mean GC 2", "Mean GC 2 Excluding Ambiguous", "Mean GC 3", "Mean GC 3 Excluding Ambiguous", "Var GC", "Var GC Excluding Ambiguous", "Var GC 1", "Var GC 1 Excluding Ambiguous", "Var GC 2", "Var GC 2 Excluding Ambiguous", "Var GC 3", "Var GC 3 Excluding Ambiguous", "Theta", "Tajima-D", "Tajima-Pi", "Segregating-Sites", "Multinomial-Likelihood")
+
 
 ################### start of effect size calculations ########################
 
