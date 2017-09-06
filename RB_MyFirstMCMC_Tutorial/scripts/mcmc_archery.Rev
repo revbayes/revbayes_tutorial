@@ -1,50 +1,67 @@
+#####################################################################
+#    MCMC archery example tutorial using Rev moves and monitors     #
+#          Wade Dismukes, Walker Pett, and Tracy Heath              #
+#####################################################################
+
+
 # Simulate some data (i.e. shoot some arrows)
-# First we need some prior on our mean and variance
-num_arrows <- 6 # number of arrows shot
+# First we need some set value for our mean and variance
+num_arrows = 6 # number of arrows shot
 # set a known mean on how far the arrows will land from the target
-true_mu <- 0.0
+true_mu = 0.0
 # set a known variance (we are going to estimate this)
-true_var <- 1
+true_sd = 1
 # simulate some data
-arrows <- rnormal(num_arrows, true_mu, true_var)
-
-# specify a prior on our variance
-a <- 1
-b <- 1
-# precision follows a gamma distribution, this is a random variable so it is a stochastic node
-p ~ dnGamma(a,b) 
-# transform our precision into variance using a deterministic node
-v := 1 / p
+arrows = rnormal(num_arrows, true_mu, true_sd, min = 0.0, max = 300)
 
 
-c = 0.0
+
+# specify a prior on our precision 
+a <- 0.001
+b <- 0.001
+# precision follows a gamma distribution, 
+# this is a random variable so it is a stochastic node
+precision ~ dnGamma(a,b) 
+
+# transform our precision into sd using a deterministic node,
+# takes sqrt and the inverse of the precision
+sd := sqrt(1 / precision)
+
+moves[1] = mvSlide(precision, delta = 0.1, tune = true, weight = 2.0)
+
+
+prior_mean <- 0.0
 # prior on the mean
-mu[1] ~ dnNormal(c, v)
+mu ~ dnNormal(prior_mean, sd, min = 0, max = 300)
 
 # define moves on our parameters
-moves[1] = mvSlide(p, delta = 0.1, tune = false, weight = 2.0)
-moves[2] = mvSlide(mu, delta = 0.1, tune = false, weight = 2.0)
+moves[2] = mvSlide(mu, delta = 0.1, tune = true, weight = 2.0)
+
 
 # specify our data model (i.e. the likelihood)
-a ~ dnMultivariateNormal(mu, v)
-a.clamp(arrows)
+for(i in 1:num_arrows){
+	ar[i] ~ dnNormal(mu, sd, min = 0, max = 300)
+	ar[i].clamp(arrows[i])
+}
 
 # construct our model graph
 my_model = model(a)
 
 
 # make some monitors to keep track of the MCMC
-monitors[1] = mnModel(filename = "archery_MCMC.log", printgen = 10, separator = TAB)
-monitors[2] = mnScreen(printgen = 1000, v)
+monitors[1] = mnModel(filename = "output/archery_MCMC.log", 
+						printgen = 10, 
+						separator = TAB)
+
+monitors[2] = mnScreen(printgen = 1000, sd)
 
 # make mcmc object
 mymcmc = mcmc(my_model, monitors, moves)
 
 # run our mcmc
-# mymcmc.burnin(generations = 10000, tuningInterval = 0)
+# mymcmc.burnin(generations = 10000, tuningInterval = 100)
 mymcmc.run(100000, tuningInterval = 0)
 
 # how well did our move perform
 mymcmc.operatorSummary()
 
-q()

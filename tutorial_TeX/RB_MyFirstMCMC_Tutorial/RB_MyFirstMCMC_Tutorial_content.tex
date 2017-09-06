@@ -75,11 +75,11 @@ In this tutorial we will be simulating our own data using \RevBayes. Explain how
 
  {\tt \begin{snugshade*}
 \begin{lstlisting}
-num_arrows <- 6
-mu <- 0.0
-var <- 1
+num_arrows = 6
+true_mu = 0.0
+true_var = 1
 
-arrows <- rnormal(num_arrows, mu, true_var)
+arrows = rnormal(num_arrows, true_mu, true_var)
 
 \end{lstlisting}
 \end{snugshade*}}
@@ -99,15 +99,13 @@ Likelihood function:
 
  {\tt \begin{snugshade*}
 \begin{lstlisting}
-function RealPos likelihood(v){
-	nu = 0
+function Probability logLikelihood(mu_prime){
+	likelihood_mean = 0.0
 	for(i in 1:num_arrows){
-		nu += (arrows[i] - mu)^2
+		likelihood_mean += dnormal(arrows[i], mu_prime, sd, min = 0, max = 400, log=true)
 	}
-	l = 1 / dgamma(v, (num_arrows + 2*alpha) / 2, (num_arrows + 2*beta) / 2)
-	return l
+	return likelihood_mean
 }
-
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -115,25 +113,21 @@ Prior function:
 
 {\tt \begin{snugshade*}
  \begin{lstlisting}
-function RealPos priorVar(v_prime){
-	pv_inv = dgamma(v, alpha, beta, log=false)
-	pv = 1 / pv_inv # we would like inv gamma distribution
-	return pv
+function Probability logPriorMean(mu_prime){
+	prior_mean = dnormal(mu_prime, prior_mu, sd, min = 0.0, max = 400.0, log=true)
+	return prior_mean
 }
 \end{lstlisting}
 \end{snugshade*}}
 
 
 
-Set the number of iterations, draw intitial values for prior. And then write the for loop defining the algorithm itself. 
-Draw an initial value for our prior:
+Draw an initial value for our mean from the prior distribution:
 
 {\tt \begin{snugshade*}
  \begin{lstlisting}
-alpha <- 1
-beta <- 1
-
-v <- 1 / rgamma(1, a, b)[1]
+stdev = 1
+mu <- rnorm(1, mean = 1, stdev, min = 0.0, max= 400)
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -143,7 +137,7 @@ Set number of iterations of our MCMC and setup writing our output:
  \begin{lstlisting}
 niter = 10000
 write("iteration","p","\n",file="archery_MH.log")
-write(0,v,"\n",file="archery_MH.log",append=TRUE)
+write(0,v,"\n",file="output/archery_MH.log",append=TRUE)
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -152,22 +146,24 @@ Metropolis Hastings Algorithm:
 
 {\tt \begin{snugshade*}
  \begin{lstlisting}
-for(i in 1:niter){
-	v_prime <- runif(n=1, 0, 10.0)[1]
-    
-	R <- (likelihood(v_prime) / likelihood(v)) * ( priorVar(v_prime) / priorVar(v))
-	u <- runif(1,0,1)[1]
-	if(u < R){
-		v <- v_prime
-	}
+for(rep in 1:reps){
 
-	write(rep,v,"\n",file="archery_MH.log",append=TRUE)
-}
+	mu_prime = mu + rnormal(n=1, 0.0, delta, min = -mu, max = mu)[1] 
+
+	R = (logLikelihood(mu_prime) - logLikelihood(mu)) + ( logPriorMean(mu_prime) - logPriorMean(mu)) 
+	u = runif(1,0,1)[1] 
+	if(ln(u) < R){
+		# accept proposal
+		mu = mu_prime 
+	} 
+
+	write(rep,mu, "\n", file="output/archery_MH.log", append=TRUE) 
+} 
 \end{lstlisting}
 \end{snugshade*}}
 
 
-Here we used a uniform move. 
+Here we used a sliding move. 
 
 \subsubsection{Metropolis-Hastings using \RevBayes}
 
@@ -175,11 +171,11 @@ Now imagine a new archer arrives on the range and we have no prior belief about 
 
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-num_arrows <- 6
-true_mu <- 1.5
-true_var <- 2.0
+num_arrows = 6     # number of arrows shot
+true_mu <- 1.5     # true mean
+true_var <- 2.0     # true variance
 
-arrows <- rnormal(num_arrows, true_mu, true_var)
+arrows = rnormal(num_arrows, true_mu, true_sd, min = 0.0, max = 300)
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -189,8 +185,10 @@ Now that we have data we can precede once again with setting up our model. Howev
  \begin{lstlisting}
 alpha <- 1
 beta <- 1
-p ~ dnGamma(alpha, beta)
-v := 1 / p
+precision ~ dnGamma(a,b) 
+sd := sqrt(1 / precision)
+
+moves[1] = mvSlide(precision, delta = 0.1, tune = false, weight = 2.0)
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -199,9 +197,12 @@ Now for convience sake let's assume that the mean (conditional on our variance) 
 {\tt \begin{snugshade*}
  \begin{lstlisting}
  
-c = 0
- 
-mu ~ dnNormal(c, v)
+prior_mean <- 0.0     # mean for the prior distribution
+# prior distribution 
+mu ~ dnNormal(prior_mean, sd, min = 0, max = 300)
+
+# move for our mu
+moves[2] = mvSlide(mu, delta = 0.1, tune = false, weight = 2.0)
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -209,9 +210,11 @@ Now set the data model and then clamp the data to that node.
 
 {\tt \begin{snugshade*}
  \begin{lstlisting}
-a ~ dnNormal(mu, v)
-
-a.clamp(arrows)
+# specify our data model and clamp the data to it
+for(i in 1:num_arrows){
+	ar[i] ~ dnNormal(mu, sd, min = 0, max = 300)
+	ar[i].clamp(arrows[i])
+}
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -227,19 +230,12 @@ my_model = model(a)
 We still need to define moves on our parameters. Ensure that you place the move on the stochastic nodes only. Moves cannot be performed on deterministic or clamped nodes. Here we will use what is called a sliding moves (explain what that is) on the mean, $\mu$, and the precision. The weights here represent how often these moves are performed on average per iteration of our MCMC so this case each move is done on average 0.5 times per iteration. 
 
 
-{\tt \begin{snugshade*}
-\begin{lstlisting}
-moves[1] = mvSlide(mu, delta = 0.1, weight = 2)
-moves[2] = mvSlide(p, delta = 0.1, weight = 2)
-\end{lstlisting}
-\end{snugshade*}}
-
-
 Monitors to keep trach of our MCMC
 {\tt \begin{snugshade*}
  \begin{lstlisting}
-monitors[1] = mnModel(filename = "archery_2params_MCMC.log", printgen = 10, separator = TAB)
-monitors[2] = mnScreen(printgen = 100, mu)
+monitors[1] = mnModel(filename = "output/archery_MCMC.log", printgen = 10, separator = TAB)
+monitors[2] = mnScreen(printgen = 1000, sd)
+
  \end{lstlisting}
 \end{snugshade*}}
 
@@ -255,8 +251,6 @@ mymcmc.run(100000, tuningInterval = 0)
 mymcmc.operatorSummary()
  \end{lstlisting}
 \end{snugshade*}}
-
-Now try adding a burnin
 
 
 %TODO Stuff about how to start or Rev basics?
@@ -285,9 +279,26 @@ Now try adding a burnin
 
 Suppose we know little about the variance of some archer. In that case, we have little prior belief and a very flat prior might be a good choice. Our conjugate prior is convenient here as the Inverse-Gamma distribution is relatively flat when $\alpha = \beta$ are very small. Estimate the posterior density with alpha and beta as very small values (perhaps try 0.001). compare with your previous posterior distribution.
 
-Another flat distribution may be more obvious (the uniform) try this one as well. What are some limitations to the Uniform? 
+The result is not great! Perhaps collecting more data will help, try changing the number of arrows to a larger number (say 100). This still results in a bad estimate this is due to these reasons. Typically when doing MCMC we perform whats called a burn-in where we do some amount of steps and then discard them before continuing. Add this line to the end of your analysis:
 
+{\tt \begin{snugshade*}
+ \begin{lstlisting}
+mymcmc.burnin(generations = 10000, tuningInterval = 0)
+ \end{lstlisting}
+\end{snugshade*}}
 
+A little better but still not even close to our true value. In the previous problems all of our moves had a $\delta$ that we set to some value. Perhaps the step-size is not ideal. This is where the tuning interval and tune options in our MCMC commands  and move specifications come in. \RevBayes will tune the $\delta$'s for these moves to their optimal values if we replace the relevant lines with the following:
+
+{\tt \begin{snugshade*}
+ \begin{lstlisting}
+moves[1] = mvSlide(precision, delta = 0.1, tune = true, weight = 2.0)
+moves[2] = mvSlide(mu, delta = 0.1, tune = true, weight = 2.0)
+ 
+mymcmc.burnin(generations = 10000, tuningInterval = 100)
+ \end{lstlisting}
+\end{snugshade*}}
+
+Finally, we arrive at a good estimate of the standard deviation of our distribution. It may have been simpler to use a more well-behaved distribution (see box). Add box about different priors for the standard deviation (e.g. uniform(0,C), Half-Cauchy(0,1))
 
 \subsection{Defining different MCMC moves}
 
