@@ -36,7 +36,22 @@ Good options include \href{http://www.sublimetext.com/}{\tt Sublime Text} or \hr
 \newpage
 \section{Modeling an archer's shots on a target}\label{sect:Exercise}
 
-Introduction to problem. Include within here the distribution the shots are fired under and the first prior distribution. Might be worth showing some similar figures to the ones in Paul's Woods Hole powerpoint here to illustrate points. Also would be a a place to explain the idea of a conjugate prior and why they are useful. 
+Suppose you are interested in estimating the distribution of an archer's shots on a target. For simplicity we will assume that these $n$ shots are all taken from 10 meters away from the target by the same experienced archer. One way that we could do this is to measure how far each arrow lands from the bullseye. Let's assume that these distances follow a truncated normal distribution with some mean, $\mu$, and some standard deviation, $\sigma$, and a minimum of $0$ meters, and a maximum of $300$ meters. For Bayesian inference it is often more convinient to reparameterize the standard deviation as $\tau = \frac{1}{\sigma^2}$. The following represents the data model for $n$ arrows shot where $a$ is a data point and $\Phi$ is the cumulative distribution function of the standard normal distribution:
+\[ p(a_i | \mu, \tau, 0, 300) = \prod_{i=1}^{n} \frac{\frac{\sqrt{\tau}}{\sqrt{2\pi}} exp\left(-\frac{1}{2}\tau(a_i - \mu)^2\right)}{(\Phi(300) - \Phi(0))} \]
+
+Now suppose we don't know what the mean is, but we do know the standard deviation for simplicity. Now we need to place a prior on the mean that describes our uncertainty about the mean. For now let's use another truncated normal distribution and so our prior becomes:
+\[ p(\mu | \mu_0, \sigma_0, 0, 300) = \frac{\frac{\sqrt{\tau_0}}{\sqrt{2\pi}}exp\left(-\frac{1}{2}\tau_0(\mu - \mu_0)^2\right)}{(\Phi(300) - \Phi(0))} \]
+where $\mu_0$ and $\sigma_0$ are set by the scientist. The values of these should reflect one's belief about the parameter that the prior distribution distribution. For example, if we were very confident then we would set both $\mu_0$ and $\sigma_0$ to a small numbers. Intuitively, it may be useful to think of the $\mu_0$ as your guess about the parameter and $\sigma_0$ as your confidence in that guess. Using Bayes' Rule we can then derive the posterior: 
+
+\[ p(\mu | y, \sigma) = \frac{\frac{\sqrt{\tau_n}}{\sqrt{2\pi}}exp\left(-\frac{1}{2}\tau_n(\mu - \mu_n)^2\right)}{ (\Phi(300) - \Phi(0))} \]
+
+with
+\[ \mu_n = \tau_n^{-1} (n\tau \bar{a} + \sigma_0 \mu_0) \]
+   \[\tau_n = \tau_0 + n\tau \]
+   \[\bar{a} = \frac{1}{n}\sum_{i=1}^{n} x_i\]
+
+As you can see the posterior distribution has the same distribution family as the prior. When this happens the prior is called the conjugate prior distribution. In addition, the normal prior for this model has a very nice property that its posterior precision is the sum of the prior mean and the data mean, and the posterior mean is the precision weighted average of the prior mean and the data mean.
+
 
 \medskip
 \subsection{Tutorial Format}\label{subsect:Exercise-Format}
@@ -97,7 +112,7 @@ Go through outline of algorithm steps. explain proposal distributions. Then go i
 
 Likelihood function:
 
- {\tt \begin{snugshade*}
+{\tt \begin{snugshade*}
 \begin{lstlisting}
 function Probability logLikelihood(mu_prime){
 	likelihood_mean = 0.0
@@ -300,22 +315,21 @@ mymcmc.burnin(generations = 10000, tuningInterval = 100)
 
 Finally, we arrive at a good estimate of the standard deviation of our distribution. It may have been simpler to use a more well-behaved distribution (see box). Add box about different priors for the standard deviation (e.g. uniform(0,C), Half-Cauchy(0,1))
 
-\subsection{Defining different MCMC moves}
+\subsection{Using different moves}
 
-Previously, we had been using random draws from (whatever) distribution for the prior. There are lots of possibilities for doing this. We can test how efficient these moves are at sampling our target distributions. Some are far more efficient than others. Code up all of the moves in \RevBayes.
+So far we have introduced just one move, the sliding move, which takes the current parameter being estimated and adds a uniformly-distributed random variable to that. The width of this uniform distribution is determined by the $\delta$ parameter that is set in the move and that the autotune option optimized. Explain about mirror moves, and Depending on the parameter and the model the ability of a move to effectively sample a posterior distribution varies. Fortunately, \RevBayes comes with many possible moves. For example, we could try placing a scaling move on the precision. Explanation of the scaling move goes here. Note that this move cannot propose a negative number that must be either transformed into the support of the paramter (which is automatically performed in RevBayes) or automatically rejected. This means that the scaling move is more efficient computationally. To use this move in \RevBayes change the sliding move on the precision.
 
-\subsubsection{Random draw}
-introduce weights here. (maybe have an aside explaining using a 2 parameter model?)
-\subsubsection{Sliding move}
-Explain about $\delta$ (the tuning parameter). What values are good/bad for this? Explain about how to tune and the purpose of it.
+{\tt \begin{snugshade*}
+ \begin{lstlisting}
+moves[1] = mvScale(precision, lambda = 0.1, tune = true, weight = 2.0)
+ \end{lstlisting}
+\end{snugshade*}}
 
-\subsubsection{Scaling move}
-Similarly, explain the tuning parameter for this move. Also, this move is asymmetric so explain more about the calculation of the Hastings ratio. 
+Compare the output of the operatorSummary function for your old move and your new move. 
 
-Compare the three different moves in your two parameter model in tracer. Questions include: is one move better than the other according to ESS? what happens when the tuning parameter is set very high? very low? why does this happen? 
+Try the mvUniform move on the precision
 
-
-After show the autotuning option in \RevBayes
+Test your new move doing the exercise form the previous section. 
 %\subsection{Creating \Rev Files}\label{subsect:Exercise-CreatingFiles}
 %
 %{\begin{framed}
