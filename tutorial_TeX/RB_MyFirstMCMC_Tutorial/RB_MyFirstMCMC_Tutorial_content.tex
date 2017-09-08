@@ -7,8 +7,8 @@ This tutorial is intended to provide a introduction to the basics of Markov chai
 \subsection{Learning Outcomes}
 \begin{itemize}
 \item Understand and implement the Metropolis-Hastings MCMC algorithm
-\item Understand the difference and utility of various MCMC moves 
 \item Begin to develop an intuition regarding the use of different priors 
+\item Understand the difference and utility of various MCMC moves 
 \end{itemize}
 
 \subsection{Required Software}\label{subsect:Overview-Requirements}
@@ -69,7 +69,9 @@ Furthermore, blocks of \Rev code that are needed to build the model, specify the
 For example, we will instruct you to create a constant node called \cl{rho} that is equal to \cl{1.0} using the \cl{<-} operator like this:
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-rho <- 1.0
+rho <- 1.0 # constant node
+alpha ~ dnExponential(rho) # stochastic node
+lambda := 1 / alpha # deterministic node
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -104,7 +106,23 @@ arrows = rnormal(num_arrows, true_mu, true_var)
 \bigskip
 \subsection{Getting Started with MCMC\label{subsect:Exercise-GetStart}}
 
-Explain what MCMC does here.
+As you saw above, we were able to get a nice analytical posterior distribution for our normal model with known variance and a normal prior on the mean even in the case of a truncated normal. However, in the majority of interesting scientific cases we are unable to do this. This is where MCMC comes in. MCMC algorithms are a set of tools that provide us with a means to estimate the posterior even in very complex scenarios. There are many flavors of MCMC algorithms; however, this tutorial will only cover the Metropolis-Hastings algorithm. The basic idea of this algorithm is to propose new values for our parameter, $\theta$, in some way (here they are termed moves) Then based on our data model and prior we calculate what is called the Hastings ratio:
+
+\[ R = \frac{p( y | \theta^\prime  ) p(\theta^\prime) }{p( y | \theta ) p(\theta)}  \times \frac{ q( \theta | \theta^\prime )} { q( \theta^\prime | \theta) } \]
+
+where $\theta^\prime$ represents the new proposed value of the parameter and $\theta$ represents the previous iteration's value. $q(\theta^\prime | \theta)$ is called the proposal distribution. However, oftentimes it is convenient to choose our proposals such that $ q(\theta^\prime | \theta) = q(\theta | \theta^\prime)$ thus eliminating that term from the calculation of $R$, moves that have this property are called symmetric moves. The Hastings ratio is then used to determine whether the proposed value, $\theta^\prime$ is an improvement over the previous iterations value. 
+
+The Metropolis-Hastings algorithm is stated as follows:
+\begin{enumerate}
+\item Set an initial value for $\theta$
+\item Draw a new value, $\theta^\prime$ from $q(\theta^\prime | \theta)$
+\item Calculate the Hastings ratio
+\item Draw $u$ from $Unif(0,1)$ 
+\item If $u < R$ then we set $\theta = \theta^\prime$ 
+\item Record the value of $\theta$ and go to 2. Repeating $N$ times
+\end{enumerate}
+
+
 
 \subsubsection{Metropolis-Hastings algorithm by hand}
 
@@ -177,8 +195,15 @@ for(rep in 1:reps){
 \end{lstlisting}
 \end{snugshade*}}
 
+When this finishes running you should now have a posterior distribution.
 
-Here we used a sliding move. 
+{\begin{framed}
+
+Use {\tt Tracer} examine the output of your MCMC. 
+
+\end{framed}}
+
+
 
 \subsubsection{Metropolis-Hastings using \RevBayes}
 
@@ -267,6 +292,7 @@ mymcmc.operatorSummary()
  \end{lstlisting}
 \end{snugshade*}}
 
+As you can see \RevBayes is much faster at doing MCMC than the algorithm we implemented in the previous section. Again we can use {\tt Tracer} to examine our output. 
 
 %TODO Stuff about how to start or Rev basics?
 
