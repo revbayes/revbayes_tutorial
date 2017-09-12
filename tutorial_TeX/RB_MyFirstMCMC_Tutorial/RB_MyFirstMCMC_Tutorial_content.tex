@@ -50,7 +50,7 @@ with
    \[\tau_n = \tau_0 + n\tau \]
    \[\bar{a} = \frac{1}{n}\sum_{i=1}^{n} x_i\]
 
-As you can see the posterior distribution has the same distribution family as the prior. When this happens the prior is called the conjugate prior distribution. In addition, the normal prior for this model has a very nice property that its posterior precision is the sum of the prior mean and the data mean, and the posterior mean is the precision weighted average of the prior mean and the data mean.
+As you can see the posterior distribution has the same distribution family as the prior. When this happens the prior is called the conjugate prior distribution. In addition, the normal prior for this model has the attractive property that its posterior precision is the sum of the prior mean and the data mean, and the posterior mean is the precision weighted average of the prior mean and the data mean.
 
 
 \medskip
@@ -92,11 +92,13 @@ In this tutorial we will be simulating our own data using \RevBayes. Explain how
 
  {\tt \begin{snugshade*}
 \begin{lstlisting}
+minimum = 0
+maximum = 300
 num_arrows = 6
 true_mu = 0.0
 true_var = 1
 
-arrows = rnormal(num_arrows, true_mu, true_var)
+arrows = rnormal(n = num_arrows, mean = true_mu, sd = true_sd, min = minimum, max = maximum)
 
 \end{lstlisting}
 \end{snugshade*}}
@@ -132,10 +134,10 @@ Likelihood function:
 
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-function Probability logLikelihood(mu_prime){
+function Natural logLikelihood(mu_prime, sd_zero, mini, maxi){
 	likelihood_mean = 0.0
 	for(i in 1:num_arrows){
-		likelihood_mean += dnormal(arrows[i], mu_prime, sd, min = 0, max = 400, log=true)
+		likelihood_mean += dnormal(arrows[i], mu_prime, sd_zero, min = mini, max = maxi, log=true)
 	}
 	return likelihood_mean
 }
@@ -146,8 +148,8 @@ Prior function:
 
 {\tt \begin{snugshade*}
  \begin{lstlisting}
-function Probability logPriorMean(mu_prime){
-	prior_mean = dnormal(mu_prime, prior_mu, sd, min = 0.0, max = 400.0, log=true)
+function Natural logPriorMean(mu_prime, mu_zero, sd_zero, mini, maxi){
+	prior_mean = dnormal(mu_prime, mu_zero, sd_zero, min = mini, max = maxi, log=true)
 	return prior_mean
 }
 \end{lstlisting}
@@ -159,8 +161,9 @@ Draw an initial value for our mean from the prior distribution:
 
 {\tt \begin{snugshade*}
  \begin{lstlisting}
+prior_mu = 0.5
 stdev = 1
-mu <- rnorm(1, mean = 1, stdev, min = 0.0, max= 400)
+mu <- rnorm(1, mean = prior_mu, stdev, min = minimum, max= maximum)
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -168,22 +171,27 @@ Set number of iterations of our MCMC and setup writing our output:
 
 {\tt \begin{snugshade*}
  \begin{lstlisting}
-niter = 10000
-write("iteration","p","\n",file="archery_MH.log")
+reps = 10000
+write("iteration","p","\n",file="output/archery_MH.log")
 write(0,v,"\n",file="output/archery_MH.log",append=TRUE)
 \end{lstlisting}
 \end{snugshade*}}
 
 
-Metropolis Hastings Algorithm:
+Now before we write out MCMC algorithm. We need to decide what type of proposal we are going to use on our parameter, $\mu$. For new we will simply randomly propose new values for $\mu$ by taking our previous value of $\mu$ and adding a uniformly distributed variable to that value. The uniform distribution we use will be drawn from the range $\{ -\delta, \delta \}$ where $\delta$ is set to some value. This parameter, $\delta$, is known as a tuning parameter and can be optimized to allow for the most efficient sampling of our target distribution. Finally, we can write our Metropolis Hastings Algorithm:
 
 {\tt \begin{snugshade*}
  \begin{lstlisting}
+# first we need to set delta
+delta = 0.1 
+
+# the actual algorithm
 for(rep in 1:reps){
 
-	mu_prime = mu + rnormal(n=1, 0.0, delta, min = -mu, max = mu)[1] 
+	mu_prime = mu + runif(n=1, -delta, delta)[1] 
 
-	R = (logLikelihood(mu_prime) - logLikelihood(mu)) + ( logPriorMean(mu_prime) - logPriorMean(mu)) 
+	R = (logLikelihood(mu_prime, stdev, minimum, maximum) - logLikelihood(mu, stdev, minimum, maximum)) +
+		 ( logPriorMean(mu_prime, prior_mu, stdev, min = minimum, max = maximum) - logPriorMean(mu, prior_mu, stdev, min = minimum, max = maximum)) 
 	u = runif(1,0,1)[1] 
 	if(ln(u) < R){
 		# accept proposal
@@ -192,14 +200,15 @@ for(rep in 1:reps){
 
 	write(rep,mu, "\n", file="output/archery_MH.log", append=TRUE) 
 } 
+
 \end{lstlisting}
 \end{snugshade*}}
 
-When this finishes running you should now have a posterior distribution.
+When this finishes running you should now have a posterior distribution that looks like a truncated normal distribution. 
 
 {\begin{framed}
 
-Use {\tt Tracer} examine the output of your MCMC. 
+Use {\tt Tracer} to examine the output of your MCMC. 
 
 \end{framed}}
 
@@ -212,8 +221,8 @@ Now imagine a new archer arrives on the range and we have no prior belief about 
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 num_arrows = 6     # number of arrows shot
-true_mu <- 1.5     # true mean
-true_var <- 2.0     # true variance
+true_mu = 1.5     # true mean
+true_var = 2.0     # true variance
 
 arrows = rnormal(num_arrows, true_mu, true_sd, min = 0.0, max = 300)
 \end{lstlisting}
@@ -237,7 +246,7 @@ Now for convience sake let's assume that the mean (conditional on our variance) 
 {\tt \begin{snugshade*}
  \begin{lstlisting}
  
-prior_mean <- 0.0     # mean for the prior distribution
+prior_mean <- 0.5     # mean for the prior distribution
 # prior distribution 
 mu ~ dnNormal(prior_mean, sd, min = 0, max = 300)
 
@@ -252,8 +261,8 @@ Now set the data model and then clamp the data to that node.
  \begin{lstlisting}
 # specify our data model and clamp the data to it
 for(i in 1:num_arrows){
-	ar[i] ~ dnNormal(mu, sd, min = 0, max = 300)
-	ar[i].clamp(arrows[i])
+	shot[i] ~ dnNormal(mu, sd, min = 0, max = 300)
+	shot[i].clamp(arrows[i])
 }
 \end{lstlisting}
 \end{snugshade*}}
@@ -319,6 +328,15 @@ As you can see \RevBayes is much faster at doing MCMC than the algorithm we impl
 \subsection{Using different priors}
 
 Suppose we know little about the variance of some archer. In that case, we have little prior belief and a very flat prior might be a good choice. Our conjugate prior is convenient here as the Inverse-Gamma distribution is relatively flat when $\alpha = \beta$ are very small. Estimate the posterior density with alpha and beta as very small values (perhaps try 0.001). compare with your previous posterior distribution.
+
+\begin{figure}[h!]
+\fbox{%
+\begin{minipage}{\textwidth}\centering
+\includegraphics[scale=0.2, angle=0]{\ResourcePath figures/invgamma_figures.jpeg}
+\caption{\small The left shows $InvGamma(1,1)$, the first prior distribution that was used for the precision, $\tau$. Note the peak around lower parameter values. The right shows $InvGamma(0.001, 0.001)$. Note the much more extreme peak near zero and the relatively flat distribution everywhere else. }
+\end{minipage}}
+\label{fig:InvGammaCurves}
+\end{figure}
 
 The result is not great! Perhaps collecting more data will help, try changing the number of arrows to a larger number (say 100). This still results in a bad estimate this is due to these reasons. Typically when doing MCMC we perform whats called a burn-in where we do some amount of steps and then discard them before continuing. Add this line to the end of your analysis:
 

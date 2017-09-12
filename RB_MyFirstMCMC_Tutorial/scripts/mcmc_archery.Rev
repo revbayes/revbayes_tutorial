@@ -17,8 +17,8 @@ arrows = rnormal(num_arrows, true_mu, true_sd, min = 0.0, max = 300)
 
 
 # specify a prior on our precision 
-a <- 0.001
-b <- 0.001
+a <- 1
+b <- 1
 # precision follows a gamma distribution, 
 # this is a random variable so it is a stochastic node
 precision ~ dnGamma(a,b) 
@@ -27,21 +27,21 @@ precision ~ dnGamma(a,b)
 # takes sqrt and the inverse of the precision
 sd := sqrt(1 / precision)
 
-moves[1] = mvSlide(precision, delta = 0.1, tune = true, weight = 2.0)
+moves[1] = mvSlide(precision, delta = 0.1, tune = false, weight = 2.0)
 
 
-prior_mean <- 0.0
+prior_mean <- 10
 # prior on the mean
 mu ~ dnNormal(prior_mean, sd, min = 0, max = 300)
 
 # define moves on our parameters
-moves[2] = mvSlide(mu, delta = 0.1, tune = true, weight = 2.0)
+moves[2] = mvSlide(mu, delta = 0.1, tune = false, weight = 2.0)
 
 
 # specify our data model (i.e. the likelihood)
 for(i in 1:num_arrows){
-	ar[i] ~ dnNormal(mu, sd, min = 0, max = 300)
-	ar[i].clamp(arrows[i])
+	shot[i] ~ dnNormal(mu, sd, min = 0, max = 300)
+	shot[i].clamp(arrows[i])
 }
 
 # construct our model graph
