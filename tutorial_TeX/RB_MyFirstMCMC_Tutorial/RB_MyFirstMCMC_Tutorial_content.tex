@@ -359,6 +359,15 @@ mymcmc.burnin(generations = 10000, tuningInterval = 100)
 
 Finally, we arrive at a good estimate of the standard deviation of our distribution. It may have been simpler to use a more well-behaved distribution (see box). Add box about different priors for the standard deviation (e.g. uniform(0,C), Half-Cauchy(0,1))
 
+\begin{figure}[h!]
+\fbox{%
+\begin{minipage}{\textwidth}\centering
+\includegraphics[scale=0.1, angle=0]{\ResourcePath figures/prior_box_figures.jpeg}
+\caption{\small The above figure shows four possible prior distributions on $\sigma$, the scale parameter of our normal distribution.}
+\end{minipage}}
+\label{fig:ScalePriors}
+\end{figure}
+
 \subsection{Using different moves}
 
 So far we have introduced just one move, the sliding move, which takes the current parameter being estimated and adds a uniformly-distributed random variable to that. The width of this uniform distribution is determined by the $\delta$ parameter that is set in the move and that the autotune option optimized. Explain about mirror moves, and Depending on the parameter and the model the ability of a move to effectively sample a posterior distribution varies. Fortunately, \RevBayes comes with many possible moves. For example, we could try placing a scaling move on the precision. Explanation of the scaling move goes here. Note that this move cannot propose a negative number that must be either transformed into the support of the paramter (which is automatically performed in RevBayes) or automatically rejected. This means that the scaling move is more efficient computationally. To use this move in \RevBayes change the sliding move on the precision.
