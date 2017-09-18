@@ -5,10 +5,10 @@
 
 
 # Simulate some data (i.e. shoot some arrows)
-# First we need some prior on our mean
-num_arrows = 6 # number of arrows shot
-# True mean arrow distance from target
+# First we need some mean distance
 mean_true = 1
+# Then we need the number of arrows shot
+num_arrows = 6
 
 # Simulate the sum of the arrow distances
 arrow_sum = rgamma(1, num_arrows, 1/mean_true)[1]
