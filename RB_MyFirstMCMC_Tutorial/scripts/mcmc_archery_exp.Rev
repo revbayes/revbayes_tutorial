@@ -11,7 +11,7 @@ num_arrows = 6 # number of arrows shot
 lambda_true = 1
 
 # Simulate the sum of the arrow distances
-arrow_sum = rgamma(1, num_arrows, lambda_true)[1]
+arrow_sum = rgamma(1, num_arrows, 1/lambda_true)[1]
 
 # Define the prior function on the mean 
 function prior(lambda){
@@ -26,7 +26,7 @@ function likelihood(lambda){
 	if(lambda < 0.0)
 		return 0.0
 
-	return dgamma(arrow_sum, num_arrows, lambda, log=false)
+	return dgamma(arrow_sum, num_arrows, 1/lambda, log=false)
 }
 
 # Initialize the chain with some starting value
