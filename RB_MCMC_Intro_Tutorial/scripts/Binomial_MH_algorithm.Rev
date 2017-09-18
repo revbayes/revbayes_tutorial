@@ -18,14 +18,17 @@ p <- rbeta(n=1,alpha,beta)[1]
 
 
 # specify the likelihood function
-function likelihood(param) {
-    l = dbinomial(x,param,n,log=false)
+function likelihood(p) {
+    if(p < 0 || p > 1)
+        return 0
+
+    l = dbinomial(x,p,n,log=false)
     return l
 }
 
 # specify the prior function
-function prior(param) {
-    pp = dbeta(param,alpha,beta,log=false)
+function prior(p) {
+    pp = dbeta(p,alpha,beta,log=false)
     return pp
 }
 
@@ -60,8 +63,9 @@ for (rep in 1:reps){
     
     if ( (rep % printgen) == 0 ) {
         # Write the samples to a file
-        print(rep,p)
         write(rep,p,"\n",file="binomial_MH.log",append=TRUE)
+        # Print the samples to the screen
+        print(rep,p)
     }
 
 } # end MCMC
