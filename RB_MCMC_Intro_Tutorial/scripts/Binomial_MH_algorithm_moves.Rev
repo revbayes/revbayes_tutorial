@@ -123,7 +123,7 @@ for (rep in 1:reps) {
     
     if ( (rep % printgen) == 0 ) {
         # Write the samples to a file
-        write(rep,p,"\n",file="binomial_MH.log",append=TRUE)
+        write(rep,p,"\n",file="binomial_MH_moves.log",append=TRUE)
         # Print the samples to the screen
         print(rep,p)
     }
