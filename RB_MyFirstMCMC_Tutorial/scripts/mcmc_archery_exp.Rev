@@ -4,17 +4,16 @@
 ##################################################
 
 
-
 # Simulate some data (i.e. shoot some arrows)
-# First we need some prior on our mean and variance
-num_arrows = 60 # number of arrows shot
-# true mean arrow distance from target
+# First we need some prior on our mean
+num_arrows = 6 # number of arrows shot
+# True mean arrow distance from target
 lambda_true = 1
 
-# simulate some data
-arrows = rexp(n=num_arrows, lambda=lambda_true)
+# Simulate the sum of the arrow distances
+arrow_sum = rgamma(1, num_arrows, lambda_true)[1]
 
-# define the prior function on the mean 
+# Define the prior function on the mean 
 function prior(lambda){
 	if(lambda < 0.0)
 		return 0.0
@@ -22,46 +21,49 @@ function prior(lambda){
 	return dexp(lambda, lambda_0, log=false)
 }
 
+# Define the likelihood function on the mean 
 function likelihood(lambda){
 	if(lambda < 0.0)
 		return 0.0
 
-	l = 1.0
-	for(i in 1:num_arrows){
-		l *= dexp(arrows[i], lambda, log=false)
-	}
-	return l
+	return dgamma(arrow_sum, num_arrows, lambda, log=false)
 }
 
+# Initialize the chain with some starting value
 lambda_0 = 1.0
-
 lambda = rexp(1, lambda_0)[1]
 
-
+# Prepare a file to log our samples
 write("iteration","lambda","\n",file="output/archery_MH_exp.log")
 write(0,lambda,"\n",file="output/archery_MH_exp.log",append=TRUE)
 
+# Print the initial values to the screen 
 print("iteration","lambda")
 print(0,lambda)
 
-delta = 0.1
+# Write the MH algorithm
+delta = 1
 reps = 10000
 printgen = 10
 
 for(rep in 1:reps){
-
+	# Propose a new value of lambda
 	lambda_prime = lambda + runif(n=1, -delta, delta)[1]
 
+	# Compute the acceptance probability
 	R = (likelihood(lambda_prime)/likelihood(lambda)) * (prior(lambda_prime)/prior(lambda)) 
 	
+	# Accept or reject the proposal
 	u = runif(1,0,1)[1] 
 	if(u < R){
-		# accept proposal
+		# Accept the proposal
 		lambda = lambda_prime 
 	}
 
 	if ( (rep % printgen) == 0 ) {
+		# Write the samples to a file
 		write(rep,lambda,"\n",file="output/archery_MH_exp.log",append=TRUE)
+		# Print the samples to the screen
 		print(rep,lambda)
 	}
 } 
