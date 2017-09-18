@@ -12,51 +12,55 @@ num_arrows = 6 # number of arrows shot
 true_mu = 0.0
 # true posterior variance 
 true_sd = 1
-# set min and max
-minimum = 0
-maximum = 300
 # simulate some data
-arrows = rnormal(n = num_arrows, mean = true_mu, sd = true_sd, min = minimum, max = maximum)
+arrows = rnormal(n=num_arrows, mean=true_mu, sd=true_sd, min=0)
 
 # define the prior function on the mean 
-function Natural logPriorMean(mu_prime, mu_zero, sd_zero, mini, maxi){
-	prior_mean = dnormal(mu_prime, mu_zero, sd_zero, min = mini, max = maxi, log=true)
+function prior(mu_prime){
+	prior_mean = dnormal(mu_prime, mu_0, sd_0, log=false)
 	return prior_mean
 }
 
-function Natural logLikelihood(mu_prime, sd_zero, mini, maxi){
-	likelihood_mean = 0.0
+function likelihood(mu_prime){
+	l = 1.0
 	for(i in 1:num_arrows){
-		likelihood_mean += dnormal(arrows[i], mu_prime, sd_zero, min = mini, max = maxi, log=true)
+		l *= dnormal(arrows[i], mu_prime, sd_0, min=0, log=false)
 	}
-	return likelihood_mean
+	return l
 }
 
-prior_mu = 0.5
-stdev = 1
+mu_0 = 0.5
+sd_0 = 1
 
-mu = rnorm(1, prior_mu, sd = stdev, min = minimum, max = maximum)[1]
+mu = rnorm(1, mu_0, sd = sd_0)[1]
 
 
 write("iteration","mu","\n",file="output/archery_MH.log")
 write(0,mu,"\n",file="output/archery_MH.log",append=TRUE)
 
+print("iteration","mu")
+print(0,mu)
+
 delta = 0.1
 reps = 10000
+printgen = 10
 
 for(rep in 1:reps){
 
 	mu_prime = mu + runif(n=1, -delta, delta)[1] 
 
-	R = (logLikelihood(mu_prime, stdev, minimum, maximum) - logLikelihood(mu, stdev, minimum, maximum)) +
-		 ( logPriorMean(mu_prime, prior_mu, stdev, min = minimum, max = maximum) - logPriorMean(mu, prior_mu, stdev, min = minimum, max = maximum)) 
+	R = (likelihood(mu_prime)/likelihood(mu)) * (prior(mu_prime)/prior(mu)) 
+	
 	u = runif(1,0,1)[1] 
-	if(ln(u) < R){
+	if(u < R){
 		# accept proposal
 		mu = mu_prime 
 	} 
 
-	write(rep,mu, "\n", file="output/archery_MH.log", append=TRUE) 
+	if ( (rep % printgen) == 0 ) {
+		write(rep,mu, "\n", file="output/archery_MH.log", append=TRUE) 
+		print(rep,mu)
+	}
 } 
 
 
