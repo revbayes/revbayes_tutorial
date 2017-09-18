@@ -1,0 +1,72 @@
+##################################################
+# Basic MCMC tutorial using archery example      #
+#    Wade Dismukes, Tracy Heath, and Walker Pett #
+##################################################
+
+
+
+# Simulate some data (i.e. shoot some arrows)
+# First we need some prior on our mean and variance
+num_arrows = 60 # number of arrows shot
+# true mean arrow distance from target
+lambda_true = 1
+
+# simulate some data
+arrows = rexp(n=num_arrows, lambda=lambda_true)
+
+# define the prior function on the mean 
+function prior(lambda){
+	if(lambda < 0.0)
+		return 0.0
+
+	return dexp(lambda, lambda_0, log=false)
+}
+
+function likelihood(lambda){
+	if(lambda < 0.0)
+		return 0.0
+
+	l = 1.0
+	for(i in 1:num_arrows){
+		l *= dexp(arrows[i], lambda, log=false)
+	}
+	return l
+}
+
+lambda_0 = 1.0
+
+lambda = rexp(1, lambda_0)[1]
+
+
+write("iteration","lambda","\n",file="output/archery_MH_exp.log")
+write(0,lambda,"\n",file="output/archery_MH_exp.log",append=TRUE)
+
+print("iteration","lambda")
+print(0,lambda)
+
+delta = 0.1
+reps = 10000
+printgen = 10
+
+for(rep in 1:reps){
+
+	lambda_prime = lambda + runif(n=1, -delta, delta)[1]
+
+	R = (likelihood(lambda_prime)/likelihood(lambda)) * (prior(lambda_prime)/prior(lambda)) 
+	
+	u = runif(1,0,1)[1] 
+	if(u < R){
+		# accept proposal
+		lambda = lambda_prime 
+	}
+
+	if ( (rep % printgen) == 0 ) {
+		write(rep,lambda,"\n",file="output/archery_MH_exp.log",append=TRUE)
+		print(rep,lambda)
+	}
+} 
+
+
+
+q()
+
