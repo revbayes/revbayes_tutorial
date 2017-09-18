@@ -28,6 +28,9 @@ function likelihood(p) {
 
 # specify the prior function
 function prior(p) {
+    if(p < 0 || p > 1)
+        return 0
+        
     pp = dbeta(p,alpha,beta,log=false)
     return pp
 }
@@ -118,8 +121,8 @@ printgen = 10
 for (rep in 1:reps) {
 
     move_uniform(1)
-    move_slide(0.1,1)
-    move_scale(0.1,1)
+    move_slide(10,1)
+    move_scale(10,1)
     
     if ( (rep % printgen) == 0 ) {
         # Write the samples to a file
