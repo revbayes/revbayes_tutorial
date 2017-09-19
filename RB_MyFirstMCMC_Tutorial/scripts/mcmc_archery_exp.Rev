@@ -5,13 +5,12 @@
 
 
 # Simulate some data (i.e. shoot some arrows)
-# First we need some mean distance
+# First we need some true mean distance
 mean_true = 1
-# Then we need the number of arrows shot
+# Then we need the number of arrows to shoot
 num_arrows = 6
-
-# Simulate the sum of the arrow distances
-arrow_sum = rgamma(1, num_arrows, 1/mean_true)[1]
+# Simulate the observed mean distance of the arrows we shot
+arrow_mean = rgamma(1, num_arrows, num_arrows/mean_true)[1]
 
 # Define the prior function on the mean 
 function prior(mean){
@@ -26,7 +25,7 @@ function likelihood(mean){
 	if(mean < 0.0)
 		return 0.0
 
-	return dgamma(arrow_sum, num_arrows, 1/mean, log=false)
+	return dgamma(arrow_mean, num_arrows, num_arrows/mean, log=false)
 }
 
 # Initialize the chain with some starting value
