@@ -3,21 +3,20 @@
 #    Wade Dismukes, Tracy Heath, and Walker Pett #
 ##################################################
 
-
 # Simulate some data (i.e. shoot some arrows)
-# First we need some true mean distance
-mean_true = 1
-# Then we need the number of arrows to shoot
-num_arrows = 6
+# First we need the number of arrows to shoot
+num_arrows = 10
+# Then we need some true mean distance
+true_mean = 10
 # Simulate the observed mean distance of the arrows we shot
-arrow_mean = rgamma(1, num_arrows, num_arrows/mean_true)[1]
+arrow_mean = rgamma(1, num_arrows, num_arrows/true_mean)[1]
 
 # Define the prior function on the mean 
 function prior(mean){
 	if(mean < 0.0)
 		return 0.0
 
-	return dexp(mean, prior_mean, log=false)
+	return dexp(mean, 1/prior_mean, log=false)
 }
 
 # Define the likelihood function on the mean 
