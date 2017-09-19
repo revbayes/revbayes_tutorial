@@ -1,3 +1,0 @@
-# RevBayes MCMC tutorial using archery example
-
-This directory contains the Rev scripts (in /scripts/) for an introduction to MCMC using an archer shooting at a target as an example. 
