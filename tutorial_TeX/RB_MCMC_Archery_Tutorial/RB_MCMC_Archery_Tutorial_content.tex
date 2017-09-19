@@ -51,15 +51,20 @@ Then, we have another constant variable, $n$.
 Finally, we have the observed data $\bar x$ which is drawn from a gamma distribution with parameters $\mu$ and $n$, as can be seen by the arrows going into $x$.
 Furthermore, the solid circle of $\bar x$ is shaded which means that the variable has data attached to it.
 \begin{figure}[h!]
-\centering
-\fbox{\includegraphics[width=1.8in,angle=0]{\ResourcePath figures/archery_graphical_model.pdf}}
-\label{fig:archery_model}
+\fbox{%
+\begin{minipage}{\textwidth}\centering    
+\includegraphics[width=1.8in,angle=0]{\ResourcePath figures/archery_graphical_model.pdf}
 \caption{A graphical model for the archery model.}
+\end{minipage}}
+\label{fig:archery_model}
 \end{figure}
+
+
+
 
 \section{Writing an MCMC from Scratch}
 
-\impmark Make yourself familiar with the example script called \emph{archery\_MH.Rev} which shows the code for the following sections. Then, start a new and empty script and follow each step provided in the \colorbox{shadecolor}{blue boxes}.
+\impmark Make yourself familiar with the example script called \cl{archery\_MH.Rev} which shows the code for the following sections. Then, start a new and empty script and follow each step provided in the \colorbox{shadecolor}{blue boxes}.
 
 \subsection{The Metropolis-Hastings Algorithm}
 Though \RevBayes implements efficient and easy-to-use Markov chain Monte Carlo algorithms, we'll begin by writing one ourselves to gain a better understanding of the moving parts.
