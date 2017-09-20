@@ -360,10 +360,9 @@ for (rep in 1:reps){
 \subsection{Prior move}
 Now we need to actually write the \cl{move\_prior} function.
 We mostly just copy the code we had before into a dedicated function
-%TODO: We don't need to specify a type for the argument, so maybe we should just change this to `(weight)` instead of `(Natural weight)` (TAH)
 {\tt \begin{snugshade*}
 \begin{lstlisting}    
-function move_prior(Natural weight) {
+function move_prior(weight) {
 
     for (i in 1:weight) {
         # Propose a new value of mu
@@ -394,10 +393,9 @@ Otherwise, this function does exactly the same what was inside the for loop prev
 \subsection{Sliding-window move}
 As a second move we will write a sliding-window move.
 The sliding-window moves propose an update by drawing a random number from a uniform distribution and then adding this random number to the current value (\IE centered on the previous value).
-% TODO: are argument types needed? (TAH)
 {\tt \begin{snugshade*}
 \begin{lstlisting}    
-function move_slide( RealPos delta, Natural weight) {
+function move_slide(delta, weight) {
 
     for (i in 1:weight) {
         # Propose a new value of p
@@ -436,7 +434,7 @@ An interesting feature of this move is that it is not symmetrical and thus needs
 The Hastings ratio is rather trivial in this case, and one only needs to multiply the acceptance rate by the scaling factor.
 {\tt \begin{snugshade*}
 \begin{lstlisting}    
-function move_scale( RealPos lambda, Natural weight) {
+function move_scale(lambda, weight) {
 
     for (i in 1:weight) {
         # Propose a new value of p
@@ -521,8 +519,8 @@ Next, our likelihood model.
 {\tt \begin{snugshade*}
 \begin{lstlisting}    
 # Specify the likelihood model
-x_bar ~ dnGamma(n, n/mu)
-x_bar.clamp(arrow_mean)
+d_bar ~ dnGamma(n, n/mu)
+d_bar.clamp(arrow_mean)
 \end{lstlisting}
 \end{snugshade*}}
 
