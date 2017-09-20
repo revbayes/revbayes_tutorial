@@ -282,7 +282,7 @@ Next, we compute the proposed likelihood and prior probabilities using the funct
 \end{lstlisting}
 \end{snugshade*}}
 
-Then, we accept the proposal with probability $R$ and reject otherwise (step \ref{sect:MH:step5} of Sect.\ \ref{sect:MH_algorithm}):
+Then, we accept the proposal with probability $R$ and reject otherwise (step \ref{sect:MH:step4} of Sect.\ \ref{sect:MH_algorithm}):
 {\tt \begin{snugshade*}
 \begin{lstlisting}    
     # Accept or reject the proposal
@@ -294,7 +294,7 @@ Then, we accept the proposal with probability $R$ and reject otherwise (step \re
 \end{lstlisting}
 \end{snugshade*}}
 
-Finally, we store the current value of $\mu$ in our log file.
+Finally, we store the current value of $\mu$ in our log file (step \ref{sect:MH:step5} of Sect.\ \ref{sect:MH_algorithm}).
 Here, we actually check if we want to store the value during this iteration.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
@@ -310,9 +310,10 @@ Here, we actually check if we want to store the value during this iteration.
 
 \subsection{Exercise 1}
 
+% TODO: I don't like how the "Step" goes into the margin (TAH)
 \begin{enumerate}[label=\textnormal{Step \arabic*)}]
-	\item Write and execute this script (there is also an example file called \emph{archery\_MH.Rev}).
-	\item The \texttt{.log} file will contain samples from the posterior distribution of the model! Open the file in \Tracer to learn about various features of the posterior distribution, for example: the posterior mean or the 95\% credible interval.
+	\item Write and execute this script, which you can give any name you like (there is also an example file called \cl{archery\_MH.Rev}).
+	\item The \cl{.log} file will contain samples from the posterior distribution of the model! Open the file in \Tracer to learn about various features of the posterior distribution, for example: the posterior mean or the 95\% credible interval.
 \end{enumerate}
 Pretty awesome, right?
 
@@ -321,18 +322,23 @@ Specifically, Figure~\ref{fig:mcmc_samples} shows the sample trace (left) and th
 There are other parameters, such as the posterior mean and the 95\% HPD (highest posterior density) interval, that you can obtain from \Tracer.
 \begin{figure}[h!]
 \centering
-\fbox{\includegraphics[width=0.45\linewidth,angle=0]{\ResourcePath figures/archery_MCMC_Trace.pdf}
-\includegraphics[width=0.45\linewidth,angle=0]{\ResourcePath figures/archery_MCMC_distribution.pdf}}
-\label{fig:mcmc_samples}
+\fbox{%
+\begin{minipage}{\textwidth}\centering    
+\includegraphics[width=0.45\linewidth,angle=0]{\ResourcePath figures/archery_MCMC_Trace.pdf}
+\includegraphics[width=0.45\linewidth,angle=0]{\ResourcePath figures/archery_MCMC_distribution.pdf}
 \caption{Left: The \emph{Trace} of sample from an MCMC simulation. Right: The approximated posterior probability distribution for $\mu$.}
+\end{minipage}}
+\label{fig:mcmc_samples}
 \end{figure}
 \pagebreak
-\section{More on Moves: Tuning and weights}
+
+
+\section{More on Moves: Tuning and Weights}\label{sect:More_on_Moves}
 
 In the previous example we hard coded a single move updating the variable $\mu$ by drawing a new value from the prior.
 There are actually many other ways how to propose new values; some of which are more efficient than others.
 
-First, let us rewrite the MCMC loop so that instead we a function, which we call \cl{move\_prior} for simplicity, that performs the move:
+First, let us rewrite the MCMC loop so that instead we call a function, which we name \cl{move\_prior} for simplicity, that performs the move:
 {\tt \begin{snugshade*}
 \begin{lstlisting}    
 for (rep in 1:reps){
@@ -354,9 +360,10 @@ for (rep in 1:reps){
 \subsection{Prior move}
 Now we need to actually write the \cl{move\_prior} function.
 We mostly just copy the code we had before into a dedicated function
+%TODO: We don't need to specify a type for the argument, so maybe we should just change this to `(weight)` instead of `(Natural weight)` (TAH)
 {\tt \begin{snugshade*}
 \begin{lstlisting}    
-function move_prior( Natural weight) {
+function move_prior(Natural weight) {
 
     for (i in 1:weight) {
         # Propose a new value of mu
@@ -372,7 +379,6 @@ function move_prior( Natural weight) {
             mu = mu_prime 
         }
     }
-    
 }
 \end{lstlisting}
 \end{snugshade*}}
@@ -382,11 +388,13 @@ Second, we expect an argument called \cl{weight} which will tell us how often we
 Otherwise, this function does exactly the same what was inside the for loop previously.
 
 (Note that you need to define this function before the for loop in your script).
+% TODO: verify if this separate script is provided. I don't think we need to. (TAH)
 
 
 \subsection{Sliding-window move}
 As a second move we will write a sliding-window move.
 The sliding-window moves propose an update by drawing a random number from a uniform distribution and then adding this random number to the current value (\IE centered on the previous value).
+% TODO: are argument types needed? (TAH)
 {\tt \begin{snugshade*}
 \begin{lstlisting}    
 function move_slide( RealPos delta, Natural weight) {
@@ -405,7 +413,6 @@ function move_slide( RealPos delta, Natural weight) {
             mu = mu_prime 
         }
     }
-    
 }
 \end{lstlisting}
 \end{snugshade*}}
@@ -414,9 +421,12 @@ The argument \cl{delta} defines the width of the uniform window from which we dr
 Thus, if \cl{delta} is large, then the proposed values are more likely to be very different from the current value of $\mu$.
 Conversely, if \cl{delta} is small, then the proposed values are more likely to be very close to the current value of $\mu$.
 
-\impmark Experiment with different values for \cl{delta} and check how the effective sample size (ESS) changes.
+%\impmark 
+{\begin{framed}
+Experiment with different values for \cl{delta} and check how the effective sample size (ESS) changes.
+\end{framed}}
 
-There is, a priori, no good method for knowing what values of \cl{delta} are most efficient.
+There is, {\it a priori}, no good method for knowing what values of \cl{delta} are most efficient.
 However, there are some algorithms implemented in \RevBayes, called \emph{auto-tuning}, that will estimate good values for \cl{delta}.
 
 \subsection{Scaling move}
@@ -443,14 +453,13 @@ function move_scale( RealPos lambda, Natural weight) {
             mu = mu_prime 
         }
     }
-    
 }
 \end{lstlisting}
 \end{snugshade*}}
-As before, this move has a tuning parameter called \emph{lambda}.
+As before, this move has a tuning parameter called \cl{lambda}.
 
 \begin{framed}
-The sliding-window and scaling moves are very common and popular moves in \RevBayes.
+\IMPORANT The sliding-window and scaling moves are very common and popular moves in \RevBayes.
 The code examples here are actually showing the exact same equation as implemented internally.
 It will be very useful for you to understand these moves.	
 \end{framed}
@@ -473,7 +482,7 @@ However, this MCMC algorithm is \emph{very} specific to our archery model and th
 
 
 \section{The Metropolis-Hastings Algorithm with the \emph{Real} \RevBayes}
-We'll now specify the exact same model in \Rev using the built-in modeling functionality.
+We'll now specify the exact same model in \Rev using the built-in modeling functionality and moves.
 It turns out that the \Rev code to specify the above model is extremely simple and similar to the one we used before.
 Again, we start by ``reading in'' (\emph{i.e.}, making up) our data.
 
@@ -548,8 +557,13 @@ analysis.run(100000)
 analysis.operatorSummary()
 \end{lstlisting}
 \end{snugshade*}}
-\impmark Open the resulting \texttt{archery\_RB.log} file in \texttt{Tracer}.
-Do the posterior distributions for the parameter $mu$ look the same as the ones we got from our first analysis?
+%\impmark 
+\begin{framed}
+Open the resulting \cl{archery\_RB.log} file in \Tracer.
+
+\QUEST Do the posterior distributions for the parameter $mu$ look the same as the ones we got from our first analysis?
+\end{framed}
+
 
 Hopefully, you'll note that this \Rev model is substantially simpler and easier to read than the MH algorithm script we began with.
 Perhaps more importantly, this \Rev analysis is \emph{orders of magnitude} faster than our own script, because it makes use of extremely efficient probability calculations built-in to \RevBayes (rather than the ones we hacked together in our own algorithm).
@@ -562,7 +576,7 @@ Perhaps more importantly, this \Rev analysis is \emph{orders of magnitude} faste
 	\item Run the analysis again and compare the output.
 \end{enumerate}
 
-\section{Influence of the prior}
+\section{Influence of the Prior}
 
 So far we have used a fairly simple exponential prior with $\alpha = 1$.
 However, we have not explored what impact this prior has on our estimate of $\mu$, or whether it is an appropriate prior distribution.
@@ -579,9 +593,12 @@ As you can see in Figure \ref{fig:gamma_distribution}, compared to the exponenti
 
 \begin{figure}[h!]
 \centering
-\fbox{\includegraphics[width=0.7\linewidth,angle=0]{\ResourcePath figures/gamma.pdf}}
-\label{fig:gamma_distribution}
+\fbox{%
+\begin{minipage}{0.7\linewidth}\centering     
+\includegraphics[width=0.7\linewidth,angle=0]{\ResourcePath figures/gamma.pdf}
 \caption{Comparison of exponential distribution with $\alpha = 1$ and uninformative gamma distribution with parameters $\alpha=0.001$ and $\beta=0.001$.}
+\end{minipage}}
+\label{fig:gamma_distribution}
 \end{figure}
 
 The second and simplest way we can overcome the informativeness of the prior is to increase the amount of data we collect.
