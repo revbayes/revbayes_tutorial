@@ -6,6 +6,7 @@ mu_true = 1
 # Simulate the observed mean distance of the arrows we shot
 arrow_mean = rgamma(1, n, n/mu_true)[1]
 
+
 # Initialize the chain with some starting value
 alpha = 1.0
 mu = rexp(1, 1/alpha)[1]
