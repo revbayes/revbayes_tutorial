@@ -3,28 +3,58 @@
 
 This tutorial is intended to provide a introduction to the basics of Markov chain Monte Caro (MCMC) using the  Metropolis-Hastings algorithm. This will provide a brief introduction to MCMC moves as well as prior distributions. We begin with a simple example of estimating the probability distribution of an archer's ability to shoot at a target, and the distance those arrows land from the center. We will simulate data using this example and attempt to estimate the posterior distribution using a variety of MCMC moves. 
 
-\section{Modeling an archer's shots on a target}\label{sect:Exercise}
+\bigskip
+\subsection{Requirements}\label{subsect:Overview-Requirements}
+
+\subsubsection{Required Software}\label{subsub:Req-Software}
+This tutorial requires that you download and install the latest release of \RevBayes \citep{Hoehna2017a}, which is available for Mac OS X, Windows, and Linux operating systems. 
+Directions for downloading and installing the software are available on the program webpage:
+%\begin{center}
+\href{http://revbayes.com/}{http://revbayes.com}.
+%\end{center} 
+
+The exercise provided also requires additional programs for editing text files and visualizing output. 
+The following are very useful tools for working with \RevBayes:
+\begin{itemize}[noitemsep,topsep=0pt]
+\item A good text editor -- if you do not already have one that you like, we recommend one that has features for syntax coloring, easy navigation between different files, line numbers, etc.
+Good options include \href{http://www.sublimetext.com/}{\tt Sublime Text} or \href{https://atom.io/}{\tt Atom}, which are available for Mac OSX, Windows, and Linux.
+\item \href{http://tree.bio.ed.ac.uk/software/tracer/}{\tt Tracer} -- for visualizing and assessing numerical parameter samples from \RevBayes
+\end{itemize}
+
+
+\section{Modeling an Archer's Shots on a Target}\label{sect:Exercise}
+
+\begin{figure}[h!]
+\centering
+\fbox{%
+\begin{minipage}{0.7\linewidth}\centering     
+\includegraphics[width=1.8in,angle=0]{\ResourcePath figures/target.pdf}
+\caption{placeholder figure for a representation of the model}
+\end{minipage}}
+\label{fig:archery_model}
+\end{figure}
 
 We'll begin our exploration of Bayesian inference with a simple archery model.
-In this model, we imagine shooting $n$ arrows at a target and measuring the distance distance of each arrow from the target's center.
-Let's assume that the distance of each arrow from the bullseye follows an exponential distribution.
-Further, we assume the archer has an inherent ability to shoot arrows at an average average distance $\mu$.
-Then, the probability density of each arrow distance $x_i$ is
+For this model, there is an unknown archer shooting $n$ arrows at a target. 
+The distance $d$ of each arrow from the target's center is measured.
+Let's assume that the distance of each arrow from the bullseye follows an exponential distribution---i.e., $d\sim\mbox{Exp}(\mu^{-1})$.
+Further, we assume the archer has an inherent ability to shoot arrows at an average distance $\mu$.
+Then, the probability density of each arrow distance $d_i$ is
 \begin{align*}
-P(x_i \mid \mu) = \frac{1}{\mu} e^{-x_i/\mu}
+P(d_i \mid \mu) = \frac{1}{\mu} e^{-x_i/\mu}
 \end{align*}
-Simple intuition suggests that, given that we observe $n$ arrows, the maximum-likelihood estimate (MLE) of $\mu$ is simply the average of all the arrow distances $\bar x = \frac{1}{n}\sum_{i=1}^n x_i$.
+Simple intuition suggests that, given that we observe $n$ arrows, the maximum-likelihood estimate (MLE) of $\mu$ is simply the average of all the arrow distances $\bar d = \frac{1}{n}\sum_{i=1}^n d_i$.
 This is indeed the maximum likelihood estimate!
-In fact, given $n$ arrows whose distances follow an exponential distribution, it turns out that the observed average $\bar x$ follows a gamma distribution, with parameters $n$ and $n/\mu$.
+In fact, given $n$ arrows whose distances follow an exponential distribution, it turns out that the observed average $\bar d$ follows a gamma distribution, with parameters $n$ and $n/\mu$.
 \begin{align*}
-P(\bar x \mid \mu,n) = \frac{(n/\mu)^n}{\Gamma(n)} {\bar x}^{n-1}e^{-n\bar x /\mu}
+P(\bar d \mid \mu,n) = \frac{(n/\mu)^n}{\Gamma(n)} {\bar d}^{n-1}e^{-n\bar d /\mu}
 \end{align*}
-In this case, the average $\bar x$ acts as a \emph{sufficient statistic} for $\mu$. This means that it tells us everything we need to know about $\mu$.
-Therefore, we will use a Gamma$(n, n\mu)$ distribution on $\bar x$ as the likelihood of our data.
+In this case, the average $\bar d$ acts as a \emph{sufficient statistic} for $\mu$. This means that it tells us everything we need to know about $\mu$.
+Therefore, we will use a Gamma$(n, n\mu)$ distribution on $\bar d$ as the likelihood of our data.
 
-From Bayes' theorem, the \emph{posterior distribution} of $\mu$ given $\bar x$, $P(\mu \mid \bar x)$, is:
+From Bayes' theorem, the \emph{posterior distribution} of $\mu$ given $\bar d$, $P(\mu \mid \bar d)$, is:
 \begin{align*}
-\overbrace{P(\mu \mid \bar x)}^{\text{posterior distribution}} = \frac{ \overbrace{P(\bar x \mid \mu)}^{\text{likelihood}} \times \overbrace{P(\mu)}^{\text{prior}}}{\underbrace{P(\bar x)}_{\text{marginal likelihood}}}
+\overbrace{P(\mu \mid \bar d)}^{\text{posterior distribution}} = \frac{ \overbrace{P(\bar d \mid \mu)}^{\text{likelihood}} \times \overbrace{P(\mu)}^{\text{prior}}}{\underbrace{P(\bar d)}_{\text{marginal likelihood}}}
 \end{align*}
 The take-home message here is that, if we're interested in doing Bayesian inference for the archery model, we need to specify a \emph{likelihood function} and a \emph{prior distribution} for $\mu$.
 In virtually all practical cases, we cannot compute the posterior distribution directly and instead use numerical procedures, such as a Markov chain Monte Carlo (MCMC) algorithm.
@@ -34,11 +64,14 @@ We'll use a simple exponential distribution as a prior on the parameter of the m
 The exponential distribution has one parameter $\alpha$ representing our prior belief about the mean arrow distance (Figure~\ref{fig:exponential_distribution}).
 Different choices for $\alpha$ represent different prior beliefs.
 \begin{figure}[h!]
-\centering
-\fbox{\includegraphics[width=0.7\linewidth,angle=0]{\ResourcePath figures/exp.pdf}}
-\label{fig:exponential_distribution}
+\centering 
+\fbox{%
+\begin{minipage}{0.7\linewidth}\centering    
+\includegraphics[width=0.7\linewidth,angle=0]{\ResourcePath figures/exp.pdf}
 \caption{An exponential distribution with one parameter $\alpha$. This distribution is used as a prior distribution on the average arrow distance  $\mu$.
 Here we show different curves for the exponential distribution when using different parameters.}
+\end{minipage}}
+\label{fig:exponential_distribution}
 \end{figure}
 
 Figure~\ref{fig:archery_model} shows the graphical model for the archery model.
@@ -51,8 +84,9 @@ Then, we have another constant variable, $n$.
 Finally, we have the observed data $\bar x$ which is drawn from a gamma distribution with parameters $\mu$ and $n$, as can be seen by the arrows going into $x$.
 Furthermore, the solid circle of $\bar x$ is shaded which means that the variable has data attached to it.
 \begin{figure}[h!]
+\centering
 \fbox{%
-\begin{minipage}{\textwidth}\centering    
+\begin{minipage}{0.7\linewidth}\centering    
 \includegraphics[width=1.8in,angle=0]{\ResourcePath figures/archery_graphical_model.pdf}
 \caption{A graphical model for the archery model.}
 \end{minipage}}
@@ -64,41 +98,81 @@ Furthermore, the solid circle of $\bar x$ is shaded which means that the variabl
 
 \section{Writing an MCMC from Scratch}
 
-\impmark Make yourself familiar with the example script called \cl{archery\_MH.Rev} which shows the code for the following sections. Then, start a new and empty script and follow each step provided in the \colorbox{shadecolor}{blue boxes}.
+\medskip
+\subsection{Tutorial Format}\label{subsect:Exercise-Format}
 
-\subsection{The Metropolis-Hastings Algorithm}
+This tutorial follows a specific format for issuing instructions and information.
+
+{\begin{framed}
+The boxed instructions guide you to complete tasks that are not part of the \RevBayes syntax, but rather direct you to create directories or files or similar.
+\end{framed}}
+
+Information describing the commands and instructions will be written in paragraph-form before or after they are issued.
+
+All command-line text, including all \Rev syntax, are given in \cl{monotype font}. 
+Furthermore, blocks of \Rev code that are needed to build the model, specify the analysis, or execute the run are given in separate shaded boxes.
+For example, we will instruct you to create a new variable called \cl{n} that is equal to \cl{10} using the \cl{=} operator like this:
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+n = 10
+\end{lstlisting}
+\end{snugshade*}}
+
+It is important to be aware that some PDF viewers may render some characters given as \colorbox{shadecolor}{\tt{Rev commands}} differently. 
+Thus, if you copy and paste text from this PDF, you may introduce some incorrect characters. 
+Because of this, we recommend that you type the instructions in this tutorial or copy them from the scripts provided. 
+
+
+
+%\impmark 
+{\begin{framed}
+Make yourself familiar with the example script called \cl{archery\_MH.Rev} which shows the code for the following sections. Then, start a new and empty script in your text editor and follow each step provided  as \colorbox{shadecolor}{\tt{Rev commands}} below.
+\end{framed}}
+
+\subsection{The Metropolis-Hastings Algorithm}\label{sect:MH_algorithm}
 Though \RevBayes implements efficient and easy-to-use Markov chain Monte Carlo algorithms, we'll begin by writing one ourselves to gain a better understanding of the moving parts.
 The Metropolis-Hastings MCMC algorithm \citep{Metropolis1953,Hastings1970} proceeds as follows:
 
 \begin{enumerate}
-	\item Generate initial values for the parameters of the model (in this case, $mu$).
-	\item Propose a new value (which we'll call $mu^\prime$) for some parameters of the model, (possibly) based on their current values 
+	\item Generate initial values for the parameters of the model (in this case, $\mu$).
+	\item Propose a new value (which we'll call $\mu^\prime$) for some parameters of the model, (possibly) based on their current values 
 	\item Calculate the acceptance probability, $R$, according to:
 	\begin{align*}
-		R = \text{min}\left\{1, \frac{P(\bar x \mid \mu^\prime)}{P(\bar x \mid \mu)} \times \frac{P(\mu^\prime)}{P(\mu)} \times \frac{q(\mu)}{q(\mu^\prime)} \right\}
+		R = \text{min}\left\{1, \frac{P(\bar d \mid \mu^\prime)}{P(\bar d \mid \mu)} \times \frac{P(\mu^\prime)}{P(\mu)} \times \frac{q(\mu)}{q(\mu^\prime)} \right\}
 	\end{align*}
-	\item Generate a uniform random number between 1 and 0. If it is less than $R$, accept the move (set $\mu = \mu^\prime$). Otherwise, keep the current value of $\mu$.
+	\item Generate a uniform random number $u$ between 1 and 0. 
+%If it is less than $R$, accept the move (set $\mu = \mu^\prime$). Otherwise, keep the current value of $\mu$.
+    \begin{description}
+        \item [if $u<R$:] then accept the move and set $\mu = \mu^\prime$.
+        \item [else (if $u\geq R$):] the value of $mu$ does not change and the move is rejected: $\mu = \mu$.
+    \end{description}
 	\item Record the values of the parameters.
-	\item Return to step 2 many many times, keeping track of the value of $\mu$.
+	\item Return to step 2 many, many times, keeping track of the value of $\mu$.
 \end{enumerate}
 
 \subsection{Reading in the data}
-Actually, in this case, we're just going to simulate some data on the spot.
-Feel free to alter these values to see how they influence the posterior distribution
+%Actually, in this case, we're just going to simulate some data on the spot.
+Since we do not have access to archery data, we will simulate the the shots of our archer using the simulation tools in \RevBayes.
+By simulating the data, we can also evaluate how well our moves and prior model perform---\IE how robust and accurate are our estimators.
+After completing this exercise, feel free to repeat it and alter the true values to see how they influence the posterior distribution.
 {\tt \begin{snugshade*}
 \begin{lstlisting}    
 # Simulate some data (i.e. shoot some arrows)
 # First we need the number of arrows to shoot
 n = 10
-# Then we need some true mean distance
+# Then we need a true mean distance
 mu_true = 1
-# Simulate the observed mean distance of the arrows we shot
+# Simulate the observed mean distance of the arrows shot from a gamma distribution
 arrow_mean = rgamma(1, n, n/mu_true)[1]
 \end{lstlisting}
 \end{snugshade*}}
 
+The \Rev code above uses the \cl{rgamma()} function to simulate a single observed \cl{arrow\_mean} from $n=10$ arrows shot on target.
+The \cl{[1]} following the \cl{rgamma()} function is needed because this function always returns a {\emph vector} even when we only request a single value. Thus, in order to treat \cl{arrow\_mean} as a single value, we have to request the first element of the vector returned by that function.
+
+
 \subsection{Initializing the Markov chain}
-We have to start the MCMC off with some initial parameter values.
+We have to start the MCMC off with some initial values for all of the parameters.
 One way to do this is to randomly draw values of the parameters (just $\mu$, in this case) from the prior distribution.
 We'll assume a simple exponential prior distribution; that is, one with $\alpha = 1$.
 {\tt \begin{snugshade*}
@@ -108,6 +182,9 @@ alpha = 1.0
 mu = rexp(1, alpha)[1]
 \end{lstlisting}
 \end{snugshade*}}
+
+Now \cl{mu} is set to an initial value drawn from the exponential distribution. 
+
 
 \subsubsection{Likelihood function}
 We also need to specify the likelihood function.
