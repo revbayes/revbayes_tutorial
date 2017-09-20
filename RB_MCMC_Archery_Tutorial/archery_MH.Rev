@@ -38,12 +38,13 @@ print("iteration","mu")
 print(0,mu)
 
 # Write the MH algorithm
-reps = 10000
 printgen = 10
+reps = 10000
+delta = 1
 
 for(rep in 1:reps){
     # Propose a new value of mu
-    mu_prime = rexp(n=1, alpha)[1]
+    mu_prime <- mu + runif(n=1,-delta,delta)[1]
 
     # Compute the acceptance probability
     R = ( likelihood(mu_prime)/likelihood(mu) ) * ( prior(mu_prime)/prior(mu) ) 

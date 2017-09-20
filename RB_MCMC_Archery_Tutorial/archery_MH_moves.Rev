@@ -29,27 +29,6 @@ function prior(mu){
 }
 
 
-# specify the prior move
-function move_prior(weight) {
-
-    for (i in 1:weight) {
-        # Propose a new value of mu
-        mu_prime <- rexp(n=1, alpha)[1]
-
-        # Compute the acceptance probability
-        R = ( likelihood(mu_prime)/likelihood(mu) ) * ( prior(mu_prime)/prior(mu) ) 
-
-        # Accept or reject the proposal
-        u = runif(1,0,1)[1] 
-        if(u < R){
-            # Accept the proposal
-            mu = mu_prime 
-        }
-    }
-    
-}
-
-
 # specify the sliding-window move
 function move_slide(delta, weight) {
 
@@ -101,12 +80,11 @@ print("iteration","mu")
 print(0,mu)
 
 # Write the MH algorithm
-reps = 10000
 printgen = 10
+reps = 10000
 
 for(rep in 1:reps){
     
-    move_prior(1)
     move_slide(1,1)
     move_scale(1,1)
 
