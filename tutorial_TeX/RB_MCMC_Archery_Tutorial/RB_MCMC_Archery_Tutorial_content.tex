@@ -135,19 +135,19 @@ The Metropolis-Hastings MCMC algorithm \citep{Metropolis1953,Hastings1970} proce
 
 \begin{enumerate}
 	\item Generate initial values for the parameters of the model (in this case, $\mu$).
-	\item Propose a new value (which we'll call $\mu^\prime$) for some parameters of the model, (possibly) based on their current values 
+	\item Propose a new value (which we'll call $\mu^\prime$) for some parameters of the model, (possibly) based on their current values \label{sect:MH:step2}
 	\item Calculate the acceptance probability, $R$, according to:
 	\begin{align*}
 		R = \text{min}\left\{1, \frac{P(\bar d \mid \mu^\prime)}{P(\bar d \mid \mu)} \times \frac{P(\mu^\prime)}{P(\mu)} \times \frac{q(\mu)}{q(\mu^\prime)} \right\}
-	\end{align*}
+	\end{align*}\label{sect:MH:step3}
 	\item Generate a uniform random number $u$ between 1 and 0. 
 %If it is less than $R$, accept the move (set $\mu = \mu^\prime$). Otherwise, keep the current value of $\mu$.
     \begin{description}
         \item [if $u<R$:] then accept the move and set $\mu = \mu^\prime$.
         \item [else (if $u\geq R$):] the value of $mu$ does not change and the move is rejected: $\mu = \mu$.
-    \end{description}
-	\item Record the values of the parameters.
-	\item Return to step 2 many, many times, keeping track of the value of $\mu$.
+    \end{description}\label{sect:MH:step4}
+	\item Record the values of the parameters.\label{sect:MH:step5}
+	\item Return to step 2 many, many times, keeping track of the value of $\mu$.\label{sect:MH_alg:step6}
 \end{enumerate}
 
 \subsection{Reading in the data}
@@ -183,11 +183,11 @@ mu = rexp(1, alpha)[1]
 \end{lstlisting}
 \end{snugshade*}}
 
-Now \cl{mu} is set to an initial value drawn from the exponential distribution. 
+%Now \cl{mu} is set to an initial value drawn from the exponential distribution. 
 
 
 \subsubsection{Likelihood function}
-We also need to specify the likelihood function.
+Next we will specify the likelihood function, which will compute the probability of our data given the prior model.
 We use the gamma distribution for the likelihood. Since the likelihood is defined only for values of $\mu$ greater than 0, we return a likelihood of 0.0 if $\mu$ is negative:
 {\tt \begin{snugshade*}
 \begin{lstlisting}
@@ -201,8 +201,12 @@ function likelihood(mu){
 \end{lstlisting}
 \end{snugshade*}}
 
+In \Rev, we can create a {\em user-defined function} using the \cl{function} keyword. In our function definition above, \cl{likelihood()} takes a single value as an argument that is expected to be the mean ($\mu$) value.
+All other parameters in our function are expected to be defined before \cl{likelihood()} is called.
+
+
 \subsubsection{Prior distribution}
-Similarly, we need to specify a function for the prior distribution.
+Similarly, we need to define a function for the prior distribution.
 Here, we use the exponential probability distribution for the prior on $\mu$:
 {\tt \begin{snugshade*}
 \begin{lstlisting}    
@@ -217,9 +221,10 @@ function prior(mu){
 \end{snugshade*}}
 
 
+
 \subsubsection{Monitoring parameter values}
 Additionally, we are going to monitor, \IE store, parameter values into a file during the MCMC simulation.
-For this file we need to write the column headers:
+For this file we need to write the column headers in the first line of our output file, which we will name \cl{archery\_MH.log} (you may have to change the newline characters from \cl{"$\backslash$n"} to \cl{"$\backslash$r$\backslash$n"} if you're using a Windows operating system.):
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 # Prepare a file to log our samples
@@ -227,7 +232,7 @@ write("iteration","mu","\n",file="archery_MH.log")
 write(0,mu,"\n",file="archery_MH.log",append=TRUE)
 \end{lstlisting}
 \end{snugshade*}}
-(You may have to change the newline characters to \texttt{"$\backslash$r$\backslash$n"} if you're using a Windows operating system.)
+
 We'll also monitor the parameter values to the screen, so let's print the initial values:
 {\tt \begin{snugshade*}
 \begin{lstlisting}
@@ -239,14 +244,15 @@ print(0,mu)
 
 \subsection{Writing the MH Algorithm}
 At long last, we can write our MCMC algorithm.
-First, we define how often we print to file (\IE monitor), which is also often called thinning.
-If we set the variable \cl{printgen} to 1, then we will store the parameter values every iteration; if we choose \cl{printgen=10} instead, then only every $10$th iteration.
+First, we define how often we print to file (\IE monitor); this is called thinning if we do not choose to save every value of our parameter to file.
+If we set the variable \cl{printgen=1}, then we will store the parameter values at every iteration; if we instead choose \cl{printgen=10}, then we'll only save the values every $10^{th}$ step in our Markov chain.
 {\tt \begin{snugshade*}
 \begin{lstlisting}    
 printgen = 10
 \end{lstlisting}
 \end{snugshade*}}
-We will repeat this resampling procedure many times and iterate the MCMC using a \texttt{for} loop:
+We will repeat this resampling procedure many times and iterate the MCMC using a \cl{for} loop (\EG step \ref{sect:MH_alg:step6} in Sect.\ \ref{sect:MH_algorithm}). 
+We will start this part by defining the number of iterations for our MCMC (\cl{reps = 1000}) and writing the first line of our \cl{for} loop. 
 {\tt \begin{snugshade*}
 \begin{lstlisting}    
 # Write the MH algorithm
@@ -254,9 +260,11 @@ reps = 10000
 for(rep in 1:reps){
 \end{lstlisting}
 \end{snugshade*}}
-(remember to close your \texttt{for} loop at the end).
+In \Rev, the contents of every \cl{for} loop must be enclosed within a set of  `curly braces' \cl{\{...\}}. Our loop will not be complete until we finish it and add the closing brace. 
+Additionally, it is good style to make our loops readable by indenting the contents within the \cl{\{...\}}. 
+We recommend that you use 4 spaces to represent these indents.
 
-The first thing we do in the first generation is generate a new value of $\mu^\prime$ to evaluate.
+For our MCMC algorithm, the first thing we do is generate a new value of $\mu^\prime$ to evaluate (step \ref{sect:MH:step2} of Sect.\ \ref{sect:MH_algorithm}).
 We'll simply propose a new value of $\mu$ from a the prior distribution.
 Note that in this first example we do not condition new parameter values on the current value.
 {\tt \begin{snugshade*}
@@ -266,7 +274,7 @@ Note that in this first example we do not condition new parameter values on the 
 \end{lstlisting}
 \end{snugshade*}}
 
-Next, we compute the proposed likelihood and prior probabilities, as well as the acceptance probability, $R$:
+Next, we compute the proposed likelihood and prior probabilities using the functions we defined above, as well as the acceptance probability, $R$ (step \ref{sect:MH:step3} of Sect.\ \ref{sect:MH_algorithm}):
 {\tt \begin{snugshade*}
 \begin{lstlisting}    
     # Compute the acceptance probability
@@ -274,7 +282,7 @@ Next, we compute the proposed likelihood and prior probabilities, as well as the
 \end{lstlisting}
 \end{snugshade*}}
 
-Then, we accept the proposal with probability $R$ and reject otherwise:
+Then, we accept the proposal with probability $R$ and reject otherwise (step \ref{sect:MH:step5} of Sect.\ \ref{sect:MH_algorithm}):
 {\tt \begin{snugshade*}
 \begin{lstlisting}    
     # Accept or reject the proposal
