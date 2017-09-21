@@ -29,7 +29,9 @@ Good options include \href{http://www.sublimetext.com/}{\tt Sublime Text} or \hr
 \fbox{%
 \begin{minipage}{0.7\linewidth}\centering     
 \includegraphics[width=1.8in,angle=0]{\ResourcePath figures/target.pdf}
-\caption{placeholder figure for a representation of the model}
+\caption{Visual representation of the archery data used in this tutorial.
+Each dot represents the position of an arrow shot by an archer.
+The distance of each arrow from the the center of the target is assumed to be exponentially distributed with mean $\mu$.}
 \end{minipage}}
 \label{fig:archery_model}
 \end{figure}
@@ -43,13 +45,13 @@ Then, the probability density of each arrow distance $d_i$ is
 \begin{align*}
 P(d_i \mid \mu) = \frac{1}{\mu} e^{-x_i/\mu}
 \end{align*}
-Simple intuition suggests that, given that we observe $n$ arrows, the maximum-likelihood estimate (MLE) of $\mu$ is simply the average of all the arrow distances $\bar d = \frac{1}{n}\sum_{i=1}^n d_i$.
-This is indeed the maximum likelihood estimate!
+Simple intuition suggests that, given that we observe $n$ arrows, a good estimate of $\mu$ is simply the average of all the arrow distances $\bar d = \frac{1}{n}\sum_{i=1}^n d_i$.
+Indeed this is the maximum likelihood estimate!
 In fact, given $n$ arrows whose distances follow an exponential distribution, it turns out that the observed average $\bar d$ follows a gamma distribution, with parameters $n$ and $n/\mu$.
 \begin{align*}
 P(\bar d \mid \mu,n) = \frac{(n/\mu)^n}{\Gamma(n)} {\bar d}^{n-1}e^{-n\bar d /\mu}
 \end{align*}
-In this case, the average $\bar d$ acts as a \emph{sufficient statistic} for $\mu$. This means that it tells us everything we need to know about $\mu$.
+In this case, the average $\bar d$ acts as a \emph{sufficient statistic} for $\mu$. This means that it tells just as much about $\mu$ as the collection of individual arrow distances.
 Therefore, we will use a Gamma$(n, n\mu)$ distribution on $\bar d$ as the likelihood of our data.
 
 From Bayes' theorem, the \emph{posterior distribution} of $\mu$ given $\bar d$, $P(\mu \mid \bar d)$, is:
