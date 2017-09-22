@@ -17,8 +17,8 @@ moves[2] = mvScale(mu, lambda=1, weight=1.0)
 
 
 # Specify the likelihood model
-x_bar ~ dnGamma(n, n/mu)
-x_bar.clamp(arrow_mean)
+d_bar ~ dnGamma(n, n/mu)
+d_bar.clamp(arrow_mean)
 
 
 # Construct the full model

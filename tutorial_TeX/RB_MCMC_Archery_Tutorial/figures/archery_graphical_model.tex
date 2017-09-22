@@ -41,18 +41,16 @@
 \definecolor{brnt}{RGB}{221,132,13}
 
 \begin{document}
-\[\definecolor{shc}{RGB}{238,224,229}
-\begin{tikzpicture}
-\node[obnode] (x) at (1,1) {\LARGE $\bar x$};
-\node[snode] (mu) at ($(x)+(-1.5,1.5)$) {\Large $\mu$};
+\[\begin{tikzpicture}
+\node[obnode] (d) at (1,1) {\LARGE $\bar d$};
+\node[snode] (mu) at ($(d)+(-1.5,1.5)$) {\Large $\mu$};
 \node[constnode] (alpha) at ($(mu)+(0,1.5)$) {\Large $\alpha$};
-\node[constnode] (n) at ($(x)+(1.5,1.5)$) {\Large $n$};
-\draw [taro] (mu) -- (x) ;
+\node[constnode] (n) at ($(d)+(1.5,1.5)$) {\Large $n$};
+\draw [taro] (mu) -- (d) ;
 \draw [taro] (alpha) -- (mu) ;
-\draw [taro] (n) -- (x) ;
-\node (ex) at ($(x)+(0,-0.7)$) [centered]{\scriptsize gamma};
+\draw [taro] (n) -- (d) ;
+\node (ex) at ($(d)+(0,-0.7)$) [centered]{\scriptsize gamma};
 \node (ex) at ($(mu)+(-0.1,-0.7)$) [centered]{\scriptsize exponential};
 \end{tikzpicture}
-
 \]
 \end{document}

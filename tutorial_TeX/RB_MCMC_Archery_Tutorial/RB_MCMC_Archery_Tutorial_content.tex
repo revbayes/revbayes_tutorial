@@ -29,7 +29,9 @@ Good options include \href{http://www.sublimetext.com/}{\tt Sublime Text} or \hr
 \fbox{%
 \begin{minipage}{0.7\linewidth}\centering     
 \includegraphics[width=1.8in,angle=0]{\ResourcePath figures/target.pdf}
-\caption{placeholder figure for a representation of the model}
+\caption{Visual representation of the archery data used in this tutorial.
+Each dot represents the position of an arrow shot by an archer.
+The distance of each arrow from the the center of the target is assumed to be exponentially distributed with mean $\mu$.}
 \end{minipage}}
 \label{fig:archery_model}
 \end{figure}
@@ -43,13 +45,13 @@ Then, the probability density of each arrow distance $d_i$ is
 \begin{align*}
 P(d_i \mid \mu) = \frac{1}{\mu} e^{-x_i/\mu}
 \end{align*}
-Simple intuition suggests that, given that we observe $n$ arrows, the maximum-likelihood estimate (MLE) of $\mu$ is simply the average of all the arrow distances $\bar d = \frac{1}{n}\sum_{i=1}^n d_i$.
-This is indeed the maximum likelihood estimate!
+Simple intuition suggests that, given that we observe $n$ arrows, a good estimate of $\mu$ is simply the average of all the arrow distances $\bar d = \frac{1}{n}\sum_{i=1}^n d_i$.
+Indeed this is the maximum likelihood estimate!
 In fact, given $n$ arrows whose distances follow an exponential distribution, it turns out that the observed average $\bar d$ follows a gamma distribution, with parameters $n$ and $n/\mu$.
 \begin{align*}
 P(\bar d \mid \mu,n) = \frac{(n/\mu)^n}{\Gamma(n)} {\bar d}^{n-1}e^{-n\bar d /\mu}
 \end{align*}
-In this case, the average $\bar d$ acts as a \emph{sufficient statistic} for $\mu$. This means that it tells us everything we need to know about $\mu$.
+In this case, the average $\bar d$ acts as a \emph{sufficient statistic} for $\mu$. This means that it tells just as much about $\mu$ as the collection of individual arrow distances.
 Therefore, we will use a Gamma$(n, n\mu)$ distribution on $\bar d$ as the likelihood of our data.
 
 From Bayes' theorem, the \emph{posterior distribution} of $\mu$ given $\bar d$, $P(\mu \mid \bar d)$, is:
@@ -247,15 +249,15 @@ At long last, we can write our MCMC algorithm.
 First, we define how often we print to file (\IE monitor); this is called thinning if we do not choose to save every value of our parameter to file.
 If we set the variable \cl{printgen=1}, then we will store the parameter values at every iteration; if we instead choose \cl{printgen=10}, then we'll only save the values every $10^{th}$ step in our Markov chain.
 {\tt \begin{snugshade*}
-\begin{lstlisting}    
+\begin{lstlisting}
+# Write the MH algorithm    
 printgen = 10
 \end{lstlisting}
 \end{snugshade*}}
 We will repeat this resampling procedure many times and iterate the MCMC using a \cl{for} loop (\EG step \ref{sect:MH_alg:step6} in Sect.\ \ref{sect:MH_algorithm}). 
 We will start this part by defining the number of iterations for our MCMC (\cl{reps = 1000}) and writing the first line of our \cl{for} loop. 
 {\tt \begin{snugshade*}
-\begin{lstlisting}    
-# Write the MH algorithm
+\begin{lstlisting}
 reps = 10000 
 for(rep in 1:reps){
 \end{lstlisting}
@@ -265,12 +267,15 @@ Additionally, it is good style to make our loops readable by indenting the conte
 We recommend that you use 4 spaces to represent these indents.
 
 For our MCMC algorithm, the first thing we do is generate a new value of $\mu^\prime$ to evaluate (step \ref{sect:MH:step2} of Sect.\ \ref{sect:MH_algorithm}).
-We'll simply propose a new value of $\mu$ from a the prior distribution.
-Note that in this first example we do not condition new parameter values on the current value.
+We'll propose a new value of $\mu$ by drawing a random number from a uniform window and then adding this random number to the current value (\IE centered on the previous value).
+The value of \cl{delta} defines the width of the uniform window from which we draw new values.
+Thus, if \cl{delta} is large, then the proposed values are more likely to be very different from the current value of $\mu$.
+Conversely, if \cl{delta} is small, then the proposed values are more likely to be very close to the current value of $\mu$.
+By changing the value of \cl{delta} we can tune the behavior of the proposal, and therefore \cl{delta} is called a \emph{tuning parameter}.
 {\tt \begin{snugshade*}
 \begin{lstlisting}    
     # Propose a new value of p
-    mu_prime <- rexp(n=1, alpha)[1]
+    mu_prime <- mu + runif(n=1,-delta,delta)[1]
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -294,7 +299,7 @@ Then, we accept the proposal with probability $R$ and reject otherwise (step \re
 \end{lstlisting}
 \end{snugshade*}}
 
-Finally, we store the current value of $\mu$ in our log file (step \ref{sect:MH:step5} of Sect.\ \ref{sect:MH_algorithm}).
+\pagebreak Finally, we store the current value of $\mu$ in our log file (step \ref{sect:MH:step5} of Sect.\ \ref{sect:MH_algorithm}).
 Here, we actually check if we want to store the value during this iteration.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
@@ -335,16 +340,16 @@ There are other parameters, such as the posterior mean and the 95\% HPD (highest
 
 \section{More on Moves: Tuning and Weights}\label{sect:More_on_Moves}
 
-In the previous example we hard coded a single move updating the variable $\mu$ by drawing a new value from the prior.
-There are actually many other ways how to propose new values; some of which are more efficient than others.
+In the previous example we hard coded a single move updating the variable $\mu$ by drawing a new value from a sliding window.
+There are other ways how to propose new values; some of which are more efficient than others.
 
-First, let us rewrite the MCMC loop so that instead we call a function, which we name \cl{move\_prior} for simplicity, that performs the move:
+First, let us rewrite the MCMC loop so that instead we call a function, which we name \cl{move\_slide} for simplicity, that performs the move:
 {\tt \begin{snugshade*}
 \begin{lstlisting}    
 for (rep in 1:reps){
     
     # call uniform move
-    move_prior(1)
+    move_slide(1)
     
     if ( (rep % printgen) == 0 ) {
         # Write the samples to a file
@@ -357,47 +362,15 @@ for (rep in 1:reps){
 \end{lstlisting}
 \end{snugshade*}}
 
-\subsection{Prior move}
-Now we need to actually write the \cl{move\_prior} function.
+\subsection{Slide move}
+Now we need to actually write the \cl{move\_slide} function.
 We mostly just copy the code we had before into a dedicated function
-{\tt \begin{snugshade*}
-\begin{lstlisting}    
-function move_prior(weight) {
-
-    for (i in 1:weight) {
-        # Propose a new value of mu
-        mu_prime <- rexp(n=1, alpha)[1]
-
-        # Compute the acceptance probability
-        R = ( likelihood(mu_prime)/likelihood(mu) ) * ( prior(mu_prime)/prior(mu) ) 
-
-        # Accept or reject the proposal
-        u = runif(1,0,1)[1] 
-        if(u < R){
-            # Accept the proposal
-            mu = mu_prime 
-        }
-    }
-}
-\end{lstlisting}
-\end{snugshade*}}
-There are a few things to consider in the function \cl{move\_prior}.
-First, we do not have a return value because the move simply changes the variable $\mu$ if the move is accepted.
-Second, we expect an argument called \cl{weight} which will tell us how often we want to use this move.
-Otherwise, this function does exactly the same what was inside the for loop previously.
-
-(Note that you need to define this function before the for loop in your script).
-
-
-\subsection{Sliding-window move}
-As a second move we will write a sliding-window move.
-The sliding-window moves propose an update by drawing a random number from a uniform distribution and then adding this random number to the current value (\IE centered on the previous value).
 {\tt \begin{snugshade*}
 \begin{lstlisting}    
 function move_slide(delta, weight) {
 
     for (i in 1:weight) {
-        # Propose a new value of p
+        # Propose a new value of mu
         mu_prime <- mu + runif(n=1,-delta,delta)[1]
 
         # Compute the acceptance probability
@@ -413,10 +386,12 @@ function move_slide(delta, weight) {
 }
 \end{lstlisting}
 \end{snugshade*}}
-In addition to the weight of the move, this move has another argument, \cl{delta}.
-The argument \cl{delta} defines the width of the uniform window from which we draw new values.
-Thus, if \cl{delta} is large, then the proposed values are more likely to be very different from the current value of $\mu$.
-Conversely, if \cl{delta} is small, then the proposed values are more likely to be very close to the current value of $\mu$.
+There are a few things to consider in the function \cl{move\_slide}.
+First, we do not have a return value because the move simply changes the variable $\mu$ if the move is accepted.
+Second, in addition to the tuning parameter \cl{delta}, we expect an argument called \cl{weight} which will tell us how often we want to use this move.
+Otherwise, this function does exactly the same what was inside the for loop previously.
+
+(Note that you need to define this function before the for loop in your script).
 
 %\impmark 
 {\begin{framed}
@@ -427,8 +402,8 @@ There is, {\it a priori}, no good method for knowing what values of \cl{delta} a
 However, there are some algorithms implemented in \RevBayes, called \emph{auto-tuning}, that will estimate good values for \cl{delta}.
 
 \subsection{Scaling move}
-As a third and final move we will write a scaling move.
-The scaling move proposes an update by drawing a random number from a uniform(-0.5,0.5) distribution, exponentiating the random number, and then multiplying this scaling factor by the current value.
+As another move we will write a scaling move.
+The scaling move proposes an update by drawing a random number from a Uniform(-0.5,0.5) distribution, exponentiating the random number, and then multiplying this scaling factor by the current value.
 An interesting feature of this move is that it is not symmetrical and thus needs a Hastings ratio.
 The Hastings ratio is rather trivial in this case, and one only needs to multiply the acceptance rate by the scaling factor.
 {\tt \begin{snugshade*}
@@ -465,7 +440,7 @@ It will be very useful for you to understand these moves.
 \subsection{Exercise 2}
 
 \begin{enumerate}[label=\textnormal{Step \arabic*)}]
-	\item Rewrite your previous script to include these three different moves now.
+	\item Rewrite your previous script to include these two different moves now.
 	\item Then, run the script to estimate the posterior distribution of $\mu$ again.
 	\item Look at the output in \Tracer.
 	\item Are the distributions, mean and credible interval the same?
