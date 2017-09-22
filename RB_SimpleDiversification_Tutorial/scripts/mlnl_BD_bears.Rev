@@ -1,6 +1,6 @@
 ############################################################################################
 #   File: diversification tutorial model specification and sampler setup for estimating marginal
-#		  likelihoods under the pure birth-death, rho=10/147 model 
+#         likelihoods under the pure birth-death, rho=10/147 model
 ############################################################################################
 
 ## read in the tree 

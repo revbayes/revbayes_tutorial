@@ -28,7 +28,7 @@ for ( i in 1:num_post_sims) {
     tree_length <- sim_tree_trace.computeTreeLengths()
 
     ## This calculates the entropy statistic
-    entropy <- sim_tree_trace.computeEntropy(credibleTreeSetSize=1.0,verbose=FALSE)
+    entropy <- sim_tree_trace.computeEntropy(credibleTreeSetSize=1.0,numTaxa=data.ntaxa(),verbose=FALSE)
     
     
     ## calculate the stuff we care about for a single pps posterior
@@ -73,7 +73,7 @@ rf_dists <- emp_tree_trace.computePairwiseRFDistances(credibleTreeSetSize=1.0,ve
 tree_length <- emp_tree_trace.computeTreeLengths()
 
 ## This calculates the entropy statistic
-entropy <- emp_tree_trace.computeEntropy(credibleTreeSetSize=1.0,verbose=FALSE)
+entropy <- emp_tree_trace.computeEntropy(credibleTreeSetSize=1.0,numTaxa=data.ntaxa(),verbose=FALSE)
 
 ## calculate the stuff we care about for a single posterior
 mean_rf = mean(rf_dists)

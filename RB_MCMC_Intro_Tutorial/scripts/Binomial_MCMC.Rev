@@ -1,17 +1,16 @@
 # Make up some coin flips!
 # Feel free to change these numbers
 n <- 100 # the number of flips
-x <- 63	# the number of heads
+x <- 63  # the number of heads
 
 # Specify the prior distribution
 alpha <- 1
 beta  <- 1
 p ~ dnBeta(alpha,beta)
 
-# Define a move for our parameter, p
+# Define moves for our parameter, p
 moves[1] = mvSlide(p,delta=0.1,tune=true,weight=1.0)
 moves[2] = mvScale(p,lambda=0.1,tune=true,weight=1.0)
-moves[3] = mvBetaProbability(p,delta=0.1,tune=true,weight=1.0)
 
 # Specify the likelihood model
 k ~ dnBinomial(p, n)

@@ -18,15 +18,21 @@ p <- rbeta(n=1,alpha,beta)[1]
 
 
 # specify the likelihood function
-function RealPos likelihood(param) {
-   l = dbinomial(x,param,n,log=false)
-   return l
+function likelihood(p) {
+    if(p < 0 || p > 1)
+        return 0
+
+    l = dbinomial(x,p,n,log=false)
+    return l
 }
 
 # specify the prior function
-function RealPos prior(param) {
-   pp = dbeta(param,alpha,beta,log=false)
-   return pp
+function prior(p) {
+    if(p < 0 || p > 1)
+        return 0
+        
+    pp = dbeta(p,alpha,beta,log=false)
+    return pp
 }
 
 # specify the uniform move
@@ -58,7 +64,7 @@ function move_slide( RealPos delta, Natural weight) {
 
     for (i in 1:weight) {
         # Propose a new value of p
-        p_prime <- p + rnormal(n=1,0.0,delta)[1]
+        p_prime <- p + runif(n=1,-delta,delta)[1]
 
         # Compute the acceptance probability
         R <- ( likelihood(p_prime) / likelihood(p) ) * ( prior(p_prime) / prior(p) )
@@ -81,7 +87,7 @@ function move_scale( RealPos lambda, Natural weight) {
 
     for (i in 1:weight) {
         # Propose a new value of p
-        sf <- exp( lambda * ( runif(n=1,0,1) - 0.5 ) )
+        sf <- exp( lambda * ( runif(n=1,0,1)[1] - 0.5 ) )
         p_prime <- p * sf
 
         # Compute the acceptance probability
@@ -104,6 +110,10 @@ function move_scale( RealPos lambda, Natural weight) {
 write("iteration","p","\n",file="binomial_MH_moves.log")
 write(0,p,"\n",file="binomial_MH_moves.log",append=TRUE)
 
+# Print the initial values to the screen
+print("iteration","p")
+print(0,p)
+
 # Write the MH algorithm
 reps = 10000
 printgen = 10
@@ -111,10 +121,14 @@ printgen = 10
 for (rep in 1:reps) {
 
     move_uniform(1)
+    move_slide(1,1)
+    move_scale(1,1)
     
     if ( (rep % printgen) == 0 ) {
         # Write the samples to a file
         write(rep,p,"\n",file="binomial_MH_moves.log",append=TRUE)
+        # Print the samples to the screen
+        print(rep,p)
     }
 
 } # end MCMC

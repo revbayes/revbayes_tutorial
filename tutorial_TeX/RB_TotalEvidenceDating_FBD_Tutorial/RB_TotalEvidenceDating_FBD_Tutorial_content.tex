@@ -216,7 +216,7 @@ The strict clock is the simplest morphological branch rate model we can construc
 \end{figure} 
 
 
-\bigskip
+\newpage
 \section{Example: Estimating the Phylogeny and Divergence Times of Fossil and Extant Bears}\label{sect:Exercise}
 
 In this exercise, we will combine different types of data from 22 species of extant and extinct bears to estimate a posterior distribution of calibrated time trees for this group.
@@ -863,7 +863,8 @@ Open your text editor and create the morphological character model file called {
 Enter the \Rev code provided in this section in the new model file.
 \end{framed}}
 
-As stated in the introduction (section \ref{subsect:Intro-Morpho} and Fig.\ \ref{fig:morpho_gm}), we will use Mk to model our data. 
+As stated in the introduction (section \ref{subsect:Intro-Morpho}) %and Fig.\ \ref{fig:morpho_gm}), 
+we will use Mk to model our data. 
 Because the Mk model is a generalization of the Mk model, we will initialize our Q matrix from a Jukes-Cantor matrix.
 
 {\tt \begin{snugshade*}
@@ -1014,7 +1015,7 @@ The MCMC object that we named \cl{mymcmc} has a member method called \cl{.run()}
 This will execute our analysis and we will set the chain length to \cl{10000} cycles using the \cl{generations} option.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-mymcmc.run(generations=10000)
+mymcmc.run(generations=10000,tuningInterval=0)
 \end{lstlisting}
 \end{snugshade*}}
 

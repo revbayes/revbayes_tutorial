@@ -68,12 +68,12 @@ starting_tree <- readBranchLengthTrees("data/bifurcating.tre")[1]
 
 source("scripts/model_mk.rev")
 
-###########################################
-# Trait Evolution Model. For Simplicity, I #
-# Just used an Mk model, but you could use #
-# Others. Sample other Q-matrices are in the#
-# Discrete morphology tutorial 				#
-###########################################
+##############################################
+# Trait Evolution Model. For Simplicity, I   #
+# Just used an Mk model, but you could use   #
+# Others. Sample other Q-matrices are in the #
+# Discrete morphology tutorial               #
+##############################################
 
 Q_trait = fnJC(2)
 root_frequencies <- simplex(1,1)

@@ -4,10 +4,10 @@
 #
 # 
 # This file: specifies the multispecies coalescent, with different effective population sizes for each branch of the species tree, and with a calibration on the root node.
-# 			 We assume the species tree is drawn from a constant birth-death process.
-#			 Along the branches of the species tree, a multispecies coalescent process generates gene trees.
-#			 Along each gene tree, gene sequences are evolved according to an HKY model with a strict clock. 
-#            Here, we run an MCMC on this model, using data from 10 genes in 23 mammalian species.
+# We assume the species tree is drawn from a constant birth-death process.
+# Along the branches of the species tree, a multispecies coalescent process generates gene trees.
+# Along each gene tree, gene sequences are evolved according to an HKY model with a strict clock.
+# Here, we run an MCMC on this model, using data from 10 genes in 23 mammalian species.
 #
 # authors: Bastien Boussau and Sebastian Hoehna
 #
