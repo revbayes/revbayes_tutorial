@@ -17,8 +17,8 @@ n_branches <- 2 * n_species - 3
 taxa <- data.taxa()
 
 
-mvi = 0 
-mni = 0
+mvi = 1
+mni = 1
 
 
 ######################
@@ -36,13 +36,13 @@ Q <- fnJC(4)
 out_group = clade("Galeopterus_variegatus")
 # Prior distribution on the tree topology    
 topology ~ dnUniformTopology(taxa, outgroup=out_group)
-moves[++mvi] = mvNNI(topology, weight=5.0)
-moves[++mvi] = mvSPR(topology, weight=1.0)
+moves[mvi++] = mvNNI(topology, weight=5.0)
+moves[mvi++] = mvSPR(topology, weight=1.0)
 
 # Branch length prior
 for (i in 1:n_branches) {
     bl[i] ~ dnExponential(10.0)
-    moves[++mvi] = mvScale(bl[i])
+    moves[mvi++] = mvScale(bl[i])
 }
 
 TL := sum(bl)
@@ -69,12 +69,12 @@ seq.clamp(data)
 mymodel = model(psi)
 
 # add monitors
-monitors[++mni] = mnScreen(TL, printgen=1000)
-monitors[++mni] = mnFile(psi, filename="output/primates_cytb_JC.trees", printgen=10)
-monitors[++mni] = mnModel(filename="output/primates_cytb_JC.log",printgen=10)
+monitors[mni++] = mnScreen(TL, printgen=1000)
+monitors[mni++] = mnFile(psi, filename="output/primates_cytb_JC.trees", printgen=10)
+monitors[mni++] = mnModel(filename="output/primates_cytb_JC.log",printgen=10)
 
 # run the analysis
-mymcmc = mcmc(mymodel, moves, monitors, nruns=2)
+mymcmc = mcmc(mymodel, moves, monitors)
 mymcmc.burnin(10000,200)
 mymcmc.run(30000)
 
@@ -87,9 +87,7 @@ mymcmc.run(30000)
 # Now, we will analyze the tree output.
 # Let us start by reading in the tree trace
 treetrace = readTreeTrace("output/primates_cytb_JC.trees", treetype="non-clock")
-# and get the summary of the tree trace
-#treetrace.summarize()
-
+# and then get the MAP tree
 map_tree = mapTree(treetrace,"output/primates_cytb_JC_MAP.tree")
 
 
