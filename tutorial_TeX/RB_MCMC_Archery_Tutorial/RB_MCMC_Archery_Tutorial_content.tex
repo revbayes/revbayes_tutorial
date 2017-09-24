@@ -443,15 +443,31 @@ It will be very useful for you to understand these moves.
 	\item Rewrite your previous script to include these two different moves now.
 	\item Then, run the script to estimate the posterior distribution of $\mu$ again.
 	\item Look at the output in \Tracer.
-	\item Are the distributions, mean and credible interval the same?
 	\item Use only a single move and set \cl{printgen=1}. Which move has the best ESS?
-	\item How does the ESS change if you use a \cl{delta=10} for the sliding-window move?
-	\item Have a look at how the acceptance rate changes for different values of the tuning parameters.
+	\item How does the ESS change if you use a \cl{delta=10} for the sliding-window move? How about \cl{delta=0.1}?
+	\item How does the ESS change if you use \cl{lambda=10} or \cl{lambda=0.1} for the scaling move?
+	\item You can keep track of your results using the following table.
 \end{enumerate}
 
-
-However, this MCMC algorithm is \emph{very} specific to our archery model and thus hard to extend (also it's pretty inefficient!).
-
+\begin{Form}
+\begin{table}[h!]
+\centering
+\caption{\small Effective sample sizes (ESS) for two moves at three different tuning parameter values}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{l c c c c}
+\hline
+\textbf{Move} & \textbf{tuning = 10} & \textbf{tuning = 1} & \textbf{tuning = 0.1} \\ 
+\hline
+\vspace{1mm}
+Sliding-window & \TextField[name=pp11,backgroundcolor={.85 .85 .85},color={0 0 1},height=4ex]{}  & \TextField[name=pp12,backgroundcolor={.85 .85 .85},color={0 0 1},height=4ex]{}  & \TextField[name=pp13,backgroundcolor={.85 .85 .85},color={0 0 1},height=4ex]{}\\
+\hline
+\vspace{1mm}
+Scaling & \TextField[name=pp21,backgroundcolor={.85 .85 .85},color={0 0 1},height=4ex]{}  & \TextField[name=pp22,backgroundcolor={.85 .85 .85},color={0 0 1},height=4ex]{}  & \TextField[name=pp23,backgroundcolor={.85 .85 .85},color={0 0 1},height=4ex]{} \\
+\hline
+\end{tabular}}
+\label{tab:pp}
+\end{table}
+\end{Form}
 
 \section{The Metropolis-Hastings Algorithm with the \emph{Real} \RevBayes}
 We'll now specify the exact same model in \Rev using the built-in modeling functionality and moves.
@@ -546,6 +562,7 @@ Perhaps more importantly, this \Rev analysis is \emph{orders of magnitude} faste
 	\item Run the built-in MCMC and compare the results to your own MCMC. Are the posterior estimates the same? Are the acceptance rates of the moves similar?
 	\item Add a second move \cl{moves[2] = mvScale(mu,lambda=0.1,weight=1.0)}
 	\item Run the analysis again and compare the output.
+	\item Have a look at how the acceptance rate changes for different values of the tuning parameters.
 \end{enumerate}
 
 \section{Influence of the Prior}
