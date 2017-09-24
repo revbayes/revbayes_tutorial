@@ -30,7 +30,7 @@ Good options include \href{http://www.sublimetext.com/}{\tt Sublime Text} or \hr
 \begin{minipage}{0.7\linewidth}\centering     
 \includegraphics[width=1.8in,angle=0]{\ResourcePath figures/target.pdf}
 \caption{Visual representation of the archery data used in this tutorial.
-Each dot represents the position of an arrow shot by an archer.
+Each yellow dot represents the position of an arrow shot by an archer.
 The distance of each arrow from the the center of the target is assumed to be exponentially distributed with mean $\mu$.}
 \end{minipage}}
 \label{fig:archery_model}
@@ -316,7 +316,7 @@ Here, we actually check if we want to store the value during this iteration.
 \subsection{Exercise 1}
 
 % TODO: I don't like how the "Step" goes into the margin (TAH)
-\begin{enumerate}[label=\textnormal{Step \arabic*)}]
+\begin{enumerate}[label=\textnormal{Step \arabic*)},leftmargin=1.5cm]
 	\item Write and execute this script, which you can give any name you like (there is also an example file called \cl{archery\_MH.Rev}).
 	\item The \cl{.log} file will contain samples from the posterior distribution of the model! Open the file in \Tracer to learn about various features of the posterior distribution, for example: the posterior mean or the 95\% credible interval.
 \end{enumerate}
@@ -439,7 +439,7 @@ It will be very useful for you to understand these moves.
 
 \subsection{Exercise 2}
 
-\begin{enumerate}[label=\textnormal{Step \arabic*)}]
+\begin{enumerate}[label=\textnormal{Step \arabic*)},leftmargin=1.5cm]
 	\item Rewrite your previous script to include these two different moves now.
 	\item Then, run the script to estimate the posterior distribution of $\mu$ again.
 	\item Look at the output in \Tracer.
@@ -542,7 +542,7 @@ Perhaps more importantly, this \Rev analysis is \emph{orders of magnitude} faste
 
 \subsection{Exercise 3}
 
-\begin{enumerate}[label=\textnormal{Step \arabic*)}]
+\begin{enumerate}[label=\textnormal{Step \arabic*)},leftmargin=1.5cm]
 	\item Run the built-in MCMC and compare the results to your own MCMC. Are the posterior estimates the same? Are the acceptance rates of the moves similar?
 	\item Add a second move \cl{moves[2] = mvScale(mu,lambda=0.1,weight=1.0)}
 	\item Run the analysis again and compare the output.
@@ -578,7 +578,7 @@ We can do that in our example by increasing the number of arrows we shoot.
 
 \subsection{Exercise 4}
 
-\begin{enumerate}[label=\textnormal{Step \arabic*)}]
+\begin{enumerate}[label=\textnormal{Step \arabic*)},leftmargin=1.5cm]
 	\item Increase the true mean arrow distance so that it is significantly larger than $\alpha$. How does this impact your estimate of $\mu$?
 	\item Now use an uninformative Gamma$(0.001, 0.001)$ prior for $\mu$. Did your estimate of $\mu$ improve?
 	\item Increase the number of arrows shot. How does this change the shape and scale of the posterior distribution?
