@@ -28,7 +28,7 @@ Good options include \href{http://www.sublimetext.com/}{\tt Sublime Text} or \hr
 \centering
 \fbox{%
 \begin{minipage}{0.7\linewidth}\centering     
-\includegraphics[width=1.8in,angle=0]{\ResourcePath figures/target.pdf}
+\includegraphics[width=2.25in,angle=0]{\ResourcePath figures/target.pdf}
 \caption{Visual representation of the archery data used in this tutorial.
 Each yellow dot represents the position of an arrow shot by an archer.
 The distance of each arrow from the the center of the target is assumed to be exponentially distributed with mean $\mu$.}
@@ -37,9 +37,9 @@ The distance of each arrow from the the center of the target is assumed to be ex
 \end{figure}
 
 We'll begin our exploration of Bayesian inference with a simple archery model.
-For this model, there is an unknown archer shooting $n$ arrows at a target. 
+For this model, there is an unknown archer shooting $n$ arrows at a target (Fig.\ \ref{fig:archery_model}). 
 The distance $d$ of each arrow from the target's center is measured.
-Let's assume that the distance of each arrow from the bullseye follows an exponential distribution---i.e., $d\sim\mbox{Exp}(\mu^{-1})$.
+Let's assume that the distance of each arrow from the bullseye follows an exponential distribution---\IE $d\sim\mbox{Exp}(\mu^{-1})$.
 Further, we assume the archer has an inherent ability to shoot arrows at an average distance $\mu$.
 Then, the probability density of each arrow distance $d_i$ is
 \begin{align*}
@@ -60,10 +60,10 @@ From Bayes' theorem, the \emph{posterior distribution} of $\mu$ given $\bar d$, 
 \end{align*}
 The take-home message here is that, if we're interested in doing Bayesian inference for the archery model, we need to specify a \emph{likelihood function} and a \emph{prior distribution} for $\mu$.
 In virtually all practical cases, we cannot compute the posterior distribution directly and instead use numerical procedures, such as a Markov chain Monte Carlo (MCMC) algorithm.
-Therefore, we will also have to write an MCMC algorithm that samples parameter values in the frequency of their posterior probability.
+Therefore, we will also have to write a MCMC algorithm that samples parameter values in the frequency of their posterior probability.
 
 We'll use a simple exponential distribution as a prior on the parameter of the model, $\mu$.
-The exponential distribution has one parameter $\alpha$ representing our prior belief about the mean arrow distance (Figure~\ref{fig:exponential_distribution}).
+The \href{https://en.wikipedia.org/wiki/Exponential_distribution}{exponential distribution} has one parameter $\alpha$ representing our prior belief about the mean arrow distance (Figure~\ref{fig:exponential_distribution}).
 Different choices for $\alpha$ represent different prior beliefs.
 \begin{figure}[h!]
 \centering 
@@ -78,13 +78,13 @@ Here we show different curves for the exponential distribution when using differ
 
 Figure~\ref{fig:archery_model} shows the graphical model for the archery model.
 This nicely visualizes the dependency structure in the model.
-We see that the parameter $\alpha$ is drawn in a solid square, representing that this variable is constant.
-From this variables, we see an arrow going into the variable $\mu$.
+We see that the parameter $\alpha$ is drawn in a solid square, representing that this variable is constant (\IE it takes a ``known'' value).
+Following the graph in figure~\ref{fig:archery_model}, we see an arrow connecting $\alpha$ and the variable $\mu$.
 That simply means that $\mu$ depends on $\alpha$.
-More specifically, $\mu$ is a stochastic variable (shown as a solid circle) and drawn from an exponential distribution with parameter $\alpha$.
-Then, we have another constant variable, $n$.
-Finally, we have the observed data $\bar x$ which is drawn from a gamma distribution with parameters $\mu$ and $n$, as can be seen by the arrows going into $x$.
-Furthermore, the solid circle of $\bar x$ is shaded which means that the variable has data attached to it.
+More specifically, $\mu$ is a stochastic variable (shown as a solid circle) that is drawn from an exponential distribution with parameter $\alpha$.
+Another constant variable, $n$, represents the number of shots taken by the archer.
+Finally, we have the observed data $\bar d$ which is drawn from a gamma distribution with parameters $\mu$ and $n$, as can be seen by the arrows pointing from those parameters to $d$.
+Furthermore, the solid circle of $\bar d$ is shaded which means that the variable has data attached to it.
 \begin{figure}[h!]
 \centering
 \fbox{%
@@ -98,7 +98,7 @@ Furthermore, the solid circle of $\bar x$ is shaded which means that the variabl
 
 
 
-\section{Writing an MCMC from Scratch}
+\section{Writing MCMC from Scratch}\label{sect:MCMC-scratch}
 
 \medskip
 \subsection{Tutorial Format}\label{subsect:Exercise-Format}
@@ -122,13 +122,15 @@ n = 10
 
 It is important to be aware that some PDF viewers may render some characters given as \colorbox{shadecolor}{\tt{Rev commands}} differently. 
 Thus, if you copy and paste text from this PDF, you may introduce some incorrect characters. 
-Because of this, we recommend that you type the instructions in this tutorial or copy them from the scripts provided. 
+Because of this, we recommend that you type the instructions in this tutorial or copy them from the scripts provided (\href{https://github.com/revbayes/revbayes_tutorial/tree/master/RB_MCMC_Archery_Tutorial}{link}). 
 
-
+\subsection{Create Your Script File}
 
 %\impmark 
 {\begin{framed}
-Make yourself familiar with the example script called \cl{archery\_MH.Rev} which shows the code for the following sections. Then, start a new and empty script in your text editor and follow each step provided  as \colorbox{shadecolor}{\tt{Rev commands}} below.
+Make yourself familiar with the example script called \href{https://raw.githubusercontent.com/revbayes/revbayes_tutorial/master/RB_MCMC_Archery_Tutorial/archery_MH.Rev}{\cl{archery\_MH.Rev}} which shows the code for the following sections. Then, start a new and empty script in your text editor and follow each step provided  as \colorbox{shadecolor}{\tt{Rev commands}} below.
+
+Name the script file \cl{my\_archery\_MH.Rev} or anything you'd like.
 \end{framed}}
 
 \subsection{The Metropolis-Hastings Algorithm}\label{sect:MH_algorithm}
@@ -244,7 +246,7 @@ print(0,mu)
 \end{lstlisting}
 \end{snugshade*}}
 
-\subsection{Writing the MH Algorithm}
+\subsection{Writing the Metropolis-Hastings Algorithm}
 At long last, we can write our MCMC algorithm.
 First, we define how often we print to file (\IE monitor); this is called thinning if we do not choose to save every value of our parameter to file.
 If we set the variable \cl{printgen=1}, then we will store the parameter values at every iteration; if we instead choose \cl{printgen=10}, then we'll only save the values every $10^{th}$ step in our Markov chain.
