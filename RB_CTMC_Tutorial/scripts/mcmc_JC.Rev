@@ -71,7 +71,7 @@ mymodel = model(psi)
 # add monitors
 monitors[mni++] = mnScreen(TL, printgen=1000)
 monitors[mni++] = mnFile(psi, filename="output/primates_cytb_JC.trees", printgen=10)
-monitors[mni++] = mnModel(filename="output/primates_cytb_JC.log",printgen=10)
+monitors[mni++] = mnModel(filename="output/primates_cytb_JC.log", printgen=10)
 
 # run the analysis
 mymcmc = mcmc(mymodel, moves, monitors)

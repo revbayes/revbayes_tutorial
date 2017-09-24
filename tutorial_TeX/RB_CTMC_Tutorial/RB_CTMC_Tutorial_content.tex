@@ -410,7 +410,7 @@ The monitor functions are all called \cl{mn*}, where \cl{*} is the wildcard repr
 First, we will initialize the model monitor using the \cl{mnModel} function. This creates a new monitor variable that will output the states for all model parameters when passed into a MCMC function. 
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-monitors[mni++] = mnModel(filename="output/primates_cytb_JC.log",printgen=10, separator = TAB)
+monitors[mni++] = mnModel(filename="output/primates_cytb_JC.log", printgen=10)
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -418,7 +418,7 @@ The \cl{mnFile} monitor will record the states for only the parameters passed in
 
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-monitors[mni++] = mnFile(filename="output/primates_cytb_JC.trees",printgen=10, separator = TAB, psi)
+monitors[mni++] = mnFile(filename="output/primates_cytb_JC.trees", printgen=10, psi)
 \end{lstlisting}
 \end{snugshade*}}
 
