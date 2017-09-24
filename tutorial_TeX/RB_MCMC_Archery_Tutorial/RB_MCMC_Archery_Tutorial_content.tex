@@ -314,13 +314,35 @@ Here, we actually check if we want to store the value during this iteration.
 } # end MCMC\end{lstlisting}
 \end{snugshade*}}
 
+\bigskip
+\subsection{Execute the MCMC Analysis}\label{subsect:Exercise-RunMCMC}
+
+Now that you have defined your model and written functions to compute the probability and sample values of $\mu$, you are now ready to run your analysis. 
+
+{\begin{framed}
+Begin by running the \RevBayes executable. 
+You can do this by navigating to the folder containing your \RevBayes executable and running it. If you're on a Unix system you can do this by typing:
+
+\colorbox{black}{\strut\hspace{1mm}\textcolor[rgb]{0,1,1}{\cl{./rb}}\hspace{0.925\textwidth}}
+
+{\em Alternatively}, if you are on a Unix system and the \RevBayes binary is in your path, you only have to type the following from any directory:
+
+\colorbox{black}{\strut\hspace{1mm}\textcolor[rgb]{0,1,1}{\cl{rb}}\hspace{0.925\textwidth}}
+\end{framed}}
+
+Now you can run your \RevBayes script:
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+source("my_archery_MH.Rev")
+\end{lstlisting}
+\end{snugshade*}}
 
 \subsection{Exercise 1}
 
 % TODO: I don't like how the "Step" goes into the margin (TAH)
 \begin{enumerate}[label=\textnormal{Step \arabic*)},leftmargin=1.5cm]
-	\item Write and execute this script, which you can give any name you like (there is also an example file called \cl{archery\_MH.Rev}).
-	\item The \cl{.log} file will contain samples from the posterior distribution of the model! Open the file in \Tracer to learn about various features of the posterior distribution, for example: the posterior mean or the 95\% credible interval.
+	\item Write and execute the script outlined above, which you can give any name you like (there is also an example file called \cl{archery\_MH.Rev}).
+	\item The \cl{.log} file will contain samples from the posterior distribution of the model. Open the file in \Tracer to learn about various features of the posterior distribution, for example: the posterior mean or the 95\% credible interval.
 \end{enumerate}
 Pretty awesome, right?
 
