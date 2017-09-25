@@ -52,7 +52,7 @@ In fact, given $n$ arrows whose distances follow an exponential distribution, it
 P(\bar d \mid \mu,n) = \frac{(n/\mu)^n}{\Gamma(n)} {\bar d}^{n-1}e^{-n\bar d /\mu}
 \end{align*}
 In this case, the average $\bar d$ acts as a \emph{sufficient statistic} for $\mu$. This means that it tells just as much about $\mu$ as the collection of individual arrow distances.
-Therefore, we will use a Gamma$(n, n\mu)$ distribution on $\bar d$ as the likelihood of our data.
+Therefore, we will use a Gamma$(n, n/\mu)$ distribution on $\bar d$ as the likelihood of our data.
 
 From Bayes' theorem, the \emph{posterior distribution} of $\mu$ given $\bar d$, $P(\mu \mid \bar d)$, is:
 \begin{align*}
