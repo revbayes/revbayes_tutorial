@@ -257,10 +257,12 @@ printgen = 10
 \end{lstlisting}
 \end{snugshade*}}
 We will repeat this resampling procedure many times and iterate the MCMC using a \cl{for} loop (\EG step \ref{sect:MH_alg:step6} in Sect.\ \ref{sect:MH_algorithm}). 
-We will start this part by defining the number of iterations for our MCMC (\cl{reps = 10000}) and writing the first line of our \cl{for} loop. 
+We will start this part by defining the number of iterations for our MCMC (\cl{reps = 10000}) and writing the first line of our \cl{for} loop.
+We'll also define a variable \cl{delta} (explained momentarily).
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-reps = 10000 
+reps = 10000
+delta = 1
 for(rep in 1:reps){
 \end{lstlisting}
 \end{snugshade*}}
@@ -373,7 +375,7 @@ First, let us rewrite the MCMC loop so that instead we call a function, which we
 for (rep in 1:reps){
     
     # call uniform move
-    move_slide(1)
+    move_slide(1,1)
     
     if ( (rep % printgen) == 0 ) {
         # Write the samples to a file
@@ -444,7 +446,7 @@ function move_scale(lambda, weight) {
 
         # Accept or reject the proposal
         u = runif(1,0,1)[1] 
-        if(u < R){
+        if(u < R * sf){
             # Accept the proposal
             mu = mu_prime 
         }
