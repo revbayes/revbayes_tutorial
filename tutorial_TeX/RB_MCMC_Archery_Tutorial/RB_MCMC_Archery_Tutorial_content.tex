@@ -40,10 +40,10 @@ We'll begin our exploration of Bayesian inference with a simple archery model.
 For this model, there is an unknown archer shooting $n$ arrows at a target (Fig.\ \ref{fig:archery_model}). 
 The distance $d$ of each arrow from the target's center is measured.
 Let's assume that the distance of each arrow from the bullseye follows an exponential distribution---\IE $d\sim\mbox{Exp}(\mu^{-1})$.
-Further, we assume the archer has an inherent ability to shoot arrows at an average distance $\mu$.
+This implies the archer has an inherent ability to shoot arrows at an average distance $\mu$.
 Then, the probability density of each arrow distance $d_i$ is
 \begin{align*}
-P(d_i \mid \mu) = \frac{1}{\mu} e^{-x_i/\mu}
+P(d_i \mid \mu) = \frac{1}{\mu} e^{-d_i/\mu}
 \end{align*}
 Simple intuition suggests that, given that we observe $n$ arrows, a good estimate of $\mu$ is simply the average of all the arrow distances $\bar d = \frac{1}{n}\sum_{i=1}^n d_i$.
 Indeed this is the maximum likelihood estimate!
@@ -257,7 +257,7 @@ printgen = 10
 \end{lstlisting}
 \end{snugshade*}}
 We will repeat this resampling procedure many times and iterate the MCMC using a \cl{for} loop (\EG step \ref{sect:MH_alg:step6} in Sect.\ \ref{sect:MH_algorithm}). 
-We will start this part by defining the number of iterations for our MCMC (\cl{reps = 1000}) and writing the first line of our \cl{for} loop. 
+We will start this part by defining the number of iterations for our MCMC (\cl{reps = 10000}) and writing the first line of our \cl{for} loop. 
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 reps = 10000 
