@@ -379,7 +379,7 @@ for (rep in 1:reps){
     
     if ( (rep % printgen) == 0 ) {
         # Write the samples to a file
-        write(rep,p,"\n",file="archery_MH.log",append=TRUE)
+        write(rep,mu,"\n",file="archery_MH.log",append=TRUE)
         # Print the samples to the screen
         print(rep,mu)
     }
