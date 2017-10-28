@@ -16,4 +16,4 @@ for(i in 1:trace.size())
 trace_pruned = treeTrace(trees)
 
 # Summarize tree trace and save MCC tree to file
-mccTree(trace_pruned, file="output/bears.mcc.tre", conditionalAges=false )
+mccTree(trace_pruned, file="output/bears.mcc.tre" )

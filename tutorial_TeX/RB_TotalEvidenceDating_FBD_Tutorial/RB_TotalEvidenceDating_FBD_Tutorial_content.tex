@@ -1286,10 +1286,9 @@ By default, a burn-in of 25\% is used when creating the tree trace (250 trees in
 Now we will use the \cl{mccTree()} function to return a maximum clade credibility (MCC) tree.
 The MCC tree is the tree with the maximum product of the posterior clade probabilities.
 When considering trees with sampled ancestors, we refer to the maximum sampled ancestor clade credibility (MSACC) tree \citep{Gavryushkina2016}.
-We also use the option \cl{conditionalAges=false} to indicate that the node ages of the output tree should not be summarized conditional on the MCC topology.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-mccTree(trace_pruned, file="output/bears.mcc.tre", conditionalAges=false )
+mccTree(trace_pruned, file="output/bears.mcc.tre" )
 \end{lstlisting}
 \end{snugshade*}}
 
