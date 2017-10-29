@@ -45,8 +45,8 @@ for (x in 2:simData.ncolumns()) {
     ## 2-tailed
     two_tail_p_value = 2 * (min(v(lower_p_value+equal_p_value, upper_p_value+equal_p_value)))
 
-    write(file=outfileName, statID[x], lower_p_value+equal_p_value, upper_p_value+equal_p_value, two_tail_p_value, midpoint_p_value, effect_size, sep="\t", append=TRUE)
-    write(file=outfileName, "\n", sep="\t", append=TRUE)  
+    write(file=outfileName, statID[x], lower_p_value+equal_p_value, upper_p_value+equal_p_value, two_tail_p_value, midpoint_p_value, effect_size, sep=",", append=TRUE)
+    write(file=outfileName, "\n", sep=",", append=TRUE)  
 
 }
 ################### end of effect size calculations ##########################
