@@ -108,5 +108,5 @@ age_extant := tmrca(fbd_tree, clade_extant)
 age_Kretzoiarctos_beatrix   := tmrca(fbd_tree, clade("Kretzoiarctos_beatrix"))
 
 # Monitor the tree, pruning fossil taxa for which we do not have morphological or molecular data #
-pruned_tree := fnPruneTree(fbd_tree, prune=v("Ursus_abstrusus","Parictis_montanus"))
+pruned_tree := fnPruneTree(fbd_tree, pruneTaxa=v(taxa[17],taxa[20]))
 
