@@ -177,7 +177,7 @@ The initial value for the ancestral branch going into a node (at time $t_A$) is 
 After we integrate Equations (\ref{eq:BiSSE_D}) and (\ref{eq:BiSSE_E}) from the tips to the root, dealing with nodes along the way via Equation~(\ref{eq:BiSSE_node}), we arrive at the root with the $D$ values (called $D_{R, i}$), one for each state.
 These need to be combined somehow to get the overall likelihood of the data:
 \begin{equation*}
-    \text{Likelihood(tree, tip states)} = \sum_i D_{R, i} \, p_{R, i}
+    \text{Likelihood(tree, tip states | model)} = \sum_i D_{R, i} \, p_{R, i}
 \end{equation*}
 What probability weighting, $p_{R, i}$ should be used for the possible root states?
 Sometimes a fixed approach is used, assuming that the prior root state probabilities are either all equal, or are the same as the observed tip state frequencies, or are the equilibrium state frequencies under the model parameters.
@@ -585,12 +585,12 @@ One approach to reduce the possibility of falsely associating a character with d
 heterogeneity is to incorporate a second, unobserved character into the model  \citep[i.e.\ a Hidden State-Dependent Speciation and Extinction (HiSSE) model;][]{Beaulieu2016}.
 The changes in the unobserved character's state represent background diversification rate changes
 that are not correlated with the oberved character.
-See Figure \ref{fig:hisse} for a schematic overview of the HiSSE model, and Table \ref{tab:Hparam} for an explanation of the HiSSE model parameters.
+See Figure \ref{fig:HiSSE_Schematic} for a schematic overview of the HiSSE model, and Table \ref{tab:Hparam} for an explanation of the HiSSE model parameters.
 Now let's set up and run a HiSSE analysis in \RevBayes.
 
 \begin{figure}[h!]
 \centering
-\fbox{\includegraphics[width=\textwidth]{\ResourcePath figures/HiSSE.pdf}}
+\fbox{\includegraphics[width=0.7\textwidth]{\ResourcePath figures/HiSSE.pdf}}
 \caption{\small A schematic overview of the \HiSSE model. Each lineage has an observed binary state associated to it: state 0 (blue) or state 1 (red). 
 Furthermore, there is a second, unobserved (hidden), binary character with states A or B.
 The HiSSE model describes jointly the evolution of both of these two characters; a lineage
@@ -599,9 +599,7 @@ The HiSSE model describes jointly the evolution of both of these two characters;
     Note that just like BiSSE can easily be extended to MuSSE,
     \RevBayes allows you to extend HiSSE models beyond binary observed and unobserved characters.}
 \label{fig:HiSSE_Schematic}
-\end{figure} \label{fig:hisse}
-
-
+\end{figure}
 
 \begin{table}[t!]
 	\centering
@@ -632,7 +630,7 @@ The HiSSE model describes jointly the evolution of both of these two characters;
 
 \subsubsection{Reading in the data}
 
-Begin by reading in the observed tree and the morphological data. 
+Begin by reading in the observed tree and the character data.
 We have both stored in separate nexus files.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
@@ -641,7 +639,7 @@ data <- readCharacterData("data/primates_activity_period.nex")
 \end{lstlisting}
 \end{snugshade*}}
 Note, the character-dependent birth-death process currently uses always the first character/site in the alignment file.
-We have therefore split the morphological dataset into several small files that include only one morphological character each.
+We have therefore split the character dataset into several small files that include only one character each.
 
 From the tree, we can get some helpful variables:
 {\tt \begin{snugshade*}
@@ -658,7 +656,7 @@ mni = 0
 \end{lstlisting}
 \end{snugshade*}}
 
-Finally, we create a helper variable that specifies the number of states that the morphological character has.
+Finally, we create a helper variable that specifies the number of states that the character has.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 NUM_STATES = 2
@@ -666,7 +664,7 @@ NUM_HIDDEN = 2
 NUM_RATES = NUM_STATES * NUM_HIDDEN
 \end{lstlisting}
 \end{snugshade*}}
-Using this variable we can easily change our script to use a different morphological character with a different number of states.
+Using this variable we can easily change our script to use a different character with a different number of states.
 We will also use this variable in our second example on hidden-state speciation and extinction model. 
 
 
@@ -782,8 +780,6 @@ If such a rescaled rate matrix was used, then you need to provide an overall rat
 Create a variable with the prior probabilities of each rate category at the root.
 We are using a flat Dirichlet distribution as the prior on each state.
 In this case we are actually estimating the prior frequencies of the root states.
-There has been some discussion about this in \cite{FitzJohn2009}.
-You could also fix the prior probabilities for the root states to be equal (generally not recommended), or use empirical state frequencies. 
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 rate_category_prior ~ dnDirichlet( rep(1,NUM_STATES) )
@@ -952,7 +948,7 @@ $
 \item Visualize the state-specific diversification rates using \R.
 \item Do you see evidence for rate differences between the two states?
 \item Do you see differences to the previous \BiSSE estimates?
-\item Repeat this analysis for a different binary morphological character.
+\item Repeat this analysis for a different binary character.
 \end{enumerate}
 
 
@@ -1011,7 +1007,7 @@ observed_phylogeny <- readTrees("data/primates_biogeo.tre")[1]
 Get the taxa in the tree. We'll need this later on.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-taxa <- observed_phylogeny.taxa()
+taxa = observed_phylogeny.taxa()
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -1088,7 +1084,7 @@ moves[++mvi] = mvSlide( extinction_rates[4], weight=4 )
 Let's also create a deterministic variable to monitor the overall extinction rate.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-total_speciation := sum(extinction_rates)
+total_extinction := sum(extinction_rates)
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -1343,7 +1339,7 @@ anc_tree = ancestralStateTree(tree=observed_phylogeny, ancestral_state_trace_vec
 
 Like before, we'll plot the ancestral states 
 using the \RevGadgets \R package.
-Execute the script \texttt{plot\_anc\_states\_ClaSSE.R} in \R.
+Execute the script \\ \texttt{plot\_anc\_states\_ClaSSE.R} in \R.
 The results can be seen in Figure \ref{fig:results_ClaSSE}.
 The maximum \emph{a posteriori} (MAP) estimate for each node is shown as well as the posterior probability of the states represented by the size of the dots.
 
@@ -1376,7 +1372,7 @@ ggsave(output_file, width = 11, height = 9)
 \fbox{\includegraphics[width=\textwidth]{\ResourcePath figures/RevBayes_Anc_States_ClaSSE.pdf}}
 \caption{\small Maximum a posteriori estimate of biogeographic range evolution of the primates. 
     The most recent common ancestor of the primates is inferred to be in the Old World (green).
-    Approximately 70 Mya one lineage dispersed to be in both New and Old World (blue).
+    According to this reconstruction, approximately 70 Mya one lineage dispersed to be in both New and Old World (blue).
     This widespread lineage underwent allopatric cladogenesis, resulting in one
     daughter lineage in the Old World and one in the New World (green).}
 \label{fig:results_ClaSSE}

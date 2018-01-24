@@ -120,7 +120,7 @@ From the tree we can initialize some useful variables. (These can also be create
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 n_taxa <- T.ntips()
-taxa <- taxa()
+taxa <- T.taxa()
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -379,7 +379,7 @@ moves[mi++] = mvSimplexElementScale(sf, alpha=10.0, tune=true, weight=3.0)
 And instantiate the phyloCTMC.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-phySeq ~ dnPhyloCTMC(tree=timetree, Q=Q, branchRates=abs_clock_rt, nSites=n_sites, type="DNA")
+phySeq ~ dnPhyloCTMC(tree=timetree, Q=Q, branchRates=clock_rate, nSites=n_sites, type="DNA")
 phySeq.clamp(D)
 \end{lstlisting}
 \end{snugshade*}}
@@ -415,7 +415,7 @@ Open your text editor and create the marginal-likelihood analysis file under the
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 D <- readDiscreteCharacterData(file="data/bears_irbp.nex")
-n_sites <- D.nchar(1)
+n_sites <- D.nchar()
 mi = 1
 \end{lstlisting}
 \end{snugshade*}}
@@ -659,7 +659,7 @@ moves[mi++] = mvSimplexElementScale(sf, alpha=10.0, tune=true, weight=3.0)
 Now, we can put the whole model together in the phylogenetic CTMC and clamp that node with our sequence data.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-phySeq ~ dnPhyloCTMC(tree=timetree, Q=Q, branchRates=branch_subrates, nSites=n_sites, type="DNA")
+phySeq ~ dnPhyloCTMC(tree=timetree, Q=Q, branchRates=branch_rates, nSites=n_sites, type="DNA")
 attach the observed sequence data
 phySeq.clamp(D)
 \end{lstlisting}

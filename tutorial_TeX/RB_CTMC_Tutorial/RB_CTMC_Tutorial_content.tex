@@ -98,8 +98,8 @@ P_{JC69} = \begin{pmatrix} {{1\over4} + {3\over4}e^{-rt}} & {{1\over4} - {1\over
 \end{equation*}
 where $t$ is the branch length in units of time, and $r$ is the rate (clock) for the process.
 In the later exercises you will be asked to specify more complex substitution models.
-\textbf{Don't be scared by the math!}
-\RevBayes will take care of all the computations for you.
+\textbf{Don't worry, you won't have to calculate all of the transition probabilities, because
+\RevBayes will take care of all the computations for you.} 
 Here we only provide some of the equations for the models in case you might be interested in the details.
 You will be able to complete the exercises without understanding the underlying math.
 
@@ -168,8 +168,8 @@ Similarly, we set up a counter variable for the number of monitors.
 [Monitors print the values of model parameters to the screen and/or log files during the MCMC analysis].
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-mvi = 0 
-mni = 0
+mvi = 1 
+mni = 1
 \end{lstlisting}
 \end{snugshade*}}
 You may have noticed that we used the \cl{=} operator to create the move index.
@@ -225,8 +225,8 @@ In the case of our unrooted tree topology, for example, we can use both a neares
 These moves do not have tuning parameters associated with them, thus you only need to pass in the \cl{topology} node and proposal \cl{weight}. 
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-moves[++mvi] = mvNNI(topology, weight=1.0)
-moves[++mvi] = mvSPR(topology, weight=1.0)
+moves[mvi++] = mvNNI(topology, weight=1.0)
+moves[mvi++] = mvSPR(topology, weight=1.0)
 \end{lstlisting}
 \end{snugshade*}}
 The weight specifies how often the move will be applied either on average per iteration or relative to all other moves.
@@ -240,7 +240,7 @@ Copy this entire block of \Rev~code into the console:
 \begin{lstlisting}
 for (i in 1:n_branches) {
    br_lens[i] ~ dnExponential(10.0)
-   moves[++mvi] = mvScale(br_lens[i]) 
+   moves[mvi++] = mvScale(br_lens[i]) 
 }
 \end{lstlisting}
 \end{snugshade*}}
@@ -263,12 +263,12 @@ For example, we can use instead a specific gamma prior distribution (or any othe
 \begin{lstlisting}
 # specify a prior distribution on the tree length with your desired mean
 TL ~ dnGamma(2,4)
-moves[++mvi] = mvScale(TL) 
+moves[mvi++] = mvScale(TL) 
 
 # now create a random variable for the relative branch lengths
 rel_branch_lengths ~ dnDirichlet( rep(1.0,n_branches) )
-moves[++mvi] = mvBetaSimplex(rel_branch_lengths, weight=n_branches)
-moves[++mvi] = mvDirichletSimplex(rel_branch_lengths, weight=n_branches/10.0)
+moves[mvi++] = mvBetaSimplex(rel_branch_lengths, weight=n_branches)
+moves[mvi++] = mvDirichletSimplex(rel_branch_lengths, weight=n_branches/10.0)
 
 # finally, transform the relative branch lengths into actual branch lengths
 br_lens := rel_branch_lengths * TL
@@ -320,12 +320,12 @@ We also need moves that change the ages of the internal nodes, for example, \cl{
 These moves do not have tuning parameters associated with them, thus you only need to pass in the \cl{psi} node and proposal \cl{weight}. 
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-moves[++mvi] = mvNarrow(psi, weight=5.0)
-moves[++mvi] = mvNNI(psi, weight=1.0)
-moves[++mvi] = mvFNPR(psi, weight=3.0)
-moves[++mvi] = mvGPR(psi, weight=3.0)
-moves[++mvi] = mvSubtreeScale(psi, weight=3.0)
-moves[++mvi] = mvNodeTimeSlideUniform(psi, weight=15.0)
+moves[mvi++] = mvNarrow(psi, weight=5.0)
+moves[mvi++] = mvNNI(psi, weight=1.0)
+moves[mvi++] = mvFNPR(psi, weight=3.0)
+moves[mvi++] = mvGPR(psi, weight=3.0)
+moves[mvi++] = mvSubtreeScale(psi, weight=3.0)
+moves[mvi++] = mvNodeTimeSlideUniform(psi, weight=15.0)
 \end{lstlisting}
 \end{snugshade*}}
 The weight specifies how often the move will be applied either on average per iteration or relative to all other moves.
@@ -341,7 +341,7 @@ This specifies our lack of prior knowledge on the magnitude of the clock rate.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 log_clock_rate ~ dnUniform(-6,1)
-moves[++mvi] = mvSlide(log_clock_rate, weight=2.0)
+moves[mvi++] = mvSlide(log_clock_rate, weight=2.0)
 clock_rate := 10^log_clock_rate
 \end{lstlisting}
 \end{snugshade*}}
@@ -410,7 +410,7 @@ The monitor functions are all called \cl{mn*}, where \cl{*} is the wildcard repr
 First, we will initialize the model monitor using the \cl{mnModel} function. This creates a new monitor variable that will output the states for all model parameters when passed into a MCMC function. 
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-monitors[++mni] = mnModel(filename="output/primates_cytb_JC_posterior.log",printgen=10, separator = TAB)
+monitors[mni++] = mnModel(filename="output/primates_cytb_JC.log", printgen=10)
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -418,7 +418,7 @@ The \cl{mnFile} monitor will record the states for only the parameters passed in
 
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-monitors[++mni] = mnFile(filename="output/primates_cytb_JC_posterior.trees",printgen=10, separator = TAB, psi)
+monitors[mni++] = mnFile(filename="output/primates_cytb_JC.trees", printgen=10, psi)
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -426,7 +426,7 @@ monitors[++mni] = mnFile(filename="output/primates_cytb_JC_posterior.trees",prin
 Finally, create a screen monitor that will report the states of specified variables to the screen with \cl{mnScreen}:
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-monitors[++mni] = mnScreen(printgen=1000, TL)
+monitors[mni++] = mnScreen(printgen=1000, TL)
 \end{lstlisting}
 \end{snugshade*}}
 This monitor mostly helps us to see the progress of the MCMC run.
@@ -437,18 +437,19 @@ With a fully specified model, a set of monitors, and a set of moves, we can now 
 The \cl{mcmc()} function will create our MCMC object:
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-mymcmc = mcmc(mymodel, monitors, moves, nruns=2)
+mymcmc = mcmc(mymodel, monitors, moves)
 \end{lstlisting}
 \end{snugshade*}}
+\iffalse
 Notice that we also specified \cl{nruns=2} which means that \RevBayes will automatically run 2 independent MCMC runs.
 You will find that the output is created in two files with extension \cl{\_run\_1} and \cl{\_run\_2} for each replicate and additionally the samples from both runs are combined into one file for more convenient post-processing.
-
+\fi
 We may wish to run the \cl{.burnin()} member function.
 Recall that this function \textbf{does not} specify the number of states that we wish to discard from the MCMC analysis as burnin (i.e., the samples collected before the chain converges to the stationary distribution).  
 Instead, the \cl{.burnin()} function specifies a \textit{completely separate} preliminary MCMC analysis that is used to tune the scale of the moves to improve mixing of the MCMC analysis.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-mymcmc.burnin(generations=10000,tuningInterval=1000)
+mymcmc.burnin(generations=10000,tuningInterval=200)
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -466,17 +467,15 @@ When the analysis is complete, you will have the monitored files in your output 
 Methods for visualizing the marginal densities of parameter values are not currently available in \RevBayes itself. 
 Thus, it is important to use programs like \Tracer \citep{Rambaut2011} to evaluate mixing and non-convergence.
 
-\noindent \\ \impmark Look at the files called \cl{output/primates\_cytb\_JC\_posterior\_run\_1.log} and \\\cl{output/primates\_cytb\_JC\_posterior\_run\_2.log} in \Tracer. There you see the posterior distributions of the continuous parameters, \EG the tree length variable \cl{TL}.
+\noindent \\ \impmark Look at the file called \cl{output/primates\_cytb\_JC.log} in \Tracer. There you see the posterior distribution of the continuous parameters, \EG the tree length variable \cl{TL}.
 \begin{figure}[htbp!]
 \centering
 \fbox{\includegraphics[width=0.4\textwidth]{\ResourcePath figures/primates_cytb_JC_TL_Trace.pdf}
 \includegraphics[width=0.4\textwidth]{\ResourcePath figures/primates_cytb_JC_TL_Distribution.pdf}}
-\caption{\small Left: Trace of tree-length samples for the two replicated MCMC runs. 
-The caterpillar-like look is a good sign as well as as that the two runs look virtually identical.
+\caption{\small Left: Trace of tree-length samples for one MCMC run. 
+The caterpillar-like look is a good sign.
 You will also see that the effective sample size is comparably large, \IE much larger than 200.
-Right: Posterior distribution of the tree length of the primate phylogeny under a Jukes-Cantor substitution model. 
-Here we show the two independent replicated MCMC runs which yield the same posterior estimate.
-This is a superficial test that the MCMC has converged to the same estimate.}
+Right: Posterior distribution of the tree length of the primate phylogeny under a Jukes-Cantor substitution model.}
 \label{fig:jc_tree}
 \end{figure}
 
@@ -486,9 +485,7 @@ We are interested in the phylogenetic relationship of the Tarsiers. Therefore, w
 \RevBayes can summarize the sampled trees by reading in the tree-trace file:
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-treetrace = readTreeTrace("output/primates_cytb_JC_posterior.trees",
-                             treetype="non-clock")
-treetrace.summarize()
+treetrace = readTreeTrace("output/primates_cytb_JC.trees", treetype="non-clock")
 \end{lstlisting}
 \end{snugshade*}}
 The \cl{mapTree()} function will summarize the tree samples and write the maximum \textit{a posteriori} tree to file:
@@ -507,8 +504,8 @@ We have rooted the tree at the outgroup \emph{Galeopterus\_variegatus}}
 \end{figure}
 \noindent \\ \impmark Look at the file called \cl{output/primates\_cytb\_JC\_MAP.tree} in \texttt{FigTree}. We show it in Figure~\ref{fig:jc_tree}.
 
-
-\noindent \\ \impmark Fill in the following table as you go through the tutorial.
+\pagebreak
+\noindent \impmark Fill in the following table as you go through the tutorial.
 
 Note, you can query the posterior probability of a clade being monophyletic using the following command:
 {\tt \begin{snugshade*}
@@ -628,8 +625,8 @@ A good move on variables drawn from a Dirichlet distribution is the \cl{mvBetaSi
 This move randomly takes an element from the simplex, proposes a new value for it drawn from a Beta distribution, and then rescales all values of the simplex to sum to 1 again.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-moves[++mvi] = mvBetaSimplex(pi, weight=2)
-moves[++mvi] = mvDirichletSimplex(pi, weight=1)
+moves[mvi++] = mvBetaSimplex(pi, weight=2)
+moves[mvi++] = mvDirichletSimplex(pi, weight=1)
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -637,14 +634,14 @@ The second new variable is $\kappa$, which specifies the ratio of transition-tra
 The $\kappa$ parameter must be a positive-real number and a natural choice as the prior distribution is the lognormal distribution:
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-kappa ~ dnLognormal(0.0,1.25)
+kappa ~ dnLognormal(0.0, 1.0)
 \end{lstlisting}
 \end{snugshade*}}
 Again, we need to specify a move for this new stochastic variable.
 A simple scaling move should do the job.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-moves[++mvi] = mvScale(kappa)
+moves[mvi++] = mvScale(kappa)
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -679,7 +676,6 @@ This should be all for the HKY model.
 
 
 
-\newpage
 \section{The General Time-Reversible (GTR) Substitution Model}
 
 The HKY substitution model can accommodate unequal base frequencies and different rates of transition and transversion substitutions.
@@ -753,8 +749,8 @@ The Dirichlet prior on our parameter \cl{er} creates a \href{http://en.wikipedia
 
 {\tt\small \begin{snugshade*}
 \begin{lstlisting}
-moves[++mvi] = mvBetaSimplex(er, weight=3)
-moves[++mvi] = mvDirichletSimplex(er, weight=1)
+moves[mvi++] = mvBetaSimplex(er, weight=3)
+moves[mvi++] = mvDirichletSimplex(er, weight=1)
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -771,8 +767,8 @@ The node \cl{pi} represents the $\pi$ node in Figure \ref{fig:gtr}.
 Now add the simplex scale move on the stationary frequencies to the moves vector:
 {\tt \small \begin{snugshade*}
 \begin{lstlisting}
-moves[++mvi] = mvBetaSimplex(pi, weight=2)
-moves[++mvi] = mvDirichletSimplex(pi, weight=1)
+moves[mvi++] = mvBetaSimplex(pi, weight=2)
+moves[mvi++] = mvDirichletSimplex(pi, weight=1)
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -801,7 +797,6 @@ Q := fnGTR(er,pi)
 
 
 
-\newpage
 \section{The Discrete Gamma Model of Among Site Rate Variation}
 
 
@@ -878,7 +873,7 @@ The random variable that controls the rate variation is the stochastic node \cl{
 We will apply a simple scale move to this parameter.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-moves[++mvi] = mvScale(alpha, weight=2.0)
+moves[mvi++] = mvScale(alpha, weight=2.0)
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -936,7 +931,7 @@ The \cl{Beta(1,1)} distribution is a flat prior distribution that specifies equa
 Then, as usual, we add a move to change this stochastic variable; we'll used a simple sliding window move.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-moves[++mvi] = mvSlide(pinvar)
+moves[mvi++] = mvSlide(pinvar)
 \end{lstlisting}
 \end{snugshade*}}
 

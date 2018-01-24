@@ -2,13 +2,13 @@
 Incomplete lineage sorting is a population-level process.
 In a species, at a given time, there are several alleles for a given locus in the genome.
 These alleles have their own history, they diverged from each other at various times in the past.
-This history can differ from the species history, because several alleles can persist through a speciation event, and because, without selective effects, the sorting of alleles during a speciation event is random and can result in a tree that differs from the species tree (Fig. \ref{fig1}d).
+This history can differ from the species history, because several alleles can persist through a speciation event, and because, even without selective effects, the sorting of alleles during a speciation event is random and can result in a tree that differs from the species tree (Fig. \ref{fig1}d).
 In all cases, incongruence between the gene tree and the species tree occurs when alleles persist over the course of several speciation events.
 When reconstructing a gene tree, one therefore gets the history of the alleles that have been sampled (at best), not the history of the species. 
 
 In 2003, Rannala and Yang proposed a powerful way to model the sorting of alleles along a phylogeny of several species \citep{Rannala2003}, the multispecies coalescent (Fig. \ref{fig2}).
 This model is at the origin of most model-based approaches to reconstruct gene and species trees \citep{Edwards2007,Heled2010}.
-The multispecies coalescent appropriately models the evolution of a population of alleles along a species tree.
+The multispecies coalescent models the evolution of a population of alleles along a species tree.
 Along the species tree, it allows different branch lengths, in units of time, and also allows different effective population sizes.
 Computing the probability of a gene tree given a species tree and other parameters is quite easy.
 Basically it works by cutting the gene tree into independent species-specific subtrees, computing probabilities for each of those subtrees, and combining them all at the end to get the probability of the gene tree according to the multispecies coalescent, given the current parameter values.
@@ -51,10 +51,10 @@ We will assume that:
 \begin{itemize}
 \item The species tree is drawn from a constant birth-death process.
 \item Along the branches of the species tree, a multispecies coalescent process generates gene trees. Different effective population sizes are assigned to each branch of the species tree.
-\item Along each gene tree, gene sequences are evolved according to an HKY model with gamma distributed rate variation among sites and a strict global clock. 
+\item Along each gene tree, gene sequences are evolved according to an HKY modeland a strict global clock. To save computing time, we do not use gamma distributed rate variation among sites.
 \item Here, we run an MCMC on this model, using data from 10 genes in 23 mammalian species.
 \end{itemize}
-Scripts are all placed in {\footnotesize \emph{$tutorials/RB\_MultispeciesCoalescent\_Tutorial/RevBayes\_scripts/$}}. 
+Scripts are all placed in {\footnotesize \emph{$tutorials/RB\_MultispeciesCoalescent\_Tutorial/scripts/$}}. 
 \end{center}
 \end{framed}}
 \vspace{5mm}
@@ -62,8 +62,12 @@ Scripts are all placed in {\footnotesize \emph{$tutorials/RB\_MultispeciesCoales
 \begin{enumerate}
 \item Open RevBayes
 \item Let's load all 10 gene alignments.
+
 {\tt \begin{snugshade*}
 \begin{lstlisting}
+
+### Read in sequence data for all genes
+
 locus_names = ["COIII", "FGA", "GHRmeredith", "lrpprc_169", "npas3", "sim1", "tex2", "ttr", "zfy", "zic3"]
 
 num_loci = locus_names.size()
@@ -72,86 +76,118 @@ num_loci = locus_names.size()
 for ( i in 1:num_loci ) {
     data[i] <- readDiscreteCharacterData("data/" + locus_names[i] + ".fasta")
 }
+# alternatively we could have read in from data/merged.nex too (although that contains the empty sequences ...)
 
-# Now we get some useful variables from the data. We need these later on.
+# Get some useful variables from a species tree.
+# We need these variables later on, but we will not use the species tree as starting value.
 primate_tree = readTrees("data/primates.tree")[1]
-# get the number of species
 n_species <- primate_tree.ntips()
-# get the taxon information (e.g. the taxon names)
 taxa <- primate_tree.taxa()
 n_branches <- 2 * n_species - 1 # number of branches in a rooted tree
 
-# We set our move index
+# set my move index
 mi = 0
+
 \end{lstlisting}
 \end{snugshade*}}
-\item We specified a constant-rate birth-death process as our prior on the species tree. 
+
+\item We specify a constant-rate birth-death process as our prior on the species tree. 
 The birth-death process has a speciation and extinction rate as its parameters. 
-We will use here a transformation and specify priors on the speciation rate and relative extinction rate.
+We use here a transformation and specify priors on the speciation rate and relative extinction rate.
 Additionally, we calibrate the tree by assuming that the crown age of primates is around 75 MYA.
 Thus, we specify a normal distribution with mean 75 and standard deviation 2.5 as the prior on the root age.
 Since the root age can only be a positive real number we truncate the normal distribution at 0.
+
 {\tt \begin{snugshade*}
 \begin{lstlisting}
+
 # Specify a prior on the diversification and turnover rate
 speciation ~ dnGamma(2,2)
 relativeExtinction ~ dnBeta(1,1)
 
-# Now transform the diversification and turnover rates into speciation and extinction rates
+# now transform the diversification and turnover rates into speciation and extinction rates
 extinction := speciation * relativeExtinction
 
-# Specify a prior on the root age (our informed guess is about ~75 mya)
-# Note that we use a truncated normal distribution because the root age must be positive
+# specify a prior on the root age (our informed guess is about 75-80 mya)
 root ~ dnNormal(mean=75,sd=2.5,min=0.0, max=Inf)
 
-sampling_fraction <- 23 / 450 # we sampled 23 out of the ~ 450 primate species
+sampling_fraction <- 23 / 450 # 23 out of the ~ 450 primate species
 
 # create some moves that change the stochastic variables
-# Moves are sliding and scaling proposals
-moves[++mvi] = mvSlide(diversification,delta=1,tune=true,weight=2)
-moves[++mvi] = mvSlide(relativeExtinction,delta=1,tune=true,weight=2)
-moves[++mvi] = mvScale(diversification,lambda=1,tune=true,weight=2)
-moves[++mvi] = mvScale(relativeExtinction,lambda=1,tune=true,weight=2)
-moves[++mvi] = mvSlide(root,delta=1,tune=true,weight=0.2)
+# all moves are sliding and scaling proposals
+moves[++mi] = mvSlideBactrian(speciation,tune=true,weight=2)
+moves[++mi] = mvSlideBactrian(relativeExtinction,tune=true,weight=2)
+moves[++mi] = mvScaleBactrian(speciation,lambda=1,tune=true,weight=2)
+moves[++mi] = mvScaleBactrian(relativeExtinction,lambda=1,tune=true,weight=2)
 
 
-# construct a variable for the tree drawn from a birth-death process
+# construct a variable for the tree drawn from a birth death process
 psi ~ dnBDP(lambda=speciation, mu=extinction, rootAge=root, rho=sampling_fraction, taxa=taxa )
-
-moves[++mvi] = mvNarrow(psi, weight=5.0)
-moves[++mvi] = mvNNI(psi, weight=1.0)
-moves[++mvi] = mvFNPR(psi, weight=3.0)
-moves[++mvi] = mvGPR(psi, weight=3.0)
-moves[++mvi] = mvSubtreeScale(psi, weight=3.0)
-moves[++mvi] = mvNodeTimeSlideUniform(psi, weight=15.0)
-moves[++mvi] = mvTreeNodeAgeSlide(psi, weight=50)
-
 
 \end{lstlisting}
 \end{snugshade*}}
+
+\item Mixing in the multispecies coalescent model is particularly challenging. 
+Although, in principle and assuming our MCMC is working as intended, after an infinite amount of time we would converge to a correct estimate of the posterior distribution over the species tree, gene trees and other parameters, it is advisable to start from reasonable starting values for the species tree and the gene trees.
+In our case, we have already reconstructed candidate gene trees using RevBayes.
+These gene trees have been produced using the scripts: \\ {\footnotesize \emph{$tutorials/RB\_MultispeciesCoalescent\_Tutorial/scripts/mcmc\_GeneTree.Rev$}} and \\ {\footnotesize \emph{$tutorials/RB\_MultispeciesCoalescent\_Tutorial/construct\_all\_GeneTrees.sh$}}).
+They have been placed in the folder {\footnotesize \emph{$tutorials/RB\_MultispeciesCoalescent\_Tutorial/output\_GeneTrees$}}, and Maximum A Posteriori (MAP) trees have been constructed.
+These MAP trees will provide good starting gene trees, and will also be used to generate a starting species tree using a function that computes a maximum tree \citep{Edwards2007}.
+The maximum tree "is the tree with the largest possible speciation times in the space of species trees restricted by available gene trees" \citep{Liu2010}.
+Conveniently, tip names in the gene trees correspond to the species names: we can thus use the maximum tree function on these trees without worrying about potential name inconsistencies.
+
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+
+# read in each gene tree separately
+j=1
+for ( i in 1:num_loci ) {
+    gene_trees[i] <- readTrees("output_GeneTrees/" + locus_names[i] + "_MAP.tree")[1]
+    print("Gene tree "+i+ " has "+ gene_trees[i].ntips() + " tips.")
+}
+
+# We set the species tree to a good starting value.
+# This good starting value is obtained from the Maximum Tree method (Liu, 2006).
+# The same method is used in BEST to obtain a good starting species tree.
+recTree <- maximumTree(gene_trees)
+psi.setValue(recTree)
+root.setValue(recTree.rootAge())
+
+write("\t\tProposed starting species tree: ")
+write( psi)
+write("\t\tWith root age: " + root)
+
+\end{lstlisting}
+\end{snugshade*}}
+
 \item Now that we have a species tree, we can specify the prior on the gene trees by using a multispecies coalescent process.
 First, we need to load in a map of the individual names to the species names.
-In that way we can attribute which individual belongs to which species.
-Have a look in one of these files, for examples \textit{primates\_COIII\_species\_map.txt}.
+This map ensures we can associate the individuals to the species they belong to.
+Have a look in one of these files, for example \textit{primates\_COIII\_species\_map.txt}.
 We will assume that each branch of the species tree, which represents a population, has its own population size.
 Thus, our prior is that each population size per branch is identically distributed from an exponential distribution with rate 0.1 (giving an expectation of 10 and thus a relatively flat prior distribution).
 Note that we use fixed population sizes for the terminal branches because we have only a single individual per species and thus have no information about its population size.
-You could use other models for the population sizes too, if you wanted.
-For example we could assume that all branches have the same population size.
+One could use other models for the population sizes.
+For example one could assume that all branches have the same population size.
+Once the gene trees have been declared, we set their value to the MAP trees that we have read previously.
+
 {\tt \begin{snugshade*}
 \begin{lstlisting}
+
 # We assume independent effective population size parameters for each branch of the species tree.
 for (i in 1:n_species) {
   Ne[i] <- 10.0
 }
 for (i in (n_species+1):n_branches) {
-  Ne[i] ~ dnExponential(0.1)
-  moves[++mvi] = mvScale(Ne[i],1,true,1.0)
+  Ne[i] ~ dnExponential(0.01)
+  moves[++mi] = mvScale(Ne[i],lambda=.1,tune=true,3.0)
+  moves[++mi] = mvSlide(Ne[i],tune=true,2.0)
+
 }
 
-# We could instead assume a single effective population size for the entire species tree with the following two lines:
+# We could also assume a single effective population size for the entire species tree.
 #Ne ~ dnGamma(shape=1.0,rate=1.0)
-#moves[++mvi] = mvScale(Ne,1,true,1.0)
+#moves[++mi] = mvScale(Ne,1,true,1.0)
 
 for (i in 1:num_loci) {
 
@@ -159,35 +195,84 @@ for (i in 1:num_loci) {
    taxon_map = readTaxonData("data/species_maps/primates_" + locus_names[i] + "_species_map.txt")
 
    # The gene tree from the multispecies coalescent process
-   # Note that Ne is a vector of effective population sizes, 
-   # allowing 1 parameter per branch of the species tree.
-   geneTree[i] ~ dnCoalMultiSpeciesConst(speciesTree=psi, Ne=Ne, taxa=taxon_map)
-
-   # moves on the tree
-   moves[++mvi] = mvNNI(geneTree[i], 5.0)
-   moves[++mvi] = mvNarrow(geneTree[i], 5.0)
-   moves[++mvi] = mvFNPR(geneTree[i], 3.0)
-   moves[++mvi] = mvGPR(geneTree[i], 2.0)
-   moves[++mvi] = mvSubtreeScale(geneTree[i], 5.0)
-   moves[++mvi] = mvTreeScale(geneTree[i], 1.0, true, 3.0)
-   moves[++mvi] = mvNodeTimeSlideUniform(geneTree[i], 20.0)
+   # Note that if Ne had been a vector of effective population sizes,
+   # allowing 1 parameter per branch of the species tree, the same line would work.
+   geneTree[i] ~ dnMultiSpeciesCoalescent(speciesTree=psi, Ne=Ne, taxa=taxon_map)
+   # We set a good starting value
+   geneTree[i].setValue(gene_trees[i])
 
 }
 
 \end{lstlisting}
 \end{snugshade*}}
 
-\item Now we have gene trees, complete with branch lengths. 
-The next element we need is a clock rate which transforms/scales the branch times into branch lengths that represent the expected number of substitutions.
-Here we will assume for simplicity that every gene evolves under a global strict clock but has its own independent clock rate.
-You can later look into the estimate to see how much the clock rate estimates actually differ across genes.
+\item Although we have defined both the species tree and the gene trees, we have not set up the moves that we use to sample them.
+We will use simple tree moves, that deal with a single tree at a time, and joing species tree-gene tree moves.
+Those latter moves are important because they explicitly take into account the interdependency between the species tree and the gene trees.
+These moves are first declared with the species tree as main argument. 
+Then, each gene tree is added to the moves.
+
+
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-for ( i in 1:num_loci ) { 
-   log_clock_rate[i] ~ dnUniform(-4,1)
-   clock_rate[i] := 10^log_clock_rate[i]
-   
-   moves[++mvi] = mvSlide(log_clock_rate[i], weight=1.0)
+
+## General tree moves used on the species tree
+moves[++mi] = mvNarrow(psi, weight=5.0)
+moves[++mi] = mvNNI(psi, weight=1.0)
+moves[++mi] = mvFNPR(psi, weight=3.0)
+moves[++mi] = mvGPR(psi, weight=3.0)
+moves[++mi] = mvSubtreeScale(psi, weight=3.0)
+moves[++mi] = mvNodeTimeSlideUniform(psi, weight=5.0)
+
+## Joint species tree/gene tree moves
+move_species_narrow_exchange = mvSpeciesNarrow( speciesTree=psi, weight=20 )
+move_species_subtree_scale_beta = mvSpeciesSubtreeScaleBeta(psi, weight=5)
+move_species_subtree_scale = mvSpeciesSubtreeScale(psi, weight=5)
+
+## Moves that alter gene trees
+for (i in 1:num_loci) {
+
+    # moves on each gene tree
+    moves[++mi] = mvNNI(geneTree[i], 5.0)
+    moves[++mi] = mvNarrow(geneTree[i], 5.0)
+    moves[++mi] = mvFNPR(geneTree[i], 3.0)
+    moves[++mi] = mvGPR(geneTree[i], 2.0)
+    moves[++mi] = mvSubtreeScale(geneTree[i], 5.0)
+    moves[++mi] = mvTreeScale(geneTree[i], 1.0, true, 3.0)
+    moves[++mi] = mvNodeTimeSlideUniform(geneTree[i], 20.0)
+
+    # Associating the joint species tree/gene tree moves to each gene tree
+    move_species_narrow_exchange.addGeneTreeVariable( geneTree[i] )
+    move_species_subtree_scale_beta.addGeneTreeVariable( geneTree[i] )
+    move_species_subtree_scale.addGeneTreeVariable( geneTree[i] )
+
+}
+
+## We must not forget to include the joint moves into the vector of moves!
+moves[++mi] = move_species_narrow_exchange
+moves[++mi] = move_species_subtree_scale_beta
+moves[++mi] = move_species_subtree_scale
+
+
+
+
+\end{lstlisting}
+\end{snugshade*}}
+
+
+\item Now we have gene trees, complete with branch lengths, and the moves operating on them. 
+The next element we need is a clock rate which transforms/scales the branch times into branch lengths that represent the expected number of substitutions.
+Here we will assume for simplicity that every gene evolves under a global strict clock but has its own independent clock rate.
+We can later look into the estimate to see how much the clock rate estimates actually differ across genes.
+One could also choose to use a relaxed clock model instead of a strict clock.
+
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+
+for ( i in 1:num_loci ) {
+   clock_rate[i] ~ dnExponential(1.0)
+   moves[++mi] = mvScale(clock_rate[i], weight=2.0)
+   moves[++mi] = mvSlide(clock_rate[i], weight=3.0)
 }
 \end{lstlisting}
 \end{snugshade*}}
@@ -195,30 +280,22 @@ for ( i in 1:num_loci ) {
 \item Next we need our model for the substitution process. 
 Hence, we just need to define the substitution matrix. 
 We use a single HKY matrix that will apply to all sites per gene.
-Additionally, we assume that sites evolve according to one of four possible rates, where each rate corresponds to a quantile from a gamma distribution.
+Additionally, we assume that sites all evolve according to the same rate, to save computing time.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 for ( i in 1:num_loci ) {
 
-    #### specify the HKY substitution model applied uniformly to all sites of a gene
+    #### specify the HKY substitution model applied uniformly to all sites ###
     kappa[i] ~ dnLognormal(0,1)
-    moves[++mvi] = mvScale(kappa[i],weight=1)
+    moves[++mi] = mvScale(kappa[i],weight=1.0)
+    moves[++mi] = mvSlide(kappa[i], weight=1.0)
 
-    pi_prior[i] <- v(1,1,1,1) 
+    pi_prior[i] <- v(1,1,1,1)
     pi[i] ~ dnDirichlet(pi_prior[i])
-    moves[++mvi] = mvSimplexElementScale(pi[i],weight=2)
+    moves[++mi] = mvSimplexElementScale(pi[i],weight=2.0)
 
-
-    #### create a deterministic variable for the rate matrix
-    Q[i] := fnHKY(kappa[i],pi[i]) 
-
-    #### create the rates to model the gamma distributed rate variation among sites.
-    alpha_prior[i] <- 0.05
-    alpha[i] ~ dnExponential( alpha_prior[i] )
-    gamma_rates[i] := fnDiscretizeGamma( alpha[i], alpha[i], 4, false )
-
-    # add moves for the stationary frequencies, exchangeability rates and the shape parameter
-    moves[++mvi] = mvScale(alpha[i],weight=2)
+    #### create a deterministic variable for the rate matrix ####
+    Q[i] := fnHKY(kappa[i],pi[i])
 
 }
 
@@ -226,14 +303,14 @@ for ( i in 1:num_loci ) {
 \end{snugshade*}}
 
 
-\item Finally, we can create our distribution for the character evolution.
+\item Finally, we can create our distribution for character evolution.
 We will use the common \cl{PhyloCTMC} distribution, which is a continuous time Markov process along a phylogenetic tree.
 We create a \cl{seq} variable and attach/clamp each gene to one of the \cl{seq} variables.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-for ( i in 1:num_loci ) { 
+for ( i in 1:num_loci ) {
     # the sequence evolution model
-    seq[i] ~ dnPhyloCTMC(tree=geneTree[i], Q=Q[i], branchRates=clock_rate[i], siteRates=gamma_rates[i], type="DNA")
+    seq[i] ~ dnPhyloCTMC(tree=geneTree[i], Q=Q[i], branchRates=clock_rate[i], type="DNA")
 
     # attach the data
     seq[i].clamp(data[i])
@@ -253,37 +330,48 @@ mymodel = model(psi)
 
 
 \item Finally, we need to perform inference under the model, using the data.
+For clarity, we put the results in an output folder, and the gene trees will be further included within a folder of their own.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
+output_folder = "output_MSC/"
+
 # Monitors to check the progression of the program
-monitors[1] = mnScreen(printgen=100, root)
-monitors[2] = mnModel(filename="output/primates_root_calibration.log",printgen=10, separator = TAB)
-monitors[3] = mnFile(filename="output/primates_root_calibration.trees",printgen=10, separator = TAB, psi)
-for ( i in 1:num_loci ) { 
+monitors[1] = mnScreen(printgen=100, psi)
+monitors[2] = mnModel(filename=output_folder+"posterior_MSC_primates.log",printgen=10, separator = TAB)
+monitors[3] = mnFile(filename=output_folder+"posterior_MSC_primates.trees",printgen=10, separator = TAB, psi)
+for ( i in 1:num_loci ) {
     # We add a monitor for each gene tree
-    monitors[i+3] = mnFile(filename="output/primates_root_calibration_" + locus_names[i] + ".trees",printgen=10, separator = TAB, geneTree[i])
+    monitors[i+3] = mnFile(filename=output_folder+"geneTrees/posterior_" + locus_names[i] + ".trees",printgen=10, separator = TAB, geneTree[i])
 }
 
-# Here we use a plain MCMC. You could also set nruns=2 for a replicated analysis
+# Here we use a plain MCMC. You could also set nruns=2 for an analysis with 2 replicates.
 # or use mcmcmc with heated chains.
-mymcmc = mcmc(mymodel, monitors, moves)
+mymcmc = mcmc(mymodel, monitors, moves, nruns=1)
 
-# This should be sufficient to obtain enough MCMC samples
-mymcmc.burnin(generations=3000,tuningInterval=100)
-mymcmc.run(generations=10000)
+# Ideally one would run more MCMC samples.
+# In the interest of time it may be worth running the analysis under the prior.
+mymcmc.burnin(generations=1000,tuningInterval=50)#, underPrior=true)
+mymcmc.run(generations=3000)#, underPrior=true)
+
+
+mymcmc.operatorSummary()
+
+
 \end{lstlisting}
 \end{snugshade*}}
 
-\item Now we can perform some post-run analyses.
+\item Now we can perform some post-run analyses, for instance to obtain and save the MAP species tree.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
+
 # Now, we will analyze the tree output.
 # Let us start by reading in the tree trace
-treetrace = readTreeTrace("output/primates_root_calibration.trees", treetype="clock")
+treetrace = readTreeTrace(output_folder+"posterior_MSC_primates.trees", treetype="clock")
 # and get the summary of the tree trace
 treetrace.summarize()
 
-mapTree(treetrace,"output/primates_root_calibration.tree")
+mapTree(treetrace,output_folder+"posterior_MSC_primates_MAP.tree")
+
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -300,7 +388,11 @@ mapTree(treetrace,"output/primates_root_calibration.tree")
 %Which models seem to "mix" better?
 %In particular, does the full multispecies coalescent mix well?
 %Why can we expect this model in particular would have difficulties mixing?
-Do you find that the full multispecies coalescent mixes well?
+Do you find that the full multispecies coalescent mixes well?\\
+Is the mixing markedly different when the model is run under the prior?\\
+What is the impact of species tree moves on the mixing?\\
+Given the acceptance ratios of some of the moves, would you be tempted to change the frequency at which they are tried? If so how?\\
+What other improvements could be made to the script?
 
 
 \bibliographystyle{sysbio}

@@ -1,0 +1,41 @@
+# Simulate some data (i.e. shoot some arrows)
+# First we need the number of arrows to shoot
+n = 10
+# Then we need some true mean distance
+mu_true = 1
+# Simulate the observed mean distance of the arrows we shot
+arrow_mean = rgamma(1, n, n/mu_true)[1]
+
+
+# Specify the prior distribution
+alpha <- 1.0
+mu ~ dnExponential(alpha)
+
+# Define a move for our parameter, mu
+moves[1] = mvSlide(mu, delta=1, weight=1.0)
+moves[2] = mvScale(mu, lambda=1, weight=1.0)
+
+
+# Specify the likelihood model
+d_bar ~ dnGamma(n, n/mu)
+d_bar.clamp(arrow_mean)
+
+
+# Construct the full model
+my_model = model(mu)
+
+# Make the monitors to keep track of the MCMC
+monitors[1] = mnModel(filename="archery_RB.log", printgen=10)
+monitors[2] = mnScreen(printgen=1000, mu)
+
+# Make the analysis object
+analysis = mcmc(my_model, monitors, moves)
+
+# Run the MCMC
+analysis.run(100000)
+
+# Show how the moves performed
+analysis.operatorSummary()
+
+q()
+

@@ -7,7 +7,7 @@
 #
 ################################################################################
 
-outfileName = "results_" + model_name + "/simulated_data_" + analysis_name + ".tsv"
+outfileName = "results_" + model_name + "/simulated_data_" + analysis_name + ".csv"
  
 write(file=outfileName, 
       "Number Invariant Sites",
@@ -51,6 +51,7 @@ write(file=outfileName,
 write(file=outfileName, "\n", append=TRUE) 
 
 
+#num_post_sims = 10
 ################### calculate the pps stats here #########################
 
 ## Iterate through all of the posterior tree files from the simulation analyses
@@ -173,7 +174,7 @@ for ( i in 1:num_post_sims) {
 # Summary of data #
 ###################
 
-outfileName = "results_" + model_name + "/empirical_data_" + analysis_name + ".tsv"
+outfileName = "results_" + model_name + "/empirical_data_" + analysis_name + ".csv"
 
 write(file=outfileName, sep=",", append=FALSE,
       "Number Invariant Sites",
@@ -214,7 +215,7 @@ write(file=outfileName, sep=",", append=FALSE,
       "Segregating-Sites")
 write("\n", file=outfileName, append=TRUE)
 
-d = readDiscreteCharacterData(in_file)
+d = readDiscreteCharacterData(inFile)
 
 num_inv         = d.getNumInvariantSites( excludeAmbiguous=FALSE )
 num_inv_amb     = d.getNumInvariantSites( excludeAmbiguous=TRUE )

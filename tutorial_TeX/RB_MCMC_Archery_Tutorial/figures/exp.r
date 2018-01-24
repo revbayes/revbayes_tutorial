@@ -1,0 +1,7 @@
+pdf("exp.pdf",width=8,height=4)
+par(mar=c(4, 5, 1, 5))
+curve(dexp(x, 1), from=0, to=3, lwd=3, xlab=expression(mu),ylab=expression(paste("P(",mu,")")),ylim=c(0,2))
+curve(dexp(x, 1/2), from=0, to=3, lwd=3, col="red", add=T)
+curve(dexp(x, 2), from=0, to=3, lwd=3, col="blue", add=T)
+legend("topright",c(expression(paste(alpha," = 1")),expression(paste(alpha," = 1/2")),expression(paste(alpha," = 2"))), fill=c("black","red","blue"))
+dev.off()

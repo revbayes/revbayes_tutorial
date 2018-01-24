@@ -1,0 +1,56 @@
+% preamble
+
+\documentclass[10pt]{article}
+\usepackage[paperwidth=40in, paperheight=40in]{geometry}
+\usepackage[usenames]{color} %used for font color
+\usepackage{amssymb} %maths
+\usepackage{amsmath} %maths
+\usepackage[utf8]{inputenc} %useful to type directly diacritic characters
+
+%%% Sans serif text font
+\usepackage[scaled]{helvet}
+\renewcommand*\familydefault{\sfdefault}\usepackage[T1]{fontenc}
+%%%
+
+\usepackage{skull}
+\usepackage{tikz}
+\usetikzlibrary{positioning}
+\usetikzlibrary{arrows}
+\usetikzlibrary{fit}
+\usetikzlibrary{calc}
+\usetikzlibrary{automata}
+\usetikzlibrary{decorations.markings}
+\usetikzlibrary{decorations.pathreplacing}
+
+\tikzset{>=latex}
+\tikzstyle{snode}=[black,draw=black,line width=1.5pt,shape=circle,fill=white,minimum size=8mm]
+\tikzstyle{obnode}=[black,draw=black,line width=1.5pt,shape=circle,fill=black!20!white,minimum size=8mm]
+\tikzstyle{detnode}=[black,draw=black,line width=1.5pt,densely dotted,shape=circle,fill=white,minimum size=8mm]
+\tikzstyle{constnode}=[black,draw=black,line width=1.5pt,shape=rectangle,fill=white,minimum size=8mm]
+\tikzstyle{mincnode}=[black,draw=black,line width=0.75pt,shape=rectangle,fill=white,minimum size=3mm]
+\tikzstyle{blnode}=[white,draw=black,line width=1pt,shape=circle,fill=black,minimum size=1mm,font=\scriptsize,inner sep=1pt]
+\tikzstyle{ylnode}=[black,draw=black,line width=1pt,shape=circle,fill=yellow,minimum size=1mm,font=\scriptsize,inner sep=1pt]
+\tikzstyle{taro}=[->,line width=2pt,color=black]
+\tikzstyle{thintaro}=[->,line width=0.75pt,color=black]
+\tikzstyle{dtaro}=[->,line width=2pt, densely dotted,color=black]
+\tikzstyle{smod}=[black, draw=black, line width=2pt, fill=white, shape=rectangle, rounded corners, minimum size=10mm, minimum width=20mm]
+\tikzstyle{obmod}=[black, draw=black, line width=2pt, fill=black!20!white, shape=rectangle, rounded corners, minimum size=10mm, minimum width=20mm, minimum width=20mm]
+
+\definecolor{shc}{RGB}{238,224,229}
+\definecolor{shc2}{RGB}{182,152,195}
+\definecolor{brnt}{RGB}{221,132,13}
+
+\begin{document}
+\[\begin{tikzpicture}
+\node[obnode] (d) at (1,1) {\LARGE $\bar d$};
+\node[snode] (mu) at ($(d)+(-1.5,1.5)$) {\Large $\mu$};
+\node[constnode] (alpha) at ($(mu)+(0,1.5)$) {\Large $\alpha$};
+\node[constnode] (n) at ($(d)+(1.5,1.5)$) {\Large $n$};
+\draw [taro] (mu) -- (d) ;
+\draw [taro] (alpha) -- (mu) ;
+\draw [taro] (n) -- (d) ;
+\node (ex) at ($(d)+(0,-0.7)$) [centered]{\scriptsize gamma};
+\node (ex) at ($(mu)+(-0.1,-0.7)$) [centered]{\scriptsize exponential};
+\end{tikzpicture}
+\]
+\end{document}
