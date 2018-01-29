@@ -115,7 +115,7 @@ a <- square(5.0)
 a
 
 # function for computing the factorial
-function Natural fac(i) {
+function Natural fac(Natural i) {
    if (i > 1) {
       return i * fac(i-1)
    } else {

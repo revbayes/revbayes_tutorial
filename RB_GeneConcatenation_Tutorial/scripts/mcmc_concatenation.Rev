@@ -116,12 +116,13 @@ for ( i in 1:num_loci ) {
 
 for ( i in 1:num_loci ) {
 
-    alpha_prior[i] <- 0.05
-    alpha[i] ~ dnExponential( alpha_prior[i] )
+    alpha_prior_mean[i] <- ln(2.0)
+    alpha_prior_sd[i] <- 0.587405
+    alpha[i] ~ dnLognormal( alpha_prior_mean[i], alpha_prior_sd[i] )
     gamma_rates[i] := fnDiscretizeGamma( alpha[i], alpha[i], 4, false )
 
-    # add moves for the stationary frequencies, exchangeability rates and the shape parameter
-    moves[++mi] = mvScale(alpha[i],weight=2)
+    # add move for the shape parameter
+    moves[++mvi] = mvScale(alpha[i],weight=2)
 
 }
 

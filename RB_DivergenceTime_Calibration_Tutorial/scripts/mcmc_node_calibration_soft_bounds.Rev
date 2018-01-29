@@ -55,7 +55,7 @@ Q := fnGTR(er,pi)
 # Among Site Rate Variation #
 #############################
 
-alpha_prior_mean <- 5.0
+alpha_prior_mean <- ln(2.0)
 alpha_prior_sd <- 0.587405
 alpha ~ dnLognormal( alpha_prior_mean, alpha_prior_sd )
 gamma_rates := fnDiscretizeGamma( alpha, alpha, 4, false )
@@ -94,7 +94,7 @@ rho <- n_species/450
 ### the BDP is conditioned on the root time
 ### here we use an informative prior on the root age
 ### this prior is a normal distribution with mean 90 and standard deviation of 6
-root_time ~ dnNormal(mean=90.0,sd=6.0,min=0.0,max=5000.0)
+root_time ~ dnUniform(57,200)
 moves[++mvi] = mvScale(root_time, weight=2.0)
 
 ### the time tree is a stochastic node modeled by the constant rate birth-death process (dnBDP)
@@ -114,26 +114,42 @@ moves[++mvi] = mvNodeTimeSlideUniform(psi, weight=15.0)
 ### catarrhini
 clade_catarrhini = clade("Pan_paniscus", "Macaca_mulatta")
 age_catarrhini := tmrca(psi, clade_catarrhini)
-obs_age_catarrhini ~ dnNormal(age_catarrhini,6)
-obs_age_catarrhini.clamp(29)
+min_age_catarrhini <- 20.55
+max_age_catarrhini <- 37.3
+width_age_prior_catarrhini <- (max_age_catarrhini-min_age_catarrhini)/2.0
+mean_age_prior_catarrhini <- min_age_catarrhini + width_age_prior_catarrhini
+obs_age_catarrhini ~ dnSoftBoundUniformNormal(min=age_catarrhini - width_age_prior_catarrhini, max=age_catarrhini + width_age_prior_catarrhini, sd=2.5, p=0.95)
+obs_age_catarrhini.clamp( mean_age_prior_catarrhini )
 
 ### platyrrhini
 clade_platyrrhini = clade("Alouatta_palliata", "Callicebus_donacophilus")
 age_platyrrhini := tmrca(psi, clade_platyrrhini)
-obs_age_platyrrhini ~ dnNormal(age_platyrrhini,3)
-obs_age_platyrrhini.clamp(23.5)
+min_age_platyrrhini <- 11.8
+max_age_platyrrhini <- 37.3
+width_age_prior_platyrrhini <- (max_age_platyrrhini-min_age_platyrrhini)/2.0
+mean_age_prior_platyrrhini <- min_age_platyrrhini + width_age_prior_platyrrhini
+obs_age_platyrrhini ~ dnSoftBoundUniformNormal(min=age_platyrrhini - width_age_prior_platyrrhini, max=age_platyrrhini + width_age_prior_platyrrhini, sd=2.5, p=0.95)
+obs_age_platyrrhini.clamp( mean_age_prior_platyrrhini )
 
 ### simiiformes
 clade_simiiformes = clade("Cebus_albifrons", "Macaca_mulatta")
 age_simiiformes := tmrca(psi, clade_simiiformes)
-obs_age_simiiformes ~ dnNormal(age_simiiformes,4.5)
-obs_age_simiiformes.clamp(43)
+min_age_simiiformes <- 28.3
+max_age_simiiformes <- 56
+width_age_prior_simiiformes <- (max_age_simiiformes-min_age_simiiformes)/2.0
+mean_age_prior_simiiformes <- min_age_simiiformes + width_age_prior_simiiformes
+obs_age_simiiformes ~ dnSoftBoundUniformNormal(min=age_simiiformes - width_age_prior_simiiformes, max=age_simiiformes + width_age_prior_simiiformes, sd=2.5, p=0.95)
+obs_age_simiiformes.clamp( mean_age_prior_simiiformes )
 
 ### lorisiformes
 clade_lorisiformes = clade("Loris_tardigradus", "Galago_senegalensis")
 age_lorisiformes := tmrca(psi, clade_lorisiformes)
-obs_age_lorisiformes ~ dnNormal(age_lorisiformes,3)
-obs_age_lorisiformes.clamp(40)
+min_age_lorisiformes <- 37.1
+max_age_lorisiformes <- 56
+width_age_prior_lorisiformes <- (max_age_lorisiformes-min_age_lorisiformes)/2.0
+mean_age_prior_lorisiformes <- min_age_lorisiformes + width_age_prior_lorisiformes
+obs_age_lorisiformes ~ dnSoftBoundUniformNormal(min=age_lorisiformes - width_age_prior_lorisiformes, max=age_lorisiformes + width_age_prior_lorisiformes, sd=2.5, p=0.95)
+obs_age_lorisiformes.clamp( mean_age_prior_lorisiformes )
 
 
 
@@ -168,8 +184,8 @@ mymodel = model(Q)
 
 
 
-monitors[++mni] = mnModel(filename="output/primates_cytb_node_calibration.log",printgen=10, separator = TAB)
-monitors[++mni] = mnFile(filename="output/primates_cytb_node_calibration.trees",printgen=10, separator = TAB, psi)
+monitors[++mni] = mnModel(filename="output/primates_cytb_soft_calibration.log",printgen=10, separator = TAB)
+monitors[++mni] = mnFile(filename="output/primates_cytb_soft_calibration.trees",printgen=10, separator = TAB, psi)
 monitors[++mni] = mnScreen(printgen=1000, clockRate, root_time, age_simiiformes)
 
 mymcmc = mcmc(mymodel, monitors, moves)
@@ -180,9 +196,9 @@ mymcmc.run(generations=30000)
 
 # Now, we will analyze the tree output.
 # Let us start by reading in the tree trace
-treetrace = readTreeTrace("output/primates_cytb_node_calibration.trees", treetype="clock")
+treetrace = readTreeTrace("output/primates_cytb_soft_calibration.trees", treetype="clock")
 
-map_tree = mapTree(treetrace,"output/primates_cytb_node_calibration.tree")
+map_tree = mapTree(treetrace,"output/primates_cytb_soft_calibration.tree")
 
 # you may want to quit RevBayes now
 q()
