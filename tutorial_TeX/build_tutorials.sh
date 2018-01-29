@@ -1,4 +1,4 @@
-BUILD_ALL="false"
+BUILD_ALL="true"
 
 
 BUILD_GETTING_STARTED="false"
@@ -46,17 +46,36 @@ fi
 # Basics
 if [[ ${BUILD_BASICS} == "true" || ${BUILD_ALL} == "true" ]]
 then
-cd RB_Basics_Tutorial
-pdflatex RB_Basics_Tutorial.tex
-bibtex RB_Basics_Tutorial
-pdflatex RB_Basics_Tutorial.tex
-pdflatex RB_Basics_Tutorial.tex
+cd RB_Intro_Tutorial
+pdflatex RB_Intro_Tutorial.tex
+bibtex RB_Intro_Tutorial
+pdflatex RB_Intro_Tutorial.tex
+pdflatex RB_Intro_Tutorial.tex
 
-rm RB_Basics_Tutorial.aux
-rm RB_Basics_Tutorial.bbl
-rm RB_Basics_Tutorial.blg
-rm RB_Basics_Tutorial.log
-rm RB_Basics_Tutorial.out
+rm RB_Intro_Tutorial.aux
+rm RB_Intro_Tutorial.bbl
+rm RB_Intro_Tutorial.blg
+rm RB_Intro_Tutorial.log
+rm RB_Intro_Tutorial.out
+
+cd ..
+fi
+
+
+# Rev
+if [[ ${BUILD_BASICS} == "true" || ${BUILD_ALL} == "true" ]]
+then
+cd RB_Rev_Tutorial
+pdflatex RB_Rev_Tutorial.tex
+bibtex RB_Rev_Tutorial
+pdflatex RB_Rev_Tutorial.tex
+pdflatex RB_Rev_Tutorial.tex
+
+rm RB_Rev_Tutorial.aux
+rm RB_Rev_Tutorial.bbl
+rm RB_Rev_Tutorial.blg
+rm RB_Rev_Tutorial.log
+rm RB_Rev_Tutorial.out
 
 cd ..
 fi
@@ -72,17 +91,35 @@ fi
 # simple MCMC
 if [[ ${BUILD_MCMC_INTRO} == "true" || ${BUILD_ALL} == "true" ]]
 then
-cd RB_MCMC_Intro_Tutorial
-pdflatex RB_MCMC_Intro_Tutorial.tex
-bibtex RB_MCMC_Intro_Tutorial
-pdflatex RB_MCMC_Intro_Tutorial.tex
-pdflatex RB_MCMC_Intro_Tutorial.tex
+cd RB_MCMC_Binomial_Tutorial
+pdflatex RB_MCMC_Binomial_Tutorial.tex
+bibtex RB_MCMC_Binomial_Tutorial.tex
+pdflatex RB_MCMC_Binomial_Tutorial.tex
+pdflatex RB_MCMC_Binomial_Tutorial.tex
 
-rm RB_MCMC_Intro_Tutorial.aux
-rm RB_MCMC_Intro_Tutorial.bbl
-rm RB_MCMC_Intro_Tutorial.blg
-rm RB_MCMC_Intro_Tutorial.log
-rm RB_MCMC_Intro_Tutorial.out
+rm RB_MCMC_Binomial_Tutorial.aux
+rm RB_MCMC_Binomial_Tutorial.bbl
+rm RB_MCMC_Binomial_Tutorial.blg
+rm RB_MCMC_Binomial_Tutorial.log
+rm RB_MCMC_Binomial_Tutorial.out
+
+cd ..
+fi
+
+# simple MCMC
+if [[ ${BUILD_MCMC_INTRO} == "true" || ${BUILD_ALL} == "true" ]]
+then
+cd RB_MCMC_Archery_Tutorial
+pdflatex RB_MCMC_Archery_Tutorial.tex
+bibtex RB_MCMC_Archery_Tutorial.tex
+pdflatex RB_MCMC_Archery_Tutorial.tex
+pdflatex RB_MCMC_Archery_Tutorial.tex
+
+rm RB_MCMC_Archery_Tutorial.aux
+rm RB_MCMC_Archery_Tutorial.bbl
+rm RB_MCMC_Archery_Tutorial.blg
+rm RB_MCMC_Archery_Tutorial.log
+rm RB_MCMC_Archery_Tutorial.out
 
 cd ..
 fi
@@ -234,6 +271,49 @@ rm RB_DiversificationRate_Sampling_Tutorial.bbl
 rm RB_DiversificationRate_Sampling_Tutorial.blg
 rm RB_DiversificationRate_Sampling_Tutorial.log
 rm RB_DiversificationRate_Sampling_Tutorial.out
+
+cd ..
+fi
+
+
+###############################
+#                             #
+#   Historical Biogeography   #
+#                             #
+###############################
+
+# DEC
+if [[ ${BUILD_DEC} == "true" || ${BUILD_ALL} == "true" ]]
+then
+cd RB_Biogeography_DEC_Tutorial
+pdflatex RB_Biogeography_DEC_Tutorial.tex
+bibtex RB_Biogeography_DEC_Tutorial
+pdflatex RB_Biogeography_DEC_Tutorial.tex
+pdflatex RB_Biogeography_DEC_Tutorial.tex
+
+rm RB_Biogeography_DEC_Tutorial.aux
+rm RB_Biogeography_DEC_Tutorial.bbl
+rm RB_Biogeography_DEC_Tutorial.blg
+rm RB_Biogeography_DEC_Tutorial.log
+rm RB_Biogeography_DEC_Tutorial.out
+
+cd ..
+fi
+
+# bayarea
+if [[ ${BUILD_BAYAREA} == "true" || ${BUILD_ALL} == "true" ]]
+then
+cd RB_Biogeography_many_area_Tutorial
+pdflatex RB_Biogeography_many_area_Tutorial.tex
+bibtex RB_Biogeography_many_area_Tutorial
+pdflatex RB_Biogeography_many_area_Tutorial.tex
+pdflatex RB_Biogeography_many_area_Tutorial.tex
+
+rm RB_Biogeography_many_area_Tutorial.aux
+rm RB_Biogeography_many_area_Tutorial.bbl
+rm RB_Biogeography_many_area_Tutorial.blg
+rm RB_Biogeography_many_area_Tutorial.log
+rm RB_Biogeography_many_area_Tutorial.out
 
 cd ..
 fi
