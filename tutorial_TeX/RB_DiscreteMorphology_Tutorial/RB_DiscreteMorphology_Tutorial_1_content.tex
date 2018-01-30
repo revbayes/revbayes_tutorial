@@ -11,7 +11,7 @@ Molecular data forms the basis of most phylogenetic analyses today.
 However, morphological characters remain relevant: Fossils often provide our only direct observation of extinct biodiversity; DNA degradation can make it difficult or impossible to obtain sufficient molecular data from fragile museum specimens. 
 Using morphological data can help researchers include specimens in their phylogeny that might be left out of a molecular tree. \par
 To understand how morphological characters are modeled, it is important to understand how characters are collected.
-Unlike in molecular data, for which homology is algorithmically determined, homology in a character is typically assessed an expert. 
+Unlike in molecular data, for which homology is algorithmically determined, homology in a character is typically assessed by an expert. 
 Biologists will typically decide what characters are homologous by looking across specimens at the same structure in multiple taxa; they may also look at the developmental origin of structures in making this assessment \citep{Phillips06}.
 Once homology is determined, characters are broken down into states, or different forms a single character can take.
 The state `0' commonly refers to absence, meaning that character is not present.
@@ -27,17 +27,17 @@ In this way of estimating a tree, a character that does not change, or changes o
 Therefore, workers with parsimony typically do not collect characters that are parsimony uninformative.
 \par
 
-In 2001, Paul Lewis \citep{lewis01} introduced a generalization of the Jukes-Cantor model of sequence evolution for use with morphological data.
-This model, called the Mk (Markov model, assuming each character is in one of \textit{k} states) model provided a mathemetical formulation that could be used to estimate trees from morphological data in both likelihood and Bayesian frameworks. 
+In 2001, Paul Lewis \citep{Lewis2001} introduced a generalization of the Jukes-Cantor model of sequence evolution for use with morphological data.
+This model, called the Mk (Markov model, assuming each character is in one of \textit{k} states) model provided a mathematical formulation that could be used to estimate trees from morphological data in both likelihood and Bayesian frameworks. 
 While this model is a useful step forward, as a generalization of the Jukes-Cantor, it still makes fairly simplistic assumptions.
 This tutorial will guide you through estimating a phylogeny with the Mk model, and two useful extensions to the model. \par
 
 \subsection{The Mk Model}
-{\begin{framed}
-Make a copy of the MCMC and model files you just made. 
-Call them \cl{mcmc\_mk\_dicretized.Rev} and \cl{model\_mk\_discretized.Rev}. 
-These will contain the new model parameters and models. \par 
-\end{framed}}
+%{\begin{framed}
+%Make a copy of the MCMC and model files you just made. 
+%Call them \cl{mcmc\_mk\_dicretized.Rev} and \cl{model\_mk\_discretized.Rev}. 
+%These will contain the new model parameters and models. \par 
+%\end{framed}}
 
 The Mk model is a generalization of the Jukes-Cantor model of nucleotide sequence evolution, which we discussed in \textbf{Molecular Models of Character Evolution}. 
 The Q matrix for a two-state Mk model looks like so:
@@ -62,36 +62,36 @@ However, the Mk model sets transitions to be equal from any state to any other s
 In that sense, our multistate matrix really looks like this:
 
 \begin{equation*}
-Q = \begin{pmatrix} -\mu_0 & \mu & \mu & \mu \\
-\mu & -\mu_1  & \mu & \mu \\
-\mu & \mu & -\mu_2  & \mu \\
-\mu & \mu & \mu & -\mu_3 \\
+Q = \begin{pmatrix} -(k-1)\mu & \mu & \mu & \mu \\
+\mu & -(k-1)\mu  & \mu & \mu \\
+\mu & \mu & -(k-1)\mu  & \mu \\
+\mu & \mu & \mu & -(k-1)\mu \\
 \end{pmatrix} \mbox{  ,}
 \end{equation*}
 
-Because this is a Jukes-Cantor-like model, state frequencies do not vary as a model parameter.
+Because this is a Jukes-Cantor-like model \citep{Jukes1969}, state frequencies do not vary as a model parameter.
 These assumptions may seem unrealistic.
 However, all models are a compromise between reality and generalizability.
-Prior work has demonstrated that, in many conditions, the model does perform adequately \citep{wright14}.
+Prior work has demonstrated that, in many conditions, the model does perform adequately \citep{Wright2014}.
 Because morphological characters do not carry common meaning across sites in a matrix in the way that nucleotide characters do, making assumptions that fit all characters is challenging. 
-A visualization of this simple model can be seen in Fig. 1.\par
+A visualization of this simple model can be seen in Fig.~\ref{fig:module-gm}.\par
 
 We will first perform a phylogenetic analysis using the Mk model.
 In further sections, we will explore how to relax key assumptions of the Mk model. \par
 
-\subsection{Ascertainment Bias}
+\subsection{Ascertainment Bias}\label{subsub:Ascertainment Bias}
 
 When Lewis first introduced the Mk model, he observed that branch lengths on the trees were greatly inflated.
 The reason for this is that when morphological characters are collected, characters that do not vary, or vary in a non-parsimony-informative way (such as autapomorphies) are excluded.
 Excluding these low-rate characters causes the overall amount of evolution to be over-estimated.
-This causes an inflation in the branch lengths \cite{lewis01}.
+This causes an inflation in the branch lengths \cite{Lewis2001}.
 \par
 
 Therefore, when performing a morphological phylogenetic analysis, it is important to correct for this bias.
 There are numerous statistically valid ways to perform this correction \cite{allman08b}.
 Original corrections simulated invariant and non-parsimony informative characters along the proposed tree.
 The likelihood of these characters would then be calculated and used to normalize the total likelihood value.
-RevBayes implements a dynamic programming approach that calculates the same likelihood, but  does so faster. \par
+\RevBayes implements a dynamic programming approach that calculates the same likelihood, but  does so faster. \par
 
 \section{Example: Inferring a Phylogeny of Fossil Bears Using the Mk Model}\label{sec:dm_simple}
 
@@ -132,7 +132,7 @@ Because of this, we recommend that you type the instructions in this tutorial or
 {\begin{framed}
 On your own computer, create a directory called {\textcolor{red}{\cl{RB\_DiscreteMorphology\_Tutorial}}} (or any name you like). 
 
-In this directory download and unzip the archive containing the data files: \href{https://github.com/revbayes/revbayes_tutorial/tree/master/RB_Discrete_Morphology_Tutorial/data.zip}{\cl{data.zip}}.
+In this directory download and unzip the archive containing the data files: \href{https://github.com/revbayes/revbayes_tutorial/tree/master/RB_DiscreteMorphology_Tutorial/data.zip}{\cl{data.zip}}.
 
 This will create a folder called \cl{data} that contains the files necessary to complete this exercise.
 \end{framed}}
@@ -158,7 +158,7 @@ In this first section, you will write the following files from scratch and save 
 \item \cl{model\_mk.Rev}: specifies the model describing discrete morphological character change (binary characters). 
 \end{itemize}
 
-All of the files that you will create are also provided in the \RevBayes tutorial repository\footnote{\url{https://github.com/revbayes/revbayes_tutorial/tree/master/RB_Discrete_Morphology_Tutorial/scripts}}. 
+All of the files that you will create are also provided in the \RevBayes tutorial repository\footnote{\url{https://github.com/revbayes/revbayes_tutorial/tree/master/RB_DiscreteMorphology_Tutorial/scripts}}. 
 Please refer to these files to verify or troubleshoot your own scripts. 
 %TODO add link to scripts
 
@@ -221,7 +221,7 @@ We will now move on to the next \Rev file and will complete \cl{mcmc\_Mk.Rev} in
 
 
 \bigskip
-\subsection{The Mk Model}
+\subsection{The Mk Model}\label{subsect:Exercise-MkModel}
 
 {\begin{framed}
 Open your text editor and create the master \Rev file called {\textcolor{red}{\cl{model\_Mk.Rev}}} in the \cl{scripts} directory.
@@ -249,7 +249,7 @@ Therefore, we will create a 2x2 Q matrix using \cl{fnJC}, which initializes Q-ma
 
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-Q_morpho := fnJC(2)
+Q_morpho <- fnJC(2)
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -301,7 +301,9 @@ All of the components of the model are now specified. \par
 \subsection{Complete Master \Rev File}\label{subsect:Exercise-CompleteMCMC}
 
 {\begin{framed}
-Return to the master \Rev file you created in section \ref{subsect:Exercise-StartMasterRev} called {\textcolor{red}{\cl{mcmc\_Mk.Rev}}} in the \cl{scripts} directory.
+Return to the master \Rev file 
+%you created in section \ref{subsect:Exercise-StartMasterRev} 
+called {\textcolor{red}{\cl{mcmc\_Mk.Rev}}} in the \cl{scripts} directory.
 
 Enter the \Rev code provided in this section in this file.
 \end{framed}}
@@ -477,7 +479,7 @@ When the analysis is complete, \RevBayes will quit and you will have a new direc
 
 \subsubsection{Ascertainment Bias}
 
-As discussed in (Sect.\ \ref{subsub:Ascertainment Bias}), we also need to correct for ascertainment bias. 
+As discussed in (Sect.~\ref{subsub:Ascertainment Bias}), we also need to correct for ascertainment bias. 
 Once your initial Mk model estimation, source the mcmc\_simple.Rev script. 
 This file is an estimation of the Mk model without any correction for ascertainment bias. 
 We will use this for comparison in a moment. \par

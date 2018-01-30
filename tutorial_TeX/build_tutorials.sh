@@ -1,4 +1,4 @@
-BUILD_ALL="true"
+BUILD_ALL="false"
 
 
 BUILD_GETTING_STARTED="false"
@@ -6,15 +6,18 @@ BUILD_BASICS="false"
 
 BUILD_MCMC_INTRO="false"
 
-BUILD_BAYES_FACTOR="true"
+BUILD_BAYES_FACTOR="false"
+BUILD_PPS="false"
 
-BUILD_CTMC="true"
-BUILD_PARTITION="true"
+BUILD_CTMC="false"
+BUILD_PARTITION="false"
 
 BUILD_DIVERSIFICATION_RATE="false"
 BUILD_DIVERSIFICATION_RATE_EPISODIC="false"
 BUILD_DIVERSIFICATION_RATE_ENVIRONMENTAL="false"
 BUILD_DIVERSIFICATION_RATE_SAMPLING="false"
+
+BUILD_DISCRETE_MORPHOLOGY="true"
 
 
 
@@ -93,7 +96,7 @@ if [[ ${BUILD_MCMC_INTRO} == "true" || ${BUILD_ALL} == "true" ]]
 then
 cd RB_MCMC_Binomial_Tutorial
 pdflatex RB_MCMC_Binomial_Tutorial.tex
-bibtex RB_MCMC_Binomial_Tutorial.tex
+bibtex RB_MCMC_Binomial_Tutorial
 pdflatex RB_MCMC_Binomial_Tutorial.tex
 pdflatex RB_MCMC_Binomial_Tutorial.tex
 
@@ -111,7 +114,7 @@ if [[ ${BUILD_MCMC_INTRO} == "true" || ${BUILD_ALL} == "true" ]]
 then
 cd RB_MCMC_Archery_Tutorial
 pdflatex RB_MCMC_Archery_Tutorial.tex
-bibtex RB_MCMC_Archery_Tutorial.tex
+bibtex RB_MCMC_Archery_Tutorial
 pdflatex RB_MCMC_Archery_Tutorial.tex
 pdflatex RB_MCMC_Archery_Tutorial.tex
 
@@ -133,19 +136,37 @@ fi
 # Bayes factors
 if [[ ${BUILD_BAYES_FACTOR} == "true" || ${BUILD_ALL} == "true" ]]
 then
-cd RB_BayesFactor_Tutorial
-pdflatex RB_BayesFactor_Tutorial.tex
-bibtex RB_BayesFactor_Tutorial
-pdflatex RB_BayesFactor_Tutorial.tex
-pdflatex RB_BayesFactor_Tutorial.tex
+    cd RB_BayesFactor_Tutorial
+    pdflatex RB_BayesFactor_Tutorial.tex
+    bibtex RB_BayesFactor_Tutorial
+    pdflatex RB_BayesFactor_Tutorial.tex
+    pdflatex RB_BayesFactor_Tutorial.tex
 
-rm RB_BayesFactor_Tutorial.aux
-rm RB_BayesFactor_Tutorial.bbl
-rm RB_BayesFactor_Tutorial.blg
-rm RB_BayesFactor_Tutorial.log
-rm RB_BayesFactor_Tutorial.out
+    rm RB_BayesFactor_Tutorial.aux
+    rm RB_BayesFactor_Tutorial.bbl
+    rm RB_BayesFactor_Tutorial.blg
+    rm RB_BayesFactor_Tutorial.log
+    rm RB_BayesFactor_Tutorial.out
 
-cd ..
+    cd ..
+fi
+
+# Posterior Predictive Simulation
+if [[ ${BUILD_PPS} == "true" || ${BUILD_ALL} == "true" ]]
+then
+    cd RB_PosteriorPrediction_Tutorial
+    pdflatex RB_PosteriorPrediction_Tutorial.tex
+    bibtex RB_PosteriorPrediction_Tutorial
+    pdflatex RB_PosteriorPrediction_Tutorial.tex
+    pdflatex RB_PosteriorPrediction_Tutorial.tex
+
+    rm RB_PosteriorPrediction_Tutorial.aux
+    rm RB_PosteriorPrediction_Tutorial.bbl
+    rm RB_PosteriorPrediction_Tutorial.blg
+    rm RB_PosteriorPrediction_Tutorial.log
+    rm RB_PosteriorPrediction_Tutorial.out
+
+    cd ..
 fi
 
 
@@ -276,6 +297,31 @@ cd ..
 fi
 
 
+###########################
+#                         #
+#   Discrete Morphology   #
+#                         #
+###########################
+
+# Discrete Morphology
+if [[ ${BUILD_DISCRETE_MORPHOLOGY} == "true" || ${BUILD_ALL} == "true" ]]
+then
+    cd RB_DiscreteMorphology_Tutorial
+    pdflatex RB_DiscreteMorphology_Tutorial.tex
+    bibtex RB_DiscreteMorphology_Tutorial
+    pdflatex RB_DiscreteMorphology_Tutorial.tex
+    pdflatex RB_DiscreteMorphology_Tutorial.tex
+
+    rm RB_DiscreteMorphology_Tutorial.aux
+    rm RB_DiscreteMorphology_Tutorial.bbl
+    rm RB_DiscreteMorphology_Tutorial.blg
+    rm RB_DiscreteMorphology_Tutorial.log
+    rm RB_DiscreteMorphology_Tutorial.out
+
+    cd ..
+fi
+
+
 ###############################
 #                             #
 #   Historical Biogeography   #
@@ -285,35 +331,35 @@ fi
 # DEC
 if [[ ${BUILD_DEC} == "true" || ${BUILD_ALL} == "true" ]]
 then
-cd RB_Biogeography_DEC_Tutorial
-pdflatex RB_Biogeography_DEC_Tutorial.tex
-bibtex RB_Biogeography_DEC_Tutorial
-pdflatex RB_Biogeography_DEC_Tutorial.tex
-pdflatex RB_Biogeography_DEC_Tutorial.tex
+    cd RB_Biogeography_DEC_Tutorial
+    pdflatex RB_Biogeography_DEC_Tutorial.tex
+    bibtex RB_Biogeography_DEC_Tutorial
+    pdflatex RB_Biogeography_DEC_Tutorial.tex
+    pdflatex RB_Biogeography_DEC_Tutorial.tex
 
-rm RB_Biogeography_DEC_Tutorial.aux
-rm RB_Biogeography_DEC_Tutorial.bbl
-rm RB_Biogeography_DEC_Tutorial.blg
-rm RB_Biogeography_DEC_Tutorial.log
-rm RB_Biogeography_DEC_Tutorial.out
+    rm RB_Biogeography_DEC_Tutorial.aux
+    rm RB_Biogeography_DEC_Tutorial.bbl
+    rm RB_Biogeography_DEC_Tutorial.blg
+    rm RB_Biogeography_DEC_Tutorial.log
+    rm RB_Biogeography_DEC_Tutorial.out
 
-cd ..
+    cd ..
 fi
 
 # bayarea
 if [[ ${BUILD_BAYAREA} == "true" || ${BUILD_ALL} == "true" ]]
 then
-cd RB_Biogeography_many_area_Tutorial
-pdflatex RB_Biogeography_many_area_Tutorial.tex
-bibtex RB_Biogeography_many_area_Tutorial
-pdflatex RB_Biogeography_many_area_Tutorial.tex
-pdflatex RB_Biogeography_many_area_Tutorial.tex
+    cd RB_Biogeography_many_area_Tutorial
+    pdflatex RB_Biogeography_many_area_Tutorial.tex
+    bibtex RB_Biogeography_many_area_Tutorial
+    pdflatex RB_Biogeography_many_area_Tutorial.tex
+    pdflatex RB_Biogeography_many_area_Tutorial.tex
 
-rm RB_Biogeography_many_area_Tutorial.aux
-rm RB_Biogeography_many_area_Tutorial.bbl
-rm RB_Biogeography_many_area_Tutorial.blg
-rm RB_Biogeography_many_area_Tutorial.log
-rm RB_Biogeography_many_area_Tutorial.out
+    rm RB_Biogeography_many_area_Tutorial.aux
+    rm RB_Biogeography_many_area_Tutorial.bbl
+    rm RB_Biogeography_many_area_Tutorial.blg
+    rm RB_Biogeography_many_area_Tutorial.log
+    rm RB_Biogeography_many_area_Tutorial.out
 
-cd ..
+    cd ..
 fi
