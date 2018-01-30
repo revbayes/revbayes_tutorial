@@ -22,7 +22,7 @@ We start with some simple concepts to get familiar and used to \RevBayes.
 By now you should have executed \RevBayes and you should see the command prompt waiting for input. 
 The best exercise is to write these statements exactly in \RevBayes. 
 
-\section*{Starting \RevBayes}This tutorial demonstrates the basic syntactical features of \texttt{RevBayes} and the \texttt{Rev} scripting language.
+\subsection{Starting \RevBayes}This tutorial demonstrates the basic syntactical features of \texttt{RevBayes} and the \texttt{Rev} scripting language.
 Let's start with the basic concepts for the interactive use of \texttt{RevBayes} with \texttt{Rev} (the language of \texttt{RevBayes}). 
 You should try to execute the statements step by step, look at the output and try to understand what and why things are happening.
 
@@ -34,7 +34,7 @@ This means \RevBayes is waiting for input.
 	\includegraphics[width=\linewidth]{figures/terminal.pdf}
 \end{figure}
 
-\section*{Operators and Functions}
+\subsection{Operators and Functions}
 \Rev is an interpreted language for statistical computing and phylogenetic analysis.
 Therefore, the basics are simple mathematical operations.
 Entering each of the following lines will automatically execute these operations.{\tt \begin{snugshade*}
@@ -90,8 +90,8 @@ Exp(1)                           # wrong upper case name
 \end{lstlisting}
 \end{snugshade*}}
 
-\clearpage
-\section*{Variable Declaration and Assignment}
+%\clearpage
+\subsection{Variable Declaration and Assignment}
 One of the most important features of \RevBayes (or any programming language, really) is the ability to declare and assign variables.
 Variables store information to be referenced later, and can change throughout the execution of the program.
 There are three kinds of variables in \RevBayes, called \emph{constant}, \emph{deterministic}, and \emph{stochastic} variables.
@@ -159,7 +159,9 @@ x.lnProbability()                # print the log-probability if `x'
 \end{lstlisting}
 \end{snugshade*}}
 
-\section*{Distributions and Random Numbers}
+
+
+\subsection{Distributions and Random Numbers}
 
 \Rev provides functions for common statistical distributions.
 We'll demonstrate by generating random exponential numbers as we did in lecture.
@@ -192,7 +194,9 @@ x
 \end{lstlisting}
 \end{snugshade*}}
 
-\section*{Vectors}
+
+
+\subsection{Vectors}
 Individual variables can have more than one value.
 Variables that have more than one value are called \emph{vectors}.
 The simplest way to create a vector is like this:
@@ -210,7 +214,9 @@ v
 \end{lstlisting}
 \end{snugshade*}}
 
-\section*{\texttt{for} loops}
+
+
+\subsection{\texttt{for} loops}
 \texttt{for} loops are important programming structures that allow you to repeat the same statement a number of times on different variables.
 The basic structure of a \texttt{for} loop is:
 {\tt \begin{snugshade*}
@@ -245,29 +251,7 @@ q()
 \end{lstlisting}
 \end{snugshade*}}
 
-\section*{In-Class Exercises}
-\noindent Exit and restart \RevBayes.
-Create a fresh, blank text file.
-
-\bigskip\noindent Create a variable called $z$ with the value 10. What kind of variable is this?
-
-\bigskip
-\noindent Create a second variable $y$ which is $y = f(z) = z ^ 2$. What kind of variable is $y$? What is its value?
-
-\bigskip
-\noindent Change the value of $z$ to 100. Before printing $y$, can you guess its value?
-
-\bigskip
-\noindent Write a \texttt{for} loop that creates 1000 random uniform numbers $u$ and 1000 exponential random numbers $x_1$ with $\lambda = 1$, as we did above.
-Then, use the same random uniform numbers $u$ to create 1000 exponential numbers $x_{10}$ with $\lambda = 10$.
-Using the \texttt{mean()} function, compare the means of $x_1$ and $x_{10}$.
-Which has a greater mean?
-
-\bigskip
-\noindent (Optional) If you are feeling comfortable, experiment with different values of $\lambda$. 
-How does the mean of $x$ depend on $\lambda$?
-Think about how this relates to the instantaneous rate matrix, $Q$.
-
+\subsection{References}
 
 \bibliographystyle{sysbio}
 \bibliography{\GlobalResourcePath refs}
