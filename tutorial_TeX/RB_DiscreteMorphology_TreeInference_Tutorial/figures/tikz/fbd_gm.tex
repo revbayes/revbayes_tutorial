@@ -1,0 +1,36 @@
+\begin{tikzpicture}
+\node[snode] (tree) at (1,1) {\LARGE $\mathcal{T}$};
+\node[snode] (lambda) at ($(tree)+(-3,1.5)$) {\LARGE $\lambda$};
+\node[snode] (mu) at ($(tree)+(0,3)$) {\LARGE $\mu$};
+\node[snode] (psi) at ($(tree)+(3,1.5)$) {\LARGE $\psi$};
+\node[constnode] (nul) at ($(lambda)+(-1.5,0)$) {\Large $\delta_{\lambda}$};
+\node[constnode] (num) at ($(mu)+(-1.5,0)$) {\Large $\delta_{\mu}$};
+\node[constnode] (nup) at ($(psi)+(1.5,0)$) {\Large $\delta_{\psi}$};
+\node[white, fill=brnt, shape=rectangle, rounded corners] at ($(lambda)+(0,-1)$) {speciation rate};
+\node[white, fill=brnt, shape=rectangle, rounded corners] at ($(mu)+(0.6,0)$) [right]{extinction rate};
+\node[white, fill=brnt, shape=rectangle, rounded corners] at ($(psi)+(0,-1)$) [centered]{fossilization rate};
+\node at ($(lambda)+(0,0.75)$) {\scriptsize exponential};
+\node at ($(mu)+(0,0.75)$) {\scriptsize exponential};
+\node at ($(psi)+(0,0.75)$) {\scriptsize exponential};
+\draw [taro] (lambda) -- (tree);
+\draw [taro] (mu) -- (tree);
+\draw [taro] (psi) -- (tree);
+\draw [taro] (nul) -- (lambda);
+\draw [taro] (num) -- (mu);
+\draw [taro] (nup) -- (psi);
+%\node at ($(nx)+(0,-1)$) {time tree};
+%\node at ($(nx)+(0,-1.75)$) {Node ages};
+\node[constnode] (rho) at ($(tree)+(3.5,-1.5)$) {\LARGE $\rho$};
+\draw[taro] (rho) -- (tree) ;
+\node[white, fill=brnt, shape=rectangle, rounded corners] at ($(rho)+(0,-1)$) {sampling probability};
+\node[snode] (origin) at ($(tree)+(-3,-1.5)$) {\large $\phi$};
+\node at ($(origin)+(0,0.75)$) {\scriptsize uniform};
+\draw[taro] (origin) -- (tree) ;
+\node[constnode] (min) at ($(origin)+(-2,0.75)$) {\large $a$};
+\node[constnode] (max) at ($(origin)+(-2,-0.75)$) {\large $b$};
+\draw[taro] (min) -- (origin) ;
+\draw[taro] (max) -- (origin) ;
+\node[white, fill=brnt, shape=rectangle, rounded corners] at ($(origin)+(0,-1)$) {origin time};
+\node (ddd) at ($(tree)+(0,-3.5)$) {to the phyloCTMCs};
+\draw[dtaro] (tree) -- (ddd) ;
+\end{tikzpicture}

@@ -13,7 +13,7 @@ In short, it is probably not likely that one single model describes all characte
 
 The standard Mk model of character evolution, where M denotes it is a Markov model and $K$ denotes the number of states for the character.
 The lineage may transition directly from state 1 to state 4 without going through states 2 and 3, which is representative of a character with {\it unordered} states.
-In addition, all transition rates are equal as they are in the Jukes-Cantor rate matrix \citep{jukes69}.
+In addition, all transition rates are equal as they are in the Jukes-Cantor rate matrix \citep{Jukes1969}.
 Here is an example of a symmetric unordered Mk model for $K=4$.
 
 \begin{equation*}
@@ -92,12 +92,12 @@ Q
 \end{lstlisting}
 \end{snugshade*}}
 
-If we then get our transition probabilities, we see that this changes our probability of observing the not simply of our two state transitions that we changed the rate for, but others as well.
+If we then get our transition probabilities, we see that this changes our probability of observing  not only of our two state transitions that we changed the rate for, but others as well.
 
 This type of approach is common in parsimony, where it is one of several things referred to as weighted parsimony. 
-This approach to using different matrices requires you to, \textit{a priori} specify your matrix.
+This approach to using different matrices requires you to specify your matrix \textit{a priori}.
 But in reality, there is often fairly little guidance or information by which we decide if a weight applied to a transition is appropriate.
-Biologists still use models of this type - the Dollo model, in which a character is assumed not to be able to re-evolve once lost, is an extreme version of penalizing one change.
+Biologists still use models of this type --- for example, the Dollo model, in which a character is assumed not to be able to re-evolve once lost, is an extreme version of penalizing one change.
 
 Because the transition rates between all differing pairs of states are the same, so are the transition probabilities.
 Similarly, the probability of remaining in any given state is also equal across states.
@@ -173,7 +173,7 @@ In addition, note that assigning asymmetric transition rates causes {\tt P[1][2]
 Two characters do not necessarily evolve independently of one another.
 Take two characters in plants: the presence or absence of toothed leaf margins (character X) is thought to be ecologically correlated with the presence of absence of leaf lobing (character Y).
 For a single binary character, there are two states (0 and 1), but there are four states for a pair of non-independent binary characters (00, 10, 01, and 11).
-\citet{pagel04} introduced a general framework for modeling the evolution of joint sets of characters.
+\citet{Pagel2004} introduced a general framework for modeling the evolution of joint sets of characters.
 These models require that only one evolutionary event can occur in a moment of time, which is enforced with the 0 terms.
 In addition, the transition rate that, say, character X goes from 0 to 1 depends on the current value of character Y.
 
@@ -353,9 +353,9 @@ P_10
 
 \subsection{Covarion}
 
-Covarion models \citep{tuffley98} capture the possibility that a ``hidden'' (unobserved or unmeasurable) states cause evolutionary processes to vary in tempo and modes.
-For example, phylogenetically local clusters of plant lineages appear to transition between herbaceous and woody habits at relatively high rates, so one might want to quantify where these bursts occur \citep{beaulieu2013}.
-While similar in structure to the correlated character model of \citet{pagel94}, covarion models do not observe the hidden state that induce the mode-shifts.
+Covarion models \citep{Tuffley1998} capture the possibility that a ``hidden'' (unobserved or unmeasurable) states cause evolutionary processes to vary in tempo and modes.
+For example, phylogenetically local clusters of plant lineages appear to transition between herbaceous and woody habits at relatively high rates, so one might want to quantify where these bursts occur \citep{Beaulieu2013}.
+While similar in structure to the correlated character model of \citet{Pagel1994}, covarion models do not observe the hidden state that induce the mode-shifts.
 Instead, covarion models expand the character's state space by a factor of $K$, and observe the character once for each of the $K$ categories.
 For example, take a binary character modeled with $K=2$ hidden state classes.
 The model would treat a character that is observed as being in state 0 as possibly being in either of the $K=2$ classes (0,1) and (0,2).

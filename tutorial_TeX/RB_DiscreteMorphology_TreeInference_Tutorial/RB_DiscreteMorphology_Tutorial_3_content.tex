@@ -2,14 +2,14 @@
 
 
 {\begin{framed}
-Make a copy of the MCMC and model files you just made. 
+Make a copy of the MCMC and model files you made earlier. 
 Call them \cl{mcmc\_mk\_dicretized.Rev} and \cl{model\_mk\_discretized.Rev}. 
 These will contain the new model parameters and models. \par 
 \end{framed}}
 \begin{figure}[h!]
 \fbox{%
 \begin{minipage}{\textwidth}\centering
-% \includegraphics[width=0.5\textwidth,angle=0]{\ResourcePath figures/tikz/morpho_gm-eps-converted-to} % 
+\includegraphics[width=0.5\textwidth,angle=90]{\ResourcePath figures/tikz/morpho_gm} % 
 \caption{\small Graphical model demonstrating the discretized Beta distribution for allowing variable state frequencies.}
 \end{minipage}}
 \label{fig:module-gm}
@@ -17,17 +17,17 @@ These will contain the new model parameters and models. \par
 The Mk model makes a number of assumptions, but one that may strike you as unrealistic is the assumption that characters are equally likely to change from any one state to any other state.
 That means that a trait is as likely to be gained as lost.
 While this may hold true for some traits, we expect that it may be untrue for many others. \par
-\cl{RevBayes} has functionality to allow us to relax this assumption.
+\RevBayes has functionality to allow us to relax this assumption.
 We do this by specifying a Beta prior on state frequencies.
 Remember from the \cl{RB\_CTMC} lesson that stationary frequencies impact how likely we are to see changes in a character.
 For example, it may be very likely, in a character, to change from 0 to 1.
 But if the frequency of 0 is very low, we will still seldom see this change. \par
 We can exploit the relationship between state frequencies and observed changes to allow for variable Q matrices across characters (Fig. 2).
-To do this, we generate a Beta distribution on state frequencies \citep{huelsenbeck01c}, and use the state frequencies from that Beta distribution to generate a series of Q-matrices to use to evaluate our data \citep{pagel04}. \par
+To do this, we generate a Beta distribution on state frequencies, and use the state frequencies from that Beta distribution to generate a series of Q-matrices to use to evaluate our data \citep{Pagel2004}. \par
 This type of model is called a \textbf{mixture model}.
 There are assumed to be subdivisions in the data, which may require different parameters (in this case, state frequencies).
 These subdivisions are not defined \textit{a priori}. 
-This model has previously been shown to be effective for a range of empirical and simulated datasets \citep{wright16}.\par
+This model has previously been shown to be effective for a range of empirical and simulated datasets \citep{Wright2016}.\par
 
 
 
@@ -128,7 +128,7 @@ This estimation will take longer than the Mk model, due to increased model compl
 \begin{figure}[h!]
 \fbox{%
 \begin{minipage}{\textwidth}\centering
-\includegraphics[width=0.5\textwidth,angle=0]{\ResourcePath figures/catplate}
+\includegraphics[width=0.5\textwidth,angle=0]{\ResourcePath figures/tikz/morph_hyperprior}
 \caption{\small Graphical model demonstrating the Dirichlet prior to allow variable state frequencies in both binary and multistate data.}
 \end{minipage}}
 \label{fig:module-relaxed morphology}
@@ -139,7 +139,7 @@ This is an excellent start for allowing more complex models for morphology.
 But this approach also has several shortcomings.
 First, because we use a Beta distribution, this model really only works for binary data.
 Secondly, oftentimes, we will not have a good idea of the shape of the distribution from which we expect state frequencies to be drawn. \par
-To accommodate for these concerns, \cl{RevBayes} also has a model that is similar to the CAT model \citep{lartillot04}. \par
+To accommodate for these concerns, \RevBayes also has a model that is similar to the CAT model \citep{Lartillot2004}. \par
 The site-heterogeneous discrete morphology model (SHDM) uses a hyperprior on the prior on state frequencies to mix over different possible combinations state frequencies.
 In this mixture model, F81 Q-matrices (an extension of the Jukes-Cantor which allows for different state frequencies between characters) is initialized from a set of state frequencies.
 The number of Q-matrices initialized is equal to the number of user-defined categories, as in the discretized Beta model.
