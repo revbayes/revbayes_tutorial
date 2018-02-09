@@ -43,10 +43,10 @@ gynostemium_data = readCharacterDataDelimited("data/gynostemium_data.tsv", state
 # output of the previous MCMC analysis.
 
 # read in tree trace
-treetrace = readTreeTrace("data/precooked_tree_samples.trees", treetype="non-clock")
+treetrace = readTreeTrace("data/precooked_tree_samples.trees", treetype="non-clock", burnin=200)
 
 # draw a tree from the empirical tree distribution
-psi ~ dnEmpiricalTree(burnin=200, treetrace)
+psi ~ dnEmpiricalTree(treetrace)
 
 # we'll also read in a pre-cooked MAP tree to summarize ancestral state on
 map_tree <- readTrees("data/precooked_MAP.tree")[1]

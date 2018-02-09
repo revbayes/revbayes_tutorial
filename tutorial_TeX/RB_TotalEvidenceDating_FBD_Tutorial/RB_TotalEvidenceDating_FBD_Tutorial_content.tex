@@ -27,8 +27,10 @@ Good options include \href{http://www.sublimetext.com/}{\tt Sublime Text} or \hr
 \subsubsection{Prerequisite Tutorials}
 In addition to installing the software, this tutorial assumes that you have read and completed the following tutorials:
 \begin{itemize}[noitemsep,topsep=0pt]
-\item \href{https://github.com/revbayes/revbayes_tutorial/blob/master/tutorial_TeX/RB_Basics_Tutorial/RB_Basics_Tutorial.pdf}{\mi{Basic Introduction to \Rev and MCMC}}
-\item \href{https://github.com/revbayes/revbayes_tutorial/blob/master/tutorial_TeX/RB_MCMC_Intro_Tutorial/RB_MCMC_Intro_Tutorial.pdf}{\mi{Introduction to MCMC Simulation}}
+\item \href{https://github.com/revbayes/revbayes_tutorial/raw/master/tutorial_TeX/RB_Intro_Tutorial/RB_Intro_Tutorial.pdf}{Very Basic Introduction to \Rev}
+\item \href{https://github.com/revbayes/revbayes_tutorial/raw/master/tutorial_TeX/RB_Rev_Tutorial/RB_Rev_Tutorial.pdf}{General Introduction to the \Rev syntax}
+\item \href{https://github.com/revbayes/revbayes_tutorial/raw/master/tutorial_TeX/RB_MCMC_Archery_Tutorial/RB_MCMC_Archery_Tutorial.pdf}{General Introduction to MCMC using an archery example}
+\item \href{https://github.com/revbayes/revbayes_tutorial/raw/master/tutorial_TeX/RB_MCMC_Binomial_Tutorial/RB_MCMC_Binomial_Tutorial.pdf}{General Introduction to MCMC using a coin-flipping example}
 \item \href{https://github.com/revbayes/revbayes_tutorial/blob/master/tutorial_TeX/RB_CTMC_Tutorial/RB_CTMC_Tutorial.pdf}{\mi{Substitution Models}}
 \item \href{https://github.com/revbayes/revbayes_tutorial/blob/master/tutorial_TeX/RB_Partition_Tutorial/RB_Partition_Tutorial.pdf}{\mi{Partitioned Data Analysis}}
 \end{itemize}
@@ -511,7 +513,7 @@ The way that we will run our MCMC for this tutorial will be to execute a \textit
 Here, if we were to run our MCMC with our current vector of 6 moves, then our move schedule would perform 6 moves at each cycle.
 Within a cycle, an individual move is chosen from the move list in proportion to its weight. 
 Therefore, with all six moves assigned \cl{weight=1}, each has an equal probability of being executed and will be performed on average one time per MCMC cycle. 
-For more information on moves and how they are performed in \RevBayes, please refer to the \href{https://github.com/revbayes/revbayes_tutorial/blob/master/tutorial_TeX/RB_MCMC_Intro_Tutorial/RB_MCMC_Intro_Tutorial.pdf}{\mi{Introduction to MCMC}} and \href{https://github.com/ssb2017/revbayes_intro/blob/master/tutorials/RB_CTMC_Tutorial.pdf}{\mi{Substitution Models}} tutorials.
+For more information on moves and how they are performed in \RevBayes, please refer to the \href{https://github.com/revbayes/revbayes_tutorial/blob/master/tutorial_TeX/RB_MCMC_Binomial_Tutorial/RB_MCMC_Binomial_Tutorial.pdf}{\mi{Introduction to MCMC}} and \href{https://github.com/ssb2017/revbayes_intro/blob/master/tutorials/RB_CTMC_Tutorial.pdf}{\mi{Substitution Models}} tutorials.
 
 In addition to the speciation ($\lambda$) and extinction ($\mu$) rates, we may also be interested in inferring diversification ($\lambda - \mu$) and turnover ($\mu/\lambda$).
 Since these parameters can be expressed as a deterministic transformation of the speciation and extinction rates, we can monitor (that is, track the values of these parameters, and print them to a file) their values by creating two deterministic nodes using the \cl{:=} operator.
@@ -703,11 +705,27 @@ age_extant := tmrca(fbd_tree, clade_extant)
 \end{lstlisting}
 \end{snugshade*}}
 
-In the same way we monitored the MRCA of the extant bears, we can also create a deterministic node to monitor the age of a fossil taxon that we are particularly interested in recording. 
+In the same way we monitored the MRCA of the extant bears, we can also monitor the age of a fossil taxon that we may be interested in recording. 
 We will monitor the marginal distribution of the age of \textit{Kretzoiarctos beatrix}, which is between 11.2--11.8 My.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 age_Kretzoiarctos_beatrix   := tmrca(fbd_tree, clade("Kretzoiarctos_beatrix"))
+\end{lstlisting}
+\end{snugshade*}}
+
+Finally, we will monitor the tree after removing taxa for which we did not have any molecular or morphological data.
+The phylogenetic placement of these taxa is based only on their occurrence times and any clade constraints we applied (section \ref{subsub:Exercise-FBD-Constraints}). 
+Because no data are available to resolve their relationships to other lineages, we will treat their placement as \href{https://en.wikipedia.org/wiki/Nuisance_parameter}{\textit{nuisance parameters}} and remove them from the output.
+
+We will 
+%use the \cl{fnPruneTree()} function to 
+remove two fossil taxa, \textit{Parictis montanus} and \textit{Ursus abstrusus}, from every tree in the trace file before summarizing the samples.
+Use the \cl{fnPruneTree()} function to create a deterministic tree variable \cl{pruned\_tree} from which these taxa have been pruned.
+We will monitor this tree instead of \cl{fbd\_tree}.
+
+{\tt \begin{snugshade*}
+\begin{lstlisting}
+pruned_tree := fnPruneTree(fbd_tree, prune=v("Ursus_abstrusus","Parictis_montanus"))
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -869,7 +887,7 @@ Because the Mk model is a generalization of the Mk model, we will initialize our
 
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-Q_morpho := fnJC(2)
+Q_morpho <- fnJC(2)
 
 \end{lstlisting}
 \end{snugshade*}}
@@ -984,10 +1002,11 @@ monitors[mni++] = mnModel(filename="output/bears.log", printgen=10)
 
 The \cl{mnFile} monitor writes any parameter we specify to file.
 Thus, if we only cared about the speciation rate and nothing else (this is not a typical or recommended attitude for an analysis this complex) we wouldn't use the \cl{mnModel} monitor above and just use the \cl{mnFile} monitor to write a smaller and simpler output file.
-Since the tree topology is not included in the \cl{mnModel} monitor (because it is not numerical), we will use \cl{mnFile} to write the tree to file by specifying our \cl{fbd\_tree} variable in the arguments.
+Since the tree topology is not included in the \cl{mnModel} monitor (because it is not numerical), we will use \cl{mnFile} to write the tree to file by specifying our \cl{pruned\_tree} variable in the arguments.
+Remember, we are monitoring the tree with nuisance taxa pruned out  (section \ref{subsub:Exercise-FBD-DetNodes}).
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-monitors[mni++] = mnFile(filename="output/bears.trees", printgen=10, fbd_tree)
+monitors[mni++] = mnFile(filename="output/bears.trees", printgen=10, pruned_tree)
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -1015,7 +1034,7 @@ The MCMC object that we named \cl{mymcmc} has a member method called \cl{.run()}
 This will execute our analysis and we will set the chain length to \cl{10000} cycles using the \cl{generations} option.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-mymcmc.run(generations=10000,tuningInterval=0)
+mymcmc.run(generations=10000)
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -1169,7 +1188,7 @@ Figure \ref{fig:tracer-extinction-trace} shows the trace for the extinction rate
 The \mi{Trace} window allows us to evaluate how well our chain is sampling the target distribution.
 For a fairly short analysis, the output in figure \ref{fig:tracer-extinction-trace} shows reasonable \textit{mixing}---there is no consistent pattern or trend in the samples, nor are there long intervals where the statistic does not change.
 The presence of a trend or large leaps in a parameter value might indicate that your MCMC is not mixing well.
-You can read more about MCMC tuning and improving mixing in the tutorials \href{https://github.com/revbayes/revbayes_tutorial/raw/master/tutorial_TeX/RB_MCMC_Intro_Tutorial/RB_MCMC_Intro_Tutorial.pdf}{\mi{Intro to MCMC}} and \href{https://github.com/revbayes/revbayes_tutorial/raw/master/tutorial_TeX/RB_MCMC_Tutorial/RB_MCMC_Tutorial.pdf}{\mi{MCMC Algorithms}}.
+You can read more about MCMC tuning and improving mixing in the tutorials \href{https://github.com/revbayes/revbayes_tutorial/raw/master/tutorial_TeX/RB_MCMC_Binomial_Tutorial/RB_MCMC_Binomial_Tutorial.pdf}{\mi{Intro to MCMC}} and \href{https://github.com/revbayes/revbayes_tutorial/raw/master/tutorial_TeX/RB_MCMC_Tutorial/RB_MCMC_Tutorial.pdf}{\mi{MCMC Algorithms}}.
 
 \begin{framed}
 Look through the traces for your parameters. 
@@ -1199,7 +1218,7 @@ Go to the \cl{age\_extant} parameter in the \mi{Estimates} window.
 Since you have evaluated several of the parameters by viewing the trace files and the ESS values, you may be aware that the MCMC analysis you conducted for this tutorial did not sufficiently sample the joint posterior distribution of phylogenetic parameters.
 More explicitly, \textit{your run has not converged}.
 It is not advisable to base your conclusions on such a run and it will be critical to perform multiple, independent runs for many more MCMC cycles. 
-For further discussion of recommended MCMC practices in \RevBayes, please see the \href{https://github.com/revbayes/revbayes_tutorial/raw/master/tutorial_TeX/RB_MCMC_Intro_Tutorial/RB_MCMC_Intro_Tutorial.pdf}{\mi{Intro to MCMC}} and \href{https://github.com/revbayes/revbayes_tutorial/raw/master/tutorial_TeX/RB_MCMC_Tutorial/RB_MCMC_Tutorial.pdf}{\mi{MCMC Algorithms}} tutorials.
+For further discussion of recommended MCMC practices in \RevBayes, please see the \href{https://github.com/revbayes/revbayes_tutorial/raw/master/tutorial_TeX/RB_MCMC_Binomial_Tutorial/RB_MCMC_Binomial_Tutorial.pdf}{\mi{Intro to MCMC}} and \href{https://github.com/revbayes/revbayes_tutorial/raw/master/tutorial_TeX/RB_MCMC_Tutorial/RB_MCMC_Tutorial.pdf}{\mi{MCMC Algorithms}} tutorials.
 
 \medskip
 \subsubsection{Summarize Tree}\label{subsub:Exercise-SummarizeTree}
@@ -1233,63 +1252,14 @@ trace = readTreeTrace("output/bears.trees")
 \end{lstlisting}
 \end{snugshade*}}
 
-The first thing we need to do is remove taxa for which we did not have any molecular or morphological data.
-The phylogenetic placement of these taxa is based only on their occurrence times and any clade constraints we applied (section \ref{subsub:Exercise-FBD-Constraints}). 
-Because no data are available to resolve their relationships to other lineages, we will treat their placement as \href{https://en.wikipedia.org/wiki/Nuisance_parameter}{\textit{nuisance parameters}} and remove them from the summary tree.
-
-We must read our complete taxon list into \RevBayes so that we can easily access the taxon names of the lineages we'd like to prune.
-{\tt \begin{snugshade*}
-\begin{lstlisting}
-taxa <- readTaxonData("data/bears_taxa.tsv")
-\end{lstlisting}
-\end{snugshade*}}
-
-We will 
-%use the \cl{fnPruneTree()} function to 
-remove two fossil taxa, \textit{Parictis montanus} and \textit{Ursus abstrusus}, from every tree in the trace file before summarizing the samples.
-These two species have the indices \cl{17} and \cl{20} in our list of taxa. 
-You can view the list by typing its variable name \cl{taxa}:
-{\tt \begin{snugshade*}
-\begin{lstlisting}
-taxa 
-|*  [ Ailuropoda_melanoleuca, Helarctos_malayanus, Melursus_ursinus, Tremarctos_ornatus,
-|*  Ursus_americanus, Ursus_arctos, Ursus_maritimus, Ursus_thibetanus, Agriarctos_spp,
-|*  Ailurarctos_lufengensis, Arctodus_simus, Ballusia_elmensis, Indarctos_arctoides,
-|*  Indarctos_punjabiensis, Indarctos_vireti, Kretzoiarctos_beatrix, Parictis_montanus,
-|*  Ursavus_brevirhinus, Ursavus_primaevus, Ursus_abstrusus, Ursus_spelaeus, Zaragocyon_daamsi]
-\end{lstlisting}
-\end{snugshade*}}
-
-Use the \cl{fnPruneTree()} function to prune taxon \cl{17} and taxon \cl{20} from each tree using a \cl{for} loop.
-We'll store each new tree in the vector called \cl{trees}.
-
-{\tt \begin{snugshade*}
-\begin{lstlisting}
-for(i in 1:trace.size())
-{
-    trees[i] = fnPruneTree(trace.getTree(i), pruneTaxa=v(taxa[17],taxa[20]))
-}
-\end{lstlisting}
-\end{snugshade*}}
-
-Then we create a second tree trace containing the pruned trees using the \cl{treeTrace} function.
-
-{\tt \begin{snugshade*}
-\begin{lstlisting}
-trace_pruned = treeTrace(trees)
-\end{lstlisting}
-\end{snugshade*}}
-
-If you use the size function of the \cl{trace\_pruned} variable by typing the command \colorbox{shadecolor}{\cl{trace\_pruned.size()}}, you will see that our MCMC sampled 1001 trees. 
-By default, a burn-in of 25\% is used when creating the tree trace (250 trees in our case). You can specify a different burn-in fraction, say 50\%, by typing the command \colorbox{shadecolor}{\cl{trace\_pruned.setBurnin(0.5)}}.
+By default, a burn-in of 25\% is used when creating the tree trace (250 trees in our case). You can specify a different burn-in fraction, say 50\%, by typing the command \colorbox{shadecolor}{\cl{trace.setBurnin(0.5)}}.
 
 Now we will use the \cl{mccTree()} function to return a maximum clade credibility (MCC) tree.
 The MCC tree is the tree with the maximum product of the posterior clade probabilities.
 When considering trees with sampled ancestors, we refer to the maximum sampled ancestor clade credibility (MSACC) tree \citep{Gavryushkina2016}.
-We also use the option \cl{conditionalAges=false} to indicate that the node ages of the output tree should not be summarized conditional on the MCC topology.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-mccTree(trace_pruned, file="output/bears.mcc.tre", conditionalAges=false )
+mccTree(trace, file="output/bears.mcc.tre" )
 \end{lstlisting}
 \end{snugshade*}}
 

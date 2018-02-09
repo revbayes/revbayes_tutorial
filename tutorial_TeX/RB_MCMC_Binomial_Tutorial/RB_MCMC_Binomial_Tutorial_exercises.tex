@@ -1,0 +1,72 @@
+\section{Exercises for the MCMC Tutorial}
+
+
+\subsection{Exercise 1: Performing your first simple MCMC simulation}
+
+\begin{enumerate}[label=\textnormal{\arabic*)}]
+	\item Look into the \emph{Binomial\_MH\_algorithm.Rev} script and make yourself familiar with it. All the commands should be explained in the text of the tutorial. 
+	\item Execute the script \emph{Binomial\_MH\_algorithm.Rev}).
+	\item The \texttt{.log} file will contain samples from the posterior distribution of the model! Open the file in \Tracer to learn about various features of the posterior distribution, for example: the posterior mean or the 95\% credible interval.
+	\item Save the MCMC trace plot and posterior distribution into a PDF file and upload the files. Write here the name of your file:\medskip\\
+\TextField[name=mcmc_trace,backgroundcolor=TextFieldBackgroundColor,color=TextFieldTextColor,bordercolor=TextFieldBoxColor,height=1cm,width=\TextFieldWidth,multiline=true]{}
+\end{enumerate}
+
+\subsection{Exercise 2: Different MCMC strategies (moves)}
+
+\begin{enumerate}[label=\textnormal{\arabic*)}]
+	\item Now look into the script called \emph{Binomial\_MH\_algorithm\_moves.Rev} which shows the 3 different types of moves described in this tutorial.
+	\item Run the script to estimate the posterior distribution of $p$ again.
+	\item Look at the output in \Tracer.
+%	\item Are the distributions, mean and credible interval the same?
+	\item Use only a single move and set \cl{printgen=1}. Which move has the best ESS? Enter the ESS values for the different moves here:\medskip\\
+\TextField[name=mcmc_ESS,,backgroundcolor=TextFieldBackgroundColor,color=TextFieldTextColor,bordercolor=TextFieldBoxColor,height=2cm,width=\TextFieldWidth,multiline=true]{}
+	\item How does the ESS change if you use a \cl{delta=10} for the sliding-window move?\medskip\\
+\TextField[name=mcmc_ESS_delta,,backgroundcolor=TextFieldBackgroundColor,color=TextFieldTextColor,bordercolor=TextFieldBoxColor,height=1cm,width=\TextFieldWidth,multiline=true]{}
+	\item Add to each move a counter variable that counts how often the move was accepted. For example:
+{\tt \begin{snugshade*}
+\begin{lstlisting}    
+        if (u < R){
+            # Accept the proposal
+            p <- p_prime
+            ++num_sliding_move_accepted
+        } \end{lstlisting}
+\end{snugshade*}}
+	\item Have a look at how the acceptance rate changes for different values of the tuning parameters.\medskip\\
+\TextField[name=mcmc_acceptance,,backgroundcolor=TextFieldBackgroundColor,color=TextFieldTextColor,bordercolor=TextFieldBoxColor,height=2cm,width=\TextFieldWidth,multiline=true]{}
+\end{enumerate}
+
+\subsection{Exercise 3: MCMC in \RevBayes}
+
+\begin{enumerate}[label=\textnormal{\arabic*)}]
+	\item Run the built-in MCMC (\emph{Binomial\_MCMC.Rev}) and compare the results to your own MCMC. Are the posterior estimates the same? Are the ESS values similar? Which script was the fastest?\medskip\\
+\TextField[name=mcmc_builtin,,backgroundcolor=TextFieldBackgroundColor,color=TextFieldTextColor,bordercolor=TextFieldBoxColor,height=2cm,width=\TextFieldWidth,multiline=true]{}
+	\item Next, add a second move \cl{moves[2] = mvScale(p,lambda=0.1,tune=true,weight=1.0)} just after the first one.
+	\item Run the analysis again and upload your trace file. Write here the name of your file:\medskip\\
+\TextField[name=mcmc_trace_builtin,,backgroundcolor=TextFieldBackgroundColor,color=TextFieldTextColor,bordercolor=TextFieldBoxColor,height=1cm,width=\TextFieldWidth,multiline=true]{}
+	\item Finally, run a pre-burnin using \cl{analysis.burnin(generations=10000,tuningInterval=200)} just before you call \cl{analysis.run(100000)}. This will auto-tune the tuning parameters (\EG \cl{delta} and \cl{lambda}) so that the acceptance ratio is between 0.4 and 0.5.
+	\item What are the tuned values for \cl{delta} and \cl{lambda}? Did the auto-tuning increase the ESS?\medskip\\
+\TextField[name=mcmc_autotunig,backgroundcolor=,backgroundcolor=TextFieldBackgroundColor,color=TextFieldTextColor,bordercolor=TextFieldBoxColor,height=2cm,width=\TextFieldWidth,multiline=true]{}
+\end{enumerate}
+
+
+\subsection{Exercise 4: Approximating the posterior distribution}
+
+Modify the script \emph{Binomial\_MCMC.Rev}. Assume you flipped a coin 100 times and got 34 heads. Run the MCMC for 100,000 generations, printing every 100 samples to the file. 
+
+\begin{enumerate}[label=\textnormal{\arabic*)}]
+	\item What is the posterior mean estimate of p? The 95\% credible interval?\medskip\\
+\TextField[name=mcmc_posterior_estimates,backgroundcolor=TextFieldBackgroundColor,color=TextFieldTextColor,bordercolor=TextFieldBoxColor,height=2cm,width=\TextFieldWidth,multiline=true]{}
+	\item Pretend you flipped the coin 900 more times, for a total of 1000 flips. Among those 1000 flips, you observed 340 heads (change your script accordingly!). What is your posterior mean estimate of p now? How has the 95\% credible interval changed? Provide an intuitive explanation for this change.\medskip\\
+\TextField[name=mcmc_posterior_estimates_large,,backgroundcolor=TextFieldBackgroundColor,color=TextFieldTextColor,bordercolor=TextFieldBoxColor,height=2cm,width=\TextFieldWidth,multiline=true]{}
+\end{enumerate}
+
+
+\subsection{Exercise 5: Exploring prior sensitivity and MCMC settings}
+Play around with various parts of the model to develop on intuition for both the Bayesian model and the MCMC algorithm.
+For example, how does the posterior distribution change as you increase the number of coin flips (say, increase both the number of flips and the number of heads by an order of magnitude)?
+How does the estimated posterior distribution change if you change the prior model parameters, $\alpha$ and $\beta$ (\IE is the model prior sensitive)?
+Does the prior sensitivity depend on the sample size?
+Are the posterior estimates sensitive to the length of the MCMC?
+Do you think this MCMC has been run sufficiently long, or should you run it longer? Try to answer some of these questions and explain your finding here:\\
+\forceindent\TextField[name=mcmc_exploration,backgroundcolor=TextFieldBackgroundColor,color=TextFieldTextColor,bordercolor=TextFieldBoxColor,height=5cm,width=\TextFieldWidth,multiline=true]{}
+

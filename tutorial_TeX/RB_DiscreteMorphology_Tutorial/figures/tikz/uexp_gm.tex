@@ -1,0 +1,16 @@
+\definecolor{shc}{RGB}{238,224,229}
+\begin{tikzpicture}
+\node[snode] (x) at (1,1) {\LARGE $r_i$};
+\node[snode] (mu) at ($(x)+(-2,0)$) {\Large $\nu$};
+\draw [taro] (mu) -- (x) ;
+\node[rectangle,dashed, very thick, inner sep=6mm, draw=black!100, fit = (x)] (siteplate) {};
+\node[anchor=south east,inner sep=7pt] at (siteplate.south east) {\tiny $i \in N$};
+\node[constnode] (lambda) at ($(mu)+(-1.5,0)$) {\large $\delta_{\nu}$};
+\draw [taro] (lambda) -- (mu) ;
+\node (ddd) at ($(x)+(0,-2)$) {\scriptsize to the phyloCTMC};
+\draw[dtaro] (x) -- (ddd) ;
+\node (em) at ($(mu)+(0,0.7)$) [centered]{\scriptsize exponential};
+\node (ex) at ($(x)+(0,0.7)$) [centered]{\scriptsize exponential};
+\node[white, fill=brnt, shape=rectangle, rounded corners] at ($(x)+(1.2,0)$) [right]{branch rates};
+\end{tikzpicture}
+

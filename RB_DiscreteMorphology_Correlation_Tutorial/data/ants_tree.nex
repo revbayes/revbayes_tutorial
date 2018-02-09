@@ -1,0 +1,680 @@
+#NEXUS
+[written Thu Nov 03 23:02:50 CDT 2016 by Mesquite  version 3.02 (build 681) at Benjamins-MacBook-Air.local/10.0.0.6]
+
+BEGIN TAXA;
+	TITLE Concat;
+	DIMENSIONS NTAX=291;
+	TAXLABELS
+		Acanthognathus_ocellatus Acanthomyrmex_ferox Acanthoponera_minor Acanthostichus_kirbyi Acromyrmex_versicolor Acropyga_acutiventris Adelomyrmex_paratristani Adetomyrma_MAD02 Adlerzia_froggatti Aenictogiton_UG01 Aenictus_turneri Aglyptacros_Cf_sulcatus_OUT Allomerus_octoarticulatus Amblyopone_australis Amyrmex_BR01 Ancyridris_polyrhachioides_Nr Aneuretus_simoni Anillomyrma_decamera Ankylomyrma_coronacantha Anochetus_madagascarensis Anonychomyrma_itinerans Anoplolepis_gracilipes Novomessor_albisetosa Aphaenogaster_occidentalis_NW Aphaenogaster_pythia_OW Apis_mellifera_OUT Apomyrma_stygia Aporus_niger_OUT Apterogyna_ZA01_OUT Apterostigma_auriculatum Aptinoma_mangabe Arnoldius_AU01 Atopomyrmex_mocquerysi Atta_texana Austromorium_flavigaster Austroponera_castanea Axinidris_mlalu Azteca_instabilis Baracidris_sitra Bariamyrma_hispidula Basiceros_manni Blepharidatta_conops Bothriomyrmex_paradoxus Bothroponera_wasmannii Brachymyrmex_depilis Brachyponera_atrata Buniapone_amblyops Calomyrmex_albertisi Calyptomyrmex_kaurus Camponotus_conithorax_Colobopsis Camponotus_maritimus Cardiocondyla_mauritanica Carebara_urichi Cataglyphis_iberica Cataulacus_hispidulus Centromyrmex_sellaris Cephalotes_texanus Cerapachys_dohertyi_Dohertyi_grp Cerapachys_sauteri_Clump1 Cerapachys_sexspinus_Sexspinus_grp Cerapachys_typhlus_Clump2 Chalybion_californicum_OUT Cheliomyrmex_morosus_Cf Chronoxenus_wroughtonii_javanus Chyphotes_mellipes_OUT Colobostruma_unicorna Concoctio_concenta Crematogaster_acuta Cryptomyrmex_boltoni Cryptopone_gilva Cyatta_abscondita Cylindromyrmex_striatus Cyphoidris_exalta Cyphomyrmex_cornutus Dacatria_templaris Dacetinops_ignotus_Cf Daceton_armigerum Dasymutilla_aureola_OUT Diacamma_rugosum Diaphoromyrma_sofiae Dicroaspis_KM01 Dilobocondyla_borneensis_Cf Dinoponera_australis Diplomorium_longipenne Discothyrea_MAD07 Doleromyrma_darwiniana Dolichoderus_erectilobus Dolopomyrmex_pilatus Dorylus_laevigatus Dorymyrmex_bicolor Eciton_vagans Ectatomma_opaciventre Emeryopone_buttelreepeni Epelysidris_brocha Epopostruma_monstrosa Euponera_sikorae Euprenolepis_wittei Eurhopalothrix_australis Eutetramorium_mocquerysi Evagetes_Sp_OUT Forelius_pruinosus Formica_moki Formicoxenus_diversipilosus Froggattella_kirbii Gauromyrmex_acanthinus Gnamptogenys_Sp Goniomma_blanci Gracilidris_pombero Hagensia_havilandi Harpagoxenus_sublaevis Harpegnathos_saltator Heteroponera_microps Huberia_brounii Hylomyrma_blandiens Hypoponera_opacior Iridomyrmex_sanguineus Kalathomyrmex_emeryi Kartidris_sparsipila Kempfidris_inusualis Labidus_praedator Lachnomyrmex_scrobiculatus Lasius_californicus Lenomyrmex_colwelli Leptanilla_GRE01 Leptanilloides_nomada Leptogenys_diminuta Leptomyrmex_erythrocephalus Leptothorax_muscorum_Complex Linepithema_humile Liometopum_occidentale Liomyrmex_gestroi Loboponera_politula Lophomyrmex_ambiguus Lordomyrma_desupra Loweriella_boltoni Malagidris_jugum Manica_rubida Martialis_heureka_CR Mayaponera_constricta Mayriella_ebbei Megalomyrmex_silvestrii Megaponera_analis Melissotarsus_insularis Melophorus_Sp Meranoplus_castaneus Mesoponera_rubra Mesostruma_browni Messor_wasmanni Metapolybia_cingulata_OUT Metapone_madagascarica Microdaceton_tibialis Mischocyttarus_flavitarsis_OUT Monomorium_pharaonis Mycetagroicus_triangularis Mycetarotes_acutus Mycetophylax_conformis Mycetosoritis_hartmanni Mycocepurus_goeldii Myopias_lobosa Myopopone_castanea Myrcidris_epicharis Myrmecia_pyriformis Myrmecina_americana Myrmecocystus_flaviceps Myrmecorhynchus_Sp Myrmelachista_flavocotea Myrmica_striolagaster Myrmicaria_carinata Myrmicocrypta_infuscata_Cf Myrmisaraka_brevis Myrmoteras_iriodum Mystrium_mysticum Nebothriomyrmex_majeri Neivamyrmex_nigrescens Neoponera_apicalis Nesomyrmex_echinatinodis Nomamyrmex_esenbeckii Nothomyrmecia_macrops Notoncus_capitatus Notostigma_carazzii Nylanderia_hystrix Ochetellus_Cf_glaber_clarithorax Ochetomyrmex_neopolitus Octostruma_EC01 Ocymyrmex_fortior_Cf Odontomachus_coquereli Odontophotopsis_Sp_OUT Odontoponera_transversa Oecophylla_smaragdina Onychomyrmex_hedleyi Ophthalmopone_berthoudi Opisthopsis_respiciens Orectognathus_versicolor Oxyepoecus_vezenyii Oxyopomyrmex_santschii Pachycondyla_harpax Paltothyreus_tarsatus Papyrius_nitidus Paraparatrechina_weissi Paraponera_clavata Paratopula_TH01 Paratrechina_longicornis Perissomyrmex_snyderi Phalacromyrmex_fugax Pheidole_longispinosa Philanthus_Sp_OUT Philidris_cordata Phrynoponera_gabonensis Pilotrochus_besmerus Plagiolepis_Sp Platythyrea_mocquerysi Plectroctena_ugandensis Podomyrma_silvicola Poecilomyrma_myrmecodiae Pogonomyrmex_angustus Polyergus_breviceps Polyrhachis_Cf_vindex Ponera_Sp_Mal1 Prenolepis_imparis Prionopelta_MAD01 Pristocera_MAD01_OUT Pristomyrmex_orbiceps Proatta_butteli Probolomyrmex_tani Proceratium_stictum Procryptocerus_scabriusculus Proformica_nasuta Prolasius_Sp Propodilobus_pingorum Protalaridris_armata Protanilla_JAP01 Psalidomyrmex_procerus Pseudolasius_australis Pseudomyrmex_gracilis Pseudoneoponera_rufipes Pseudoponera_stigma Ravavy_miafina Recurvidris_TH01 Rhopalomastix_rothneyi Rhopalothrix_isthmica Rhytidoponera_chalybaea Rogeria_nevadensis_NW Rogeria_stigmatica_OW Romblonella_scrobifera Rotastruma_recava Royidris_longiseta Sapyga_pumila_OUT Scolia_verticalis_OUT Secostruma_MY01 Sericomyrmex_Sp Simopelta_Sp_Ecu1 Simopone_dryas Solenopsis_molesta Sphinctomyrmex_stali_NW Sphinctomyrmex_steinheili_OW Stegomyrmex_manni Stenamma_expolitum Stigmacros_Sp Stigmatomma_pallipes Streblognathus_peetersi Strongylognathus_testaceus Strumigenys_maxillaris Syllophopsis_fisheri Talaridris_mandibularis Tanipone_zona Tapinoma_melanocephalum Tatuidris_tatusia Technomyrmex_voeltzkowi Temnothorax_poeyi Terataner_bottegoi Tetheamyrma_subspongia Tetramorium_spinosum Tetraponera_rufonigra Thaumatomyrmex_atrox Trachymyrmex_arizonensis Tranopelta_subterranea Trichomyrmex_robustior Tropidomyrmex_elianae Turneria_bidentata Typhlomyrmex_rogenhoferi Tyrannomyrmex_legatus Veromessor_andrei Vespula_Sp_OUT Vicinopone_conciliatrix Vitsika_suspicax Vollenhovia_emeryi Vombisidris_bilongrudi Wasmannia_auropunctata Xenomyrmex_floridanus Xymmer_muticus Zatania_albimaculata 
+	;
+
+END;
+
+
+BEGIN TREES;
+	Title Maximum_Clade_Credibility_Tree_With_291_Tips;
+	LINK Taxa = Concat;
+	TRANSLATE
+[0] 		1 Acanthognathus_ocellatus,
+[1] 		2 Acanthomyrmex_ferox,
+[2] 		3 Acanthoponera_minor,
+[3] 		4 Acanthostichus_kirbyi,
+[4] 		5 Acromyrmex_versicolor,
+[5] 		6 Acropyga_acutiventris,
+[6] 		7 Adelomyrmex_paratristani,
+[7] 		8 Adetomyrma_MAD02,
+[8] 		9 Adlerzia_froggatti,
+[9] 		10 Aenictogiton_UG01,
+[10] 		11 Aenictus_turneri,
+[11] 		12 Aglyptacros_Cf_sulcatus_OUT,
+[12] 		13 Allomerus_octoarticulatus,
+[13] 		14 Amblyopone_australis,
+[14] 		15 Amyrmex_BR01,
+[15] 		16 Ancyridris_polyrhachioides_Nr,
+[16] 		17 Aneuretus_simoni,
+[17] 		18 Anillomyrma_decamera,
+[18] 		19 Ankylomyrma_coronacantha,
+[19] 		20 Anochetus_madagascarensis,
+[20] 		21 Anonychomyrma_itinerans,
+[21] 		22 Anoplolepis_gracilipes,
+[22] 		23 Novomessor_albisetosa,
+[23] 		24 Aphaenogaster_occidentalis_NW,
+[24] 		25 Aphaenogaster_pythia_OW,
+[25] 		26 Apis_mellifera_OUT,
+[26] 		27 Apomyrma_stygia,
+[27] 		28 Aporus_niger_OUT,
+[28] 		29 Apterogyna_ZA01_OUT,
+[29] 		30 Apterostigma_auriculatum,
+[30] 		31 Aptinoma_mangabe,
+[31] 		32 Arnoldius_AU01,
+[32] 		33 Atopomyrmex_mocquerysi,
+[33] 		34 Atta_texana,
+[34] 		35 Austromorium_flavigaster,
+[35] 		36 Austroponera_castanea,
+[36] 		37 Axinidris_mlalu,
+[37] 		38 Azteca_instabilis,
+[38] 		39 Baracidris_sitra,
+[39] 		40 Bariamyrma_hispidula,
+[40] 		41 Basiceros_manni,
+[41] 		42 Blepharidatta_conops,
+[42] 		43 Bothriomyrmex_paradoxus,
+[43] 		44 Bothroponera_wasmannii,
+[44] 		45 Brachymyrmex_depilis,
+[45] 		46 Brachyponera_atrata,
+[46] 		47 Buniapone_amblyops,
+[47] 		48 Calomyrmex_albertisi,
+[48] 		49 Calyptomyrmex_kaurus,
+[49] 		50 Camponotus_conithorax_Colobopsis,
+[50] 		51 Camponotus_maritimus,
+[51] 		52 Cardiocondyla_mauritanica,
+[52] 		53 Carebara_urichi,
+[53] 		54 Cataglyphis_iberica,
+[54] 		55 Cataulacus_hispidulus,
+[55] 		56 Centromyrmex_sellaris,
+[56] 		57 Cephalotes_texanus,
+[57] 		58 Cerapachys_dohertyi_Dohertyi_grp,
+[58] 		59 Cerapachys_sauteri_Clump1,
+[59] 		60 Cerapachys_sexspinus_Sexspinus_grp,
+[60] 		61 Cerapachys_typhlus_Clump2,
+[61] 		62 Chalybion_californicum_OUT,
+[62] 		63 Cheliomyrmex_morosus_Cf,
+[63] 		64 Chronoxenus_wroughtonii_javanus,
+[64] 		65 Chyphotes_mellipes_OUT,
+[65] 		66 Colobostruma_unicorna,
+[66] 		67 Concoctio_concenta,
+[67] 		68 Crematogaster_acuta,
+[68] 		69 Cryptomyrmex_boltoni,
+[69] 		70 Cryptopone_gilva,
+[70] 		71 Cyatta_abscondita,
+[71] 		72 Cylindromyrmex_striatus,
+[72] 		73 Cyphoidris_exalta,
+[73] 		74 Cyphomyrmex_cornutus,
+[74] 		75 Dacatria_templaris,
+[75] 		76 Dacetinops_ignotus_Cf,
+[76] 		77 Daceton_armigerum,
+[77] 		78 Dasymutilla_aureola_OUT,
+[78] 		79 Diacamma_rugosum,
+[79] 		80 Diaphoromyrma_sofiae,
+[80] 		81 Dicroaspis_KM01,
+[81] 		82 Dilobocondyla_borneensis_Cf,
+[82] 		83 Dinoponera_australis,
+[83] 		84 Diplomorium_longipenne,
+[84] 		85 Discothyrea_MAD07,
+[85] 		86 Doleromyrma_darwiniana,
+[86] 		87 Dolichoderus_erectilobus,
+[87] 		88 Dolopomyrmex_pilatus,
+[88] 		89 Dorylus_laevigatus,
+[89] 		90 Dorymyrmex_bicolor,
+[90] 		91 Eciton_vagans,
+[91] 		92 Ectatomma_opaciventre,
+[92] 		93 Emeryopone_buttelreepeni,
+[93] 		94 Epelysidris_brocha,
+[94] 		95 Epopostruma_monstrosa,
+[95] 		96 Euponera_sikorae,
+[96] 		97 Euprenolepis_wittei,
+[97] 		98 Eurhopalothrix_australis,
+[98] 		99 Eutetramorium_mocquerysi,
+[99] 		100 Evagetes_Sp_OUT,
+[100] 		101 Forelius_pruinosus,
+[101] 		102 Formica_moki,
+[102] 		103 Formicoxenus_diversipilosus,
+[103] 		104 Froggattella_kirbii,
+[104] 		105 Gauromyrmex_acanthinus,
+[105] 		106 Gnamptogenys_Sp,
+[106] 		107 Goniomma_blanci,
+[107] 		108 Gracilidris_pombero,
+[108] 		109 Hagensia_havilandi,
+[109] 		110 Harpagoxenus_sublaevis,
+[110] 		111 Harpegnathos_saltator,
+[111] 		112 Heteroponera_microps,
+[112] 		113 Huberia_brounii,
+[113] 		114 Hylomyrma_blandiens,
+[114] 		115 Hypoponera_opacior,
+[115] 		116 Iridomyrmex_sanguineus,
+[116] 		117 Kalathomyrmex_emeryi,
+[117] 		118 Kartidris_sparsipila,
+[118] 		119 Kempfidris_inusualis,
+[119] 		120 Labidus_praedator,
+[120] 		121 Lachnomyrmex_scrobiculatus,
+[121] 		122 Lasius_californicus,
+[122] 		123 Lenomyrmex_colwelli,
+[123] 		124 Leptanilla_GRE01,
+[124] 		125 Leptanilloides_nomada,
+[125] 		126 Leptogenys_diminuta,
+[126] 		127 Leptomyrmex_erythrocephalus,
+[127] 		128 Leptothorax_muscorum_Complex,
+[128] 		129 Linepithema_humile,
+[129] 		130 Liometopum_occidentale,
+[130] 		131 Liomyrmex_gestroi,
+[131] 		132 Loboponera_politula,
+[132] 		133 Lophomyrmex_ambiguus,
+[133] 		134 Lordomyrma_desupra,
+[134] 		135 Loweriella_boltoni,
+[135] 		136 Malagidris_jugum,
+[136] 		137 Manica_rubida,
+[137] 		138 Martialis_heureka_CR,
+[138] 		139 Mayaponera_constricta,
+[139] 		140 Mayriella_ebbei,
+[140] 		141 Megalomyrmex_silvestrii,
+[141] 		142 Megaponera_analis,
+[142] 		143 Melissotarsus_insularis,
+[143] 		144 Melophorus_Sp,
+[144] 		145 Meranoplus_castaneus,
+[145] 		146 Mesoponera_rubra,
+[146] 		147 Mesostruma_browni,
+[147] 		148 Messor_wasmanni,
+[148] 		149 Metapolybia_cingulata_OUT,
+[149] 		150 Metapone_madagascarica,
+[150] 		151 Microdaceton_tibialis,
+[151] 		152 Mischocyttarus_flavitarsis_OUT,
+[152] 		153 Monomorium_pharaonis,
+[153] 		154 Mycetagroicus_triangularis,
+[154] 		155 Mycetarotes_acutus,
+[155] 		156 Mycetophylax_conformis,
+[156] 		157 Mycetosoritis_hartmanni,
+[157] 		158 Mycocepurus_goeldii,
+[158] 		159 Myopias_lobosa,
+[159] 		160 Myopopone_castanea,
+[160] 		161 Myrcidris_epicharis,
+[161] 		162 Myrmecia_pyriformis,
+[162] 		163 Myrmecina_americana,
+[163] 		164 Myrmecocystus_flaviceps,
+[164] 		165 Myrmecorhynchus_Sp,
+[165] 		166 Myrmelachista_flavocotea,
+[166] 		167 Myrmica_striolagaster,
+[167] 		168 Myrmicaria_carinata,
+[168] 		169 Myrmicocrypta_infuscata_Cf,
+[169] 		170 Myrmisaraka_brevis,
+[170] 		171 Myrmoteras_iriodum,
+[171] 		172 Mystrium_mysticum,
+[172] 		173 Nebothriomyrmex_majeri,
+[173] 		174 Neivamyrmex_nigrescens,
+[174] 		175 Neoponera_apicalis,
+[175] 		176 Nesomyrmex_echinatinodis,
+[176] 		177 Nomamyrmex_esenbeckii,
+[177] 		178 Nothomyrmecia_macrops,
+[178] 		179 Notoncus_capitatus,
+[179] 		180 Notostigma_carazzii,
+[180] 		181 Nylanderia_hystrix,
+[181] 		182 Ochetellus_Cf_glaber_clarithorax,
+[182] 		183 Ochetomyrmex_neopolitus,
+[183] 		184 Octostruma_EC01,
+[184] 		185 Ocymyrmex_fortior_Cf,
+[185] 		186 Odontomachus_coquereli,
+[186] 		187 Odontophotopsis_Sp_OUT,
+[187] 		188 Odontoponera_transversa,
+[188] 		189 Oecophylla_smaragdina,
+[189] 		190 Onychomyrmex_hedleyi,
+[190] 		191 Ophthalmopone_berthoudi,
+[191] 		192 Opisthopsis_respiciens,
+[192] 		193 Orectognathus_versicolor,
+[193] 		194 Oxyepoecus_vezenyii,
+[194] 		195 Oxyopomyrmex_santschii,
+[195] 		196 Pachycondyla_harpax,
+[196] 		197 Paltothyreus_tarsatus,
+[197] 		198 Papyrius_nitidus,
+[198] 		199 Paraparatrechina_weissi,
+[199] 		200 Paraponera_clavata,
+[200] 		201 Paratopula_TH01,
+[201] 		202 Paratrechina_longicornis,
+[202] 		203 Perissomyrmex_snyderi,
+[203] 		204 Phalacromyrmex_fugax,
+[204] 		205 Pheidole_longispinosa,
+[205] 		206 Philanthus_Sp_OUT,
+[206] 		207 Philidris_cordata,
+[207] 		208 Phrynoponera_gabonensis,
+[208] 		209 Pilotrochus_besmerus,
+[209] 		210 Plagiolepis_Sp,
+[210] 		211 Platythyrea_mocquerysi,
+[211] 		212 Plectroctena_ugandensis,
+[212] 		213 Podomyrma_silvicola,
+[213] 		214 Poecilomyrma_myrmecodiae,
+[214] 		215 Pogonomyrmex_angustus,
+[215] 		216 Polyergus_breviceps,
+[216] 		217 Polyrhachis_Cf_vindex,
+[217] 		218 Ponera_Sp_Mal1,
+[218] 		219 Prenolepis_imparis,
+[219] 		220 Prionopelta_MAD01,
+[220] 		221 Pristocera_MAD01_OUT,
+[221] 		222 Pristomyrmex_orbiceps,
+[222] 		223 Proatta_butteli,
+[223] 		224 Probolomyrmex_tani,
+[224] 		225 Proceratium_stictum,
+[225] 		226 Procryptocerus_scabriusculus,
+[226] 		227 Proformica_nasuta,
+[227] 		228 Prolasius_Sp,
+[228] 		229 Propodilobus_pingorum,
+[229] 		230 Protalaridris_armata,
+[230] 		231 Protanilla_JAP01,
+[231] 		232 Psalidomyrmex_procerus,
+[232] 		233 Pseudolasius_australis,
+[233] 		234 Pseudomyrmex_gracilis,
+[234] 		235 Pseudoneoponera_rufipes,
+[235] 		236 Pseudoponera_stigma,
+[236] 		237 Ravavy_miafina,
+[237] 		238 Recurvidris_TH01,
+[238] 		239 Rhopalomastix_rothneyi,
+[239] 		240 Rhopalothrix_isthmica,
+[240] 		241 Rhytidoponera_chalybaea,
+[241] 		242 Rogeria_nevadensis_NW,
+[242] 		243 Rogeria_stigmatica_OW,
+[243] 		244 Romblonella_scrobifera,
+[244] 		245 Rotastruma_recava,
+[245] 		246 Royidris_longiseta,
+[246] 		247 Sapyga_pumila_OUT,
+[247] 		248 Scolia_verticalis_OUT,
+[248] 		249 Secostruma_MY01,
+[249] 		250 Sericomyrmex_Sp,
+[250] 		251 Simopelta_Sp_Ecu1,
+[251] 		252 Simopone_dryas,
+[252] 		253 Solenopsis_molesta,
+[253] 		254 Sphinctomyrmex_stali_NW,
+[254] 		255 Sphinctomyrmex_steinheili_OW,
+[255] 		256 Stegomyrmex_manni,
+[256] 		257 Stenamma_expolitum,
+[257] 		258 Stigmacros_Sp,
+[258] 		259 Stigmatomma_pallipes,
+[259] 		260 Streblognathus_peetersi,
+[260] 		261 Strongylognathus_testaceus,
+[261] 		262 Strumigenys_maxillaris,
+[262] 		263 Syllophopsis_fisheri,
+[263] 		264 Talaridris_mandibularis,
+[264] 		265 Tanipone_zona,
+[265] 		266 Tapinoma_melanocephalum,
+[266] 		267 Tatuidris_tatusia,
+[267] 		268 Technomyrmex_voeltzkowi,
+[268] 		269 Temnothorax_poeyi,
+[269] 		270 Terataner_bottegoi,
+[270] 		271 Tetheamyrma_subspongia,
+[271] 		272 Tetramorium_spinosum,
+[272] 		273 Tetraponera_rufonigra,
+[273] 		274 Thaumatomyrmex_atrox,
+[274] 		275 Trachymyrmex_arizonensis,
+[275] 		276 Tranopelta_subterranea,
+[276] 		277 Trichomyrmex_robustior,
+[277] 		278 Tropidomyrmex_elianae,
+[278] 		279 Turneria_bidentata,
+[279] 		280 Typhlomyrmex_rogenhoferi,
+[280] 		281 Tyrannomyrmex_legatus,
+[281] 		282 Veromessor_andrei,
+[282] 		283 Vespula_Sp_OUT,
+[283] 		284 Vicinopone_conciliatrix,
+[284] 		285 Vitsika_suspicax,
+[285] 		286 Vollenhovia_emeryi,
+[286] 		287 Vombisidris_bilongrudi,
+[287] 		288 Wasmannia_auropunctata,
+[288] 		289 Xenomyrmex_floridanus,
+[289] 		290 Xymmer_muticus,
+[290] 		291 Zatania_albimaculata;
+	TREE TREE1 = ((((26:103.36459444643805,62:103.36459444643805):39.06267660579476,206:142.4272710522328):73.20412755087347,((((283:73.2617255586284,(152:45.07806674391068,149:45.07806674391068):28.183658814717717):88.97097990191713,29:162.23270546054556):20.779816621175257,221:183.01252208172085):20.12342398699198,(((12:93.01090445445172,65:93.01090445445172):71.76970045438028,((28:37.88558243029041,100:37.88558243029041):102.0749062605127,(247:112.258940112403,(187:53.82432209557359,78:53.82432209557359):58.434618016829376):27.70154858840013):24.820116208028907):20.634701504926227,248:185.41530641375826):17.720639654954567):12.495452534393479):29.64218151596495,(((231:89.67256356076825,124:89.67256356076825):75.81567154563197,(((((211:98.83368651820194,((((((132:23.15717500329191,212:23.15717500329191):10.16363309998357,232:33.32080810327548):9.340935598011825,56:42.6617436912873):8.840472444132175,115:51.50221614541948):21.113152485802473,((((((((146:32.555050373917,260:32.555050373917):4.16235714685817,109:36.71740752077517):1.5794040754909986,(188:27.009419190172537,44:27.00941918017253):11.287392416093638):3.664853654194303,(((47:28.822137368356906,197:28.822137368356906):8.078782526786213,208:36.90091990514313):3.0462699180711184,(((186:19.770487244037255,20:19.770487244037255):10.800017795356737,235:30.570505039393964):6.3252829504334045,(142:22.061407949604558,191:22.061407949604558):14.83438005022279):3.051401833386848):2.0144754372462614):3.3289886266719293,46:45.29065388713241):1.4255870872418654,(96:31.118777182437668,159:31.118777182437668):15.597463781936597):4.027400871168737,126:50.743641835543):16.214740739571937,111:66.95838258511495):5.656986046107036):12.616297371974852,((79:61.55524449272909,((218:44.802079711342415,(93:39.304466608439995,70:39.304466608439995):5.49761310290242):5.0868647361480015,(36:38.41573719295096,236:38.41573719295096):11.47320725453946):11.66630005523865):16.064765853940784,((274:63.34504902370227,251:63.34504902370227):9.717724197647456,(((83:48.344666358887935,196:48.344666358887935):7.078724532677825,175:55.42339089156576):10.062994043406633,139:65.48638493497239):7.576388276377358):4.557237135320122):7.611655646526955):13.602020515005108):12.518365014578023,(200:70.44239128946208,(19:34.23686915170697,267:34.23686915170697):36.20552213775508):40.90966023331788):5.701401933059159,((224:28.362731038323005,85:28.362731038323005):16.87320013456656,225:45.235931172889565):71.81752229294956):5.016169128452233,((((67:17.334385192160738,220:17.334385192160738):27.63623422607293,190:44.97061941823367):14.212316138055456,14:59.182935556289095):44.60222879846174,((((259:44.07186770181758,160:44.07186770181758):7.571789118170869,290:51.64365681998845):6.418879479113571,(8:42.99339975089566,172:42.99339975089566):15.069136558206367):32.7613959529632,27:90.82393226206523):12.961232092685634):18.2844582395405):26.028417432356264,((((((234:35.76716806275181,161:35.76716806275181):9.997370467864783,273:45.76453853061659):54.316517229630236,(178:57.39537670013888,162:57.39537670013888):42.68567907010795):21.0249265205303,(17:100.63502289663955,(((37:34.13722952216881,268:34.13722952216881):15.319907777433315,((266:36.878105385807714,31:36.878105385807714):6.512805325003882,130:43.390910710811596):6.066226588790528):15.147556817724677,(((32:11.304646239683052,(43:8.868626554694686,64:8.868626554694686):2.436019684988395):26.96009292031397,(135:24.77017403019653,237:24.77017403019653):13.494565139800528):23.02126914189384,(((108:36.52842889101126,38:36.52842889101126):19.7899345941656,(((((198:44.97610370419764,((116:40.75406750041759,((182:36.8261331067481,279:36.8261331067481):2.0173795162947243,104:38.843512633042835):1.9105548673747563):2.0517305826471954,207:42.805798083064786):2.1703056211328544):1.4730298993831639,(86:45.479087203183724,(173:42.527089762743046,21:42.527089762743046):2.951997440440678):0.9700464003970808):3.128402899244236,129:49.57753650282504):3.6914491473160638,(101:35.322098616697645,90:35.322098616697645):17.94688703344346):2.104968794492109,127:55.37395444463321):0.9444090405436469):2.6996253763368685,87:59.01798886151373):2.2680194403771594):3.318685815435913):36.030328779312754):20.470959384137572):6.617575978525679,((((((((((50:30.155326369292396,217:30.155326369292396):8.56564655058851,192:38.72097291988091):12.08262229586704,(51:41.42586003365315,48:41.42586003365315):9.377735182094796):17.036106860969397,(22:57.792291674756996,(210:43.61094759308659,6:43.61094759308659):14.181344081670403):10.04741040196032):4.213503813950197,(((228:39.60442138764844,180:39.60442138764844):13.042496266768893,((165:42.85646893159495,(144:25.96676546156948,258:25.96676546156948):16.889703460025487):4.04781360587458,179:46.90428253746953):5.74263511694781):14.61943301305007,(189:57.52939595578289,((54:14.675425963225763,227:14.675425963225763):31.81731792571577,(102:43.3304907721475,216:43.3304907721475):3.1622531167940338):11.036652066841356):9.736954711684518):4.7868552232001065):2.541180105925264,171:74.59438599659278):4.871939561363277,(122:43.92474144668688,164:43.92474144668688):35.541584101269166):2.970827802333389,(((199:35.20249844012977,291:35.20249844012977):10.38748716853982,219:45.58998560866959):4.8746954735146915,(181:47.37991575034232,((97:24.820840457521314,202:24.820840457521314):18.217870811141154,233:43.03871126866247):4.341204481679853):3.0847653318419646):31.97247227810516):8.373965491878891,(166:47.045133703128414,45:47.045133703128414):43.76598514903992):28.761511443232195,(((((((282:16.618327782284865,23:16.618327782284865):32.50141085643776,257:49.11973863872262):5.827621925122344,(25:49.796971103620535,((195:17.450107345218072,107:17.450107345218072):25.91632577797853,(24:35.150864370385506,148:35.150864370385506):8.215568762811074):6.430537970423956):5.150389450224424):20.31701351039864,(((((((277:35.284483723402246,246:35.28448372340222):9.173730960016968,(99:39.49480324492775,(136:29.78938922486256,(170:17.802575612325512,285:17.802575612325512):11.986813612537048):9.705414020065191):4.963411428491455):3.71630415130511,((150:22.854540053719745,131:22.854540053719745):13.448711131447595,(213:31.589745702009154,113:31.589745702009154):4.713505483158187):11.871267649556984):10.093972646753002,(((55:35.85652755398243,(201:20.454993555753532,176:20.454993555753532):15.401533998228928):14.530078220489784,((82:13.478117442599853,249:13.478117442599853):29.360149361673223,(52:32.44416510470205,185:32.44416510470205):10.394101699571024):7.548338980199148):4.5462462645485715,((2:38.353387748198514,33:38.353387748198514):8.186308066998748,289:46.53969582519727):8.393156223823524):3.3356394324565315):2.0871109635070297,(145:33.78302021298106,68:33.78302021298106):26.5725822320033):3.4249776344094016,((((222:44.59252772030746,203:44.59252772030746):11.32198754312175,163:55.91451526342924):3.4073826230832935,((133:50.175154979932344,(140:44.22708582389032,((229:21.68498039022262,16:21.68498039022262):2.4105003443476676,134:24.095480734570287):20.131605079320025):5.948069166042032):4.314635848971918,(271:51.673578641246934,(75:41.39663369899387,223:41.39663369899387):10.276944952253075):2.816212187657328):4.832107047608261):1.9597231048710313,(238:44.25341911455888,9:44.25341911455888):17.028201866824674):2.4989590880101957):3.755361821106021,((((245:32.57267387295292,(244:25.369941405940253,214:25.369941405940253):7.202732457012658):23.92474518072629,(((110:4.2324168478255615,(103:2.722383829616234,128:2.722383829616234):1.5100330182093273):39.59324564964888,269:43.82566249747444):3.360060224054905,(287:39.22003397603201,105:39.220033966032034):7.9656887454973315):9.311696332149836):5.260418787984605,(((239:31.636477618363585,143:31.636477618363585):19.174156555262186,270:50.81063417362577):8.077966249204138,(118:57.22341001599449,(((73:43.238883290396956,81:43.238883290396956):8.496442091215428,(272:43.14211202040556,261:43.14211202040556):8.593213361206821):3.41059163969301,(286:44.13235249507329,49:44.13235249507329):11.013564526232102):2.077492994689095):1.6651904068354213):2.8692374188339045):3.362345742167278,((53:44.77024321024112,84:44.77024321024112):15.067310370873429,76:59.83755358111455):5.282629982716529):2.415758326668694):7.728432163743818):4.391437841293126,((256:68.92235208606101,((242:54.520042150612625,((35:48.15195077599881,(((94:36.25363107302263,281:36.25363107302263):8.610074903715613,((18:35.30360320893186,168:35.30360320893186):6.744753712316054,((153:35.65873622484975,263:35.65873622484975):4.560676669787355,((39:28.26886791017583,69:28.26886791017583):4.647594841749452,7:32.91646275192528):7.302950142711822):1.828944026610813):2.815349045490322):2.172330233452925,((278:13.565900260747952,119:13.565900260747952):24.059048315352044,253:37.62494857609997):9.411087634091174):1.1159145658076426):2.8999377714687853,(141:43.41756724918821,194:43.41756724918821):7.634321298279389):3.4681536031450264):5.397223143144771,(88:54.53494326881261,(40:46.89015995803976,243:46.89015995803976):7.644783310772851):5.382322024944784):9.005086792303615):8.199989017009145,((((121:55.06078518439389,((13:11.993427670996113,288:11.993427670996113):26.926398994466382,42:38.919826675462474):16.1409585189314):5.10762194421369,(80:55.96872262010692,(276:34.05853647151778,183:34.05853647151778):21.910186148589133):4.199684518500675):3.366275162755869,(((205:45.238359416854166,(57:19.21072280628033,226:19.21072280628033):26.027636610573836):8.425764244714301,((262:31.13752067768806,(209:19.025594813209494,204:19.025594813209494):12.111925854478585):13.453254387644137,((240:22.923341366326298,230:22.923341366326298):9.807202576045569,(41:30.040533426276042,((98:15.55704561988864,264:15.55704561988864):8.309075217072262,184:23.866120836960903):6.174412589315139):2.6900105060957884):11.860231122960357):9.073348606236252):6.2151068118193535,(((((156:22.9736327279619,71:22.9736327279619):20.299429594654782,117:43.27306232261665):3.5542810906574402,((155:33.541844895399265,157:33.541844895399265):4.814066311224352,(74:31.308617565673615,((250:22.763006797822555,(34:17.5471157946601,(5:16.29133170530261,275:16.29133170530261):1.2557840893574905):5.215891003162454):4.13112573550498,154:26.894132533327536):4.414485032346079):7.047293630949966):8.471432206650505):6.516285560610896,(30:31.274676507138054,(158:24.629643007190552,169:24.629643007190552):6.645033499947502):22.068952456746956):3.0082253501271197,(((193:26.89139025821825,(66:15.439931520965388,(147:8.409754964138614,95:8.409754964138614):7.030176556826802):11.451458737252835):20.69231122026234,151:47.583701468480584):5.138697787716993,(77:47.15341506472177,123:47.15341505472176):5.568984201475814):3.629455057814525):3.5273761593756916):3.65545181797566):3.259942456724019,1:66.79462474808747):10.327716344982676):2.5334708024665673):13.771629633523986,((167:44.125372794070586,137:44.125372794070586):41.800004835744915,(215:36.43601022695725,114:36.43601022695725):49.48936739285824):7.502063919245188):16.979339806464353,(((92:43.377050342351765,241:43.37705035235177):6.863042074285886,(280:43.53081701932244,106:43.53081701932244):6.709275407315218):31.629332294412848,(3:50.159625678469865,112:50.159625678469865):31.709799032580634):28.537356634474563):9.165848949875468):8.150927963902276):5.578603547202661,(((((252:60.191328260213254,(72:21.063209422051756,4:21.063209422051756):39.12811882816149):13.40307063820758,((((89:42.188144195712795,10:42.188144195712795):18.77440659219286,61:60.962550787905656):4.711955918157827,284:65.67450670606348):4.95535462181499,((11:57.31237763605671,(174:33.23081277997733,(63:25.883026348195557,((91:14.087117374189717,177:14.087117374189717):7.29443040580901,120:21.381547789998734):4.501478558196851):7.3477864317817705):24.081564856079382):7.68270681191396,(15:32.65042814673515,125:32.65042814673515):32.344656301235545):5.634776869907796):2.9645375705423618):4.634313231113154,(254:71.1738073261016,60:71.1738073261016):7.054904803432393):5.032378860462529,((58:46.057526285102995,255:46.057526285102995):31.339514922523875,59:77.3970412076269):5.864049782369619):9.532955955226186,265:92.7940469452227):40.50811487128277):14.795878210142149):17.39019507975263):10.654400095371898,138:176.14263519177211):69.1309449172991);
+
+END;
+
+
+BEGIN NOTES;
+
+	SUT   TAXA = Concat TAXON = 1 NAME = color INTEGER = 0;
+	SUT   TAXA = Concat TAXON = 4 NAME = color INTEGER = 0;
+	SUT   TAXA = Concat TAXON = 5 NAME = color INTEGER = 0;
+	SUT   TAXA = Concat TAXON = 6 NAME = color INTEGER = 0;
+	SUT   TAXA = Concat TAXON = 9 NAME = color INTEGER = 0;
+	SUT   TAXA = Concat TAXON = 12 NAME = color INTEGER = 0;
+	SUT   TAXA = Concat TAXON = 20 NAME = color INTEGER = 0;
+	SUT   TAXA = Concat TAXON = 22 NAME = color INTEGER = 0;
+	SUT   TAXA = Concat TAXON = 26 NAME = color INTEGER = 0;
+	SUT   TAXA = Concat TAXON = 27 NAME = color INTEGER = 0;
+	SUT   TAXA = Concat TAXON = 50 NAME = color INTEGER = 0;
+	SUT   TAXA = Concat TAXON = 56 NAME = color INTEGER = 0;
+	SUT   TAXA = Concat TAXON = 62 NAME = color INTEGER = 0;
+	SUT   TAXA = Concat TAXON = 72 NAME = color INTEGER = 0;
+	SUT   TAXA = Concat TAXON = 78 NAME = color INTEGER = 0;
+	SUT   TAXA = Concat TAXON = 85 NAME = color INTEGER = 0;
+	SUT   TAXA = Concat TAXON = 89 NAME = color INTEGER = 0;
+	SUT   TAXA = Concat TAXON = 92 NAME = color INTEGER = 0;
+	SUT   TAXA = Concat TAXON = 96 NAME = color INTEGER = 0;
+	SUT   TAXA = Concat TAXON = 113 NAME = color INTEGER = 0;
+	SUT   TAXA = Concat TAXON = 115 NAME = color INTEGER = 0;
+	SUT   TAXA = Concat TAXON = 124 NAME = color INTEGER = 0;
+	SUT   TAXA = Concat TAXON = 125 NAME = color INTEGER = 0;
+	SUT   TAXA = Concat TAXON = 126 NAME = color INTEGER = 0;
+	SUT   TAXA = Concat TAXON = 132 NAME = color INTEGER = 0;
+	SUT   TAXA = Concat TAXON = 138 NAME = color INTEGER = 0;
+	SUT   TAXA = Concat TAXON = 164 NAME = color INTEGER = 0;
+	SUT   TAXA = Concat TAXON = 172 NAME = color INTEGER = 0;
+	SUT   TAXA = Concat TAXON = 174 NAME = color INTEGER = 0;
+	SUT   TAXA = Concat TAXON = 186 NAME = color INTEGER = 0;
+	SUT   TAXA = Concat TAXON = 188 NAME = color INTEGER = 0;
+	SUT   TAXA = Concat TAXON = 189 NAME = color INTEGER = 0;
+	SUT   TAXA = Concat TAXON = 190 NAME = color INTEGER = 0;
+	SUT   TAXA = Concat TAXON = 212 NAME = color INTEGER = 0;
+	SUT   TAXA = Concat TAXON = 219 NAME = color INTEGER = 0;
+	SUT   TAXA = Concat TAXON = 220 NAME = color INTEGER = 0;
+	SUT   TAXA = Concat TAXON = 224 NAME = color INTEGER = 0;
+	SUT   TAXA = Concat TAXON = 231 NAME = color INTEGER = 0;
+	SUT   TAXA = Concat TAXON = 232 NAME = color INTEGER = 0;
+	SUT   TAXA = Concat TAXON = 234 NAME = color INTEGER = 0;
+	SUT   TAXA = Concat TAXON = 236 NAME = color INTEGER = 0;
+	SUT   TAXA = Concat TAXON = 267 NAME = color INTEGER = 0;
+	SUT   TAXA = Concat TAXON = 274 NAME = color INTEGER = 0;
+	SUT   TAXA = Concat TAXON = 275 NAME = color INTEGER = 0;
+	SUT   TAXA = Concat TAXON = 280 NAME = color INTEGER = 0;
+	SUT   TAXA = Concat TAXON = 291 NAME = color INTEGER = 0;
+
+END;
+
+Begin MESQUITE;
+		MESQUITESCRIPTVERSION 2;
+		TITLE AUTO;
+		tell ProjectCoordinator;
+		timeSaved 1478232174325;
+		getEmployee #mesquite.minimal.ManageTaxa.ManageTaxa;
+		tell It;
+			setID 0 2074542448274659436;
+			tell It;
+				setDefaultOrder  765 586 488 276 624 420 484 666 237 239 10 689 79 76 323 322 502 166 162 163 459 534 525 517 25 56 5 668 375 358 620 621 814 364 366 787 367 363 688 205 360 427 437 738 636 782 780 434 438 440 604 299 481 98 99 203 293 287 275 31 30 2 773 193 194 583 581 579 281 654 613 682 634 6 178 677 687 686 115 311 312 377 355 351 356 350 482 212 341 494 746 674 695 314 327 453 330 328 390 389 486 521 646 104 489 490 506 176 304 185 186 191 387 386 587 770 12 13 14 70 65 64 67 68 150 650 395 126 734 545 544 546 548 476 477 456 535 901 778 519 518 781 0 598 599 139 1 659 316 318 794 792 415 417 638 639 640 637 466 424 425 803 804 553 556 725 35 73 509 508 511 409 411 455 779 739 174 159 160 450 96 165 189 146 142 137 87 168 118 401 783 82 507 447 569 302 48 730 541 431 433 899 446 195 663 897 91 673 672 473 15 226 715 362 570 496 499 609 653 617 108 107 267 263 791 800 797 243 242 286 240 530 697 187 641 44 724 708 712 709 710 704 722 705 714 745 371 370 52 373 306 310 576 750 751 760 763 887 756 219 220 742 179 218 696 726 592 822 824 828 833 841 851 853 858 861 414 863 865 866 868 808 869 870 871 874 876 878 881 69 732;
+				attachments ;
+			endTell;
+		endTell;
+		getEmployee #mesquite.charMatrices.ManageCharacters.ManageCharacters;
+		tell It;
+			setID 0 4417730203071581598;
+			mqVersion 302;
+			checksumv 0 3 62075793 null  getNumChars 7099 numChars 7099 getNumTaxa 291 numTaxa 291   short true   bits 2305843009213693967   states 15   sumSquaresStatesOnly 3.1842113E7 sumSquares -6.041308684139878E20 longCompressibleToShort false usingShortMatrix true   NumFiles 1 NumMatrices 1;
+			mqVersion;
+		endTell;
+		getWindow;
+		tell It;
+			suppress;
+			setResourcesState false false 200;
+			setPopoutState 400;
+			setExplanationSize 0;
+			setAnnotationSize 0;
+			setFontIncAnnot 0;
+			setFontIncExp 0;
+			setSize 720 815;
+			setLocation 341 81;
+			setFont SanSerif;
+			setFontSize 10;
+			getToolPalette;
+			tell It;
+			endTell;
+			desuppress;
+		endTell;
+		getEmployee  #mesquite.minimal.ManageTaxa.ManageTaxa;
+		tell It;
+			showTaxa #2074542448274659436 #mesquite.lists.TaxonList.TaxonList;
+			tell It;
+				setTaxa #2074542448274659436;
+				getWindow;
+				tell It;
+					newAssistant  #mesquite.lists.TaxonListCurrPartition.TaxonListCurrPartition;
+					setExplanationSize 30;
+					setAnnotationSize 20;
+					setFontIncAnnot 0;
+					setFontIncExp 0;
+					setSize 520 743;
+					setLocation 341 81;
+					setFont SanSerif;
+					setFontSize 10;
+					getToolPalette;
+					tell It;
+						setTool mesquite.lists.TaxonList.TaxonListWindow.ibeam;
+					endTell;
+					setActive;
+				endTell;
+				showWindow;
+				getEmployee #mesquite.lists.ColorTaxon.ColorTaxon;
+				tell It;
+					setColor Black;
+					removeColor off;
+				endTell;
+				getEmployee #mesquite.lists.TaxonListAnnotPanel.TaxonListAnnotPanel;
+				tell It;
+					togglePanel off;
+				endTell;
+			endTell;
+		endTell;
+		getEmployee  #mesquite.trees.BasicTreeWindowCoord.BasicTreeWindowCoord;
+		tell It;
+			makeTreeWindow #2074542448274659436  #mesquite.trees.BasicTreeWindowMaker.BasicTreeWindowMaker;
+			tell It;
+				suppressEPCResponse;
+				setTreeSource  #mesquite.trees.StoredTrees.StoredTrees;
+				tell It;
+					setTreeBlock 1;
+					toggleUseWeights off;
+				endTell;
+				setAssignedID 945.1478200628943.4446371541582215128;
+				getTreeWindow;
+				tell It;
+					setExplanationSize 30;
+					setAnnotationSize 20;
+					setFontIncAnnot 0;
+					setFontIncExp 0;
+					setSize 520 743;
+					setLocation 341 81;
+					setFont SanSerif;
+					setFontSize 10;
+					getToolPalette;
+					tell It;
+					endTell;
+					getTreeDrawCoordinator #mesquite.trees.BasicTreeDrawCoordinator.BasicTreeDrawCoordinator;
+				tell It;
+					suppress;
+					setTreeDrawer  #mesquite.trees.SquareLineTree.SquareLineTree;
+					tell It;
+						setNodeLocs #mesquite.trees.NodeLocsStandard.NodeLocsStandard;
+						tell It;
+							branchLengthsToggle off;
+							toggleScale on;
+							toggleBroadScale off;
+							toggleCenter on;
+							toggleEven on;
+							setFixedTaxonDistance 0;
+						endTell;
+						setEdgeWidth 4;
+						showEdgeLines on;
+						orientUp;
+					endTell;
+					setBackground White;
+					setBranchColor Black;
+					showNodeNumbers off;
+					showBranchColors on;
+					labelBranchLengths off;
+					centerBrLenLabels on;
+					showBrLensUnspecified on;
+					showBrLenLabelsOnTerminals on;
+					setBrLenLabelColor 0 0 255;
+					setNumBrLenDecimals 6;
+					desuppress;
+					getEmployee #mesquite.trees.BasicDrawTaxonNames.BasicDrawTaxonNames;
+					tell It;
+						setColor Black;
+						toggleColorPartition off;
+						toggleColorAssigned on;
+						toggleShadePartition off;
+						toggleShowFootnotes on;
+						toggleNodeLabels on;
+						toggleCenterNodeNames off;
+						toggleShowNames on;
+						namesAngle ?;
+					endTell;
+				endTell;
+					setTreeNumber 1;
+					setDrawingSizeMode 0;
+					toggleLegendFloat on;
+					scale 0;
+					toggleTextOnTree off;
+					showWindow;
+				endTell;
+				desuppressEPCResponse;
+				getEmployee #mesquite.trees.ColorBranches.ColorBranches;
+				tell It;
+					setColor Red;
+					removeColor off;
+				endTell;
+				getEmployee #mesquite.ornamental.BranchNotes.BranchNotes;
+				tell It;
+					setAlwaysOn off;
+				endTell;
+				getEmployee #mesquite.ornamental.ColorTreeByPartition.ColorTreeByPartition;
+				tell It;
+					colorByPartition off;
+				endTell;
+				getEmployee #mesquite.ornamental.DrawTreeAssocDoubles.DrawTreeAssocDoubles;
+				tell It;
+					setOn on;
+					setDigits 4;
+					writeAsPercentage off;
+					toggleCentred off;
+					toggleHorizontal on;
+					toggleWhiteEdges on;
+					setFontSize 10;
+					setOffset 0  0;
+				endTell;
+				getEmployee #mesquite.ornamental.DrawTreeAssocStrings.DrawTreeAssocStrings;
+				tell It;
+					setOn on;
+					toggleCentred on;
+					toggleHorizontal on;
+					setFontSize 10;
+					setOffset 0  0;
+				endTell;
+				getEmployee #mesquite.trees.TreeInfoValues.TreeInfoValues;
+				tell It;
+					panelOpen false;
+				endTell;
+			endTell;
+		endTell;
+		getEmployee  #mesquite.charMatrices.BasicDataWindowCoord.BasicDataWindowCoord;
+		tell It;
+			showDataWindow #4417730203071581598 #mesquite.charMatrices.BasicDataWindowMaker.BasicDataWindowMaker;
+			tell It;
+				getWindow;
+				tell It;
+					getTable;
+					tell It;
+						rowNamesWidth 280;
+					endTell;
+					setExplanationSize 30;
+					setAnnotationSize 20;
+					setFontIncAnnot 0;
+					setFontIncExp 0;
+					setSize 520 743;
+					setLocation 341 81;
+					setFont SanSerif;
+					setFontSize 10;
+					getToolPalette;
+					tell It;
+						setTool mesquite.charMatrices.BasicDataWindowMaker.BasicDataWindow.arrow;
+					endTell;
+					setTool mesquite.charMatrices.BasicDataWindowMaker.BasicDataWindow.arrow;
+					colorCells  #mesquite.charMatrices.ColorByState.ColorByState;
+				tell It;
+					setStateLimit 9;
+					toggleUniformMaximum on;
+				endTell;
+					colorRowNames  #mesquite.charMatrices.TaxonGroupColor.TaxonGroupColor;
+					colorColumnNames  #mesquite.charMatrices.CharGroupColor.CharGroupColor;
+					colorText  #mesquite.charMatrices.ColorCells.ColorCells;
+				tell It;
+					setColor Black;
+					removeColor off;
+				endTell;
+					setBackground White;
+					toggleShowNames on;
+					toggleShowTaxonNames on;
+					toggleTight off;
+					toggleThinRows off;
+					toggleShowChanges off;
+					toggleSeparateLines off;
+					toggleShowStates on;
+					toggleAutoWCharNames off;
+					toggleAutoTaxonNames off;
+					toggleShowDefaultCharNames off;
+					toggleConstrainCW on;
+					toggleBirdsEye off;
+					toggleShowPaleGrid off;
+					toggleShowPaleCellColors off;
+					toggleShowPaleExcluded on;
+					togglePaleInapplicable on;
+					toggleShowBoldCellText off;
+					toggleAllowAutosize off;
+					toggleColorsPanel off;
+					toggleLinkedScrolling on;
+					toggleScrollLinkedTables off;
+				endTell;
+				showWindow;
+				getWindow;
+				tell It;
+					forceAutosize;
+				endTell;
+				getEmployee #mesquite.categ.StateNamesStrip.StateNamesStrip;
+				tell It;
+					showStrip off;
+				endTell;
+				getEmployee #mesquite.charMatrices.AnnotPanel.AnnotPanel;
+				tell It;
+					togglePanel off;
+				endTell;
+				getEmployee #mesquite.charMatrices.CharReferenceStrip.CharReferenceStrip;
+				tell It;
+					showStrip off;
+				endTell;
+				getEmployee #mesquite.charMatrices.QuickKeySelector.QuickKeySelector;
+				tell It;
+					autotabOff;
+				endTell;
+				getEmployee #mesquite.charMatrices.SelSummaryStrip.SelSummaryStrip;
+				tell It;
+					showStrip off;
+				endTell;
+				getEmployee #mesquite.align.AlignToDropped.AlignToDropped;
+				tell It;
+					gapCosts 8 3 2 2;
+					subCosts  10 5 10 10 10 5 5 10 10 10 5 10;
+				endTell;
+				getEmployee #mesquite.molec.ColorByAA.ColorByAA;
+				tell It;
+					emphasizeDegeneracy off;
+				endTell;
+				getEmployee #mesquite.molec.SequenceInfoEditor.SequenceInfoEditor;
+				tell It;
+					panelOpen false;
+				endTell;
+			endTell;
+		endTell;
+		getEmployee  #mesquite.charMatrices.ManageCharacters.ManageCharacters;
+		tell It;
+			showCharacters #4417730203071581598 #mesquite.lists.CharacterList.CharacterList;
+			tell It;
+				setData 0;
+				getWindow;
+				tell It;
+					newAssistant  #mesquite.lists.CharListInclusion.CharListInclusion;
+					newAssistant  #mesquite.lists.CharListPartition.CharListPartition;
+					newAssistant  #mesquite.lists.CharListCodonPos.CharListCodonPos;
+					setExplanationSize 30;
+					setAnnotationSize 20;
+					setFontIncAnnot 0;
+					setFontIncExp 0;
+					setSize 520 743;
+					setLocation 341 81;
+					setFont SanSerif;
+					setFontSize 10;
+					getToolPalette;
+					tell It;
+						setTool mesquite.lists.CharacterList.CharacterListWindow.arrow;
+					endTell;
+				endTell;
+				showWindow;
+				getEmployee #mesquite.lists.CharListAnnotPanel.CharListAnnotPanel;
+				tell It;
+					togglePanel off;
+				endTell;
+			endTell;
+		endTell;
+		endTell;
+end;
+
+

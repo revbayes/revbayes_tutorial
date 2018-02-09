@@ -1,0 +1,93 @@
+################################################################################
+#
+# RevBayes Example: Bayesian model testing using posterior predictive simulation
+# This file calculates the Tree Summary Statistics
+#
+# authors: Lyndon M. Coghill, Sebastian Hoehna and Jeremy M. Brown
+#
+################################################################################
+
+outfileName = "results_" + model_name + "/simulated_inference_" + analysis_name + ".csv"
+write(file=outfileName, "simID", "mean_rf", "quantile25", "quantile50", "quantile75", "quantile99", "quantile999", "mean_tl", "var_tl", "entropy", sep=",", append=FALSE)  
+write(file=outfileName, "\n", sep="\t", append=TRUE)  
+
+#num_post_sims = 10
+################### calculate the pps stats here #########################
+
+## Iterate through all of the posterior tree files from the simulation analyses
+for ( i in 1:num_post_sims) {
+
+    inFileName = "output_" + model_name + "/posterior_predictive_sim_" + i + "/" + analysis_name + "_posterior.trees"
+    ## read in the trace
+    sim_tree_trace = readTreeTrace(inFileName,treetype="non-clock")
+    
+    ## Calculate the pairwise RF distances between all trees in a single posterior
+    rf_dists <- sim_tree_trace.computePairwiseRFDistances(credibleTreeSetSize=1.0,verbose=FALSE)
+
+    ## This collects the vector of tree lengths needed for mean tree length and tree length variance
+    tree_length <- sim_tree_trace.computeTreeLengths()
+
+    ## This calculates the entropy statistic
+    entropy <- sim_tree_trace.computeEntropy(credibleTreeSetSize=1.0,num_taxa=data.ntaxa(),verbose=FALSE)
+    
+    
+    ## calculate the stuff we care about for a single pps posterior
+    mean_rf <- mean(rf_dists)
+    quantile25 = quantile(rf_dists, 0.25)
+    quantile50 = quantile(rf_dists, 0.50)
+    quantile75 = quantile(rf_dists, 0.75)
+    quantile99 = quantile(rf_dists, 0.99)
+    quantile999 = quantile(rf_dists, 0.999)
+    mean_tl = mean(tree_length)
+    var_tl = var(tree_length)
+
+    ## write it to a file
+
+    write(file=outfileName, i, mean_rf, quantile25, quantile50, quantile75, quantile99, quantile999, mean_tl, var_tl, entropy, sep=",", append=TRUE)  
+    write(file=outfileName, "\n", sep=",", append=TRUE)  
+
+
+    clear(rf_dists)
+}
+
+################### end of pps calculations ####################################
+
+
+################### calculate the empirical stats here ###################
+
+## set the empirical output file
+outfileName = "results_" + model_name + "/empirical_inference_" + analysis_name + ".csv"
+write(file=outfileName, "mean_rf", "quantile25", "quantile50", "quantile75", "quantile99", "quantile999", "mean_tl", "var_tl", "entropy", sep=",", append=FALSE)  
+write(file=outfileName, "\n", sep="\t", append=TRUE)  
+
+## find the empirical file
+empFileName = "output_" + model_name + "/" + analysis_name + "_posterior.trees"
+
+## read in the trace
+emp_tree_trace = readTreeTrace(empFileName,treetype="non-clock")
+
+## Calculate the pairwise RF distances between all trees in a single posterior
+rf_dists <- emp_tree_trace.computePairwiseRFDistances(credibleTreeSetSize=1.0,verbose=FALSE)
+
+## This collects the vector of tree lengths needed for mean tree length and tree length variance
+tree_length <- emp_tree_trace.computeTreeLengths()
+
+## This calculates the entropy statistic
+entropy <- emp_tree_trace.computeEntropy(credibleTreeSetSize=1.0,num_taxa=data.ntaxa(),verbose=FALSE)
+
+## calculate the stuff we care about for a single posterior
+mean_rf = mean(rf_dists)
+quantile25 = quantile(rf_dists, 0.25)
+quantile50 = quantile(rf_dists, 0.50)
+quantile75 = quantile(rf_dists, 0.75)
+quantile99 = quantile(rf_dists, 0.99)
+quantile999 = quantile(rf_dists, 0.999)
+mean_tl = mean(tree_length)
+var_tl = var(tree_length)
+
+write(file=outfileName, mean_rf, quantile25, quantile50, quantile75, quantile99, quantile999, mean_tl, var_tl, entropy, sep=",", append=TRUE)  
+write(file=outfileName, "\n", sep=",", append=TRUE)  
+
+
+################### end of empirical calculations ##############################
+

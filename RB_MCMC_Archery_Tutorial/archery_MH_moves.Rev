@@ -1,0 +1,101 @@
+# Simulate some data (i.e. shoot some arrows)
+# First we need the number of arrows to shoot
+n = 10
+# Then we need some true mean distance
+mu_true = 1
+# Simulate the observed mean distance of the arrows we shot
+arrow_mean = rgamma(1, n, n/mu_true)[1]
+
+
+# Initialize the chain with some starting value
+alpha = 1.0
+mu = rexp(1, 1/alpha)[1]
+
+
+# Define the likelihood function on the mean 
+function likelihood(mu){
+    if(mu < 0.0)
+        return 0.0
+
+    return dgamma(arrow_mean, n, n/mu, log=false)
+}
+
+# Define the prior function on the mean 
+function prior(mu){
+    if(mu < 0.0)
+        return 0.0
+
+    return dexp(mu, 1/alpha, log=false)
+}
+
+
+# specify the sliding-window move
+function move_slide(delta, weight) {
+
+    for (i in 1:weight) {
+        # Propose a new value of p
+        mu_prime <- mu + runif(n=1,-delta,delta)[1]
+
+        # Compute the acceptance probability
+        R = ( likelihood(mu_prime)/likelihood(mu) ) * ( prior(mu_prime)/prior(mu) ) 
+
+        # Accept or reject the proposal
+        u = runif(1,0,1)[1] 
+        if(u < R){
+            # Accept the proposal
+            mu = mu_prime 
+        }
+    }
+    
+}
+
+# specify the scaling move
+function move_scale(lambda, weight) {
+
+    for (i in 1:weight) {
+        # Propose a new value of p
+        sf <- exp( lambda * ( runif(n=1,0,1)[1] - 0.5 ) )
+        mu_prime <- mu * sf
+
+        # Compute the acceptance probability
+        R = ( likelihood(mu_prime)/likelihood(mu) ) * ( prior(mu_prime)/prior(mu) ) 
+
+        # Accept or reject the proposal
+        u = runif(1,0,1)[1] 
+        if(u < R){
+            # Accept the proposal
+            mu = mu_prime 
+        }
+    }
+    
+}
+
+
+# Prepare a file to log our samples
+write("iteration","mu","\n",file="archery_MH_moves.log")
+write(0,mu,"\n",file="archery_MH_moves.log",append=TRUE)
+
+# Print the initial values to the screen 
+print("iteration","mu")
+print(0,mu)
+
+# Write the MH algorithm
+printgen = 10
+reps = 10000
+
+for(rep in 1:reps){
+    
+    move_slide(1,1)
+    move_scale(1,1)
+
+    if ( (rep % printgen) == 0 ) {
+        # Write the samples to a file
+        write(rep,mu,"\n",file="archery_MH_moves.log",append=TRUE)
+        # Print the samples to the screen
+        print(rep,mu)
+    }
+} # end MCMC
+
+
+
+q()
