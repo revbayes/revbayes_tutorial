@@ -86,6 +86,7 @@ for(i in 1:intervals.size())
     t[i] := tmrca(fbd_tree, clade(taxon))
     
     fossil[i] ~ dnUniform(t[i] - b_i, t[i] - a_i)
+    fossil[i] ~ dnSoftBoundUniformNormal(t[i] - b_i, t[i] - a_i, sd = 2, p = 0.025)
     fossil[i].clamp( 0 )
 }
 
