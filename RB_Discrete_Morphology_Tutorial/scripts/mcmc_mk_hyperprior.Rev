@@ -13,7 +13,7 @@
 #######################
 # Import the morphological character matrix #
 # this file contains only the taxa for which morphological characters are available #
-morpho <- readDiscreteCharacterData("Data/Abella2011.nex")
+morpho <- readDiscreteCharacterData("Data/bears_multistate.nex")
 
 ## helpers
 mvi = 1
