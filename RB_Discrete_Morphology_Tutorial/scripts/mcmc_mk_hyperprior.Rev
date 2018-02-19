@@ -52,7 +52,7 @@ mymcmc = mcmc(mymodel, monitors, moves)
 
 # Run the MCMC #
 #mymcmc.burnin(5000,tuningInterval=100)
-mymcmc.run(generations=10000)
+mymcmc.run(generations=50000)
 
 # Read in the tree trace and construct the consensus tree tree #
 trace = readTreeTrace("output/mk_hyperprior.trees", treetype="non-clock")

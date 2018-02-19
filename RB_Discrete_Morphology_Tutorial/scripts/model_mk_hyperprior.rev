@@ -23,18 +23,14 @@ n_cats = 4
 #Specify the hyperparameter to the distribution from which we will draw our state frequencies.
 
 dir_alpha ~ dnExponential(1)
-moves[mvi++] = mvScale(dir_alpha, lambda=0.01, weight=3.0, tuneTarget=0.6 )
-moves[mvi++] = mvScale(dir_alpha, lambda=0.1,  weight=2.0, tuneTarget=0.44 )
-moves[mvi++] = mvScale(dir_alpha, lambda=1,    weight=1.0, tuneTarget=0.1 )
-
-
+dir_beta ~ dnExponential(1)
 
 # Create a vector of how many different state frequencies we will need. We are working with
 # binary data and will only need two. If you were working with multistate data, you could
 # repeat the dir_alpha value for as many states as you need.
 
-pi_prior := v(dir_alpha,dir_alpha) 
-	
+pi_prior := v(dir_alpha,dir_beta) 
+
 # Loop over the categories. For each category, draw state frequencies from a Dirichlet. Use
 # those state values to initialize the Q matrix.
 
@@ -42,7 +38,6 @@ for(i in 1:n_cats)
 {
 	pi[i] ~ dnDirichlet(pi_prior)
     moves[mvi++] = mvSimplexElementScale(pi[i], alpha=10, weight=2.0) 
-    
     Q_morpho[i] := fnF81(pi[i])
 }
 

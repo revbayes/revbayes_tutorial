@@ -1,17 +1,14 @@
 #!/usr/bin/env Rscript
 stable = T
-if (stable) {
-    library(RevGadgets)
-#} else {
-#    source("/Users/mlandis/projects/RevGadgets/R/plot_ancestral_states.R")
-#}
+library(RevGadgets)
+
 library(ggtree)
 library(tools)
 
 # file argument
 args = commandArgs(trailingOnly=TRUE)
 n_args = length(args)
-tree_fn = "output/mk_simple.char_1.ase.tre"
+tree_fn = "output/mk_simple/mk_simple.char_1.ase.tre" ##Change this file name to your appropriate path, prefix and character. I think this character is fine, since you wanted char 1
 if (n_args == 1) {
     tree_fn = args[1]    
 } else if (n_args > 1) {
