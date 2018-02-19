@@ -13,7 +13,7 @@
 #######################
 # Import the morphological character matrix #
 # this file contains only the taxa for which morphological characters are available #
-morpho <- readDiscreteCharacterData("Data/bears.nex")
+morpho <- readDiscreteCharacterData("Data/Abella2011.nex")
 
 ## helpers
 mvi = 1
@@ -38,7 +38,7 @@ monitors[mni++] = mnModel(filename="output/mk_hyperprior.log", printgen=10)
 # 2. the tree #
 monitors[mni++] = mnFile(filename="output/mk_hyperprior.trees", printgen=10, phylogeny)
 # 3. and a few select parameters to be printed to the screen #
-monitors[mni++] = mnScreen(printgen=100, Q_morpho, pi_prior)
+monitors[mni++] = mnScreen(printgen=100, dir_alpha, dir_beta)
 # 4. add an ancestral state monitor
 monitors[mni++] = mnJointConditionalAncestralState(tree=phylogeny,
                                                    ctmc=phyMorpho,
@@ -52,7 +52,7 @@ mymcmc = mcmc(mymodel, monitors, moves)
 
 # Run the MCMC #
 #mymcmc.burnin(5000,tuningInterval=100)
-mymcmc.run(generations=50000)
+mymcmc.run(generations=10000)
 
 # Read in the tree trace and construct the consensus tree tree #
 trace = readTreeTrace("output/mk_hyperprior.trees", treetype="non-clock")
