@@ -1,0 +1,39 @@
+\section{Exercises to the \RevBayes introduction}
+
+\begin{enumerate}
+\item Create a variable called $z$ with the value 10 (\texttt{z <- 10}). What kind of variable is this (constant, stochastic or deterministic)?
+
+\bigskip
+\TextField[name=var_type,backgroundcolor=TextFieldBackgroundColor,color=TextFieldTextColor,bordercolor=TextFieldBoxColor,height=1cm,width=\TextFieldWidth,multiline=true]{}
+\bigskip
+
+\item Create a second variable $y$ which is $y := f(z) := z ^ 2$. What kind of variable is $y$? What is its value?
+
+\bigskip
+\TextField[name=var_type_func,backgroundcolor=TextFieldBackgroundColor,color=TextFieldTextColor,bordercolor=TextFieldBoxColor,height=1cm,width=\TextFieldWidth,multiline=true]{}
+\bigskip
+
+\bigskip
+\item Change the value of $z$ to 100. Before printing $y$, can you guess its value?
+
+\bigskip
+\TextField[name=z_value,backgroundcolor=TextFieldBackgroundColor,color=TextFieldTextColor,bordercolor=TextFieldBoxColor,height=1cm,width=\TextFieldWidth,multiline=true]{}
+
+\bigskip
+\item Write a \texttt{for} loop that creates 1000 random uniform numbers $u$ and 1000 exponential random numbers $x$ with $\lambda = 1$, as we did in the tutorial. Then, use the same random uniform numbers $u$ to create 1000 exponential numbers $y$ with $\lambda = 10$. Using the \texttt{mean()} function, compare the means of $x$ and $y$. Which has a greater mean? Write your code and answer!
+
+
+\bigskip
+\TextField[name=random_numbers,backgroundcolor=TextFieldBackgroundColor,color=TextFieldTextColor,bordercolor=TextFieldBoxColor,height=2cm,width=\TextFieldWidth,multiline=true]{}
+
+\bigskip
+\item Experiment with different values of $\lambda$. How does the mean of $x$ depend on $\lambda$?
+
+\bigskip
+\TextField[name=var_dependencies,backgroundcolor=TextFieldBackgroundColor,color=TextFieldTextColor,bordercolor=TextFieldBoxColor,height=2cm,width=\TextFieldWidth,multiline=true]{}
+
+\end{enumerate}
+
+	
+%\end{enumerate}
+

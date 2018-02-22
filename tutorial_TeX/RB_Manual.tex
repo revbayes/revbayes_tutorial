@@ -39,6 +39,8 @@ April Wright,
 %\and
 Mike R.~May,
 %\and
+Wade Dismukes,
+%\and
 Nicolas Lartillot,
 %\and
 Brian R.~Moore,
@@ -60,15 +62,20 @@ John P.~Huelsenbeck
 
 \def \GlobalResourcePath {./}
 
-\part{Getting Started with RevBayes}
+\part{Getting Started with \RevBayes}
 
-\chapter{Introduction}
+\chapter{A (very short) general Introduction}
 \def \ResourcePath {RB_Getting_Started/}
 \include{RB_Getting_Started/RB_Getting_Started_content}
 
 \chapter{Introduction to \RevBayes and \Rev}
-\def \ResourcePath {RB_Basics_Tutorial/}
-\include{RB_Basics_Tutorial/RB_Basics_Tutorial_content}
+\def \ResourcePath {RB_Intro_Tutorial/}
+\include{RB_Intro_Tutorial/RB_Intro_Tutorial_content}
+\include{RB_Intro_Tutorial/RB_Intro_Tutorial_exercises}
+
+\chapter{General Syntax of \Rev}
+\def \ResourcePath {RB_Rev_Tutorial/}
+\include{RB_Rev_Tutorial/RB_Rev_Tutorial_content}
 
 \chapter{Reading and manipulating data}
 \def \ResourcePath {RB_Data_Tutorial/}
@@ -76,23 +83,20 @@ John P.~Huelsenbeck
 
 
 
-\part{Inference}
+\part{Bayesian Inference and MCMC Simulation}
 
-\chapter{Introduction to Markov chain Monte Carlo Algorithms}
-\def \ResourcePath {RB_MCMC_Intro_Tutorial/}
-\include{RB_MCMC_Intro_Tutorial/RB_MCMC_Intro_Tutorial_content}
+\chapter{Introduction to Markov chain Monte Carlo Algorithms using an Archery Example}
+\def \ResourcePath {RB_MCMC_Archery_Tutorial/}
+\include{RB_MCMC_Archery_Tutorial/RB_MCMC_Archery_Tutorial_content}
+
+\chapter{Introduction to Markov chain Monte Carlo Algorithms using a Coin-Flip Example}
+\def \ResourcePath {RB_MCMC_Binomial_Tutorial/}
+\include{RB_MCMC_Binomial_Tutorial/RB_MCMC_Binomial_Tutorial_content}
+\include{RB_MCMC_Binomial_Tutorial/RB_MCMC_Binomial_Tutorial_exercises}
 
 %\chapter{More on Markov chain Monte Carlo Algorithms}
 %\def \ResourcePath {RB_MCMC_Tutorial/}
 %\include{RB_MCMC_Tutorial/RB_MCMC_Tutorial_content}
-
-
-\part{Basic Phylogeny Estimation}
-
-\chapter{Continuous Time Markov Model for Discrete Character Evolution}
-\def \ResourcePath {RB_CTMC_Tutorial/}
-\include{RB_CTMC_Tutorial/RB_CTMC_Tutorial_content}
-
 
 \part{Model Selection, Model Averaging, and Model Testing}
 
@@ -100,8 +104,17 @@ John P.~Huelsenbeck
 \def \ResourcePath {RB_BayesFactor_Tutorial/}
 \include{RB_BayesFactor_Tutorial/RB_BayesFactor_Tutorial_content}
 
+\chapter{Model Fit and Posterior Predictive Simulation}
+\def \ResourcePath {RB_BayesFactor_Tutorial/}
+\include{RB_BayesFactor_Tutorial/RB_BayesFactor_Tutorial_content}
 
-\part{More on Substitution Models}
+
+
+\part{Basic Phylogeny Estimation}
+
+\chapter{Continuous Time Markov Model for Discrete Character Evolution}
+\def \ResourcePath {RB_CTMC_Tutorial/}
+\include{RB_CTMC_Tutorial/RB_CTMC_Tutorial_content}
 
 \chapter{Partitioned Data Analysis}
 \def \ResourcePath {RB_Partition_Tutorial/}
@@ -136,6 +149,21 @@ John P.~Huelsenbeck
 
 
 
+\part{Gene tree - Species tree estimation}
+
+\chapter{Overview}
+\def \ResourcePath {RB_GTST_Tutorial/}
+\include{RB_GTST_Tutorial/RB_GTST_Tutorial_content}
+
+\chapter{Estimating species tree using gene concatenation}
+\def \ResourcePath {RB_GeneConcatenation_Tutorial/}
+\include{RB_GeneConcatenation_Tutorial/RB_GeneConcatenation_Tutorial_content}
+
+\chapter{Multispecies Coalescent}
+\def \ResourcePath {RB_MultispeciesCoalescent_Tutorial/}
+\include{RB_MultispeciesCoalescent_Tutorial/RB_MultispeciesCoalescent_Tutorial_content}
+
+
 
 \part{Diversification Rate Estimation}
 
@@ -165,27 +193,6 @@ John P.~Huelsenbeck
 
 
 
-
-
-\part{Gene tree - Species tree estimation}
-
-\chapter{Overview}
-\def \ResourcePath {RB_GTST_Tutorial/}
-\include{RB_GTST_Tutorial/RB_GTST_Tutorial_content}
-
-\chapter{Estimating species tree using gene concatenation}
-\def \ResourcePath {RB_GeneConcatenation_Tutorial/}
-\include{RB_GeneConcatenation_Tutorial/RB_GeneConcatenation_Tutorial_content}
-
-\chapter{Multispecies Coalescent}
-\def \ResourcePath {RB_MultispeciesCoalescent_Tutorial/}
-\include{RB_MultispeciesCoalescent_Tutorial/RB_MultispeciesCoalescent_Tutorial_content}
-
-
-
-
-
-
 \part{Biogeography}
 
 \chapter{Dispersal, Extirpation and Cladogenesis (DEC)}
@@ -196,10 +203,25 @@ John P.~Huelsenbeck
 \def \ResourcePath {RB_Biogeography_many_area_Tutorial/}
 \include{RB_Biogeography_many_area_Tutorial/RB_Biogeography_many_area_Tutorial_content}
 
+\chapter{Historical Biogeography}
+\def \ResourcePath {RB_Biogeography_Tutorial/}
+\include{RB_Biogeography_Tutorial/RB_Biogeography_Tutorial_0_content}
+\include{RB_Biogeography_Tutorial/RB_Biogeography_Tutorial_1_content}
+\include{RB_Biogeography_Tutorial/RB_Biogeography_Tutorial_2_content}
+\include{RB_Biogeography_Tutorial/RB_Biogeography_Tutorial_3_content}
+\include{RB_Biogeography_Tutorial/RB_Biogeography_Tutorial_4_content}
 
 
 
-
+\part{Discrete Morphology}
+\chapter{Discrete Morphology}
+\def \ResourcePath {RB_Discrete_Morphology_Tutorial/}
+\include{RB_Discrete_Morphology_Tutorial/RB_DiscreteMorphology_Tutorial_0_content}
+\include{RB_Discrete_Morphology_Tutorial/RB_DiscreteMorphology_Tutorial_1_content}
+\include{RB_Discrete_Morphology_Tutorial/RB_DiscreteMorphology_Tutorial_2_content}
+\include{RB_Discrete_Morphology_Tutorial/RB_DiscreteMorphology_Tutorial_3_content}
+\include{RB_Discrete_Morphology_Tutorial/RB_DiscreteMorphology_Tutorial_4_content}
+\include{RB_Discrete_Morphology_Tutorial/RB_DiscreteMorphology_Tutorial_results_content}
 
 
 \part{Phylogenetic Comparative Method}

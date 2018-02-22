@@ -15,7 +15,7 @@ for (i in 1:nbr){
 }
 #Create the Q matrix. These data are binary, so we initialize the Jukes-Cantor matrix with
 # two states
-Q_morpho := fnJC(2)
+Q_morpho <- fnJC(2)
 
 #Set up Gamma-distributed rate variation.
 alpha_morpho ~ dnExponential( 1.0 )

@@ -27,8 +27,10 @@ Good options include \href{http://www.sublimetext.com/}{\tt Sublime Text} or \hr
 \subsubsection{Prerequisite Tutorials}
 In addition to installing the software, this tutorial assumes that you have read and completed the following tutorials:
 \begin{itemize}[noitemsep,topsep=0pt]
-\item \href{https://github.com/revbayes/revbayes_tutorial/blob/master/tutorial_TeX/RB_Basics_Tutorial/RB_Basics_Tutorial.pdf}{\mi{Basic Introduction to \Rev and MCMC}}
-\item \href{https://github.com/revbayes/revbayes_tutorial/blob/master/tutorial_TeX/RB_MCMC_Intro_Tutorial/RB_MCMC_Intro_Tutorial.pdf}{\mi{Introduction to MCMC Simulation}}
+\item \href{https://github.com/revbayes/revbayes_tutorial/raw/master/tutorial_TeX/RB_Intro_Tutorial/RB_Intro_Tutorial.pdf}{Very Basic Introduction to \Rev}
+\item \href{https://github.com/revbayes/revbayes_tutorial/raw/master/tutorial_TeX/RB_Rev_Tutorial/RB_Rev_Tutorial.pdf}{General Introduction to the \Rev syntax}
+\item \href{https://github.com/revbayes/revbayes_tutorial/raw/master/tutorial_TeX/RB_MCMC_Archery_Tutorial/RB_MCMC_Archery_Tutorial.pdf}{General Introduction to MCMC using an archery example}
+\item \href{https://github.com/revbayes/revbayes_tutorial/raw/master/tutorial_TeX/RB_MCMC_Binomial_Tutorial/RB_MCMC_Binomial_Tutorial.pdf}{General Introduction to MCMC using a coin-flipping example}
 \item \href{https://github.com/revbayes/revbayes_tutorial/blob/master/tutorial_TeX/RB_CTMC_Tutorial/RB_CTMC_Tutorial.pdf}{\mi{Substitution Models}}
 \item \href{https://github.com/revbayes/revbayes_tutorial/blob/master/tutorial_TeX/RB_Partition_Tutorial/RB_Partition_Tutorial.pdf}{\mi{Partitioned Data Analysis}}
 \end{itemize}
@@ -511,7 +513,7 @@ The way that we will run our MCMC for this tutorial will be to execute a \textit
 Here, if we were to run our MCMC with our current vector of 6 moves, then our move schedule would perform 6 moves at each cycle.
 Within a cycle, an individual move is chosen from the move list in proportion to its weight. 
 Therefore, with all six moves assigned \cl{weight=1}, each has an equal probability of being executed and will be performed on average one time per MCMC cycle. 
-For more information on moves and how they are performed in \RevBayes, please refer to the \href{https://github.com/revbayes/revbayes_tutorial/blob/master/tutorial_TeX/RB_MCMC_Intro_Tutorial/RB_MCMC_Intro_Tutorial.pdf}{\mi{Introduction to MCMC}} and \href{https://github.com/ssb2017/revbayes_intro/blob/master/tutorials/RB_CTMC_Tutorial.pdf}{\mi{Substitution Models}} tutorials.
+For more information on moves and how they are performed in \RevBayes, please refer to the \href{https://github.com/revbayes/revbayes_tutorial/blob/master/tutorial_TeX/RB_MCMC_Binomial_Tutorial/RB_MCMC_Binomial_Tutorial.pdf}{\mi{Introduction to MCMC}} and \href{https://github.com/ssb2017/revbayes_intro/blob/master/tutorials/RB_CTMC_Tutorial.pdf}{\mi{Substitution Models}} tutorials.
 
 In addition to the speciation ($\lambda$) and extinction ($\mu$) rates, we may also be interested in inferring diversification ($\lambda - \mu$) and turnover ($\mu/\lambda$).
 Since these parameters can be expressed as a deterministic transformation of the speciation and extinction rates, we can monitor (that is, track the values of these parameters, and print them to a file) their values by creating two deterministic nodes using the \cl{:=} operator.
@@ -1186,7 +1188,7 @@ Figure \ref{fig:tracer-extinction-trace} shows the trace for the extinction rate
 The \mi{Trace} window allows us to evaluate how well our chain is sampling the target distribution.
 For a fairly short analysis, the output in figure \ref{fig:tracer-extinction-trace} shows reasonable \textit{mixing}---there is no consistent pattern or trend in the samples, nor are there long intervals where the statistic does not change.
 The presence of a trend or large leaps in a parameter value might indicate that your MCMC is not mixing well.
-You can read more about MCMC tuning and improving mixing in the tutorials \href{https://github.com/revbayes/revbayes_tutorial/raw/master/tutorial_TeX/RB_MCMC_Intro_Tutorial/RB_MCMC_Intro_Tutorial.pdf}{\mi{Intro to MCMC}} and \href{https://github.com/revbayes/revbayes_tutorial/raw/master/tutorial_TeX/RB_MCMC_Tutorial/RB_MCMC_Tutorial.pdf}{\mi{MCMC Algorithms}}.
+You can read more about MCMC tuning and improving mixing in the tutorials \href{https://github.com/revbayes/revbayes_tutorial/raw/master/tutorial_TeX/RB_MCMC_Binomial_Tutorial/RB_MCMC_Binomial_Tutorial.pdf}{\mi{Intro to MCMC}} and \href{https://github.com/revbayes/revbayes_tutorial/raw/master/tutorial_TeX/RB_MCMC_Tutorial/RB_MCMC_Tutorial.pdf}{\mi{MCMC Algorithms}}.
 
 \begin{framed}
 Look through the traces for your parameters. 
@@ -1216,7 +1218,7 @@ Go to the \cl{age\_extant} parameter in the \mi{Estimates} window.
 Since you have evaluated several of the parameters by viewing the trace files and the ESS values, you may be aware that the MCMC analysis you conducted for this tutorial did not sufficiently sample the joint posterior distribution of phylogenetic parameters.
 More explicitly, \textit{your run has not converged}.
 It is not advisable to base your conclusions on such a run and it will be critical to perform multiple, independent runs for many more MCMC cycles. 
-For further discussion of recommended MCMC practices in \RevBayes, please see the \href{https://github.com/revbayes/revbayes_tutorial/raw/master/tutorial_TeX/RB_MCMC_Intro_Tutorial/RB_MCMC_Intro_Tutorial.pdf}{\mi{Intro to MCMC}} and \href{https://github.com/revbayes/revbayes_tutorial/raw/master/tutorial_TeX/RB_MCMC_Tutorial/RB_MCMC_Tutorial.pdf}{\mi{MCMC Algorithms}} tutorials.
+For further discussion of recommended MCMC practices in \RevBayes, please see the \href{https://github.com/revbayes/revbayes_tutorial/raw/master/tutorial_TeX/RB_MCMC_Binomial_Tutorial/RB_MCMC_Binomial_Tutorial.pdf}{\mi{Intro to MCMC}} and \href{https://github.com/revbayes/revbayes_tutorial/raw/master/tutorial_TeX/RB_MCMC_Tutorial/RB_MCMC_Tutorial.pdf}{\mi{MCMC Algorithms}} tutorials.
 
 \medskip
 \subsubsection{Summarize Tree}\label{subsub:Exercise-SummarizeTree}
