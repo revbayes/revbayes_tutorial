@@ -54,7 +54,7 @@ mni = 1
 # 1. for the full model #
 monitors[mni++] = mnModel(filename="output/bears.log", printgen=10)
 # 2. the tree #
-monitors[mni++] = mnFile(filename="output/bears.trees", printgen=10, fbd_tree)
+monitors[mni++] = mnFile(filename="output/bears.trees", printgen=10, pruned_tree)
 # 3. and a few select parameters to be printed to the screen #
 monitors[mni++] = mnScreen(printgen=10, age_extant, num_samp_anc, origin_time)
 

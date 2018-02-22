@@ -172,7 +172,7 @@ arrow_mean = rgamma(1, n, n/mu_true)[1]
 \end{snugshade*}}
 
 The \Rev code above uses the \cl{rgamma()} function to simulate a single observed \cl{arrow\_mean} from $n=10$ arrows shot on target.
-The \cl{[1]} following the \cl{rgamma()} function is needed because this function always returns a {\emph vector} even when we only request a single value. Thus, in order to treat \cl{arrow\_mean} as a single value, we have to request the first element of the vector returned by that function.
+The \cl{[1]} following the \cl{rgamma()} function is needed because this function always returns a \emph{vector} even when we only request a single value. Thus, in order to treat \cl{arrow\_mean} as a single value, we have to request the first element of the vector returned by that function.
 
 
 \subsection{Initializing the Markov chain}
@@ -379,7 +379,7 @@ for (rep in 1:reps){
     
     if ( (rep % printgen) == 0 ) {
         # Write the samples to a file
-        write(rep,p,"\n",file="archery_MH.log",append=TRUE)
+        write(rep,mu,"\n",file="archery_MH.log",append=TRUE)
         # Print the samples to the screen
         print(rep,mu)
     }

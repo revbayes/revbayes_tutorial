@@ -37,7 +37,7 @@ monitors[mni++] = mnModel(filename="output/mk_discretized.log", printgen=10)
 # 2. the tree #
 monitors[mni++] = mnFile(filename="output/mk_discretized.trees", printgen=10, phylogeny)
 # 3. and a few select parameters to be printed to the screen #
-monitors[mni++] = mnScreen(printgen=10)
+monitors[mni++] = mnScreen(printgen=100)
 # 4. add an ancestral state monitor
 monitors[mni++] = mnJointConditionalAncestralState(tree=phylogeny,
                                                    ctmc=phyMorpho,
@@ -57,6 +57,7 @@ trace = readTreeTrace("output/mk_discretized.trees", treetype="non-clock")
 trace.setBurnin(0.25)
 
 # Summarize tree trace and the consensus tree to file
+mapTree(trace, file="output/mk_discretized.map.tre")
 consensusTree(trace, file="output/mk_discretized.majrule.tre")
 
 # Quit RevBayes #

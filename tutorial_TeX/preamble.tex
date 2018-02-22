@@ -106,8 +106,7 @@
 %\bibliographystyle{apalike}
 %\bibpunct[; ]{(}{)}{;}{a}{,}{;}
 
-
-\usepackage[breaklinks]{hyperref}
+\usepackage[breaklinks,pdfhighlight ={/N}]{hyperref}
 \usepackage[all]{hypcap}
 \hypersetup{colorlinks=true,linkcolor=linkscol,citecolor=citescol,urlcolor=urlscol}
 
@@ -168,10 +167,20 @@
 %\definecolor{shadecolor}{RGB}{135,206,250}
 \definecolor{shadecolor}{RGB}{183,207,237}
 
+%\definecolor{TextFieldBackgroundColor}{rgb}{0.56, 0.74, 0.56}
+\definecolor{TextFieldBackgroundColor}{rgb}{.85 .85 .85}
+%\definecolor{TextFieldBoxColor}{RGB}{0.56, 0.74, 0.56}
+\definecolor{TextFieldBoxColor}{RGB}{1, 1, 1}
+\definecolor{TextFieldTextColor}{RGB}{0, 0, 0}
+\newcommand{\TextFieldWidth}{0.92\textwidth}
+
 \setlength{\tabcolsep}{5pt}
 \setlength{\topmargin}{-0.4in}
 \setlength{\headheight}{14.5pt}
 \pagestyle{fancy}
+
+
+\newcommand{\forceindent}{\leavevmode{\parindent=25pt\indent}}
 
 \newcommand{\taha}[1]{{\textcolor{red}{[TAH comment: #1]}}} % TAH comment
 

@@ -1,0 +1,335 @@
+﻿Genus;Subfamily;"Spines (0=absent; 1=spine of rank 2 present anywhere on mesosoma or petiole); All spinescence data based on Antweb images (accessed December 2014) unless otherwise noted in References";"Eyes (0=absent/0-1 ommatidia, 1=2-10 ommatidia, 2=11-100 ommatidia; 3=greater than 100 ommatidia); Data from Bolton (1994) unless otherwise noted in References";"Eyes (binary binned, 0 = 0 or 1, 1 = 2 or 3; in polymorphic cases, decision was made based on majority case)";"Polymorhism (0=monomorphic; 1=some size variation but not polymorphic; 2=polymorphic); Data from Bolton (2003) unless noted otherwise in References";Polymorhism (same as original column, but with polyphenisms converted to corresponding polymorphic number, e.g. 0&2 -> 2);Sting (0=absent, 1=present);"Diet (0=herbivore; 1=omnivore; 2=predator)";Nesting (0=subterranean/soil, 1=arboreal);Foraging (0=subterranean/leaf litter, 1=arboreal);Colony size (worker number);"Max colony size binned (0 = <100, 1 = >100 to 999, 2 = 1000+; flat 100 or 1000 is considered 0 or 1, respectively; a range with a max terminating at 100 or 1000 is considered 0 or 1, respectively)"
+Acanthognathus;Myrmicinae;1;2;1;0;0;1;2;0;0;10-30;0
+Acanthomyrmex;Myrmicinae;1;3;1;2;2;?;1;0;0;40-50;0
+Acanthoponera;Heteroponerinae;1;2/3;1;0;0;1;2;1;0&1;?;?
+Acanthostichus;Dorylinae;0;0&1;0;0&2;2;1;2;0;0;?;?
+Acromyrmex;Myrmicinae;1;3;1;2;2;0;0;0&1;0&1;1000's-10000's;2
+Acropyga;Formicinae;0;0&1;0;0;0;0;0;0;0;200-1000's;2
+Adelomyrmex;Myrmicinae;1;1;0;0;0;1;2;0;0;5-76;0
+Adetomyrma;Amblyoponinae;0;0;0;0;0;1;2;0;0;300;1
+Adlerzia;Myrmicinae;0;2;1;2;2;1;?;0;0;?;?
+Aenictogiton;Dorylinae;MALES ONLY;;;;;;;;;;
+Aenictus;Dorylinae;0;0;0;0;0;1;2;0;0&1;60000-110000;2
+Agraulomyrmex;Formicinae;0;2;1;0;0;0;0/1;0;0;?;?
+Alloformica;Formicinae;0;3;1;0;0;0;0/1;?;?;?;?
+Allomerus;Myrmicinae;0;2;1;0;0;1;0/1;1;1;1000;1
+Amblyopone;Amblyoponinae;0;0/1;0;0;0;1;2;0;0;12;0
+Amyrmex;Dorylinae;MALES ONLY;;;;;;;;;;
+Ancyridris;Myrmicinae;1;3;1;0;0;0;1;1;1;10-15;0
+Aneuretus;Aneuretinae;1;2;1;2;2;1;1;0;0;65-75;0
+Anillidris;Dolichoderinae;0;0;0;0;0;0;1;0;0;?;?
+Anillomyrma;Myrmicinae;0;0;0;0;0;1;1/2;0;0;"""several hundred""";1
+Ankylomyrma;Agroecomyrmecinae;1;3;1;0;0;1;?;1;0&1;?;?
+Anochetus;Ponerinae;0;2;1;0;0;1;2;0&1;0&1;"""Typically containing fewer than 100 workers… though colonies of A. faurei were found to have about 400 workers"" (Schmidt and Shattuck 2014)";1
+Anomalomyrma;Leptanillinae;0;0;0;0;0;1;2;0;0;?;?
+Anonychomyrma;Dolichoderinae;0;3;1;0;0;0;1;0&1;0&1;500-10,000's;2
+Anoplolepis;Formicinae;0;3;1;0&2;2;0;1;0;0;4000-millions;2
+Aphaenogaster;Myrmicinae;1;3;1;0;0;0;1;0;0;100-303;1
+Aphomomyrmex;Formicinae;0;3;1;2;2;0;0;1;1;200-222 at least;1
+Apomyrma;Amblyoponinae;0;0;0;0;0;1;2;0;0;<100;0
+Apterostigma;Myrmicinae;0;2;1;0;0;0;0;0;1;27-155;1
+Aptinoma;Dolichoderinae;0;2;1;2;2;0;1;1;1;?;?
+Arnoldius;Dolichoderinae;0;2;1;0;0;0;1;0;0&1;?;?
+Asphinctanilloides;Dorylinae;0;0;0;0;0;1;2;0;0;?;?
+Asphinctopone;Ponerinae;0;1;0;0;0;1;2;0;0;?;?
+Atopomyrmex;Myrmicinae;1;3;1;2;2;1;1;1;0&1;65000;2
+Atta;Myrmicinae;1;3;1;2;2;0;0;0;0&1;1750000;2
+Aulacopone;Heteroponerinae;QUEEN ONLY;;;;;;;;;;
+Austromorium;Myrmicinae;1;2;1;0;0;1;1;0;0;?;?
+Austroponera;Ponerinae;0;2;1;0;0;1;1;0;0;10's;0
+Axinidris;Dolichoderinae;0;3;1;0;0;0;1;1;0&1;?;?
+Azteca;Dolichoderinae;0;2;1;2;2;0;1;1;0&1;>100, <1000;1
+Bajcaridris;Formicinae;0;3;1;0;0;0;?;0;?;?;?
+Bannapone;Amblyoponinae;0;0;0;0;0;1;2;0;0;?;?
+Baracidris;Myrmicinae;0;0;0;0;0;1;?;0;0;?;?
+Bariamyrma;Myrmicinae;QUEEN ONLY;;;0;0;;;;;;
+Basiceros;Myrmicinae;0;2;1;0;0;1;2;0;0;9-32;0
+Belonopelta;Ponerinae;0;1;0;0;0;1;2;0;0;~10;0
+Blepharidatta;Myrmicinae;1;2;1;0;0;1;2;0;0;200;1
+Boloponera;Ponerinae;0;0;0;0;0;1;2;0;0;?;?
+Bondroitia;Myrmicinae;0;0;0;0;0;1;?;?;?;?;?
+Bothriomyrmex;Dolichoderinae;0;2;1;0;0;0;1;0;0&1;?;?
+Bothroponera;Ponerinae;0;3;1;0;0;1;2;0;0;8-170;1
+Brachymyrmex;Formicinae;0;2;1;0;2;0;1;0&1;0;22-125;1
+Brachyponera;Ponerinae;0;2;1;0;0;1;1;0;0;30-2000;2
+Bregmatomyrma;Formicinae;QUEEN ONLY;;;;;;;;;;
+Buniapone;Ponerinae;0;1;0;0;0;1;2;0;0;?;?
+Calomyrmex;Formicinae;0;3;1;0;0;0;1;0&1;0;250;1
+Calyptomyrmex;Myrmicinae;0;1;0;0;0;1;2;0;0;~112;1
+Camponotus;Formicinae;0;3;1;2;2;0;1;0&1;0&1;1000-100000+;2
+Cardiocondyla;Myrmicinae;1;2;1;0;0;1;1;0;0;50 to >100;1
+Carebara;Myrmicinae;0;0&1;0;0&2;2;1;2;0;0;"""Up to 1000"" workers, even up to 157,000";2
+Cataglyphis;Formicinae;0;3;1;0&1;1;0;2;0;0;100's-few 1000's;2
+Cataulacus;Myrmicinae;0;3;1;0;0;0;1;1;1;100's;1
+Centromyrmex;Ponerinae;0;0;0;0&2;2;1;2;0;0;~400;1
+Cephalotes;Myrmicinae;1;3;1;2;2;0;0;1;1;~10000;2
+Cerapachys;Dorylinae;0;0&3;1;0;0;1;2;0;0;75-200;1
+Cheliomyrmex;Dorylinae;0;0;0;2;2;1;2;0;0;"""several hundred""";1
+Chimaeridris;Myrmicinae;0;2;1;0;0;1;?;?;0;?;?
+Chronoxenus;Dolichoderinae;0;2;1;0;0;0;1;0;0&1;?;?
+Cladomyrma;Formicinae;0;2;1;2;2;0;0;1;1;"""usually several thousand"" but as high as in the 10,000's";2
+Colobostruma;Myrmicinae;1;2;1;0;0;1;2;0;0;<100;0
+Concoctio;Amblyoponinae;0;0;0;0;0;1;2;0;0;?;?
+Condylodon;N/A;INCERTAE SEDIS IN FORMICIDAE;;;;;;;;;;
+Crematogaster;Myrmicinae;1;3;1;0&2;2;0;1;0&1;0&1;39-28982;2
+Cryptomyrmex;Myrmicinae;1;1;0;0;0;1;?;0;0;?;?
+Cryptopone;Ponerinae;0;0;0;0;0;1;2;0;0;"30 to ""several hundred workers""";1
+Cyatta;Myrmicinae;0;2;1;0;0;1;0;0;0;20-25;0
+Cylindromyrmex;Dorylinae;0;3;1;0;0;1;2;0&1;0&1;~100;1
+Cyphoidris;Myrmicinae;1;2;1;0;0;1;?;0;0;?;?
+Cyphomyrmex;Myrmicinae;0;2;1;0;0;0;0;0;0;<500, usually far fewer;1
+Dacatria;Myrmicinae;1;1;0;0;0;1;?;0;0;?;?
+Dacetinops;Myrmicinae;0;2;1;0;0;1;?;0;0;10;0
+Daceton;Myrmicinae;1;3;1;2;2;1;2;1;1;3000-10000;2
+Diacamma;Ponerinae;1;3;1;0;0;1;2;0;0;50-300;1
+Diaphoromyrma;Myrmicinae;0;2;1;0;0;?;?;0;0;?;?
+Dicroaspis;Myrmicinae;0;1;0;0;0;1;?;0;0;?;?
+Dilobocondyla;Myrmicinae;0;3;1;0;0;1;?;1;1;14-91;0
+Dinoponera;Ponerinae;0;3;1;0;0;1;1;0;0;30-60;0
+Diplomorium;Myrmicinae;0;2;1;0;0;1;0;0;0;?;?
+Discothyrea;Proceratiinae;0;2;1;0;0;1;2;0;0;73;0
+Doleromyrma;Dolichoderinae;0;2;1;0;0;0;1;0;0;Several hundred;1
+Dolichoderus;Dolichoderinae;1;3;1;0;0;0;1;0&1;0&1;25-1000's;2
+Dolioponera;Ponerinae;0;0;0;0;0;1;2;0;0;?;?
+Dolopomyrmex;Myrmicinae;0;0;0;0;0;1;2;0;0;?;?
+Dorylus;Dorylinae;0;0;0;2;2;1;2;0;0;100000's-1000000+;2
+Dorymyrmex;Dolichoderinae;0;3;1;0;0;0;1;0;0;5000;2
+Echinopla;Formicinae;0;3;1;0;0;0;0/1;1;1;~100;1
+Eciton;Dorylinae;1;0;0;2;2;1;2;0;0;100000's;2
+Ecphorella;Dolichoderinae;0;2;1;0;0;0;1;?;?;?;?
+Ectatomma;Ectatomminae;0;3;1;0;0;1;1;0;0&1;30-400;1
+Ectomomyrmex;Ponerinae;0;2;1;0;0;1;2;0;0;<100;0
+Emeryopone;Ponerinae;0;2;1;0;0;1;2;0;0;?;?
+Epelysidris;Myrmicinae;0;1;0;0;0;1;1;0;0;~200;1
+Epopostruma;Myrmicinae;1;3;1;0;0;1;1/2;0;0;Up to 100;0
+Euponera;Ponerinae;0;2;1;0;0;1;2;0;0;4-50;0
+Euprenolepis;Formicinae;0;2;1;0&2;2;0;0;0;0;500-5000;2
+Eurhopalothrix;Myrmicinae;1;2;1;0;0;1;2;0;0;50;0
+Eutetramorium;Myrmicinae;1;2;1;0;0;1;2;0;0;1-50;0
+Feroponera;Ponerinae;0;0;0;0;0;1;2;0;0;?;?
+Fisheropone;Ponerinae;0;0;0;0;0;1;2;0;0;?;?
+Forelius;Dolichoderinae;0;3;1;1;1;0;1;0;0&1;Up to 100,000;2
+Forelophilus;Formicinae;0;3;1;2;2;0;1;?;?;?;?
+Formica;Formicinae;0;3;1;0&1;1;0;1;0;0;500-300000000;2
+Formicoxenus;Myrmicinae;0;2;1;0;0;1;1;0;0;"""a few"" to ~100";0
+Formosimyrma;Myrmicinae;0;1/2;0;0;0;?;?;0;0;?;?
+Froggattella;Dolichoderinae;1;3;1;1;1;0;1;1;0&1;?;?
+Furcotanilla;Leptanillinae;0;0;0;0;0;1;2;0;0;?;?
+Gauromyrmex;Myrmicinae;0;2;1;1;1;1;?;1;1;?;?
+Gesomyrmex;Formicinae;0;3;1;2;2;0;1;1;1;~150;1
+Gigantiops;Formicinae;0;3;1;0;0;0;1;0;0&1;>1000;2
+Gnamptogenys;Ectatomminae;0;3;1;0;0;1;2;0&1;0&1;"""At most a few hundred workers""";1
+Gaoligongidris;Myrmicinae;1;2/3;1;0;0;?;?;0;0;?;?
+Goniomma;Myrmicinae;0;3;1;0;0;1;0;0;0;~360;1
+Gracilidris;Dolichoderinae;0;3;1;0;0;0;1;0;0;~25+;0
+Hagensia;Ponerinae;0;3;1;0;0;1;2;0;0;10-50;0
+Harpagoxenus;Myrmicinae;1;3;1;0;0;1;1;0;0;10;0
+Harpegnathos;Ponerinae;0;3;1;0;0;1;2;0;0;35-225;1
+Heteroponera;Heteroponerinae;0;2;1;0;0;1;1;0;0;30-100;0
+Huberia;Myrmicinae;0;2;1;0;0;1;1;0;0;?;?
+Hylomyrma;Myrmicinae;1;2;1;0;0;1;1;0;0;16;0
+Hypoponera;Ponerinae;0;0;0;0;0;1;2;0;0;21-1500;2
+Iberoformica;Formicinae;0;3;1;0;0;0;1;0;0;181-2048;2
+Indomyrma;Myrmicinae;1;1;0;0;0;1;1/2;0;0;100-500;1
+Iridomyrmex;Dolichoderinae;0;3;1;0;0;0;1;0;0;3000-155000;2
+Iroponera;Ponerinae;0;0;0;0;0;1;2;0;0;"""Only a few workers""";0
+Ishakidris;Myrmicinae;0;1/2;0;0;0;?;?;0;0;?;?
+Kalathomyrmex;Myrmicinae;0;2;1;0;0;?;0;0;0;100;1
+Kartidris;Myrmicinae;0;2;1;0;0;1;?;0;0;16-52;0
+Kempfidris;Myrmicinae;0;1;0;0;0;1;?;0;0;?;?
+Labidus;Dorylinae;0;0;0;2;2;1;2;0;0;1000000;2
+Lachnomyrmex;Myrmicinae;1;2;1;0;0;1;1;0;0;"""small colonies""";0
+Lasiomyrma;Myrmicinae;0;2;1;0;0;1;?;0;0;?;?
+Lasiophanes;Formicinae;0;3;1;0;0;0;?;0&1;0&1;?;?
+Lasius;Formicinae;0;3;1;0;0;0;1;0;0;3000-2500000;2
+Lenomyrmex;Myrmicinae;1;2;1;0;0;1;?;0&1;0&1;?;?
+Lepisiota;Formicinae;0;3;1;0;0;0;1;0&1;0&1;>200-300 workers;1
+Leptanilla;Leptanillinae;0;0;0;0;0;1;2;0;0;150;1
+Leptanilloides;Dorylinae;0;0;0;0;0;1;2;0;0;~100, maybe less;0
+Leptogenys;Ponerinae;0;3;1;0;0;1;2;0;0;10-50000;2
+Leptomyrmex;Dolichoderinae;0;3;1;0;0;0;1;0;0;350;1
+Leptothorax;Myrmicinae;1;2/3;1;0;0;1;1;0;0;25-60;0
+Linepithema;Dolichoderinae;0;2/3;1;0;0;0;1;0&1;0&1;>1000;2
+Liometopum;Dolichoderinae;0;3;1;2;2;0;1;0&1;0&1;1000's-10000's;2
+Liomyrmex;Myrmicinae;0;0;0;0;0;1;2;0;0;~20;0
+Loboponera;Ponerinae;0;1;0;0;0;1;2;0;0;?;?
+Lophomyrmex;Myrmicinae;1;2;1;0;0;1;1;0;0;300 at least;1
+Lordomyrma;Myrmicinae;1;2;1;0;0;1;?;0;0;13-66;0
+Loweriella;Dolichoderinae;0;2;1;0;0;0;1;0;0;?;?
+Malagidris;Myrmicinae;1;2;1;0;0;1;?;0;0;?;?
+Manica;Myrmicinae;0;3;1;0;0;1;2;0;0;Up to 400;1
+Martialis;Martialinae;0;0;0;0;0;1;2;0;0;?;?
+Mayaponera;Ponerinae;0;2;1;0;0;1;2;0;0;5-29;0
+Mayriella;Myrmicinae;1;2;1;0;0;1;?;0;0;50-100;0
+Megalomyrmex;Myrmicinae;0;2;1;0;0;1;1;0;0;9-36;0
+Megaponera;Ponerinae;0;3;1;2;2;1;2;0;0;500-2000;2
+Melissotarsus;Myrmicinae;0;2;1;1;1;1;0;1;1;Up to 43000;2
+Melophorus;Formicinae;0;3;1;2;2;0;1;0;0;2849;2
+Meranoplus;Myrmicinae;1;3;1;0;0;1;1;0;0;150;1
+Mesoponera;Ponerinae;0;2;1;0;0;1;1;0;0;60-120;1
+Mesostruma;Myrmicinae;0;2;1;0;0;1;2;0;0;31;0
+Messor;Myrmicinae;0;3;1;2;2;0;0;0;0;100's-few 1000's;2
+Metapone;Myrmicinae;0;2;1;0;0;1;2;0;0;20-51;0
+Microdaceton;Myrmicinae;1;2;1;0;0;1;2;0;0;?;?
+Monomorium;Myrmicinae;0;2;1;0&2;2;1;1;0;0;10,000's-millions;2
+Mycetagroicus;Myrmicinae;0;2;1;0;0;?;0;0;0;373;1
+Mycetarotes;Myrmicinae;0;2;1;0;0;1;0;0;0;20-100;0
+Mycetophylax;Myrmicinae;0;2;1;0;0;1;0;0;0;9-535;1
+Mycetosoritis;Myrmicinae;0;2;1;0;0;?;0;0;0;50-70;0
+Mycocepurus;Myrmicinae;1;2;1;0;0;?;0;0;0;"""Not exceed several hundreds""";1
+Myopias;Ponerinae;0;3;1;0;0;1;2;0;0;<100;0
+Myopopone;Amblyoponinae;0;0;0;0;0;1;2;0;0;38;0
+Myrcidris;Pseudomyrmecinae;0;3;1;0;0;1;0;1;1;~107;1
+Myrmecia;Myrmeciinae;0;3;1;0;0;1;1;0;0&1;15-1586;2
+Myrmecina;Myrmicinae;1;2;1;0;0;0;2;0;0;24-100;0
+Myrmecocystus;Formicinae;0;3;1;0&2;2;0;1;0;0&1;~15000;2
+Myrmecorhynchus;Formicinae;0;3;1;2;2;0;0/1;0&1;1;At least 16;0
+Myrmelachista;Formicinae;0;2;1;0&1;1;0;1;1;1;100's - 1000's;2
+Myrmica;Myrmicinae;1;2/3;1;0;0;1;2;0;0;86-3000;2
+Myrmicaria;Myrmicinae;1;3;1;0;0;1;1;0;0;19899;2
+Myrmicocrypta;Myrmicinae;0;2;1;0;0;1;0;0;0;86-1716;2
+Myrmisaraka;Myrmicinae;1;2/3;1;0;0;1;?;0;0;?;?
+Myrmoteras;Formicinae;0;3;1;0;0;0;2;0;0;8-22;0
+Mystrium;Amblyoponinae;0;0;0;0;0;1;2;0;0;<200;1
+Nebothriomyrmex;Dolichoderinae;0;2;1;0;0;0;1;0;0;?;?
+Neivamyrmex;Dorylinae;0;0;0;2;2;1;2;0;0;110000;2
+Neoponera;Ponerinae;0;3;1;0;0;1;1&2;0&1;0&1;"""typically fewer than 200"", but up to 1,800+, and even 10-100 thousand";2
+Nesomyrmex;Myrmicinae;1;2/3;1;0;0;1;1;0&1;0&1;"~22-47 to ""rarely"" >100";0
+Nomamyrmex;Dorylinae;0;0;0;2;2;1;2;0;0;1000's;2
+Noonilla;Leptanillinae;MALES ONLY;;;;;;;;;;
+Nothomyrmecia;Myrmeciinae;0;3;1;0;0;1;1;0;0&1;50-70;0
+Notoncus;Formicinae;0;3;1;1;1;0;2;0;0&1;?;?
+Notostigma;Formicinae;0;3;1;2;2;0;?;0;0;?;?
+Novomessor;Myrmicinae;1;3;1;0;0;0;1;0;0;350;1
+Nylanderia;Formicinae;0;2;1;0;0;0;1;0;0;143;1
+Ochetellus;Dolichoderinae;0;3;1;0;0;0;1;0;0&1;?;?
+Ochetomyrmex;Myrmicinae;0;2;1;0;0;1;0/1;0;0&1;?;?
+Octostruma;Myrmicinae;0;1;0;0;0;1;2;0;0;"""A few workers""";0
+Ocymyrmex;Myrmicinae;0;3;1;0;0;0;1;0;0;200-873;1
+Odontomachus;Ponerinae;1;3;1;0;0;1;2;0&1;0&1;18-10000;2
+Odontoponera;Ponerinae;0;3;1;0;0;1;2;0;0;>100;1
+Oecophylla;Formicinae;0;3;1;2;2;0;1;1;0&1;48000, but up to >500000;2
+Onychomyrmex;Amblyoponinae;0;1;0;0;0;1;2;0;0;50-400;1
+Opamyrma;Amblyoponinae;0;0;0;0;0;1;2;0;0;?;?
+Ophthalmopone;Ponerinae;0;3;1;0;0;1;2;0;0;20-800;1
+Opisthopsis;Formicinae;0;3;1;0&1;1;0;1;0&1;0&1;100-200;1
+Orectognathus;Myrmicinae;1;2/3;1;0;0;1;2;0;0;"""usually less than 60"" to 104";0
+Overbeckia;Formicinae;0;3;1;0;0;0;?;1;1;?;?
+Oxyepoecus;Myrmicinae;0;2;1;0;0;1;1;0;0;~60;0
+Oxyopomyrmex;Myrmicinae;0;2/3;1;0;0;1;0;0;0;?;?
+Pachycondyla;Ponerinae;0;2/3;1;0;0;1;1;0;0;9-800;1
+Paltothyreus;Ponerinae;0;3;1;0;0;1;2;0;0;~16;0
+Papyrius;Dolichoderinae;0;3;1;0;0;0;0;0&1;0&1;?;?
+Paramycetophylax;Myrmicinae;0;2;1;0;0;?;0;0;?;?;?
+Paraparatrechina;Formicinae;0;2;1;0;0;0;1;0&1;0&1;500;1
+Paraponera;Paraponerinae;0;3;1;0;0;1;1;0&1;1;Up to >2000;2
+Paraprionopelta;Amblyoponinae;QUEEN ONLY, SUBFAMILY INCERTAE SEDIS;;;;;;;;;;
+Paratopula;Myrmicinae;1;2/3;1;0;0;1;?;1;1;?;?
+Paratrechina;Formicinae;0;2;1;0;0;0;1;0&1;0;2000;2
+Parvaponera;Ponerinae;0;0;0;0;0;1;2;0;0;?;?
+Perissomyrmex;Myrmicinae;1;2;1;0&1;1;1;?;0;0;~70;0
+Peronomyrmex;Myrmicinae;1;2;1;0;0;1;?;1;1;?;?
+Petalomyrmex;Formicinae;0;2;1;0;0;0;0;1;1;~100-10000;2
+Phalacromyrmex;Myrmicinae;0;2;1;0;0;1;?;0;?;?;?
+Phasmomyrmex;Formicinae;1;3;1;0;0;0;?;1;1;?;?
+Phaulomyrma;Leptanillinae;MALES ONLY;;;;;;;;;;
+Pheidole;Myrmicinae;1;2;1;2;2;0;1;0&1;0&1;22-10000;2
+Philidris;Dolichoderinae;0;2;1;0&2;2;0;1;0&1;0&1;18000;2
+Phrynoponera;Ponerinae;1;3;1;0;0;1;2;0;0;?;?
+Pilotrochus;Myrmicinae;0;1;0;0;0;1;?;0;0;?;?
+Plagiolepis;Formicinae;0;2;1;0&2;2;0;1;0&1;0;0-5000;2
+Platythyrea;Ponerinae;0;3;1;0;0;1;2;0&1;0&1;19-500;1
+Plectroctena;Ponerinae;0;0/1/2/3;1;0;0;1;2;0;0;300 or fewer;1
+Podomyrma;Myrmicinae;0;3;1;0;0;1;1;0&1;0&1;200+;1
+Poecilomyrma;Myrmicinae;0;3;1;0;0;1;?;1;1;31;0
+Pogonomyrmex;Myrmicinae;1;3;1;0;0;1;0&1;0;0;21-12358;2
+Polyergus;Formicinae;0;3;1;0;0;0;2;0;0;70-1000;1
+Polyrhachis;Formicinae;1;3;1;0;0;0;1;0&1;0&1;60-878096;2
+Ponera;Ponerinae;0;1;0;0;0;1;2;0;0;30-60;0
+Prenolepis;Formicinae;0;3;1;0;0;0;1;0;0;3370;2
+Prionopelta;Amblyoponinae;0;0;0;0;0;1;2;0;0;20-298;1
+Pristomyrmex;Myrmicinae;1;2/3;1;0;0;1;2;0&1;0&1;100;1
+Proatta;Myrmicinae;1;2;1;0;0;1;2;0;0;5500;2
+Probolomyrmex;Proceratiinae;0;0;0;0;0;1;2;0;0;20;0
+Proceratium;Proceratiinae;0;0;0;0;0;1;2;0&1;0;13-200;1
+Procryptocerus;Myrmicinae;1;3;1;0;0;1;1;1;1;62;0
+Proformica;Formicinae;0;3;1;1;1;0;1;0;0;69-1196;2
+Prolasius;Formicinae;0;2;1;0;0;0;0/1;0&1;0;200-1470;2
+Promyopias;Ponerinae;0;0;0;0;0;1;2;0;0;?;?
+Propodilobus;Myrmicinae;0;2;1;0;0;1;?;0;0;?;?
+Protalaridris;Myrmicinae;0;1;0;0;0;1;2;0;0;?;?
+Protanilla;Leptanillinae;0;0;0;0;0;1;2;0;0;23;0
+Psalidomyrmex;Ponerinae;0;2;1;0;0;1;2;0;0;?;?
+Pseudoatta;Myrmicinae;QUEEN ONLY;;;;;;;;;;
+Pseudolasius;Formicinae;0;2;1;2;2;0;0;0;0;325;1
+Pseudomyrmex;Pseudomyrmecinae;0;3;1;0;0;1;0&1;1;1;200-10021;2
+Pseudoneoponera;Ponerinae;0;3;1;0;0;1;2;0&1;0&1;~10;0
+Pseudonotoncus;Formicinae;1;3;1;0;0;0;0/1;0;1;"""Small colony""";0
+Pseudoponera;Ponerinae;0;1;0;0;0;1;2;0&1;0;9-80;0
+Rasopone;Ponerinae;0;2;1;0;0;1;2;0;0;19;0
+Ravavy;Dolichoderinae;MALES ONLY;;;;;;;;;;
+Recurvidris;Myrmicinae;1;2;1;0;0;1;?;0;0;?;?
+Rhopalomastix;Myrmicinae;0;2;1;0;0;1;?;1;1;?;?
+Rhopalothrix;Myrmicinae;0;1;0;0;0;1;2;0;0;?;?
+Rhytidoponera;Ectatomminae;0;3;1;0;0;1;1;0;0&1;50-271;1
+Rogeria;Myrmicinae;1;2;1;0;0;1;1;0&1;0&1;107;1
+Romblonella;Myrmicinae;1;3;1;0;0;1;?;1;0&1;?;?
+Rossomyrmex;Formicinae;0;3;1;0;0;0;1;0;0;23-200;1
+Rostromyrmex;Myrmicinae;0/1;1;0;0;0;1;?;0;0;~6;0
+Rotastruma;Myrmicinae;1;2;1;0;0;1;?;1;1;?;?
+Royidris;Myrmicinae;0;2;1;0;0;1;?;0;0;?;?
+Santschiella;Formicinae;0;3;1;0;0;0;?;1;1;?;?
+Scyphodon;Leptanillinae;MALES ONLY;;;;;;;;;;
+Secostruma;Myrmicinae;0;0;0;0;0;1;?;0;0;?;?
+Sericomyrmex;Myrmicinae;0;2;1;0;0;?;0;0;0;300-1 or 2,000;2
+Simopelta;Ponerinae;0;0/1;0;0;0;1;2;0;0&1;1000-2000;2
+Simopone;Dorylinae;0;3;1;0;0;1;2;1;0&1;?;?
+Solenopsis;Myrmicinae;0;2;1;0&2;2;1;1;0;0;16-555, up to 220000 in S. invicta;2
+Sphinctomyrmex;Dorylinae;0;0/2;0;0;0;1;2;0;0;Up to several 100's;1
+Stegomyrmex;Myrmicinae;0;1;0;0;0;1;2;0;0;~300;1
+Stenamma;Myrmicinae;0;1;0;0;0;1;1;0;0;12-250;1
+Stereomyrmex;Myrmicinae;1;2;1;0;0;1;?;0;0;?;?
+Stigmacros;Formicinae;1;2/3;1;0;0;0;2;0;0&1;?;?
+Stigmatomma;Amblyoponinae;0;0;0;0;0;1;2;0;0;15-33;0
+Streblognathus;Ponerinae;0;3;1;0;0;1;2;0;0;~100 or fewer;0
+Strongylognathus;Myrmicinae;0;0;0;0;0;1;2;0&1;0&1;?;?
+Strumigenys;Myrmicinae;1;1/2;0;0;0;1;2;0;0;15-400;1
+Syllophopsis;Myrmicinae;0;0/1;0;0;0;1;?;0&1;0;?;?
+Talaridris;Myrmicinae;0;1;0;0;0;1;2;0;0;?;?
+Tanipone;Dorylinae;0;3;1;0;0;1;2;0&1;0&1;?;?
+Tapinolepis;Formicinae;0;3;1;1;1;0;?;0;?;?;?
+Tapinoma;Dolichoderinae;0;3;1;0;0;0;1;0&1;0&1;100's to 2000-5000;2
+Tatuidris;Agroecomyrmecinae;0;1;0;0;0;1;2;0;1;3 workers;0
+Technomyrmex;Dolichoderinae;0;3;1;0;0;0;1;1;1;8000-3 million;2
+Temnothorax;Myrmicinae;1;2;1;0;0;1;1;0&1;0&1;47-325;1
+Terataner;Myrmicinae;1;3;1;0;0;1;2;0&1;0&1;7-39;0
+Teratomyrmex;Formicinae;1;3;1;0;0;0;?;0;0&1;?;?
+Tetheamyrma;Myrmicinae;0;2;1;0;0;1;?;0;0;?;?
+Tetramorium;Myrmicinae;1;2;1;0;0;1;2;0&1;0&1;10975;2
+Tetraponera;Pseudomyrmecinae;0;3;1;0;0;1;0&1;1;1;6953;2
+Thaumatomyrmex;Ponerinae;0;3;1;0;0;1;2;0;0;5-10;0
+Trachymyrmex;Myrmicinae;1;2;1;0;0;?;0;0;0;>100 to well over 1000;2
+Tranopelta;Myrmicinae;0;1;0;1;1;?;2;0;0;100's;1
+Trichomyrmex;Myrmicinae;0;2;1;0&2;2;1;1;0&1;0;"up to ""large""";2
+Tropidomyrmex;Myrmicinae;0;1;0;0;0;1;2;0;0;~3;0
+Turneria;Dolichoderinae;0;3;1;0;0;0;1;1;1;<500;1
+Typhlomyrmex;Ectatomminae;0;0;0;0;0;1;2;0;0;"""several hundreds""";1
+Tyrannomyrmex;Myrmicinae;0;1;0;0;0;1;?;0;0;?;?
+Veromessor;Myrmicinae;1;3;1;0&2;2;0;0;0;0;275 to >1000;2
+Vicinopone;Dorylinae;0;2;1;1;1;1;2;1;1;103;1
+Vitsika;Myrmicinae;1;2;1;0;0;1;?;0&1;0&1;?;?
+Vollenhovia;Myrmicinae;0;2;1;0;0;1;2;0;0;150;1
+Vombisidris;Myrmicinae;1;3;1;0;0;1;0;1;0&1;20-30;0
+Wasmannia;Myrmicinae;1;2;1;0;0;1;1;0&1;0&1;839;1
+Xenomyrmex;Myrmicinae;0;2;1;0;0;1;1;1;1;"""rather small""";0
+Xymmer;Amblyoponinae;0;0;0;0;0;1;2;0;0;?;?
+Yavnella;Leptanillinae;MALES ONLY;;;;;;;;;;
+Zatania;Formicinae;0;2/3;1;0;0;0;1;1;0&1;"At least ""hundreds""";1
+;;;;;;;;;;;;
+;;;;;;;;;;;;
+;;;;;;;;;;;;
+;;;;;;;;;;;;
+;;;;;;;;;;;;
+;;;;;;;;;;;;
+;;;;;;;;;;;;
+;;;;;;;;;;;;

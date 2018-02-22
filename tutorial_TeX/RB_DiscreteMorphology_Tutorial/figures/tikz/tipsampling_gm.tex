@@ -1,0 +1,19 @@
+\begin{tikzpicture}
+\node[snode] (tree) at (1,1) {\LARGE $\mathcal{T}$};
+\node[white, fill=brnt, shape=rectangle, rounded corners] at ($(tree)+(0,-1)$) {FBD tree};
+\node[detnode] (offset) at ($(tree)+(2.5,0)$) {\large $t_i$};
+\node[white, fill=brnt, shape=rectangle, rounded corners] at ($(offset)+(0,-1)$) {fossil age};
+\node[obnode] (fossil) at ($(offset)+(2,0)$) {\large $\mathcal{F}_i$};
+\node[constnode] (ai) at ($(fossil)+(1.5,1.2)$) {\large $a_i$};
+\node[constnode] (bi) at ($(fossil)+(1.5,-1.2)$) {\large $b_i$};
+\node at ($(ai)+(0,0.75)$) {\scriptsize observed min.};
+\node at ($(bi)+(0,-0.75)$) {\scriptsize observed max.};
+\draw[dtaro] (tree) -- (offset) ;
+\draw[dtaro] (offset) -- (fossil) ;
+\draw[taro] (ai) -- (fossil) ;
+\draw[taro] (bi) -- (fossil) ;
+\node at ($(fossil)+(0,0.75)$) {\scriptsize uniform};
+\node at ($(offset)+(0,0.75)$) {\scriptsize offset};
+\node[rectangle, dashed, very thick, inner sep=6mm, draw=black!100, fit=(fossil)(offset)(ai)(bi)] (fossil_plate) {};
+\node[anchor=south west,inner sep=7pt] at (fossil_plate.south west) {\small $i \in N$};
+\end{tikzpicture}
