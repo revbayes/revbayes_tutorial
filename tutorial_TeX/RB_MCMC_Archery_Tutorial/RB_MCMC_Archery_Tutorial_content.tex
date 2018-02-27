@@ -142,8 +142,10 @@ The Metropolis-Hastings MCMC algorithm \citep{Metropolis1953,Hastings1970} proce
 	\item Propose a new value (which we'll call $\mu^\prime$) for some parameters of the model, (possibly) based on their current values \label{sect:MH:step2}
 	\item Calculate the acceptance probability, $R$, according to:
 	\begin{align*}
-		R = \text{min}\left\{1, \frac{P(\bar d \mid \mu^\prime)}{P(\bar d \mid \mu)} \times \frac{P(\mu^\prime)}{P(\mu)} \times \frac{q(\mu)}{q(\mu^\prime)} \right\}
+		R &= \text{min}\left\{1, \frac{P(\bar d \mid \mu^\prime)}{P(\bar d \mid \mu)} \times \frac{P(\mu^\prime)}{P(\mu)} \times \frac{q(\mu)}{q(\mu^\prime)} \right\}\\
+        &= \text{min}\left\{1, \text{likelihood ratio} \times \text{prior ratio} \times \text{proposal ratio} \right\},
 	\end{align*}\label{sect:MH:step3}
+    where the proposal ratio (also called the Hastings ratio) ensures the correct target density, even if the move is biased.
 	\item Generate a uniform random number $u$ between 1 and 0. 
 %If it is less than $R$, accept the move (set $\mu = \mu^\prime$). Otherwise, keep the current value of $\mu$.
     \begin{description}
@@ -193,7 +195,7 @@ mu = rexp(1, alpha)[1]
 \subsubsection{Likelihood function}
 Next we will specify the likelihood function, which will compute the probability of our data given the prior model.
 We use the gamma distribution for the likelihood. Since the likelihood is defined only for values of $\mu$ greater than 0, we return a likelihood of 0.0 if $\mu$ is negative:
-{\tt \begin{snugshade*}
+\pagebreak{\tt \begin{snugshade*}
 \begin{lstlisting}
 # Define the likelihood function on the mean 
 function likelihood(mu){
@@ -303,7 +305,7 @@ Then, we accept the proposal with probability $R$ and reject otherwise (step \re
 \end{lstlisting}
 \end{snugshade*}}
 
-\pagebreak Finally, we store the current value of $\mu$ in our log file (step \ref{sect:MH:step5} of Sect.\ \ref{sect:MH_algorithm}).
+Finally, we store the current value of $\mu$ in our log file (step \ref{sect:MH:step5} of Sect.\ \ref{sect:MH_algorithm}).
 Here, we actually check if we want to store the value during this iteration.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
@@ -361,7 +363,7 @@ There are other parameters, such as the posterior mean and the 95\% HPD (highest
 \end{minipage}}
 \label{fig:mcmc_samples}
 \end{figure}
-\pagebreak
+%\pagebreak
 
 
 \section{More on Moves: Tuning and Weights}\label{sect:More_on_Moves}
@@ -370,7 +372,7 @@ In the previous example we hard coded a single move updating the variable $\mu$ 
 There are other ways how to propose new values; some of which are more efficient than others.
 
 First, let us rewrite the MCMC loop so that instead we call a function, which we name \cl{move\_slide} for simplicity, that performs the move:
-{\tt \begin{snugshade*}
+\pagebreak{\tt \begin{snugshade*}
 \begin{lstlisting}    
 for (rep in 1:reps){
     
@@ -388,7 +390,7 @@ for (rep in 1:reps){
 \end{lstlisting}
 \end{snugshade*}}
 
-\pagebreak\subsection{Slide move}
+\subsection{Slide move}
 Now we need to actually write the \cl{move\_slide} function.
 We mostly just copy the code we had before into a dedicated function
 {\tt \begin{snugshade*}
@@ -430,7 +432,7 @@ However, there are some algorithms implemented in \RevBayes, called \emph{auto-t
 \subsection{Scaling move}
 As another move we will write a scaling move.
 The scaling move proposes an update by drawing a random number from a Uniform(-0.5,0.5) distribution, exponentiating the random number, and then multiplying this scaling factor by the current value.
-An interesting feature of this move is that it is not symmetrical and thus needs a Hastings ratio.
+An interesting feature of this move is that it is not symmetrical and thus needs a Hastings ratio (this is the same as the proposal ratio given in Section \ref{sect:MH_algorithm}).
 The Hastings ratio is rather trivial in this case, and one only needs to multiply the acceptance rate by the scaling factor.
 {\tt \begin{snugshade*}
 \begin{lstlisting}    
