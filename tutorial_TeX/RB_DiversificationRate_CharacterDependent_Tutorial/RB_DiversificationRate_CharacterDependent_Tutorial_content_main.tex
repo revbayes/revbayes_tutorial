@@ -393,8 +393,7 @@ timetree ~ dnCDBDP( rootAge           = root,
                     pi                = rate_category_prior,
                     delta             = 1.0,
                     rho               = rho,
-                    condition         = "survival",
-                    taxa              = taxa )
+                    condition         = "survival" )
 \end{lstlisting}
 \end{snugshade*}}
 And then we attach data to it.
@@ -822,8 +821,7 @@ timetree ~ dnCDBDP( rootAge           = root,
                     pi                = rate_category_prior,
                     delta             = 1.0,
                     rho               = rho,
-                    condition         = "survival",
-                    taxa              = taxa )
+                    condition         = "survival" )
 \end{lstlisting}
 \end{snugshade*}}
 And then we attach data to it.
@@ -1264,15 +1262,14 @@ Now we construct a stochastic variable drawn from the cladogenetic
 character state-dependent birth-death process.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-classe ~ dnCDCladoBDP( rootAge         = observed_phylogeny.rootAge(),
-                       cladoEventMap   = clado_matrix,
-                       extinctionRates = extinction_rates,
-                       Q               = ana_rate_matrix,
-                       delta           = 1.0,
-                       pi              = root_frequencies,
-                       rho             = rho,
-                       condition       = "time",
-                       taxa            = taxa )
+classe ~ dnCDBDP( rootAge         = observed_phylogeny.rootAge(),
+                  cladoEventMap   = clado_matrix,
+                  extinctionRates = extinction_rates,
+                  Q               = ana_rate_matrix,
+                  delta           = 1.0,
+                  pi              = root_frequencies,
+                  rho             = rho,
+                  condition       = "time" )
 \end{lstlisting}
 \end{snugshade*}}
 

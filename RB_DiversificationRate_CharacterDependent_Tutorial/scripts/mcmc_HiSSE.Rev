@@ -17,7 +17,7 @@
 # Reading in the Data #
 #######################
 
-
+setOption("useScaling","true")
 DATASET = "activity_period"
 NUM_STATES = 2
 NUM_HIDDEN = 2
@@ -157,8 +157,7 @@ timetree ~ dnCDBDP( rootAge           = root,
                     delta             = 1.0,
                     pi                = rate_category_prior,
                     rho               = rho,
-                    condition         = "survival",
-                    taxa              = taxa )
+                    condition         = "survival" )
 
 ### clamp the model with the "observed" tree
 timetree.clamp( observed_phylogeny )

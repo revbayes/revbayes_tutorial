@@ -13,13 +13,14 @@
 ################################################################################
 
 
+setOption("useScaling","true")
 
 #######################
 # Reading in the Data #
 #######################
 
 # Get the tree
-observed_phylogeny <- readTrees("../data/primates_biogeo.tre")[1]
+observed_phylogeny <- readTrees("data/primates_biogeo.tre")[1]
  
 # Get the taxa in the tree. We'll need this later on.
 taxa = observed_phylogeny.taxa()
@@ -30,7 +31,7 @@ taxa = observed_phylogeny.taxa()
 # 1 = 01 = New World only
 # 2 = 10 = Old World only
 # 3 = 11 = both New and Old World
-data_biogeo = readCharacterDataDelimited("../data/primates_biogeo.tsv", stateLabels="0123", type="NaturalNumbers", delimiter="\t", headers=TRUE)
+data_biogeo = readCharacterDataDelimited("data/primates_biogeo.tsv", stateLabels="0123", type="NaturalNumbers", delimiter="\t", headers=TRUE)
 
 # set the move and monitor indices
 mvi = 0
@@ -198,15 +199,14 @@ rho <- observed_phylogeny.ntips()/num_species
 # Now we construct a stochastic variable drawn from the cladogenetic 
 # character state dependent birth death process (more commonly
 # called ClaSSE):
-classe ~ dnCDCladoBDP( rootAge         = observed_phylogeny.rootAge(),
-                       cladoEventMap   = clado_matrix,
-                       extinctionRates = extinction_rates,
-                       Q               = ana_rate_matrix,
-                       delta           = 1.0,
-                       pi              = root_frequencies,
-                       rho             = rho,
-                       condition       = "time",
-                       taxa            = taxa )
+classe ~ dnCDBDP( rootAge         = observed_phylogeny.rootAge(),
+                  cladoEventMap   = clado_matrix,
+                  extinctionRates = extinction_rates,
+                  Q               = ana_rate_matrix,
+                  delta           = 1.0,
+                  pi              = root_frequencies,
+                  rho             = rho,
+                  condition       = "time" )
 
 # clamp the model with the observed data
 classe.clamp( observed_phylogeny )
