@@ -20,9 +20,9 @@ dat_range_n[1]
 n_areas  = dat_range_01.nchar()
 n_states = floor(2^n_areas)
 
-# move/monitor index
-mvi = 1
-mni = 1
+# vector to add MCMC moves/monitors
+moves = VectorMoves()
+monitors = VectorMonitors()
 n_gen = 3000
 
 ###############
@@ -41,7 +41,7 @@ tree <- readTrees(tree_fn)[1]
 log10_rate_bg ~ dnUniform(-4,2)
 log10_rate_bg.setValue(-2)
 rate_bg := 10^log10_rate_bg
-moves[mvi++] = mvSlide(log10_rate_bg, weight=4)
+moves.append( mvSlide(log10_rate_bg, weight=4) )
 
 # the relative dispersal rate
 dispersal_rate <- 1.0
@@ -57,7 +57,7 @@ for (i in 1:n_areas) {
 log_sd <- 0.5
 log_mean <- ln(1) - 0.5*log_sd^2
 extirpation_rate ~ dnLognormal(mean=log_mean, sd=log_sd)
-moves[mvi++] = mvScale(extirpation_rate, weight=2)
+moves.append( mvScale(extirpation_rate, weight=2) )
 
 # build the relative extirpation rate matrix
 for (i in 1:n_areas) {
@@ -93,16 +93,16 @@ m_bg.clamp(dat_range_n)
 # Monitors #
 ############
 
-monitors[mni++] = mnScreen(printgen=100, rate_bg)
-monitors[mni++] = mnModel(file=out_fn+".model.log", printgen=10)
-monitors[mni++] = mnFile(tree, filename=out_fn+".tre", printgen=10)
-monitors[mni++] = mnJointConditionalAncestralState(tree=tree,
+monitors.append( mnScreen(printgen=100, rate_bg) )
+monitors.append( mnModel(file=out_fn+".model.log", printgen=10) )
+monitors.append( mnFile(tree, filename=out_fn+".tre", printgen=10) )
+monitors.append( mnJointConditionalAncestralState(tree=tree,
                                                        ctmc=m_bg,
                                                        type="NaturalNumbers",
                                                        withTips=true,
                                                        withStartStates=true,
                                                        filename=out_fn+".states.log",
-                                                       printgen=10)
+                                                       printgen=10) )
 
 ############
 # Analysis #

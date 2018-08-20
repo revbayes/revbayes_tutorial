@@ -25,12 +25,12 @@ sigma.setValue(0.1)
 logmass ~ dnBrownian(psi,sigma)
 
 # moves on sigma 
-index <- 1
-moves[index++] = mvScale(sigma, lambda=2.0, tune=true, weight=3.0)
+moves = VectorMoves()
+moves.append( mvScale(sigma, lambda=2.0, tune=true, weight=3.0) )
 
 # moves on the Brownian process
-moves[index++] = mvRealNodeValTreeSliding(process=logmass,lambda=10,tune=true,weight=100) 
-moves[index++] = mvRealNodeValTreeTranslation(process=logmass,lambda=1,tune=true,weight=1) 
+moves.append( mvRealNodeValTreeSliding(process=logmass,lambda=10,tune=true,weight=100)  )
+moves.append( mvRealNodeValTreeTranslation(process=logmass,lambda=1,tune=true,weight=1)  )
 
 # condition Brownian model on quantitative trait data (second column of the dataset)
 logmass.clampAt(contData,2)

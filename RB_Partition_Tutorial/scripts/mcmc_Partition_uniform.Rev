@@ -21,8 +21,8 @@ n_species <- data.ntaxa()
 n_branches <- 2 * n_species - 3
 taxa <- data.taxa()
 
-mvi = 0 
-mni = 0
+moves = VectorMoves() 
+monitors = VectorMonitors()
 
 
 ######################
@@ -32,13 +32,13 @@ mni = 0
 #### specify the GTR+G+I substitution model applied uniformly to all sites ###
 er_prior <- v(1,1,1,1,1,1)
 er ~ dnDirichlet(er_prior)
-moves[++mvi] = mvBetaSimplex(er, alpha=10.0, tune=true, weight=3.0)
-moves[++mvi] = mvDirichletSimplex(er, alpha=10.0, tune=true, weight=1.0)
+moves.append( mvBetaSimplex(er, alpha=10.0, tune=true, weight=3.0) )
+moves.append( mvDirichletSimplex(er, alpha=10.0, tune=true, weight=1.0) )
 
 pi_prior <- v(1,1,1,1) 
 pi ~ dnDirichlet(pi_prior)
-moves[++mvi] = mvBetaSimplex(pi, alpha=10.0, tune=true, weight=2.0)
-moves[++mvi] = mvDirichletSimplex(pi, alpha=10.0, tune=true, weight=1.0)
+moves.append( mvBetaSimplex(pi, alpha=10.0, tune=true, weight=2.0) )
+moves.append( mvDirichletSimplex(pi, alpha=10.0, tune=true, weight=1.0) )
 
 
 #### create a deterministic variable for the rate matrix ####
@@ -55,13 +55,13 @@ alpha ~ dnLognormal( alpha_prior_mean, alpha_prior_sd )
 gamma_rates := fnDiscretizeGamma( alpha, alpha, 4, false )
 
 # add moves for the stationary frequencies, exchangeability rates and the shape parameter
-moves[++mvi] = mvScale(alpha,weight=2)
+moves.append( mvScale(alpha,weight=2) )
 
 
 # the probability of a site being invariable
 pinvar ~ dnBeta(1,1)
-moves[++mvi] = mvScale(pinvar, lambda=0.1, tune=true, weight=2.0)
-moves[++mvi] = mvSlide(pinvar, delta=10.0, tune=true, weight=2.0)
+moves.append( mvScale(pinvar, lambda=0.1, tune=true, weight=2.0) )
+moves.append( mvSlide(pinvar, delta=10.0, tune=true, weight=2.0) )
 
 
 
@@ -72,13 +72,13 @@ moves[++mvi] = mvSlide(pinvar, delta=10.0, tune=true, weight=2.0)
 out_group = clade("Galeopterus_variegatus")
 # Prior distribution on the tree topology
 topology ~ dnUniformTopology(taxa, outgroup=out_group)
-moves[++mvi] = mvNNI(topology, weight=5.0)
-moves[++mvi] = mvSPR(topology, weight=1.0)
+moves.append( mvNNI(topology, weight=5.0) )
+moves.append( mvSPR(topology, weight=1.0) )
 
 # Branch length prior
 for (i in 1:n_branches) {
     bl[i] ~ dnExponential(10.0)
-    moves[++mvi] = mvScale(bl[i])
+    moves.append( mvScale(bl[i]) )
 }
 
 TL := sum(bl)
@@ -106,9 +106,9 @@ phyloSeq.clamp(data)
 mymodel = model(psi)
 
 # add monitors
-monitors[++mni] = mnScreen(alpha, pinvar, TL, printgen=1000)
-monitors[++mni] = mnFile(psi, filename="output/PS_uniform.trees", printgen=10)
-monitors[++mni] = mnModel(filename="output/PS_uniform.log",printgen=10)
+monitors.append( mnScreen(alpha, pinvar, TL, printgen=1000) )
+monitors.append( mnFile(psi, filename="output/PS_uniform.trees", printgen=10) )
+monitors.append( mnModel(filename="output/PS_uniform.log",printgen=10) )
 
 # run the analysis
 mymcmc = mcmc(mymodel, moves, monitors, nruns=2)

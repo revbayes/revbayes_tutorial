@@ -54,10 +54,10 @@ delta ~ dnExponential(10.0)
 rho ~ dnExponential(10.0)
 
 # Add MCMC moves for each of the rates.
-mvi = 1
-moves[mvi++] = mvScale(gamma, lambda=1, weight=1) 
-moves[mvi++] = mvScale(delta, lambda=1, weight=1) 
-moves[mvi++] = mvScale(rho, lambda=1, weight=1) 
+moves = VectorMoves()
+moves.append( mvScale(gamma, lambda=1, weight=1)  )
+moves.append( mvScale(delta, lambda=1, weight=1)  )
+moves.append( mvScale(rho, lambda=1, weight=1)  )
 
 # Now we create the rate matrix for the chromosome evolution model.
 # Here we will use a simple ChromEvol model that includes
@@ -91,10 +91,10 @@ clado_type := simplex([clado_no_change_pr, clado_fission_pr, clado_fusion_pr, cl
 clado_prob := fnChromosomesCladoProbs(clado_type, max_chromo)
 
 # We can't forget to add moves for each cladogenetic event:
-moves[mvi++] = mvScale(clado_no_change_pr, lambda=1.0, weight=2)
-moves[mvi++] = mvScale(clado_fission_pr, lambda=1.0, weight=2)
-moves[mvi++] = mvScale(clado_fusion_pr, lambda=1.0, weight=2)
-moves[mvi++] = mvScale(clado_polyploid_pr, lambda=1.0, weight=2)
+moves.append( mvScale(clado_no_change_pr, lambda=1.0, weight=2) )
+moves.append( mvScale(clado_fission_pr, lambda=1.0, weight=2) )
+moves.append( mvScale(clado_fusion_pr, lambda=1.0, weight=2) )
+moves.append( mvScale(clado_polyploid_pr, lambda=1.0, weight=2) )
 
 
 # Here we assume the frequency of chromosome numbers at the root of the tree

@@ -18,9 +18,9 @@ T <- readTrees("data/primates_Springer.tre")[1]
 # Get some useful variables from the data. We need these later on.
 taxa <- T.taxa()
 
-# set my move index
-mvi = 0
-mni = 0
+# vector to add MCMC moves
+moves = VectorMoves()
+monitors = VectorMonitors()
 
 
 #################################
@@ -46,11 +46,11 @@ NUM_INTERVALS = var.size()-1
 # draw the sd from an exponential distribution
 speciation_sd ~ dnExponential(1.0)
 speciation_sd.setValue( 0.001 )
-moves[++mvi] = mvScale(speciation_sd,weight=5.0)
+moves.append( mvScale(speciation_sd,weight=5.0) )
 
 extinction_sd ~ dnExponential(1.0)
 extinction_sd.setValue( 0.001 )
-moves[++mvi] = mvScale(extinction_sd,weight=5.0)
+moves.append( mvScale(extinction_sd,weight=5.0) )
 
 
 # create a random variable at the present time
@@ -62,8 +62,8 @@ log_extinction[1].setValue( ln(0.4) )
 
 
 # apply moves on the rates
-moves[++mvi] = mvSlide(log_speciation[1], weight=2)
-moves[++mvi] = mvSlide(log_extinction[1], weight=2)
+moves.append( mvSlide(log_speciation[1], weight=2) )
+moves.append( mvSlide(log_extinction[1], weight=2) )
 
 
 speciation[1] := exp( log_speciation[1] )
@@ -77,10 +77,10 @@ beta_extinction ~ dnReversibleJumpMixture(constantValue=0.0, baseDistribution=dn
 beta_speciation.setValue( 0.0 )
 beta_extinction.setValue( 0.0 )
 
-moves[++mvi] = mvSlide(beta_speciation,delta=1.0,weight=10.0)
-moves[++mvi] = mvSlide(beta_extinction,delta=1.0,weight=10.0)
-moves[++mvi] = mvRJSwitch(beta_speciation, weight=5)
-moves[++mvi] = mvRJSwitch(beta_extinction, weight=5)
+moves.append( mvSlide(beta_speciation,delta=1.0,weight=10.0) )
+moves.append( mvSlide(beta_extinction,delta=1.0,weight=10.0) )
+moves.append( mvRJSwitch(beta_speciation, weight=5) )
+moves.append( mvRJSwitch(beta_extinction, weight=5) )
 
 speciation_corr_prob := ifelse(beta_speciation == 0.0, 0, 1)
 extinction_corr_prob := ifelse(beta_extinction == 0.0, 0, 1)
@@ -102,8 +102,8 @@ for (i in 1:NUM_INTERVALS) {
     log_extinction[index] ~ dnNormal( mean=expected_extinction[index], sd=extinction_sd )
 
     # apply moves on the rates
-    moves[++mvi] = mvSlide(log_speciation[index], weight=2)
-    moves[++mvi] = mvSlide(log_extinction[index], weight=2)
+    moves.append( mvSlide(log_speciation[index], weight=2) )
+    moves.append( mvSlide(log_extinction[index], weight=2) )
 
     # transform the log-rate into actual rates
     speciation[index] := exp( log_speciation[index] )
@@ -111,11 +111,11 @@ for (i in 1:NUM_INTERVALS) {
 
 }
 
-moves[++mvi] = mvVectorSlide(log_speciation, weight=10)
-moves[++mvi] = mvVectorSlide(log_extinction, weight=10)
+moves.append( mvVectorSlide(log_speciation, weight=10) )
+moves.append( mvVectorSlide(log_extinction, weight=10) )
 
-moves[++mvi] = mvShrinkExpand( log_speciation, sd=speciation_sd, weight=10 )
-moves[++mvi] = mvShrinkExpand( log_extinction, sd=extinction_sd, weight=10 )
+moves.append( mvShrinkExpand( log_speciation, sd=speciation_sd, weight=10 ) )
+moves.append( mvShrinkExpand( log_extinction, sd=extinction_sd, weight=10 ) )
 
 
 
@@ -142,12 +142,12 @@ timetree.clamp(T)
 mymodel = model(rho)
 
 ### set up the monitors that will output parameter values to file and screen 
-monitors[++mni] = mnModel(filename="output/primates_EBD_Corr_RJ.log",printgen=10, separator = TAB)
-monitors[++mni] = mnFile(filename="output/primates_EBD_Corr_RJ_speciation_rates.log",printgen=10, separator = TAB, speciation)
-monitors[++mni] = mnFile(filename="output/primates_EBD_Corr_RJ_speciation_times.log",printgen=10, separator = TAB, interval_times)#
-monitors[++mni] = mnFile(filename="output/primates_EBD_Corr_RJ_extinction_rates.log",printgen=10, separator = TAB, extinction)
-monitors[++mni] = mnFile(filename="output/primates_EBD_Corr_RJ_extinction_times.log",printgen=10, separator = TAB, interval_times)
-monitors[++mni] = mnScreen(printgen=1000, beta_speciation, beta_extinction)
+monitors.append( mnModel(filename="output/primates_EBD_Corr_RJ.log",printgen=10, separator = TAB) )
+monitors.append( mnFile(filename="output/primates_EBD_Corr_RJ_speciation_rates.log",printgen=10, separator = TAB, speciation) )
+monitors.append( mnFile(filename="output/primates_EBD_Corr_RJ_speciation_times.log",printgen=10, separator = TAB, interval_times)# )
+monitors.append( mnFile(filename="output/primates_EBD_Corr_RJ_extinction_rates.log",printgen=10, separator = TAB, extinction) )
+monitors.append( mnFile(filename="output/primates_EBD_Corr_RJ_extinction_times.log",printgen=10, separator = TAB, interval_times) )
+monitors.append( mnScreen(printgen=1000, beta_speciation, beta_extinction) )
 
 
 

@@ -17,8 +17,8 @@ n_branches <- 2 * n_species - 3
 taxa <- data.taxa()
 
 
-mvi = 1
-mni = 1
+moves = VectorMoves()
+monitors = VectorMonitors()
 
 
 ######################
@@ -36,13 +36,13 @@ Q <- fnJC(4)
 out_group = clade("Galeopterus_variegatus")
 # Prior distribution on the tree topology    
 topology ~ dnUniformTopology(taxa, outgroup=out_group)
-moves[mvi++] = mvNNI(topology, weight=5.0)
-moves[mvi++] = mvSPR(topology, weight=1.0)
+moves.append( mvNNI(topology, weight=5.0) )
+moves.append( mvSPR(topology, weight=1.0) )
 
 # Branch length prior
 for (i in 1:n_branches) {
     bl[i] ~ dnExponential(10.0)
-    moves[mvi++] = mvScale(bl[i])
+    moves.append( mvScale(bl[i]) )
 }
 
 TL := sum(bl)
@@ -69,9 +69,9 @@ seq.clamp(data)
 mymodel = model(psi)
 
 # add monitors
-monitors[mni++] = mnScreen(TL, printgen=1000)
-monitors[mni++] = mnFile(psi, filename="output/primates_cytb_JC.trees", printgen=10)
-monitors[mni++] = mnModel(filename="output/primates_cytb_JC.log", printgen=10)
+monitors.append( mnScreen(TL, printgen=1000) )
+monitors.append( mnFile(psi, filename="output/primates_cytb_JC.trees", printgen=10) )
+monitors.append( mnModel(filename="output/primates_cytb_JC.log", printgen=10) )
 
 # run the analysis
 mymcmc = mcmc(mymodel, moves, monitors)

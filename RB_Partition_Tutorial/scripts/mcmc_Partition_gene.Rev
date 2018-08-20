@@ -25,8 +25,8 @@ n_species <- data[1].ntaxa()
 n_branches <- 2 * n_species - 3
 taxa <- data[1].taxa()
 
-mvi = 0
-mni = 0
+moves = VectorMoves()
+monitors = VectorMonitors()
 
 ##################################
 #      Substitution Model        #
@@ -38,12 +38,12 @@ for (i in 1:n_data_subsets) {
     # exchangeability rates for partition i
     er_prior[i] <- v(1,1,1,1,1,1)
     er[i] ~ dnDirichlet(er_prior[i])
-    moves[++mvi] = mvSimplexElementScale(er[i], alpha=10, tune=true, weight=3) 
+    moves.append( mvSimplexElementScale(er[i], alpha=10, tune=true, weight=3)  )
 
     # stationary frequencies for partition i
     pi_prior[i] <- v(1,1,1,1)
     pi[i] ~ dnDirichlet(pi_prior[i])
-    moves[++mvi] = mvSimplexElementScale(pi[i], alpha=10, tune=true, weight=2) 
+    moves.append( mvSimplexElementScale(pi[i], alpha=10, tune=true, weight=2)  )
 
     # rate matrix for partition i
     Q[i] := fnGTR(er[i],pi[i]) 
@@ -55,12 +55,12 @@ for (i in 1:n_data_subsets) {
     gamma_rates[i] := fnDiscretizeGamma( alpha[i], alpha[i], 4, false )
 
     # add moves for the alpha parameter
-    moves[++mvi] = mvScale(alpha[i],weight=2)
+    moves.append( mvScale(alpha[i],weight=2) )
 
     # the probability of a site being invariable
     pinvar[i] ~ dnBeta(1,1)
-    moves[++mvi] = mvScale(pinvar[i], lambda=0.1, tune=true, weight=2.0)
-    moves[++mvi] = mvSlide(pinvar[i], delta=0.1, tune=true, weight=2.0)
+    moves.append( mvScale(pinvar[i], lambda=0.1, tune=true, weight=2.0) )
+    moves.append( mvSlide(pinvar[i], delta=0.1, tune=true, weight=2.0) )
 
 }
 
@@ -72,13 +72,13 @@ for (i in 1:n_data_subsets) {
 out_group = clade("Galeopterus_variegatus")
 # Prior distribution on the tree topology
 topology ~ dnUniformTopology(taxa, outgroup=out_group)
-moves[++mvi] = mvNNI(topology, weight=5.0)
-moves[++mvi] = mvSPR(topology, weight=1.0)
+moves.append( mvNNI(topology, weight=5.0) )
+moves.append( mvSPR(topology, weight=1.0) )
 
 # Branch length prior
 for (i in 1:n_branches) {
     bl[i] ~ dnExponential(10.0)
-    moves[++mvi] = mvScale(bl[i])
+    moves.append( mvScale(bl[i]) )
 }
 
 TL := sum(bl)
@@ -92,8 +92,8 @@ psi := treeAssembly(topology, bl)
 
 # specify a rate multiplier for each partition
 part_rate_mult ~ dnDirichlet( rep(1.0, n_data_subsets) )
-moves[++mvi] = mvBetaSimplex(part_rate_mult, alpha=1.0, tune=true, weight=n_data_subsets)
-moves[++mvi] = mvDirichletSimplex(part_rate_mult, alpha=1.0, tune=true, weight=2.0)
+moves.append( mvBetaSimplex(part_rate_mult, alpha=1.0, tune=true, weight=n_data_subsets) )
+moves.append( mvDirichletSimplex(part_rate_mult, alpha=1.0, tune=true, weight=2.0) )
 
 # note that we use here a vector multiplication, 
 # i.e., multiplying each element of part_rate_mult by n_data_subsets
@@ -117,9 +117,9 @@ for (i in 1:n_data_subsets) {
 mymodel = model(psi)
 
 # add monitors
-monitors[++mni] = mnModel(filename="output/PS_gene.log",printgen=10)
-monitors[++mni] = mnFile(psi, filename="output/PS_gene.trees", printgen=100)
-monitors[++mni] = mnScreen(TL, printgen=1000)
+monitors.append( mnModel(filename="output/PS_gene.log",printgen=10) )
+monitors.append( mnFile(psi, filename="output/PS_gene.trees", printgen=100) )
+monitors.append( mnScreen(TL, printgen=1000) )
 
 # run the analysis
 mymcmc = mcmc(mymodel, moves, monitors, nruns=2)

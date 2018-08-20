@@ -16,8 +16,8 @@
 morpho <- readDiscreteCharacterData("data/bears.nex")
 
 ## helpers
-mvi = 1
-mni = 1
+moves = VectorMoves()
+monitors = VectorMonitors()
 taxa <- morpho.names()
 n_taxa <- taxa.size()
 n_branches <- 2 * n_taxa - 2
@@ -33,18 +33,18 @@ source("scripts/model_simple.Rev") # Morphological character change model
 mymodel = model(phylogeny)
 # Create a vector of monitors #
 # 1. for the full model #
-monitors[mni++] = mnModel(filename="output/simple.log", printgen=10)
+monitors.append( mnModel(filename="output/simple.log", printgen=10) )
 # 2. the tree #
-monitors[mni++] = mnFile(filename="output/simple.trees", printgen=10, phylogeny)
+monitors.append( mnFile(filename="output/simple.trees", printgen=10, phylogeny) )
 # 3. and a few select parameters to be printed to the screen #
-monitors[mni++] = mnScreen(printgen=100)
+monitors.append( mnScreen(printgen=100) )
 # 4. the ancestral states
-monitors[mni++] = mnJointConditionalAncestralState(tree=phylogeny,
+monitors.append( mnJointConditionalAncestralState(tree=phylogeny,
                                                    ctmc=phyMorpho,
                                                    filename="output/simple.states.txt",
                                                    type="Standard",
                                                    printgen=10,
-                                                   withStartStates=false)
+                                                   withStartStates=false) )
 
 # Initialize the MCMC object #
 mymcmc = mcmc(mymodel, monitors, moves)

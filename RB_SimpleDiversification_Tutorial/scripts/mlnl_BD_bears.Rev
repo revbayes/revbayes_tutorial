@@ -11,7 +11,7 @@ n_taxa <- T.ntips()
 taxa <- T.taxa()
 
 ## Moves iterator
-mi = 1 
+moves = VectorMoves() 
 
 ### load the model from file 
 source("RevBayes_scripts/m_BD_bears.Rev")

@@ -20,9 +20,9 @@ taxa <- observed_phylogeny.taxa()
 root <- observed_phylogeny.rootAge()
 tree_length <- observed_phylogeny.treeLength()
 
-# set my move index
-mvi = 0
-mni = 0
+# vector to add MCMC moves
+moves = VectorMoves()
+monitors = VectorMonitors()
 
 # Global parameters for our analysis
 NUM_RATE_CATEGORIES = 4
@@ -39,7 +39,7 @@ H = 0.587405
 ### Create a lognormal distributed variable for the mean speciation rate
 speciation_prior_mean <- ln( ln(NUM_TOTAL_SPECIES/2.0) / root )
 speciation_mean ~ dnLognormal(mean=speciation_prior_mean, sd=H)
-moves[++mvi] = mvScale(speciation_mean,lambda=1,tune=true,weight=5)
+moves.append( mvScale(speciation_mean,lambda=1,tune=true,weight=5) )
 
 ### Create a deterministic variable for the speciation rate categories
 ### using a discretized lognormal distribution (the N-quantiles of it)
@@ -49,7 +49,7 @@ speciation_categories := fnDiscretizeDistribution( dnLognormal(ln(speciation_mea
 ### Create a lognormal distributed variable for the extinction rate
 extinction_prior_mean <- ln( ln(NUM_TOTAL_SPECIES/2.0) / root )
 extinction_mean ~ dnLognormal(mean=extinction_prior_mean,sd=H*2)
-moves[++mvi] = mvScale(extinction_mean,lambda=1.0,tune=true,weight=3.0)
+moves.append( mvScale(extinction_mean,lambda=1.0,tune=true,weight=3.0) )
 
 ### Create a deterministic variable for the extinction rate categories
 ### using a discretized lognormal distribution (the N-quantiles of it)
@@ -66,7 +66,7 @@ for(i in 1:NUM_RATE_CATEGORIES) {
 
 ### Create a exponential distributed variable for the rate of rate-shift events
 event_rate ~ dnLognormal( ln( EXPECTED_NUM_EVENTS/tree_length ), H)
-moves[++mvi] = mvScale(event_rate,lambda=1,tune=true,weight=5)
+moves.append( mvScale(event_rate,lambda=1,tune=true,weight=5) )
 
 ### Create a rate matrix for the transition events
 rate_matrix <- fnJC( NUM_RATE_CATEGORIES * NUM_RATE_CATEGORIES)
@@ -93,8 +93,8 @@ timetree.clamp(observed_phylogeny)
 mymodel = model(speciation)
 
 ### set up the monitors that will output parameter values to file and screen
-monitors[++mni] = mnModel(filename="output/primates_MRBD.log",printgen=10, separator = TAB)
-monitors[++mni] = mnScreen(printgen=10, speciation_mean, extinction_mean)
+monitors.append( mnModel(filename="output/primates_MRBD.log",printgen=10, separator = TAB) )
+monitors.append( mnScreen(printgen=10, speciation_mean, extinction_mean) )
 
 ################
 # The Analysis #

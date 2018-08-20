@@ -9,9 +9,9 @@
 source( model_file_name )
 
 
-mni = 0
-monitors[++mni] = mnModel(filename="output_" + model_name + "/" + analysis_name + "_posterior.log",printgen=100, separator = TAB)
-monitors[++mni] = mnFile(filename="output_" + model_name + "/" + analysis_name + "_posterior.trees",printgen=100, separator = TAB, phylogeny)
+monitors = VectorMonitors()
+monitors.append( mnModel(filename="output_" + model_name + "/" + analysis_name + "_posterior.log",printgen=100, separator = TAB) )
+monitors.append( mnFile(filename="output_" + model_name + "/" + analysis_name + "_posterior.trees",printgen=100, separator = TAB, phylogeny) )
 
 mymcmc = mcmc(mymodel, monitors, moves, nruns=1)
 

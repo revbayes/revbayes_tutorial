@@ -11,16 +11,16 @@ alpha_morpho ~ dnExponential( 1.0 )
 rates_morpho := fnDiscretizeGamma( alpha_morpho, alpha_morpho, 4 )
 
 #Moves on the parameters to the Gamma distribution.
-moves[mvi++] = mvScale(alpha_morpho, lambda=0.01, weight=5.0)
-moves[mvi++] = mvScale(alpha_morpho, lambda=0.1,  weight=3.0)
-moves[mvi++] = mvScale(alpha_morpho, lambda=1,    weight=1.0)
+moves.append( mvScale(alpha_morpho, lambda=0.01, weight=5.0) )
+moves.append( mvScale(alpha_morpho, lambda=0.1,  weight=3.0) )
+moves.append( mvScale(alpha_morpho, lambda=1,    weight=1.0) )
 
 # We assume a strict morphological clock rate, drawn from an exponential prior #
 clock_morpho ~ dnExponential(1.0)
 
-moves[mvi++] = mvScale(clock_morpho, lambda=0.01, weight=4.0)
-moves[mvi++] = mvScale(clock_morpho, lambda=0.1,  weight=4.0)
-moves[mvi++] = mvScale(clock_morpho, lambda=1,    weight=4.0)
+moves.append( mvScale(clock_morpho, lambda=0.01, weight=4.0) )
+moves.append( mvScale(clock_morpho, lambda=0.1,  weight=4.0) )
+moves.append( mvScale(clock_morpho, lambda=1,    weight=4.0) )
 
 ### Create the substitution model and clamp with our observed Standard data ###
 # Here we use the option siteMatrices=true specify that the vector Q #

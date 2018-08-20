@@ -20,9 +20,9 @@ taxa <- observed_phylogeny.taxa()
 root <- observed_phylogeny.rootAge()
 tree_length <- observed_phylogeny.treeLength()
 
-# set my move index
-mvi = 0
-mni = 0
+# vector to add MCMC moves
+moves = VectorMoves()
+monitors = VectorMonitors()
 
 # Global parameters for our analysis
 NUM_RATE_CATEGORIES = 4
@@ -39,7 +39,7 @@ H = 0.587405
 ### Create a lognormal distributed variable for the mean speciation rate
 speciation_prior_mean <- ln( ln(NUM_TOTAL_SPECIES/2.0) / root )
 speciation_mean ~ dnLognormal(mean=speciation_prior_mean, sd=H)
-moves[++mvi] = mvScale(speciation_mean,lambda=1,tune=true,weight=5)
+moves.append( mvScale(speciation_mean,lambda=1,tune=true,weight=5) )
 
 ### Create a deterministic variable for the speciation rate categories
 ### using a discretized lognormal distribution (the N-quantiles of it)
@@ -49,7 +49,7 @@ speciation_categories := fnDiscretizeDistribution( dnLognormal(ln(speciation_mea
 ### Create a lognormal distributed variable for the extinction rate
 extinction_prior_mean <- ln( ln(NUM_TOTAL_SPECIES/2.0) / root )
 extinction_mean ~ dnLognormal(mean=extinction_prior_mean,sd=H*2)
-moves[++mvi] = mvScale(extinction_mean,lambda=1.0,tune=true,weight=3.0)
+moves.append( mvScale(extinction_mean,lambda=1.0,tune=true,weight=3.0) )
 
 ### Create a deterministic variable for the extinction rate categories
 ### using a discretized lognormal distribution (the N-quantiles of it)
@@ -66,11 +66,11 @@ for(i in 1:NUM_RATE_CATEGORIES) {
 
 ### Create a uniformly distributed variable for the category at the root
 root_category ~ dnUniformNatural(1,NUM_RATE_CATEGORIES * NUM_RATE_CATEGORIES)
-moves[++mvi] = mvRandomIntegerWalk(root_category,weight=1)
+moves.append( mvRandomIntegerWalk(root_category,weight=1) )
 
 ### Create a exponential distributed variable for the rate of rate-shift events
 event_rate ~ dnLognormal( ln( EXPECTED_NUM_EVENTS/tree_length ), H)
-moves[++mvi] = mvScale(event_rate,lambda=1,tune=true,weight=5)
+moves.append( mvScale(event_rate,lambda=1,tune=true,weight=5) )
 
 ### rho is the probability of sampling species at the present
 ### fix this to 233/367, since there are ~367 described species of primates
@@ -84,9 +84,9 @@ timetree ~ dnHBDP(lambda=speciation, mu=extinction, rootAge=root, rho=rho, rootS
 timetree.clamp(observed_phylogeny)
 
 ### Create moves that change the augmented rate-shift events on the tree
-moves[++mvi] = mvBirthDeathEvent(timetree,weight=2)
-moves[++mvi] = mvEventTimeBeta(timetree,weight=2)
-moves[++mvi] = mvDiscreteEventCategoryRandomWalk(timetree,weight=2)
+moves.append( mvBirthDeathEvent(timetree,weight=2) )
+moves.append( mvEventTimeBeta(timetree,weight=2) )
+moves.append( mvDiscreteEventCategoryRandomWalk(timetree,weight=2) )
 
 ### Create some deterministic variable that hold information about the rates per branch
 num_events := timetree.numberEvents()
@@ -105,9 +105,9 @@ total_num_events := sum( num_events )
 mymodel = model(speciation)
 
 ### set up the monitors that will output parameter values to file and screen
-monitors[++mni] = mnModel(filename="output/primates_BSBD.log",printgen=10, separator = TAB)
-monitors[++mni] = mnExtNewick(filename="output/primates_BSBD.trees", isNodeParameter=FALSE, printgen=10, separator = TAB, tree=timetree, avg_lambda, avg_mu, avg_net, avg_rel)
-monitors[++mni] = mnScreen(printgen=10, event_rate, speciation_mean, extinction_mean, root_category, total_num_events)
+monitors.append( mnModel(filename="output/primates_BSBD.log",printgen=10, separator = TAB) )
+monitors.append( mnExtNewick(filename="output/primates_BSBD.trees", isNodeParameter=FALSE, printgen=10, separator = TAB, tree=timetree, avg_lambda, avg_mu, avg_net, avg_rel) )
+monitors.append( mnScreen(printgen=10, event_rate, speciation_mean, extinction_mean, root_category, total_num_events) )
 
 
 ################

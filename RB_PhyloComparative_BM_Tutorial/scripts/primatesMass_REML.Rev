@@ -1,4 +1,4 @@
-mi = 0
+moves = VectorMoves()
 
 # read the data 
 contData <- readContinuousCharacterData("data/primates_lht.nex")
@@ -15,7 +15,7 @@ psi <- treeArray[1]
 logSigma ~ dnUniform(-5,5)
 sigma := 10^logSigma
 
-moves[++mi] = mvSlide(logSigma, delta=1.0, tune=true, weight=2.0)
+moves.append( mvSlide(logSigma, delta=1.0, tune=true, weight=2.0) )
 
 # univariate Brownian process along the tree
 # parameterized by sigma

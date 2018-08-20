@@ -63,7 +63,7 @@ for (j in 1:taxa.size()) {
         i += 1
     }
 }
-mi = 0
+moves = VectorMoves()
 
 # And now we make the vector of clade objects to constrain our tree topology.
 clade_ingroup = clade(ingroup)
@@ -78,9 +78,9 @@ clade_constraints = [clade_ingroup, clade_outgroup]
 # We specify a uniform prior on the tree topology.
 topology ~ dnUniformTopology(taxa=taxa, constraints=clade_constraints, rooted=TRUE)
 
-# Initialize an index for our moves, and add moves on the topology.
-mvi = 1
-moves[mvi++] = mvNNI(topology, weight=10.0)
+# Initialize a vector for our moves, and add moves on the topology.
+moves = VectorMoves()
+moves.append( mvNNI(topology, weight=10.0) )
 
 # Create a stochastic node for each branch length.
 for (i in 1:n_branches) {
@@ -89,7 +89,7 @@ for (i in 1:n_branches) {
     br_lens[i] ~ dnExponential(10.0)
 
     # And add a simple scaling move since the branch length is a positive real number.
-    moves[mvi++] = mvScale(br_lens[i], lambda=2, weight=1)
+    moves.append( mvScale(br_lens[i], lambda=2, weight=1) )
 
 }
 
@@ -110,12 +110,12 @@ phylogeny := treeAssembly(topology, br_lens)
 # Use a flat Dirichlet prior for the exchange rates.
 er_prior <- v(1,1,1,1,1,1)
 er ~ dnDirichlet(er_prior)
-moves[mvi++] = mvSimplexElementScale(er, alpha=10, weight=3)
+moves.append( mvSimplexElementScale(er, alpha=10, weight=3) )
 
 # And also a flat Dirichlet prior for the stationary base frequencies.
 pi_prior <- v(1,1,1,1)
 pi ~ dnDirichlet(pi_prior)
-moves[mvi++] = mvSimplexElementScale(pi, alpha=10, weight=2)
+moves.append( mvSimplexElementScale(pi, alpha=10, weight=2) )
 
 # Now create a deterministic variable for the nucleotide substitution rate matrix.
 Q_mol := fnGTR(er, pi)
@@ -145,9 +145,9 @@ delta ~ dnExponential(10.0)
 rho ~ dnExponential(10.0)
 
 # Add moves for each of the rates.
-moves[mvi++] = mvScale(gamma, lambda=1, weight=1) 
-moves[mvi++] = mvScale(delta, lambda=1, weight=1) 
-moves[mvi++] = mvScale(rho, lambda=1, weight=1) 
+moves.append( mvScale(gamma, lambda=1, weight=1)  )
+moves.append( mvScale(delta, lambda=1, weight=1)  )
+moves.append( mvScale(rho, lambda=1, weight=1)  )
 
 # Now we create the rate matrix for the chromosome evolution model.
 # Here we will use a simple ChromEvol model that includes 

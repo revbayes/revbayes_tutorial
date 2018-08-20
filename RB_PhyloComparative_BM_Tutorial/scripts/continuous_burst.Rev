@@ -25,7 +25,7 @@ n_branches <- 2*n_tips - 2
 treeArray <- readTrees("data/primates.tree")
 psi <- treeArray[1]
 
-mvi = 0
+moves = VectorMoves()
 
 
 
@@ -33,7 +33,7 @@ mvi = 0
 logSigma ~ dnUniform(-5,5)
 sigma := 10^logSigma
 
-moves[++mvi] = mvSlide(logSigma, delta=1.0, tune=true, weight=2.0)
+moves.append( mvSlide(logSigma, delta=1.0, tune=true, weight=2.0) )
 
 
 ########################
@@ -49,7 +49,7 @@ e(-alpha*t)
 rho <- 0.01
 
 logRootOptim ~ dnUniform(-10,10)
-moves[++mi] = mvSlide(logRootOptim,delta=10,tune=true,weight=2)
+moves.append( mvSlide(logRootOptim,delta=10,tune=true,weight=2) )
 
 root_age := psi.rootAge()
 
@@ -64,8 +64,8 @@ for (i in n_branches:1) {
    
    root_age - psi.nodeAge(i)
    optimChange[i] := ifelse( optimMultiplier[i] == 1, 0, 1 )
-   moves[++mi] = mvRJSwitch(optimMultiplier[i], weight=1)
-   moves[++mi] = mvScale(optimMultiplier[i], lambda=0.1, tune=true, weight=1)
+   moves.append( mvRJSwitch(optimMultiplier[i], weight=1) )
+   moves.append( mvScale(optimMultiplier[i], lambda=0.1, tune=true, weight=1) )
 }
 
 numOptimChanges := sum( optimChange )

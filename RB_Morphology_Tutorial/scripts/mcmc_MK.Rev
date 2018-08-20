@@ -19,8 +19,8 @@ taxa = data.taxa()
 n_branches = 2 * n_species - 3
 
 
-mvi = 0
-mni = 0
+moves = VectorMoves()
+monitors = VectorMonitors()
 
 n_sites = 4
 
@@ -33,7 +33,7 @@ n_sites = 4
 ### Nevertheless, we will estimate it here because we fixed the root age
 ### we use a uniform prior on the log-transform clock rate
 log_clock_rate ~ dnUniform(-8,2)
-moves[++mvi] = mvSlide(log_clock_rate, weight=2.0)
+moves.append( mvSlide(log_clock_rate, weight=2.0) )
 clock_rate := 10^log_clock_rate
 
 
@@ -56,15 +56,15 @@ morph_ctmc.clamp(data)
 #######################
 
 # First, a screen monitor with some useful variables:
-monitors[++mni] = mnScreen(printgen=1000, clock_rate)
+monitors.append( mnScreen(printgen=1000, clock_rate) )
 
 # The ancestral state monitor for the chromosome number reconstruction:
-monitors[++mni] = mnJointConditionalAncestralState(tree=time_tree, ctmc=morph_ctmc, type="Standard", printgen=10, withTips=true, withStartStates=false, filename="output/anc_states.log")
+monitors.append( mnJointConditionalAncestralState(tree=time_tree, ctmc=morph_ctmc, type="Standard", printgen=10, withTips=true, withStartStates=false, filename="output/anc_states.log") )
 
 # And another monitor for all the model variables:
-#monitors[++mni] = mnModel(filename="output/morph_MK_equal.log", printgen=10)
+#monitors.append( mnModel(filename="output/morph_MK_equal.log", printgen=10) )
 
-monitors[++mni] = mnFile(filename="output/test.trees", printgen=10, time_tree)
+monitors.append( mnFile(filename="output/test.trees", printgen=10, time_tree) )
 
 
 ####################

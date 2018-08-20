@@ -29,8 +29,8 @@ n_species <- data[1].ntaxa()
 taxa <- data[1].taxa()
 n_branches <- 2 * n_species - 1 # number of branches in a rooted tree
 
-# We set our move index
-mi = 0
+# Initialize a vector for our moves
+moves = VectorMoves()
 
 
 
@@ -52,22 +52,22 @@ sampling_fraction <- 23 / 450 # 23 out of the ~ 450 primate species
 
 # create some moves that change the stochastic variables
 # all moves are sliding and scaling proposals
-moves[++mi] = mvSlide(speciation,delta=1,tune=true,weight=2)
-moves[++mi] = mvSlide(relativeExtinction,delta=1,tune=true,weight=2)
-moves[++mi] = mvScale(speciation,lambda=1,tune=true,weight=2)
-moves[++mi] = mvScale(relativeExtinction,lambda=1,tune=true,weight=2)
-moves[++mi] = mvSlide(root,delta=1,tune=true,weight=0.2)
+moves.append( mvSlide(speciation,delta=1,tune=true,weight=2) )
+moves.append( mvSlide(relativeExtinction,delta=1,tune=true,weight=2) )
+moves.append( mvScale(speciation,lambda=1,tune=true,weight=2) )
+moves.append( mvScale(relativeExtinction,lambda=1,tune=true,weight=2) )
+moves.append( mvSlide(root,delta=1,tune=true,weight=0.2) )
 
 
 # construct a variable for the tree drawn from a birth death process
 psi ~ dnBDP(lambda=speciation, mu=extinction, rootAge=root, rho=sampling_fraction, taxa=taxa )
 
-moves[++mi] = mvNarrow(psi, weight=5.0)
-moves[++mi] = mvNNI(psi, weight=1.0)
-moves[++mi] = mvFNPR(psi, weight=3.0)
-moves[++mi] = mvGPR(psi, weight=3.0)
-moves[++mi] = mvSubtreeScale(psi, weight=3.0)
-moves[++mi] = mvNodeTimeSlideUniform(psi, weight=15.0)
+moves.append( mvNarrow(psi, weight=5.0) )
+moves.append( mvNNI(psi, weight=1.0) )
+moves.append( mvFNPR(psi, weight=3.0) )
+moves.append( mvGPR(psi, weight=3.0) )
+moves.append( mvSubtreeScale(psi, weight=3.0) )
+moves.append( mvNodeTimeSlideUniform(psi, weight=15.0) )
 
 
 
@@ -80,7 +80,7 @@ for ( i in 1:num_loci ) {
    log_clock_rate[i] ~ dnUniform(-8,4)
    clock_rate[i] := 10^log_clock_rate[i]
    
-   moves[++mi] = mvSlide(log_clock_rate[i], weight=1.0)
+   moves.append( mvSlide(log_clock_rate[i], weight=1.0) )
 }
 
 
@@ -93,12 +93,12 @@ for ( i in 1:num_loci ) {
 
     #### specify the HKY substitution model applied uniformly to all sites ###
     kappa[i] ~ dnLognormal(0,1)
-    moves[++mi] = mvScale(kappa[i],weight=1)
+    moves.append( mvScale(kappa[i],weight=1) )
 
 
     pi_prior[i] <- v(1,1,1,1) 
     pi[i] ~ dnDirichlet(pi_prior[i])
-    moves[++mi] = mvSimplexElementScale(pi[i],weight=2)
+    moves.append( mvSimplexElementScale(pi[i],weight=2) )
 
 
     #### create a deterministic variable for the rate matrix ####
@@ -122,7 +122,7 @@ for ( i in 1:num_loci ) {
     gamma_rates[i] := fnDiscretizeGamma( alpha[i], alpha[i], 4, false )
 
     # add move for the shape parameter
-    moves[++mvi] = mvScale(alpha[i],weight=2)
+    moves.append( mvScale(alpha[i],weight=2) )
 
 }
 

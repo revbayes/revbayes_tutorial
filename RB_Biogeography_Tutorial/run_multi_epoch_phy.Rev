@@ -14,9 +14,9 @@ geo_fn   = "data/n6/hawaii.n6"
 times_fn = geo_fn + ".times.txt"
 dist_fn  = geo_fn + ".distances.txt"
 
-# move/monitor index
-mvi = 1
-mni = 1
+# vector to add MCMC moves/monitors
+moves = VectorMoves()
+monitors = VectorMonitors()
 n_gen = 1e6
 
 
@@ -48,7 +48,7 @@ for (i in 1:n_epochs) {
         epoch_times[i] <- abs(0)
     } else {
         epoch_times[i] ~ dnUniform(time_min[i], time_max[i])
-        moves[mvi++] = mvSlide(epoch_times[i], delta=(time_bounds[i][1]-time_bounds[i][2])/2)
+        moves.append( mvSlide(epoch_times[i], delta=(time_bounds[i][1]-time_bounds[i][2])/2) )
     }
 }
 
@@ -90,18 +90,18 @@ for (i in 1:n_clades) {
 
     # root age
     root_age[i] ~ dnUniform(0, 15)
-    moves[mvi++] = mvScale(root_age[i], weight=2)
+    moves.append( mvScale(root_age[i], weight=2) )
 
     # proportion of sampled tips
     rho[i] <- 35 / 50
 
     # birth rate
     birth[i] ~ dnExp(1)
-    moves[mvi++] = mvScale(birth[i])
+    moves.append( mvScale(birth[i]) )
 
     # death rate
     death[i] ~ dnExp(1)
-    moves[mvi++] = mvScale(death[i])
+    moves.append( mvScale(death[i]) )
 
     # birth-death process
     phy[i] ~ dnBDP(lambda=birth[i], mu=death[i], rho=rho[i], rootAge=root_age[i], taxa=taxa[i])
@@ -111,9 +111,9 @@ for (i in 1:n_clades) {
     root_age[i].setValue(phy_init[i].rootAge())
 
     # tree moves
-    moves[mvi++] = mvNNI(phy[i], weight=n_branches[i]/2)
-    moves[mvi++] = mvFNPR(phy[i], weight=n_branches[i]/8)
-    moves[mvi++] = mvNodeTimeSlideUniform(phy[i], weight=n_branches[i]/2)
+    moves.append( mvNNI(phy[i], weight=n_branches[i]/2) )
+    moves.append( mvFNPR(phy[i], weight=n_branches[i]/8) )
+    moves.append( mvNodeTimeSlideUniform(phy[i], weight=n_branches[i]/2) )
 
 }
 
@@ -126,7 +126,7 @@ for (i in 1:n_clades) {
     # molecular clock
     log10_rate_mol[i] ~ dnUniform(-6,3)
     log10_rate_mol[i].setValue(-1)
-    moves[mvi++] = mvSlide(log10_rate_mol[i], weight=5, delta=0.2)
+    moves.append( mvSlide(log10_rate_mol[i], weight=5, delta=0.2) )
     rate_mol[i] := 10^log10_rate_mol[i]
 
     # relaxed clock
@@ -134,22 +134,22 @@ for (i in 1:n_clades) {
     branch_mean[i] <- 0 - 0.5*branch_sd[i]^2
     for (j in 1:n_branches[i]) {
         branch_rate_multiplier[i][j] ~ dnLognormal(mean=branch_mean[i], sd=branch_sd[i])
-        moves[mvi++] = mvScale(branch_rate_multiplier[i][j])
+        moves.append( mvScale(branch_rate_multiplier[i][j]) )
         branch_rates[i][j] := rate_mol[i] * branch_rate_multiplier[i][j]
     }
 
     # HKY substitution process
     kappa[i] ~ dnGamma(2,2)
-    moves[mvi++] = mvScale(kappa[i])
+    moves.append( mvScale(kappa[i]) )
 
     bf[i] ~ dnDirichlet( [1,1,1,1] )
-    moves[mvi++] = mvSimplex(bf[i], alpha=10, weight=2, offset=1)
+    moves.append( mvSimplex(bf[i], alpha=10, weight=2, offset=1) )
 
     Q_mol[i] := fnHKY(kappa[i], bf[i])
 
     # +Gamma-4 among site rate variation
     alpha[i] ~ dnUniform(0,50)
-    moves[mvi++] = mvScale(alpha[i])
+    moves.append( mvScale(alpha[i]) )
     site_rates[i] := fnDiscretizeGamma(alpha[i], alpha[i], numCats=4)
 
     # substitution process over phylogeny
@@ -172,11 +172,11 @@ for (i in 1:n_clades) {
 
 dispersal_rate ~ dnExp(1)
 dispersal_rate.setValue(1)
-moves[mvi++] = mvScale(dispersal_rate)
+moves.append( mvScale(dispersal_rate) )
 
 distance_scale ~ dnExp(1)
 distance_scale.setValue(0.001)
-moves[mvi++] = mvScale(distance_scale)
+moves.append( mvScale(distance_scale) )
 
 # then, the dispersal rate matrix
 for (i in 1:n_epochs) {
@@ -190,7 +190,7 @@ for (i in 1:n_epochs) {
 
 # then extirpation rates (or per-area extinction rates)
 extirpation_rate ~ dnExp(1)
-moves[mvi++] = mvScale(extirpation_rate)
+moves.append( mvScale(extirpation_rate) )
 
 for (i in 1:n_epochs) {
     for (j in 1:n_areas[1]) {
@@ -217,11 +217,11 @@ Q_DEC_epoch := fnEpoch(Q=Q_DEC, times=epoch_times, rates=rep(1, n_epochs))
 # build clado probs
 clado_event_types <- [ "s", "a" ]
 #clado_type_probs[m] ~ dnDirichlet( [1, 1] )
-#moves[mvi++] = mvSimplex(clado_type_probs[m], alpha=10, offset=1)
+#moves.append( mvSimplex(clado_type_probs[m], alpha=10, offset=1) )
 p_sympatry ~ dnUniform(0,1)
 p_allopatry := abs(1.0 - p_sympatry)
 clado_event_probs := simplex(p_sympatry, p_allopatry)
-moves[mvi++] = mvSlide(p_sympatry, delta=0.1, weight=2)
+moves.append( mvSlide(p_sympatry, delta=0.1, weight=2) )
 P_DEC := fnDECCladoProbs(eventProbs=clado_event_probs,
                          eventTypes=clado_event_types,
                          numCharacters=n_areas[1],
@@ -240,7 +240,7 @@ for (m in 1:n_clades) {
         rate_bg[m] <- abs(1)
     } else {
         rate_bg[m] ~ dnGamma(2,2)
-        moves[mvi++] = mvScale(rate_bg[m], weight=2)
+        moves.append( mvScale(rate_bg[m], weight=2) )
     }
 
     ctmc_bg[m] ~ dnPhyloCTMCClado(tree=phy[m],
@@ -282,20 +282,20 @@ if (!false) {
 }
 
 
-monitors[mni++] = mnScreen(printgen=100, dispersal_rate, extirpation_rate, distance_scale) # , ingroup_age)
-monitors[mni++] = mnModel(file=out_fn+".model.log", printgen=100)
+monitors.append( mnScreen(printgen=100, dispersal_rate, extirpation_rate, distance_scale) # , ingroup_age) )
+monitors.append( mnModel(file=out_fn+".model.log", printgen=100) )
 for (m in 1:n_clades) {
-    monitors[mni++] = mnFile(phy[m], filename=out_fn+"."+clade_names[m]+".tre", printgen=100)
-    monitors[mni++] = mnFile(alpha[m], bf[m], birth[m], branch_rates[m], p_allopatry, p_sympatry, death[m], dispersal_rate, distance_scale, epoch_times, extirpation_rate, kappa[m], log10_rate_mol[m], rate_mol[m], rate_bg[m], root_age[m], site_rates[m], ingroup_age[m], ingroup_island_diff[m],
+    monitors.append( mnFile(phy[m], filename=out_fn+"."+clade_names[m]+".tre", printgen=100) )
+    monitors.append( mnFile(alpha[m], bf[m], birth[m], branch_rates[m], p_allopatry, p_sympatry, death[m], dispersal_rate, distance_scale, epoch_times, extirpation_rate, kappa[m], log10_rate_mol[m], rate_mol[m], rate_bg[m], root_age[m], site_rates[m], ingroup_age[m], ingroup_island_diff[m],
                              filename=out_fn+"."+clade_names[m]+".model.log",
-                             printgen=100)
-    monitors[mni++] = mnJointConditionalAncestralState(tree=phy[m],
+                             printgen=100) )
+    monitors.append( mnJointConditionalAncestralState(tree=phy[m],
                                                            ctmc=ctmc_bg[m],
                                                            type="NaturalNumbers",
                                                            withTips=true,
                                                            withStartStates=true,
                                                            filename=out_fn+"."+clade_names[m]+".states.log",
-                                                           printgen=100)
+                                                           printgen=100) )
 }
 
 ############

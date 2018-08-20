@@ -9,9 +9,9 @@ geo_fn   = "data/n6/hawaii.n6"
 times_fn = geo_fn + ".times.txt"
 dist_fn  = geo_fn + ".distances.txt"
 
-# move/monitor index
-mvi = 1
-mni = 1
+# vector to add MCMC moves/monitors
+moves = VectorMoves()
+monitors = VectorMonitors()
 n_gen = 1e5
 
 ########
@@ -66,18 +66,18 @@ write(state_desc_str, file=out_fn+".state_labels.txt")
 
 # root age
 root_age ~ dnUniform(0, 15)
-moves[mvi++] = mvScale(root_age, weight=2)
+moves.append( mvScale(root_age, weight=2) )
 
 # proportion of sampled tips
 rho <- 35 / 50
 
 # birth rate
 birth ~ dnExp(1)
-moves[mvi++] = mvScale(birth)
+moves.append( mvScale(birth) )
 
 # death rate
 death ~ dnExp(1)
-moves[mvi++] = mvScale(death)
+moves.append( mvScale(death) )
 
 # birth-death process
 phy ~ dnBDP(lambda=birth, mu=death, rho=rho, rootAge=root_age, taxa=taxa)
@@ -87,9 +87,9 @@ phy.setValue(phy_init)
 root_age.setValue(phy_init.rootAge())
 
 # tree moves
-moves[mvi++] = mvNNI(phy, weight=n_branches/2)
-moves[mvi++] = mvFNPR(phy, weight=n_branches/8)
-moves[mvi++] = mvNodeTimeSlideUniform(phy, weight=n_branches/2)
+moves.append( mvNNI(phy, weight=n_branches/2) )
+moves.append( mvFNPR(phy, weight=n_branches/8) )
+moves.append( mvNodeTimeSlideUniform(phy, weight=n_branches/2) )
 
 
 # monitor the age of the silversword ingroup
@@ -109,7 +109,7 @@ ingroup_age := tmrca(phy, ingroup_clade)
 # molecular clock
 log10_rate_mol ~ dnUniform(-6,3)
 log10_rate_mol.setValue(-1)
-moves[mvi++] = mvSlide(log10_rate_mol, weight=5, delta=0.2)
+moves.append( mvSlide(log10_rate_mol, weight=5, delta=0.2) )
 rate_mol := 10^log10_rate_mol
 
 # relaxed clock
@@ -117,22 +117,22 @@ branch_sd <- 1.0
 branch_mean <- 0 - 0.5*branch_sd^2
 for (i in 1:n_branches) {
     branch_rate_multiplier[i] ~ dnLognormal(mean=branch_mean, sd=branch_sd)
-    moves[mvi++] = mvScale(branch_rate_multiplier[i])
+    moves.append( mvScale(branch_rate_multiplier[i]) )
     branch_rates[i] := rate_mol * branch_rate_multiplier[i]
 }
 
 # HKY substitution process
 kappa ~ dnGamma(2,2)
-moves[mvi++] = mvScale(kappa)
+moves.append( mvScale(kappa) )
 
 bf ~ dnDirichlet( [1,1,1,1] )
-moves[mvi++] = mvSimplex(bf, alpha=10, weight=2, offset=1)
+moves.append( mvSimplex(bf, alpha=10, weight=2, offset=1) )
 
 Q_mol := fnHKY(kappa, bf)
 
 # +Gamma-4 among site rate variation
 alpha ~ dnUniform(0,50)
-moves[mvi++] = mvScale(alpha)
+moves.append( mvScale(alpha) )
 site_rates := fnDiscretizeGamma(alpha, alpha, numCats=4)
 
 # substitution process over phylogeny
@@ -154,7 +154,7 @@ seq_mol.clamp(dat_mol)
 log10_rate_bg ~ dnUniform(-4,2)
 log10_rate_bg.setValue(-2)
 rate_bg := 10^log10_rate_bg
-moves[mvi++] = mvSlide(log10_rate_bg, weight=4)
+moves.append( mvSlide(log10_rate_bg, weight=4) )
 
 # the relative dispersal rate
 dispersal_rate <- 1.0
@@ -163,7 +163,7 @@ dispersal_rate <- 1.0
 log_sd <- 0.5
 log_mean <- ln(1) - 0.5*log_sd^2
 extirpation_rate ~ dnLognormal(mean=log_mean, sd=log_sd)
-moves[mvi++] = mvScale(extirpation_rate, weight=2)
+moves.append( mvScale(extirpation_rate, weight=2) )
 
 # the relative dispersal and extirpation rate matrices
 for (i in 1:n_areas) {
@@ -213,7 +213,7 @@ for (i in 1:n_epochs) {
         epoch_times[i] <- 0.0
     } else {
         epoch_times[i] ~ dnUniform(time_min[i], time_max[i])
-        moves[mvi++] = mvSlide(epoch_times[i], delta=(time_bounds[i][1]-time_bounds[i][2])/2)
+        moves.append( mvSlide(epoch_times[i], delta=(time_bounds[i][1]-time_bounds[i][2])/2) )
     }
 }
 
@@ -235,16 +235,16 @@ for (i in 1:n_epochs) {
 }
 
 
-monitors[mni++] = mnScreen(printgen=100, ingroup_age)
-monitors[mni++] = mnModel(file=out_fn+".model.log", printgen=100)
-monitors[mni++] = mnFile(phy, filename=out_fn+".tre", printgen=100)
-monitors[mni++] = mnJointConditionalAncestralState(tree=phy,
+monitors.append( mnScreen(printgen=100, ingroup_age) )
+monitors.append( mnModel(file=out_fn+".model.log", printgen=100) )
+monitors.append( mnFile(phy, filename=out_fn+".tre", printgen=100) )
+monitors.append( mnJointConditionalAncestralState(tree=phy,
                                                        ctmc=m_bg,
                                                        type="NaturalNumbers",
                                                        withTips=true,
                                                        withStartStates=true,
                                                        filename=out_fn+".states.log",
-                                                       printgen=100)
+                                                       printgen=100) )
 
 ############
 # Analysis #

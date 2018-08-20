@@ -75,13 +75,13 @@ rho_0 ~ dnExponential(10.0)
 rho_1 ~ dnExponential(10.0)
 
 # Add MCMC moves for each of the rates.
-mvi = 1
-moves[mvi++] = mvScale(gamma_0, lambda=1, weight=1) 
-moves[mvi++] = mvScale(delta_0, lambda=1, weight=1) 
-moves[mvi++] = mvScale(rho_0, lambda=1, weight=1) 
-moves[mvi++] = mvScale(gamma_1, lambda=1, weight=1) 
-moves[mvi++] = mvScale(delta_1, lambda=1, weight=1) 
-moves[mvi++] = mvScale(rho_1, lambda=1, weight=1) 
+moves = VectorMoves()
+moves.append( mvScale(gamma_0, lambda=1, weight=1)  )
+moves.append( mvScale(delta_0, lambda=1, weight=1)  )
+moves.append( mvScale(rho_0, lambda=1, weight=1)  )
+moves.append( mvScale(gamma_1, lambda=1, weight=1)  )
+moves.append( mvScale(delta_1, lambda=1, weight=1)  )
+moves.append( mvScale(rho_1, lambda=1, weight=1)  )
 
 # Now we create the rate matrix for the chromosome evolution model.
 # We will set up two rate matrices, one for each phenotype state.
@@ -99,8 +99,8 @@ Q_1 := fnChromosomes(max_chromo, gamma_1, delta_1, rho_1)
 # Now we create the rates of transitioning between phenotype states:
 q_01 ~ dnExponential(10.0)
 q_10 ~ dnExponential(10.0)
-moves[mvi++] = mvScale(q_01, lambda=1, weight=1) 
-moves[mvi++] = mvScale(q_10, lambda=1, weight=1) 
+moves.append( mvScale(q_01, lambda=1, weight=1)  )
+moves.append( mvScale(q_10, lambda=1, weight=1)  )
 
 # And finally we create the transition rate matrix for the joint
 # model of phenotypic and chromosome evolution.

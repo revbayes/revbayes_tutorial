@@ -14,8 +14,8 @@ sf ~ dnDirichlet(sf_hp)
 er_hp <- v(1,1,1,1,1,1)
 er ~ dnDirichlet(er_hp)
 
-moves[mvi++] = mvSimplexElementScale(er, alpha=10.0, weight=5.0)
-moves[mvi++] = mvSimplexElementScale(sf, alpha=10.0, weight=5.0)
+moves.append( mvSimplexElementScale(er, alpha=10.0, weight=5.0) )
+moves.append( mvSimplexElementScale(sf, alpha=10.0, weight=5.0) )
 
 # Create the matrix #
 Q_cytb := fnGTR(er,sf)
@@ -24,9 +24,9 @@ Q_cytb := fnGTR(er,sf)
 # the shape parameter is drawn from an exponential prior #
 alpha_cytb ~ dnExponential( 1.0 )
 
-moves[mvi++] = mvScale(alpha_cytb, lambda=0.01, weight=1.0)
-moves[mvi++] = mvScale(alpha_cytb, lambda=0.1,  weight=1.0)
-moves[mvi++] = mvScale(alpha_cytb, lambda=1,    weight=1.0)
+moves.append( mvScale(alpha_cytb, lambda=0.01, weight=1.0) )
+moves.append( mvScale(alpha_cytb, lambda=0.1,  weight=1.0) )
+moves.append( mvScale(alpha_cytb, lambda=1,    weight=1.0) )
 
 rates_cytb := fnDiscretizeGamma( alpha_cytb, alpha_cytb, 4 )
 

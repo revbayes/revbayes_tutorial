@@ -19,8 +19,8 @@ n_sites <- data.nchar()
 names <- data.names()
 n_branches <- 2 * n_species - 3
 
-# set my move index
-mvi = 0
+# vector to add MCMC moves
+moves = VectorMoves()
 
 
 
@@ -31,12 +31,12 @@ mvi = 0
 #### specify the GTR+G substitution model applied uniformly to all sites ###
 er_prior <- v(1,1,1,1,1,1)
 er ~ dnDirichlet(er_prior)
-moves[++mvi] = mvSimplexElementScale(er,weight=3)
+moves.append( mvSimplexElementScale(er,weight=3) )
 
 
 pi_prior <- v(1,1,1,1) 
 pi ~ dnDirichlet(pi_prior)
-moves[++mvi] = mvSimplexElementScale(pi,weight=2)
+moves.append( mvSimplexElementScale(pi,weight=2) )
 
 
 #### create a determvinistic variable for the rate matrix ####
@@ -51,8 +51,8 @@ Q := fnGTR(er,pi)
 # the probability of a site being invariable
 pinvar ~ dnBeta(1,1)
 # add moves for the probability if a site being invariable
-moves[++mvi] = mvScale(pinvar)
-moves[++mvi] = mvSlide(pinvar)
+moves.append( mvScale(pinvar) )
+moves.append( mvSlide(pinvar) )
 
 
 ##############
@@ -63,8 +63,8 @@ moves[++mvi] = mvSlide(pinvar)
 topology ~ dnUniformTopology(names)
 
 # moves on the tree
-moves[++mvi] = mvNNI(topology)
-moves[++mvi] = mvSPR(topology)
+moves.append( mvNNI(topology) )
+moves.append( mvSPR(topology) )
 
 
 #### Specify a prior and moves on the branch lengths #### 
@@ -74,7 +74,7 @@ for (i in 1:n_branches) {
   br_lens[i] ~ dnExponential(10.0)
   
   # Add a move for the branch length. We just take a simple scaling move since the value is a positive real number.
-  moves[++mvi] = mvScale(br_lens[i]) 
+  moves.append( mvScale(br_lens[i])  )
 }
 
 TL := sum(br_lens)

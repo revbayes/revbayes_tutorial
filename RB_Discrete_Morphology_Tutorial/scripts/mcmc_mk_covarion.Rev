@@ -16,8 +16,8 @@
 morpho <- readDiscreteCharacterData("Data/bears.covarion.nex")
 
 ## helpers
-mvi = 1
-mni = 1
+moves = VectorMoves()
+monitors = VectorMonitors()
 taxa <- morpho.names()
 n_taxa <- taxa.size()
 n_branches <- 2 * n_taxa - 2
@@ -33,18 +33,18 @@ source("scripts/model_mk_covarion.Rev") # Morphological character change model
 mymodel = model(phylogeny)
 # Create a vector of monitors #
 # 1. for the full model #
-monitors[mni++] = mnModel(filename="output/mk_covarion.log", printgen=10)
+monitors.append( mnModel(filename="output/mk_covarion.log", printgen=10) )
 # 2. the tree #
-monitors[mni++] = mnFile(filename="output/mk_covarion.trees", printgen=10, phylogeny)
+monitors.append( mnFile(filename="output/mk_covarion.trees", printgen=10, phylogeny) )
 # 3. and a few select parameters to be printed to the screen #
-monitors[mni++] = mnScreen(printgen=10)
+monitors.append( mnScreen(printgen=10) )
 # 4. add an ancestral state monitor
-monitors[mni++] = mnJointConditionalAncestralState(tree=phylogeny,
+monitors.append( mnJointConditionalAncestralState(tree=phylogeny,
                                                    ctmc=phyMorpho,
                                                    filename="output/mk_covarion.states.txt",
                                                    type="Standard",
                                                    printgen=10,
-                                                   withStartStates=true)
+                                                   withStartStates=true) )
 
 # Initialize the MCMC object #
 mymcmc = mcmc(mymodel, monitors, moves)

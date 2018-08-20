@@ -26,9 +26,9 @@ data <- readDiscreteCharacterData("data/primates_cytb.nex")
 n_species <- data.ntaxa()
 taxa <- data.taxa()
 
-# set my move index
-mvi = 0
-mni = 0
+# vector to add MCMC moves
+moves = VectorMoves()
+monitors = VectorMonitors()
 
 
 
@@ -39,12 +39,12 @@ mni = 0
 #### specify the GTR+G substitution model applied uniformly to all sites ###
 er_prior <- v(1,1,1,1,1,1)
 er ~ dnDirichlet(er_prior)
-moves[++mvi] = mvSimplexElementScale(er,weight=3)
+moves.append( mvSimplexElementScale(er,weight=3) )
 
 
 pi_prior <- v(1,1,1,1) 
 pi ~ dnDirichlet(pi_prior)
-moves[++mvi] = mvSimplexElementScale(pi,weight=2)
+moves.append( mvSimplexElementScale(pi,weight=2) )
 
 
 #### create a deterministic variable for the rate matrix ####
@@ -61,7 +61,7 @@ alpha ~ dnLognormal( alpha_prior_mean, alpha_prior_sd )
 gamma_rates := fnDiscretizeGamma( alpha, alpha, 4, false )
 
 # add moves for the stationary frequencies, exchangeability rates and the shape parameter
-moves[++mvi] = mvScale(alpha,weight=2)
+moves.append( mvScale(alpha,weight=2) )
 
 
 
@@ -75,12 +75,12 @@ moves[++mvi] = mvScale(alpha,weight=2)
 diversification_mean <- ln( ln(n_species/2.0) / 90 )
 diversification_sd <- 0.587405*2
 diversification ~ dnLognormal(mean=diversification_mean,sd=diversification_sd) 
-moves[++mvi] = mvScale(diversification,lambda=1.0,tune=true,weight=3.0)
+moves.append( mvScale(diversification,lambda=1.0,tune=true,weight=3.0) )
 
 turnover_mean <- ln( ln(n_species/2.0) / 90 )
 turnover_sd <- 0.587405*2
 turnover ~ dnLognormal(mean=turnover_mean,sd=turnover_sd) 
-moves[++mvi] = mvScale(turnover,lambda=1.0,tune=true,weight=3.0)
+moves.append( mvScale(turnover,lambda=1.0,tune=true,weight=3.0) )
 
 ### Transform the parameters
 birth_rate := diversification + turnover
@@ -95,19 +95,19 @@ rho <- n_species/450
 ### here we use an informative prior on the root age
 ### this prior is a normal distribution with mean 90 and standard deviation of 6
 root_time ~ dnNormal(mean=90.0,sd=6.0,min=0.0,max=5000.0)
-moves[++mvi] = mvScale(root_time, weight=2.0)
+moves.append( mvScale(root_time, weight=2.0) )
 
 ### the time tree is a stochastic node modeled by the constant rate birth-death process (dnBDP)
 psi ~ dnBDP(lambda=birth_rate, mu=death_rate, rho=rho, rootAge=root_time, samplingStrategy="uniform", condition="survival", taxa=taxa)
 
 
 ### add some moves that change the tree
-moves[++mvi] = mvNarrow(psi, weight=5.0)
-moves[++mvi] = mvNNI(psi, weight=1.0)
-moves[++mvi] = mvFNPR(psi, weight=3.0)
-moves[++mvi] = mvGPR(psi, weight=1.0)
-moves[++mvi] = mvSubtreeScale(psi, weight=3.0)
-moves[++mvi] = mvNodeTimeSlideUniform(psi, weight=15.0)
+moves.append( mvNarrow(psi, weight=5.0) )
+moves.append( mvNNI(psi, weight=1.0) )
+moves.append( mvFNPR(psi, weight=3.0) )
+moves.append( mvGPR(psi, weight=1.0) )
+moves.append( mvSubtreeScale(psi, weight=3.0) )
+moves.append( mvNodeTimeSlideUniform(psi, weight=15.0) )
 
 
 ### now we additionally add a deterministic variable for the age of
@@ -144,7 +144,7 @@ obs_age_lorisiformes.clamp(40)
 logClockRate ~ dnUniform(-6,1)
 clockRate := 10^logClockRate
 
-moves[++mvi] = mvSlide(logClockRate)
+moves.append( mvSlide(logClockRate) )
 
 # the sequence evolution model
 seq ~ dnPhyloCTMC(tree=psi, Q=Q, branchRates=clockRate, siteRates=gamma_rates, type="DNA")
@@ -168,9 +168,9 @@ mymodel = model(Q)
 
 
 
-monitors[++mni] = mnModel(filename="output/primates_cytb_node_calibration.log",printgen=10, separator = TAB)
-monitors[++mni] = mnFile(filename="output/primates_cytb_node_calibration.trees",printgen=10, separator = TAB, psi)
-monitors[++mni] = mnScreen(printgen=1000, clockRate, root_time, age_simiiformes)
+monitors.append( mnModel(filename="output/primates_cytb_node_calibration.log",printgen=10, separator = TAB) )
+monitors.append( mnFile(filename="output/primates_cytb_node_calibration.trees",printgen=10, separator = TAB, psi) )
+monitors.append( mnScreen(printgen=1000, clockRate, root_time, age_simiiformes) )
 
 mymcmc = mcmc(mymodel, monitors, moves)
 

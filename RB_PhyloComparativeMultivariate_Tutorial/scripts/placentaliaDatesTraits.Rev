@@ -146,42 +146,42 @@ mymodel = model(kappa)
 #########
 
 # initializing index
-index <- 1
+moves = VectorMoves()
 
 # rescaling moves on speciation and extinction rates
-moves[index++] = mvScale(speciation, lambda=1, tune=true, weight=3.0)
-moves[index++] = mvScale(extinction, lambda=1, tune=true, weight=3.0)
+moves.append( mvScale(speciation, lambda=1, tune=true, weight=3.0) )
+moves.append( mvScale(extinction, lambda=1, tune=true, weight=3.0) )
 
 # moves on the tree: only relative dates
-moves[index++] = mvSubtreeScale(psi, weight=5.0)
-moves[index++] = mvNodeTimeSlideUniform(psi, weight=10.0)
+moves.append( mvSubtreeScale(psi, weight=5.0) )
+moves.append( mvNodeTimeSlideUniform(psi, weight=10.0) )
 
 # if we wanted to, we could also move the tree topology
 # and integrate over the posterior induced by the sequence data
 # but mixing is currently a bit challenging 
-# moves[index++] = mvNNI(psi, weight=5.0)
-# moves[index++] = mvFNPR(psi, weight=5.0)
+# moves.append( mvNNI(psi, weight=5.0) )
+# moves.append( mvFNPR(psi, weight=5.0) )
 
 # moves on kappa
-moves[index++] = mvScale(kappa, lambda=2.0, tune=true, weight=3.0)
+moves.append( mvScale(kappa, lambda=2.0, tune=true, weight=3.0) )
 
 # conjugate Gibbs move on covariance matrix
-moves[index++] = mvConjugateInverseWishartBrownian(sigma=Sigma, process=X, kappa=kappa, df=df, weight=1) 
+moves.append( mvConjugateInverseWishartBrownian(sigma=Sigma, process=X, kappa=kappa, df=df, weight=1)  )
 
 # moves on the Brownian process
-moves[index++] = mvMultivariatePhyloProcessSliding(process=X,lambda=1,tune=true,weight=100) 
-moves[index++] = mvMultivariatePhyloProcessTranslation(process=X,lambda=0.1,tune=true,weight=1) 
+moves.append( mvMultivariatePhyloProcessSliding(process=X,lambda=1,tune=true,weight=100)  )
+moves.append( mvMultivariatePhyloProcessTranslation(process=X,lambda=0.1,tune=true,weight=1)  )
 
 # moves on nu
-moves[index++] = mvScale(nu, lambda=2.0, tune=true, weight=3.0)
+moves.append( mvScale(nu, lambda=2.0, tune=true, weight=3.0) )
 
 # moves on the relaxed clock process
-moves[index++] = mvRealNodeValTreeSliding(process=lograte,lambda=1,tune=true,weight=100) 
-moves[index++] = mvRealNodeValTreeTranslation(process=lograte,lambda=0.1,tune=true,weight=10) 
+moves.append( mvRealNodeValTreeSliding(process=lograte,lambda=1,tune=true,weight=100)  )
+moves.append( mvRealNodeValTreeTranslation(process=lograte,lambda=0.1,tune=true,weight=10)  )
 
 # moves on the substitution process parameters
-moves[index++] = mvSimplexElementScale(pi, alpha=10.0, tune=true, weight=1.0)
-moves[index++] = mvSimplexElementScale(er, alpha=10.0, tune=true, weight=1.0)
+moves.append( mvSimplexElementScale(pi, alpha=10.0, tune=true, weight=1.0) )
+moves.append( mvSimplexElementScale(er, alpha=10.0, tune=true, weight=1.0) )
 
 ######### 
 # monitors

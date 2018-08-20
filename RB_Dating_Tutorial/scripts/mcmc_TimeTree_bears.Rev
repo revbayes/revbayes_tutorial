@@ -7,7 +7,7 @@
 D <- readDiscreteCharacterData(file="data/bears_irbp.nex")
 
 ### initialize an iterator for the moves vector
-mi = 1
+moves = VectorMoves()
 
 n_sites <- D.nchar()
 
@@ -17,9 +17,9 @@ n_sites <- D.nchar()
 source("scripts/m_BDP_bears.Rev")
 
 ### and moves for the tree topology
-moves[mi++] = mvNNI(timetree, weight=8.0)
-moves[mi++] = mvNarrow(timetree, weight=8.0)
-moves[mi++] = mvFNPR(timetree, weight=8.0)
+moves.append( mvNNI(timetree, weight=8.0) )
+moves.append( mvNarrow(timetree, weight=8.0) )
+moves.append( mvFNPR(timetree, weight=8.0) )
 
 
 ###########################################################

@@ -27,7 +27,7 @@ cytb.addMissingTaxa( taxa )
 morpho.addMissingTaxa( taxa )
 
 ## helpers
-mvi = 1
+moves = VectorMoves()
 n_taxa <- taxa.size()
 
 # Load the model files
@@ -48,15 +48,15 @@ source("scripts/model_Morph_TEFBD.Rev") # Morphological character change model
 # initialize the model object #
 mymodel = model(sf)
 
-mni = 1
+monitors = VectorMonitors()
 
 # Create a vector of monitors #
 # 1. for the full model #
-monitors[mni++] = mnModel(filename="output/bears.log", printgen=10)
+monitors.append( mnModel(filename="output/bears.log", printgen=10) )
 # 2. the tree #
-monitors[mni++] = mnFile(filename="output/bears.trees", printgen=10, pruned_tree)
+monitors.append( mnFile(filename="output/bears.trees", printgen=10, pruned_tree) )
 # 3. and a few select parameters to be printed to the screen #
-monitors[mni++] = mnScreen(printgen=10, age_extant, num_samp_anc, origin_time)
+monitors.append( mnScreen(printgen=10, age_extant, num_samp_anc, origin_time) )
 
 # Initialize the MCMC object #
 mymcmc = mcmc(mymodel, monitors, moves)

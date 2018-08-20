@@ -17,14 +17,14 @@ taxa <- T.taxa()
 ### assume an exponential prior distribution 
 ### and apply a scale proposal
 diversification ~ dnExponential(10.0) 
-moves[mi++] = mvScale(diversification,lambda=1.0,tune=true,weight=3.0)
+moves.append( mvScale(diversification,lambda=1.0,tune=true,weight=3.0) )
 
 ### turnover = death_rate / birth_rate
 ### this parameter can only take values between 0 and 1
 ### use a Beta prior distribution
 ### and a slide move
 turnover ~ dnBeta(2.0, 2.0) 
-moves[mi++] = mvSlide(turnover,delta=1.0,tune=true,weight=3.0)
+moves.append( mvSlide(turnover,delta=1.0,tune=true,weight=3.0) )
 
 ### the parameters of the BDP include birth and death rates
 ### these are deterministic variables of the diversification & turnover
@@ -80,12 +80,12 @@ tmrca_Ursidae := tmrca(timetree,clade_Ursidae)
 ####### Tree Moves #######
 
 ### add moves on the tree node times, including the root time, which is outside of the timetree 
-moves[mi++] = mvNodeTimeSlideUniform(timetree, weight=30.0)
-moves[mi++] = mvTreeScale(tree=timetree, rootAge=root_time, delta=1.0, tune=true, weight=3.0)
-moves[mi++] = mvSlide(root_time, delta=2.0, tune=true, weight=10.0)
-moves[mi++] = mvScale(root_time, lambda=2.0, tune=true, weight=10.0)
+moves.append( mvNodeTimeSlideUniform(timetree, weight=30.0) )
+moves.append( mvTreeScale(tree=timetree, rootAge=root_time, delta=1.0, tune=true, weight=3.0) )
+moves.append( mvSlide(root_time, delta=2.0, tune=true, weight=10.0) )
+moves.append( mvScale(root_time, lambda=2.0, tune=true, weight=10.0) )
 
 ### and moves for the tree topology
-moves[mi++] = mvNNI(timetree, weight=8.0)
-moves[mi++] = mvNarrow(timetree, weight=8.0)
-moves[mi++] = mvFNPR(timetree, weight=8.0)
+moves.append( mvNNI(timetree, weight=8.0) )
+moves.append( mvNarrow(timetree, weight=8.0) )
+moves.append( mvFNPR(timetree, weight=8.0) )

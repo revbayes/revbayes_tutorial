@@ -9,7 +9,7 @@
 ### the clock rate applied to every branch in the tree
 ### with a gamma prior and a scale move
 clock_rate ~ dnGamma(2.0,4.0)
-moves[mi++] = mvScale(clock_rate,lambda=0.5,tune=true,weight=5.0)
+moves.append( mvScale(clock_rate,lambda=0.5,tune=true,weight=5.0) )
 
 ### set up the GTR model and instantaneous rate matrix from file
 source("scripts/m_GTR.Rev")

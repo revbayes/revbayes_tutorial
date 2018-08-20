@@ -77,10 +77,10 @@ Q := fnFreeK(tr) #, root_frequencies)
 # set up moves
 #############
 
-mi = 1
-moves[mi++] = mvScale(lambda) 
-moves[mi++] = mvSimplexElementScale(tr, alpha=10, weight=3)
-moves[mi++] = mvEmpiricalTree( psi, weight=2 )
+moves = VectorMoves()
+moves.append( mvScale(lambda)  )
+moves.append( mvSimplexElementScale(tr, alpha=10, weight=3) )
+moves.append( mvEmpiricalTree( psi, weight=2 ) )
 
 ###############
 # create the model

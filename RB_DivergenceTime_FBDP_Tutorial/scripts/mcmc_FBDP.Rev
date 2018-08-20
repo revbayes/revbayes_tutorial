@@ -14,8 +14,8 @@ taxa <- readTaxonData("data/taxa_data.tsv", delimiter=TAB)
 D_mol <- readDiscreteCharacterData("data/primates_cytb_with_fossils.nex")
 
 
-mvi = 0
-mni = 0
+moves = VectorMoves()
+monitors = VectorMonitors()
 
 
 ##############
@@ -63,18 +63,18 @@ psi ~ dnConstrainedTopology(tree_prior, clade_constraints)
 
 # create some moves that change the stochastic variables
 # all moves are sliding proposals but you could use scaling proposals for the rates too
-moves[++mvi] = mvSlide(diversification,delta=1,tune=true,weight=1)
-moves[++mvi] = mvSlide(turnover,delta=1,tune=true,weight=1)
-moves[++mvi] = mvSlide(fossil_rate,delta=1,tune=true,weight=1)
-moves[++mvi] = mvSlide(root_time,delta=1,tune=true,weight=1)
+moves.append( mvSlide(diversification,delta=1,tune=true,weight=1) )
+moves.append( mvSlide(turnover,delta=1,tune=true,weight=1) )
+moves.append( mvSlide(fossil_rate,delta=1,tune=true,weight=1) )
+moves.append( mvSlide(root_time,delta=1,tune=true,weight=1) )
 
-moves[++mvi] = mvNarrow(psi, weight=5.0)
-moves[++mvi] = mvNNI(psi, weight=1.0)
-moves[++mvi] = mvFNPR(psi, weight=3.0)
-moves[++mvi] = mvSubtreeScale(psi, weight=3.0)
-moves[++mvi] = mvNodeTimeSlideUniform(psi, weight=15.0)
+moves.append( mvNarrow(psi, weight=5.0) )
+moves.append( mvNNI(psi, weight=1.0) )
+moves.append( mvFNPR(psi, weight=3.0) )
+moves.append( mvSubtreeScale(psi, weight=3.0) )
+moves.append( mvNodeTimeSlideUniform(psi, weight=15.0) )
 
-#moves[++mvi] = mvCollapseExpandFossilBranch(psi,process_time,weight=10.0)
+#moves.append( mvCollapseExpandFossilBranch(psi,process_time,weight=10.0) )
 
 
 ################################
@@ -89,8 +89,8 @@ er ~ dnDirichlet(e)
 
 # moves on the substitution process parameters
 # first some moves only changing one value of the simplex
-moves[++mvi] = mvSimplexElementScale(pi, alpha=10.0, tune=true, weight=2.0)
-moves[++mvi] = mvSimplexElementScale(er, alpha=10.0, tune=true, weight=3.0)
+moves.append( mvSimplexElementScale(pi, alpha=10.0, tune=true, weight=2.0) )
+moves.append( mvSimplexElementScale(er, alpha=10.0, tune=true, weight=3.0) )
 
 # the rate matrix
 Q_mol := fnGTR(er,pi)
@@ -107,7 +107,7 @@ alpha ~ dnLognormal( alpha_prior_mean, alpha_prior_sd )
 gamma_rates := fnDiscretizeGamma( alpha, alpha, 4, false )
 
 # add moves for the stationary frequencies, exchangeability rates and the shape parameter
-moves[++mvi] = mvScale(alpha,weight=2)
+moves.append( mvScale(alpha,weight=2) )
 
 
 
@@ -118,7 +118,7 @@ moves[++mvi] = mvScale(alpha,weight=2)
 log_mol_clock_rate ~ dnUniform(-8,2)
 mol_clock_rate := 10^log_mol_clock_rate
 
-moves[++mvi] = mvSlide(log_mol_clock_rate, weight=1.0)
+moves.append( mvSlide(log_mol_clock_rate, weight=1.0) )
 
 
 
@@ -139,9 +139,9 @@ seq_mol.clamp(D_mol)
 mymodel = model(bf)
 
 
-monitors[++mni] = mnModel(filename="output/FBDP.log",printgen=10, separator = TAB)
-#monitors[++mni] = mnFile(filename="output/FBDP.trees",printgen=10, separator = TAB, psi_extant)
-monitors[++mni] = mnScreen(printgen=100, mol_clock_rate, root_time)
+monitors.append( mnModel(filename="output/FBDP.log",printgen=10, separator = TAB) )
+#monitors.append( mnFile(filename="output/FBDP.trees",printgen=10, separator = TAB, psi_extant) )
+monitors.append( mnScreen(printgen=100, mol_clock_rate, root_time) )
 
  
 mymcmc = mcmc(mymodel, monitors, moves)

@@ -13,7 +13,7 @@ br_M <- 5.4E-3
 br_s <- 0.05
 br_mu <- ln(br_M) - ((br_s * br_s) * 0.5)
 base_rate ~ dnLnorm(br_mu, br_s)
-moves[mi++] = mvScale(base_rate,lambda=0.25,tune=true,weight=5.0)
+moves.append( mvScale(base_rate,lambda=0.25,tune=true,weight=5.0) )
 
 ### get the number of branches in the tree
 n_branches <- 2 * n_taxa - 2
@@ -48,10 +48,10 @@ mean_rt := mean(branch_rates)
 
 ### the Gibbs moves for the DPP-distributed variable
 ### these moves are always accepted and are never re-tuned
-moves[mi++] = mvDPPScaleCatVals(branch_rates, ln(2.0), 3.0)
-moves[mi++] = mvDPPAllocateAuxGibbs(branch_rates, 4, 3.0)
-moves[mi++] = mvDPPScaleCatAllocateAux(branch_rates, ln(2.0), 4, 6.0)
-moves[mi++] = mvDPPGibbsConcentration(concentration, n_cats, cp_shape, cp_rate, n_branches, 6.0)
+moves.append( mvDPPScaleCatVals(branch_rates, ln(2.0), 3.0) )
+moves.append( mvDPPAllocateAuxGibbs(branch_rates, 4, 3.0) )
+moves.append( mvDPPScaleCatAllocateAux(branch_rates, ln(2.0), 4, 6.0) )
+moves.append( mvDPPGibbsConcentration(concentration, n_cats, cp_shape, cp_rate, n_branches, 6.0) )
 
 source("RevBayes_scripts/m_GTR.Rev")
 

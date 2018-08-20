@@ -26,7 +26,7 @@ n_tips <- cont_data.ntaxa()
 n_nodes <- 2*n_tips - 1
 n_branches <- 2*n_tips - 2
 
-mvi = 0
+moves = VectorMoves()
 
 
 
@@ -46,21 +46,21 @@ psi <- treeArray[1]
 
 
 log_optim ~ dnUniform(-10,10)
-moves[++mvi] = mvSlide(log_optim,delta=10,tune=true,weight=2)
+moves.append( mvSlide(log_optim,delta=10,tune=true,weight=2) )
 
 logAlpha ~ dnUniform(-10,10)
 alpha := 10^logAlpha
-moves[++mvi] = mvSlide(logAlpha,delta=10,tune=true,weight=2)
+moves.append( mvSlide(logAlpha,delta=10,tune=true,weight=2) )
 
 
 # sigma: variance per unit of time of the Brownian motion
 logSigma ~ dnUniform(-5,5)
 sigma := 10^logSigma
-moves[++mvi] = mvSlide(logSigma, delta=1.0, tune=true, weight=2.0)
+moves.append( mvSlide(logSigma, delta=1.0, tune=true, weight=2.0) )
 
 # use the optim as the root value
 #rootlogmass ~ dnNormal(log_optim,sigma)
-#moves[++mi] = mvSlide(rootlogmass,delta=10,tune=true,weight=2)
+#moves.append( mvSlide(rootlogmass,delta=10,tune=true,weight=2) )
 rootlogmass <- 1.0
 
 # univariate Ornstein-Uhlenbeck process along the tree 

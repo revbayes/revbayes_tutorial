@@ -19,8 +19,8 @@ taxa = data.taxa()
 n_branches = 2 * n_species - 3
 
 
-mvi = 0
-mni = 0
+moves = VectorMoves()
+monitors = VectorMonitors()
 
 n_sites = 4
 n_states = 2
@@ -35,7 +35,7 @@ n_states = 2
 ### we use a uniform prior on the log-transform clock rate
 for (i in 1:n_sites) {
     log_clock_rate[i] ~ dnUniform(-8,2)
-    moves[++mvi] = mvSlide(log_clock_rate[i], weight=2.0)
+    moves.append( mvSlide(log_clock_rate[i], weight=2.0) )
     clock_rate[i] := 10^log_clock_rate[i]
 }
 
@@ -67,11 +67,11 @@ mymodel = model(time_tree)
 
 # Create the monitors:
 # First, a screen monitor with some useful variables:
-monitors[++mni] = mnScreen(printgen=1000, clock_rate)
+monitors.append( mnScreen(printgen=1000, clock_rate) )
 
 # And another monitor for all the model variables:
-#monitors[++mni] = mnModel(filename="output/morph_MK_ind.log", printgen=10)
-monitors[++mni] = mnFile(filename="output/morph_MK_ind.log", printgen=10)
+#monitors.append( mnModel(filename="output/morph_MK_ind.log", printgen=10) )
+monitors.append( mnFile(filename="output/morph_MK_ind.log", printgen=10) )
 
 
 

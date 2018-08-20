@@ -26,7 +26,7 @@ n_tips <- cont_data.ntaxa()
 n_nodes <- 2*n_tips - 1
 n_branches <- 2*n_tips - 2
 
-mvi = 0
+moves = VectorMoves()
 
 
 
@@ -46,13 +46,13 @@ psi <- treeArray[1]
 
 
 log_optim ~ dnUniform(-1000,10^6)
-moves[++mvi] = mvSlide(log_optim,delta=10,tune=true,weight=2)
+moves.append( mvSlide(log_optim,delta=10,tune=true,weight=2) )
 
 # use the optim as the root value
 logmass[n_nodes] := log_optim
 
 logAlpha ~ dnUniform(-1,1)
-moves[++mvi] = mvSlide(logAlpha,delta=10,tune=true,weight=2)
+moves.append( mvSlide(logAlpha,delta=10,tune=true,weight=2) )
 alpha := 10^logAlpha
 
 
@@ -60,14 +60,14 @@ alpha := 10^logAlpha
 logSigma ~ dnUniform(-1,1)
 sigma := 10^logSigma
 
-moves[++mvi] = mvSlide(logSigma, delta=1.0, tune=true, weight=2.0)
+moves.append( mvSlide(logSigma, delta=1.0, tune=true, weight=2.0) )
 
 
 # univariate Ornstein-Uhlenbeck process along the tree # parameterized by sigma
 for (i in (n_nodes-1):(n_tips+1) ) {
   logmass[i] ~ dnOrnsteinUhlenbeck( x0=logmass[psi.parent(i)], theta=log_optim, alpha=alpha, sigma=sigma, time=psi.branchLength(i) )
   # moves on the Ornstein-Uhlenbeck process
-  moves[++mvi] = mvSlide( logmass[i], delta=10, tune=true ,weight=2)
+  moves.append( mvSlide( logmass[i], delta=10, tune=true ,weight=2) )
 }
 
 for (i in n_tips:1 ) {

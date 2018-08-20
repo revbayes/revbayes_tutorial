@@ -34,8 +34,8 @@ taxa = observed_phylogeny.taxa()
 data_biogeo = readCharacterDataDelimited("data/primates_biogeo.tsv", stateLabels="0123", type="NaturalNumbers", delimiter="\t", headers=TRUE)
 
 # set the move and monitor indices
-mvi = 0
-mni = 0
+moves = VectorMoves()
+monitors = VectorMonitors()
 
 
 
@@ -68,9 +68,9 @@ extinction_rates[4] ~ dnLognormal(rate_mean, rate_sd) # extinction when in both 
 # state 0.
 
 # add MCMC moves for each extinction rate
-moves[++mvi] = mvSlide( extinction_rates[2], weight=4 )
-moves[++mvi] = mvSlide( extinction_rates[3], weight=4 )
-moves[++mvi] = mvSlide( extinction_rates[4], weight=4 )
+moves.append( mvSlide( extinction_rates[2], weight=4 ) )
+moves.append( mvSlide( extinction_rates[3], weight=4 ) )
+moves.append( mvSlide( extinction_rates[4], weight=4 ) )
 
 # Let's also create a deterministic variable to monitor the overall extinction rate
 total_extinction := sum(extinction_rates)
@@ -85,8 +85,8 @@ anagenetic_dispersal_13 ~ dnLognormal(rate_mean, rate_sd) # disperse from New to
 anagenetic_dispersal_23 ~ dnLognormal(rate_mean, rate_sd) # disperse from Old to New World 10 -> 11
 
 # and add MCMC moves for each anagenetic dispersal rate
-moves[++mvi] = mvSlide( anagenetic_dispersal_13, weight=4 )
-moves[++mvi] = mvSlide( anagenetic_dispersal_23, weight=4 )
+moves.append( mvSlide( anagenetic_dispersal_13, weight=4 ) )
+moves.append( mvSlide( anagenetic_dispersal_23, weight=4 ) )
 
 # The anagenetic transitions will be stored in a 4 by 4
 # instantaneous rate matrix. We will construct this by
@@ -132,7 +132,7 @@ ana_rate_matrix := fnFreeK(r, rescaled=false)
 
 # We'll set all these widespread sympatric events to have the same speciation rate:
 speciation_wide_sympatry ~ dnLognormal(rate_mean, rate_sd)
-moves[++mvi] = mvSlide( speciation_wide_sympatry, weight=4 )
+moves.append( mvSlide( speciation_wide_sympatry, weight=4 ) )
 
 # Define the widespread sympatric cladogenetic events:
 clado_events[1] = [1, 1, 1] # 01 -> 01, 01
@@ -145,7 +145,7 @@ speciation_rates[2] := speciation_wide_sympatry/2
 # Subset sympatry is where one daughter lineage inherits the full
 # ancestral range but the other lineage inherits only a single region.
 speciation_sub_sympatry ~ dnLognormal(rate_mean, rate_sd)
-moves[++mvi] = mvSlide( speciation_sub_sympatry, weight=4 )
+moves.append( mvSlide( speciation_sub_sympatry, weight=4 ) )
 
 # Define the subset sympatry events and assign each a speciation rate:
 clado_events[3] = [3, 3, 1] # 11 -> 11, 01 
@@ -160,7 +160,7 @@ speciation_rates[6] := speciation_sub_sympatry/4
 # Allopatric cladogenesis is when the two daughter lineages
 # split the ancestral range:
 speciation_allopatry ~ dnLognormal(rate_mean, rate_sd)
-moves[++mvi] = mvSlide( speciation_allopatry, weight=4 )
+moves.append( mvSlide( speciation_allopatry, weight=4 ) )
 
 # Define the allopatric events:
 clado_events[7] = [3, 1, 2] # 11 -> 01, 10
@@ -222,9 +222,9 @@ classe.clampCharData( data_biogeo )
 mymodel = model(classe)
 
 # set up the monitors that will output parameter values to file and screen 
-monitors[++mni] = mnModel(filename="output/primates_ClaSSE.log", printgen=1)
-monitors[++mni] = mnJointConditionalAncestralState(tree=observed_phylogeny, cdbdp=classe, type="NaturalNumbers", printgen=1, withTips=true, withStartStates=true, filename="output/anc_states_primates_ClaSSE.log")
-monitors[++mni] = mnScreen(printgen=1, speciation_wide_sympatry, speciation_sub_sympatry, speciation_allopatry, extinction_rates)
+monitors.append( mnModel(filename="output/primates_ClaSSE.log", printgen=1) )
+monitors.append( mnJointConditionalAncestralState(tree=observed_phylogeny, cdbdp=classe, type="NaturalNumbers", printgen=1, withTips=true, withStartStates=true, filename="output/anc_states_primates_ClaSSE.log") )
+monitors.append( mnScreen(printgen=1, speciation_wide_sympatry, speciation_sub_sympatry, speciation_allopatry, extinction_rates) )
 
 
 

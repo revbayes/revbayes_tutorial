@@ -29,7 +29,7 @@ names <- contData.names()
 numNodes <- 2*taxaCount - 1
 numBranches <- 2*taxaCount - 2
 
-mi = 0
+moves = VectorMoves()
 
 
 
@@ -56,7 +56,7 @@ psi <- treeArray[1]
 # We need to initialize the probability of a rate change with a very low value because we want to start our MCMC at or close to the strict clock model.
 # Starting from a strict clock model makes it easier for the MCMC to add new local clocks.
 #rho.setValue(0.001)
-#moves[++mi] = mvSlide(rho, delta=0.01, tune=true, weight=2.0)
+#moves.append( mvSlide(rho, delta=0.01, tune=true, weight=2.0) )
 
 rho <- 0.5
 
@@ -71,8 +71,8 @@ for (i in numBranches:1) {
       clockRate[i] := clockRate[psi.parent(i)] * clockRateMultiplier[i]
    }
    clockRateChange[i] := ifelse( clockRateMultiplier[i] == 1, 0, 1 )
-   moves[++mi] = mvRJSwitch(clockRateMultiplier[i], weight=1)
-   moves[++mi] = mvScale(clockRateMultiplier[i], lambda=0.1, tune=true, weight=1)
+   moves.append( mvRJSwitch(clockRateMultiplier[i], weight=1) )
+   moves.append( mvScale(clockRateMultiplier[i], lambda=0.1, tune=true, weight=1) )
 }
 
 numRateChanges := sum( clockRateChange )
@@ -94,7 +94,7 @@ sigma := 10^logSigma
 # where all traits share the same per branch rate shift but each trait can have its own
 # overall rate multiplier
 
-moves[++mi] = mvSlide(logSigma, delta=1.0, tune=true, weight=2.0)
+moves.append( mvSlide(logSigma, delta=1.0, tune=true, weight=2.0) )
 
 
 # univariate Brownian process along the tree

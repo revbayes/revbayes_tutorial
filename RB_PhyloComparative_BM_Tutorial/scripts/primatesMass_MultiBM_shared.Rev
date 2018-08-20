@@ -1,4 +1,4 @@
-mi = 0
+moves = VectorMoves()
 
 # read the data 
 contData <- readContinuousCharacterData("data/primates_lhtlog.nex")
@@ -13,10 +13,10 @@ psi <- treeArray[1]
 logSigma ~ dnUniform(-5,5)
 sigma := 10^logSigma
 
-moves[++mi] = mvSlide(logSigma, delta=1.0, tune=true, weight=2.0)
+moves.append( mvSlide(logSigma, delta=1.0, tune=true, weight=2.0) )
 
 siteRateDiff ~ dnBeta(1,1)
-moves[++mi] = mvSlide(siteRateDiff,delta=10,tune=true,weight=2)
+moves.append( mvSlide(siteRateDiff,delta=10,tune=true,weight=2) )
 perSiteRates[1] := siteRateDiff
 perSiteRates[2] := siteRateDiff
 perSiteRates[3] := abs(1.0 - siteRateDiff)
@@ -24,7 +24,7 @@ perSiteRates[4] := abs(1.0 - siteRateDiff)
 
 for (i in 1:4) {
    rootlogmass[i] ~ dnUniform(-100,100)
-   moves[++mi] = mvSlide(rootlogmass[i],delta=10,tune=true,weight=2) 
+   moves.append( mvSlide(rootlogmass[i],delta=10,tune=true,weight=2)  )
 }
 
 # univariate Brownian process along the tree

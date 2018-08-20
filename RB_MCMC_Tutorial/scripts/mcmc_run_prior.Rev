@@ -17,8 +17,8 @@ n_branches <- 2 * n_species - 3
 taxa <- data.taxa()
 
 
-mvi = 0 
-mni = 0
+moves = VectorMoves() 
+monitors = VectorMonitors()
 
 
 ######################
@@ -28,15 +28,15 @@ mni = 0
 # specify the stationary frequency parameters
 pi_prior <- v(1,1,1,1) 
 pi ~ dnDirichlet(pi_prior)
-moves[++mvi] = mvBetaSimplex(pi, weight=2.0)
-moves[++mvi] = mvDirichletSimplex(pi, weight=1.0)
+moves.append( mvBetaSimplex(pi, weight=2.0) )
+moves.append( mvDirichletSimplex(pi, weight=1.0) )
 
 
 # specify the exchangeability rate parameters
 er_prior <- v(1,1,1,1,1,1)
 er ~ dnDirichlet(er_prior)
-moves[++mvi] = mvBetaSimplex(er, weight=3.0)
-moves[++mvi] = mvDirichletSimplex(er, weight=1.5)
+moves.append( mvBetaSimplex(er, weight=3.0) )
+moves.append( mvDirichletSimplex(er, weight=1.5) )
 
 
 # create a deterministic variable for the rate matrix, GTR
@@ -52,12 +52,12 @@ alpha_prior_mean <- ln(2.0)
 alpha_prior_sd <- 0.587405
 alpha ~ dnLognormal( alpha_prior_mean, alpha_prior_sd )
 sr := fnDiscretizeGamma( alpha, alpha, 4, false )
-moves[++mvi] = mvScale(alpha, lambda=1.0, weight=2.0)
+moves.append( mvScale(alpha, lambda=1.0, weight=2.0) )
 
 
 # the probability of a site being invariable, +I
 p_inv ~ dnBeta(1,1)
-moves[++mvi] = mvBetaProbability(p_inv, weight=2.0)
+moves.append( mvBetaProbability(p_inv, weight=2.0) )
 
 
 ##############
@@ -67,13 +67,13 @@ moves[++mvi] = mvBetaProbability(p_inv, weight=2.0)
 out_group = clade("Galeopterus_variegatus")
 # Prior distribution on the tree topology	
 topology ~ dnUniformTopology(taxa, outgroup=out_group)
-moves[++mvi] = mvNNI(topology, weight=5.0)
-moves[++mvi] = mvSPR(topology, weight=1.0)
+moves.append( mvNNI(topology, weight=5.0) )
+moves.append( mvSPR(topology, weight=1.0) )
 
 # Branch length prior
 for (i in 1:n_branches) {
     bl[i] ~ dnExponential(10.0)
-	moves[++mvi] = mvScale(bl[i],lambda=1)
+	moves.append( mvScale(bl[i],lambda=1) )
 }
 
 TL := sum(bl)
@@ -101,9 +101,9 @@ seq.clamp(data)
 mymodel = model(psi)
 
 # add monitors
-monitors[++mni] = mnScreen(alpha, p_inv, TL, printgen=1000)
-monitors[++mni] = mnFile(psi, filename="output/primates_cytb_prior.trees", printgen=10)
-monitors[++mni] = mnModel(filename="output/primates_cytb_prior.log",printgen=10)
+monitors.append( mnScreen(alpha, p_inv, TL, printgen=1000) )
+monitors.append( mnFile(psi, filename="output/primates_cytb_prior.trees", printgen=10) )
+monitors.append( mnModel(filename="output/primates_cytb_prior.log",printgen=10) )
 
 # run the analysis
 mymcmc = mcmc(mymodel, moves, monitors, nruns=1, moveschedule="random")

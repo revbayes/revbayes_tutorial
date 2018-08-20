@@ -77,10 +77,10 @@ root_frequencies <- simplex(1,1,1,1)
 # set up moves
 #############
 
-mi = 0
+moves = VectorMoves()
 
-moves[++mi] = mvEmpiricalTree(psi)
-moves[++mi] = mvScale(lambda) 
+moves.append( mvEmpiricalTree(psi) )
+moves.append( mvScale(lambda)  )
 
 
 ###############

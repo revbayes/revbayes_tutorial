@@ -17,8 +17,8 @@ morpho <- readDiscreteCharacterData("Data/bears.nex")
 #Import the trait we'd like to map to the tree
 bears_traits = readCharacterDataDelimited("data/bears_traits.tsv", stateLabels=(0+1), headers=FALSE)
 ## helpers
-mvi = 1
-mni = 1
+moves = VectorMoves()
+monitors = VectorMonitors()
 names <- morpho.names()
 n_taxa <- names.size()
 n_branches <- 2 * n_taxa - 2
@@ -45,7 +45,7 @@ for (j in 1:names.size()) {
     }
     j += 1
 }
-mi = 0
+moves = VectorMoves()
 
 
 # We make make a vector of clade objects.

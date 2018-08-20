@@ -16,8 +16,8 @@ D_morph <- readDiscreteCharacterData("data/morph_binary.nex")
 n_states = 2
 n_sites = D_morph.nchar()
 
-mvi = 0
-mni = 0
+moves = VectorMoves()
+monitors = VectorMonitors()
 
 ##############
 # Tree model #
@@ -48,18 +48,18 @@ psi ~ dnFBDP(startAge=root_time, lambda=speciation, mu=extinction, psi=fossil_ra
 
 # create some moves that change the stochastic variables
 # all moves are sliding proposals but you could use scaling proposals for the rates too
-moves[++mvi] = mvSlide(diversification,delta=1,tune=true,weight=1)
-moves[++mvi] = mvSlide(turnover,delta=1,tune=true,weight=1)
-moves[++mvi] = mvSlide(fossil_rate,delta=1,tune=true,weight=1)
-moves[++mvi] = mvSlide(root_time,delta=1,tune=true,weight=1)
+moves.append( mvSlide(diversification,delta=1,tune=true,weight=1) )
+moves.append( mvSlide(turnover,delta=1,tune=true,weight=1) )
+moves.append( mvSlide(fossil_rate,delta=1,tune=true,weight=1) )
+moves.append( mvSlide(root_time,delta=1,tune=true,weight=1) )
 
-moves[++mvi] = mvNarrow(psi, weight=5.0)
-moves[++mvi] = mvNNI(psi, weight=1.0)
-moves[++mvi] = mvFNPR(psi, weight=3.0)
-moves[++mvi] = mvSubtreeScale(psi, weight=3.0)
-moves[++mvi] = mvNodeTimeSlideUniform(psi, weight=15.0)
+moves.append( mvNarrow(psi, weight=5.0) )
+moves.append( mvNNI(psi, weight=1.0) )
+moves.append( mvFNPR(psi, weight=3.0) )
+moves.append( mvSubtreeScale(psi, weight=3.0) )
+moves.append( mvNodeTimeSlideUniform(psi, weight=15.0) )
 
-#moves[++mvi] = mvCollapseExpandFossilBranch(psi,process_time,weight=10.0)
+#moves.append( mvCollapseExpandFossilBranch(psi,process_time,weight=10.0) )
 
 
 
@@ -70,8 +70,8 @@ moves[++mvi] = mvNodeTimeSlideUniform(psi, weight=15.0)
 # Now create a deterministic variable for the nucleotide substitution rate matrix.
 for (i in 1:n_sites) {
     pi_morph[i] ~ dnDirichlet( rep(1,n_states) )
-    moves[++mvi] = mvBetaSimplex(pi_morph[i], weight=n_states)
-    moves[++mvi] = mvDirichletSimplex(pi_morph[i], offset=1, weight=n_states)
+    moves.append( mvBetaSimplex(pi_morph[i], weight=n_states) )
+    moves.append( mvDirichletSimplex(pi_morph[i], offset=1, weight=n_states) )
 #    pi[i] <- simplex(1,1)
     Q_morph[i] := fnF81( pi_morph[i] )
 }
@@ -85,7 +85,7 @@ for (i in 1:n_sites) {
 
 ### we use a uniform prior on the log-transform clock rate
 log_morph_clock_rate ~ dnUniform(-6,1)
-moves[++mvi] = mvSlide(log_morph_clock_rate, weight=2.0)
+moves.append( mvSlide(log_morph_clock_rate, weight=2.0) )
 morph_clock_rate := 10^log_morph_clock_rate
 
 
@@ -114,9 +114,9 @@ for (i in 1:n_sites) {
 mymodel = model(psi)
 
 
-monitors[++mni] = mnModel(filename="output/FBDP_morph_ind_rf.log",printgen=10, separator = TAB)
-monitors[++mni] = mnFile(filename="output/FBDP_morph_ind_rf.trees",printgen=100, separator = TAB, psi)
-monitors[++mni] = mnScreen(printgen=1000, morph_clock_rate, root_time)
+monitors.append( mnModel(filename="output/FBDP_morph_ind_rf.log",printgen=10, separator = TAB) )
+monitors.append( mnFile(filename="output/FBDP_morph_ind_rf.trees",printgen=100, separator = TAB, psi) )
+monitors.append( mnScreen(printgen=1000, morph_clock_rate, root_time) )
 
  
 mymcmc = mcmc(mymodel, monitors, moves)

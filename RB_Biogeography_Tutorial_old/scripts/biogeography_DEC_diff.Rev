@@ -5,8 +5,8 @@ tree_fn = fp + "data/primates.tree"
 out_str = "bg_diff"
 
 # helper variables
-mvi = 1 # index to add MCMC moves
-mni = 1 # index to add monitors
+moves = VectorMoves() # vector to add MCMC moves
+monitors = VectorMonitors() # vector to add monitors
 
 # hard coded for now
 n_areas = 3

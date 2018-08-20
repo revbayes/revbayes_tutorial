@@ -22,8 +22,8 @@ alpha.setValue(0.0)
 beta.setValue(0.0)
 
 mi <- 1
-moves[mi++] = mvSlide(alpha)
-moves[mi++] = mvSlide(beta)
+moves.append( mvSlide(alpha) )
+moves.append( mvSlide(beta) )
 
 for (i in 1:x.size() ) {
     lambda[i] := exp( alpha + beta * x[i] )

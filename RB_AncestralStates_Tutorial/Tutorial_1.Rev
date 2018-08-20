@@ -58,7 +58,7 @@ for (j in 1:names.size()) {
     }
     j += 1
 }
-mi = 0
+moves = VectorMoves()
 
 # We make make a vector of clade objects.
 clade_ingroup = clade(ingroup)
@@ -83,9 +83,9 @@ topology ~ dnUniformTopology(taxa=names, outgroup=clade_outgroup, rooted=TRUE)
 # Use the starting tree topology consistent with the rooting constraint.
 #topology.setValue(starting_tree.topology())
 
-# Initialize an index for our moves, and add moves on the topology.
-mi = 1
-moves[mi++] = mvNNI(topology, weight=10.0)
+# Initialize a vector for our moves, and add moves on the topology.
+moves = VectorMoves()
+moves.append( mvNNI(topology, weight=10.0) )
 
 # Create a stochastic node for each branch length.
 for (i in 1:n_branches) {
@@ -94,7 +94,7 @@ for (i in 1:n_branches) {
     br_lens[i] ~ dnExponential(10.0)
 
     # And add a simple scaling move since the branch length is a positive real number.
-	moves[mi++] = mvScale(br_lens[i], lambda=2, weight=1)
+	moves.append( mvScale(br_lens[i], lambda=2, weight=1) )
 
 }
 
@@ -115,12 +115,12 @@ phylogeny := treeAssembly(topology, br_lens)
 # Use a flat Dirichlet prior for the exchange rates.
 er_prior <- v(1,1,1,1,1,1)
 er ~ dnDirichlet(er_prior)
-moves[mi++] = mvSimplexElementScale(er, alpha=10, weight=3)
+moves.append( mvSimplexElementScale(er, alpha=10, weight=3) )
 
 # And also a flat Dirichlet prior for the stationary base frequencies.
 pi_prior <- v(1,1,1,1)
 pi ~ dnDirichlet(pi_prior)
-moves[mi++] = mvSimplexElementScale(pi, alpha=10, weight=2)
+moves.append( mvSimplexElementScale(pi, alpha=10, weight=2) )
 
 # Now create a deterministic variable for the nucleotide substitution rate matrix.
 Q := fnGTR(er,pi)
@@ -158,9 +158,9 @@ R := fnChromosomes(max_chromo, lambda, delta, rho)
 root_frequencies := simplex(rep(1, max_chromo))
 
 # Add moves for each of the rates.
-moves[mi++] = mvScale(lambda, lambda=1, weight=1) 
-moves[mi++] = mvScale(delta, lambda=1, weight=1) 
-moves[mi++] = mvScale(rho, lambda=1, weight=1) 
+moves.append( mvScale(lambda, lambda=1, weight=1)  )
+moves.append( mvScale(delta, lambda=1, weight=1)  )
+moves.append( mvScale(rho, lambda=1, weight=1)  )
 
 # Now another stochastic node for the chromosome evolution continuous-time Markov chain (CTMC).
 chromo_ctmc ~ dnPhyloCTMC(Q=R, tree=phylogeny, rootFreq=root_frequencies,type="NaturalNumbers")

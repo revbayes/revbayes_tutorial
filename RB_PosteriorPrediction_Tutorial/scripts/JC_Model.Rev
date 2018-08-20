@@ -19,8 +19,8 @@ n_sites <- data.nchar()
 names <- data.names()
 n_branches <- 2 * n_species - 3
 
-# set my move index
-mi = 0
+# vector to add MCMC moves
+moves = VectorMoves()
 
 
 
@@ -43,8 +43,8 @@ Q := fnJC(4)
 topology ~ dnUniformTopology(names)
 
 # moves on the tree
-moves[++mi] = mvNNI(topology)
-moves[++mi] = mvSPR(topology)
+moves.append( mvNNI(topology) )
+moves.append( mvSPR(topology) )
 
 
 #### Specify a prior and moves on the branch lengths #### 
@@ -54,7 +54,7 @@ for (i in 1:n_branches) {
   br_lens[i] ~ dnExponential(10.0)
   
   # Add a move for the branch length. We just take a simple scaling move since the value is a positive real number.
-  moves[++mi] = mvScale(br_lens[i]) 
+  moves.append( mvScale(br_lens[i])  )
 }
 
 TL := sum(br_lens)

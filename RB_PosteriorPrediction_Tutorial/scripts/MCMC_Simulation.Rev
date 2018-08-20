@@ -8,13 +8,13 @@
 
 source( model_file_name )
 
-mni = 0
+monitors = VectorMonitors()
 
 
-monitors[++mni] = mnModel(filename="output_" + model_name + "/" + analysis_name + "_posterior.log",printgen=100, separator = TAB)
-monitors[++mni] = mnFile(filename="output_" + model_name + "/" + analysis_name + "_posterior.trees",printgen=100, separator = TAB, phylogeny)
-monitors[++mni] = mnScreen(printgen=100, TL)
-monitors[++mni] = mnStochasticVariable(filename="output_" + model_name + "/" + analysis_name + "_posterior.var",printgen=100)
+monitors.append( mnModel(filename="output_" + model_name + "/" + analysis_name + "_posterior.log",printgen=100, separator = TAB) )
+monitors.append( mnFile(filename="output_" + model_name + "/" + analysis_name + "_posterior.trees",printgen=100, separator = TAB, phylogeny) )
+monitors.append( mnScreen(printgen=100, TL) )
+monitors.append( mnStochasticVariable(filename="output_" + model_name + "/" + analysis_name + "_posterior.var",printgen=100) )
 
 
 mymcmc = mcmc(mymodel, monitors, moves, nruns=2)

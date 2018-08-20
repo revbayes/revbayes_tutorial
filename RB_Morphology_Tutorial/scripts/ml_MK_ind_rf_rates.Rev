@@ -19,8 +19,8 @@ taxa = data.taxa()
 n_branches = 2 * n_species - 3
 
 
-mvi = 0
-mni = 0
+moves = VectorMoves()
+monitors = VectorMonitors()
 
 n_sites = 4
 n_states = 2
@@ -35,7 +35,7 @@ n_states = 2
 ### we use a uniform prior on the log-transform clock rate
 for (i in 1:n_sites) {
     log_clock_rate[i] ~ dnUniform(-8,2)
-    moves[++mvi] = mvSlide(log_clock_rate[i], weight=2.0)
+    moves.append( mvSlide(log_clock_rate[i], weight=2.0) )
     clock_rate[i] := 10^log_clock_rate[i]
 }
 
@@ -46,16 +46,16 @@ for (i in 1:n_sites) {
 # Now create a deterministic variable for the nucleotide substitution rate matrix.
 for (i in 1:n_sites) {
     pi[i] ~ dnDirichlet( rep(1,n_states) )
-    moves[++mvi] = mvBetaSimplex(pi[i], weight=n_states)
-    moves[++mvi] = mvDirichletSimplex(pi[i], offset=1, weight=n_states)
+    moves.append( mvBetaSimplex(pi[i], weight=n_states) )
+    moves.append( mvDirichletSimplex(pi[i], offset=1, weight=n_states) )
 #    pi[i] <- simplex(1,1)
     Q[i] := fnF81( pi[i] )
 }
 
 for (i in 1:n_sites) {
     rf[i] ~ dnDirichlet( rep(1,n_states) )
-    moves[++mvi] = mvBetaSimplex(rf[i], weight=n_states)
-    moves[++mvi] = mvDirichletSimplex(rf[i], offset=1, weight=n_states)
+    moves.append( mvBetaSimplex(rf[i], weight=n_states) )
+    moves.append( mvDirichletSimplex(rf[i], offset=1, weight=n_states) )
 }
 
 # Create a stochastic node for the sequence evolution continuous-time Markov chain (CTMC).
@@ -78,11 +78,11 @@ mymodel = model(time_tree)
 
 # Create the monitors:
 # First, a screen monitor with some useful variables:
-monitors[++mni] = mnScreen(printgen=1000, clock_rate)
+monitors.append( mnScreen(printgen=1000, clock_rate) )
 
 # And another monitor for all the model variables:
-#monitors[++mni] = mnModel(filename="output/morph_MK_ind.log", printgen=10)
-monitors[++mni] = mnFile(filename="output/morph_MK_ind.log", pi[1], pi[2], pi[3], pi[4], rf[1], rf[2], rf[3], rf[4], printgen=10)
+#monitors.append( mnModel(filename="output/morph_MK_ind.log", printgen=10) )
+monitors.append( mnFile(filename="output/morph_MK_ind.log", pi[1], pi[2], pi[3], pi[4], rf[1], rf[2], rf[3], rf[4], printgen=10) )
 
 
 
