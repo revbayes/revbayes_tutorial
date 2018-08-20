@@ -160,11 +160,12 @@ psi <- treeArray[1]
 %\end{snugshade*}}
 
 As usual, we start be initializing some useful helper variables.
-For example, we set up a counter variable for the number of moves that we already added to our analysis.
+%For example, we set up a counter variable for the number of moves that we already added to our analysis.
+For example, we set up a vector for the moves.
 This will make it much easier if we extend the model or analysis to include additional moves or to remove some moves.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-mi = 0 
+moves = VectorMoves() 
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -185,7 +186,7 @@ sigma := 10^logSigma
 Since the rate of trait evolution \cl{logSigma} is a stochastic variable and we want to estimate it, we need to add a sliding move on it
 {\tt \small \begin{snugshade*}
 \begin{lstlisting}
-moves[++mi] = mvSlide(logSigma, delta=1.0, tune=true, weight=2.0)
+moves.append( mvSlide(logSigma, delta=1.0, tune=true, weight=2.0) )
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -272,7 +273,7 @@ rootlogmass ~ dnUniform(-100,100)
 Next, we'll specify a sliding move that proposes new values for the \cl{rootlogmass} randomly drawn from a window centered around the current value.
 {\tt \small \begin{snugshade*}
 \begin{lstlisting}
-moves[++mi] = mvSlide(rootlogmass,delta=10,tune=true,weight=2) 
+moves.append( mvSlide(rootlogmass,delta=10,tune=true,weight=2)  )
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -335,7 +336,7 @@ rootlogmass ~ dnUniform(-100,100)
 Next, we'll specify a sliding move that proposes new values for the \cl{rootlogmass} randomly drawn from a window centered around the current value.
 {\tt \small \begin{snugshade*}
 \begin{lstlisting}
-moves[++mi] = mvSlide(rootlogmass,delta=10,tune=true,weight=2) 
+moves.append( mvSlide(rootlogmass,delta=10,tune=true,weight=2)  )
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -356,7 +357,7 @@ for (i in (numNodes-1):(numTips+1) ) {
   logmass[i] ~ dnNormal( logmass[psi.parent(i)], sd=sigma*sqrt(psi.branchLength(i)) )
 
   # moves on the Brownian process
-  moves[++mi] = mvSlide( logmass[i], delta=10, tune=true ,weight=2) 
+  moves.append( mvSlide( logmass[i], delta=10, tune=true ,weight=2)  )
 }
 \end{lstlisting}
 \end{snugshade*}}
@@ -444,7 +445,7 @@ Calculate the 95\% credible interval for the rate of evolution of the log of bod
 %move the trend parameter during the MCMC, using a regular sliding move:
 %{\tt \small \begin{snugshade*}
 %\begin{lstlisting}
-%moves[++mi] = mvSlide(copestrend, delta=2.0, tune=true, weight=3.0)
+%moves.append( mvSlide(copestrend, delta=2.0, tune=true, weight=3.0) )
 %\end{lstlisting}
 %\end{snugshade*}}
 %
@@ -545,26 +546,26 @@ The model is now entirely specified. We can define the moves on its parameters.
 push a scaling move on $\kappa$:
 {\tt \small \begin{snugshade*}
 \begin{lstlisting}
-moves[++mi] = mvScale(kappa, lambda=2.0, tune=true, weight=3.0)
+moves.append( mvScale(kappa, lambda=2.0, tune=true, weight=3.0) )
 \end{lstlisting}
 \end{snugshade*}}
 
 a sliding move on the Brownian process
 {\tt \small \begin{snugshade*}
 \begin{lstlisting}
-moves[++mi] = mvMultivariateRealNodeValTreeSliding(process=X, lambda=10, tune=true,weight=100)
+moves.append( mvMultivariateRealNodeValTreeSliding(process=X, lambda=10, tune=true,weight=100) )
 \end{lstlisting}
 \end{snugshade*}}
 a global translation move on the Brownian process (component-wise, that is, a random global translation across the entire phylogeny is applied to one trait taken at random):
 {\tt \small \begin{snugshade*}
 \begin{lstlisting}
-moves[++mi] = mvMultivariateRealNodeValTreeTranslation(process=X, lambda=1, tune=true, weight=1)
+moves.append( mvMultivariateRealNodeValTreeTranslation(process=X, lambda=1, tune=true, weight=1) )
 \end{lstlisting}
 \end{snugshade*}}
 finally, a conjugate Gibbs move for $\Sigma$: as it turns out, conditional on $\kappa$ and the Brownian process $X$, it is possible to directly resample $\Sigma$ from its conditional posterior distribution \citep{Lartillot2011}. In \RevBayes, this is implemented as follows:
 {\tt \small \begin{snugshade*}
 \begin{lstlisting}
-moves[index] <- mvConjugateInverseWishartBrownian(sigma=Sigma, process=X, kappa=kappa, df=df, weight=1)
+moves.append( mvConjugateInverseWishartBrownian(sigma=Sigma, process=X, kappa=kappa, df=df, weight=1) )
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -594,7 +595,7 @@ we can also get all correlation coefficients into a single vector (you can skip 
 {\tt \small \begin{snugshade*}
 \begin{lstlisting}
 # initialize a running index
-corrindex = 1
+corrmoves = VectorMoves()
 # loop over all pairs of traits
 for (i in 1:(nTraits-1))    {
     for (j in (i+1):nTraits) {
@@ -737,15 +738,15 @@ load the sequence data matrix specified in \cl{data/plac40\_4fold.nex} and condi
 in the moves section, you should add moves for divergence times:
 {\tt \small \begin{snugshade*}
 \begin{lstlisting}
-moves[++mi] = mvSubtreeScale(psi, weight=5.0)
-moves[++mi] = mvNodeTimeSlideUniform(psi, weight=10.0)
+moves.append( mvSubtreeScale(psi, weight=5.0) )
+moves.append( mvNodeTimeSlideUniform(psi, weight=10.0) )
 \end{lstlisting}
 \end{snugshade*}}
 you would add topology moves here (again, only in a second step):
 {\tt \small \begin{snugshade*}
 \begin{lstlisting}
-moves[++mi] = mvNNI(psi, weight=5.0)
-moves[++mi] = mvFNPR(psi, weight=5.0)
+moves.append( mvNNI(psi, weight=5.0) )
+moves.append( mvFNPR(psi, weight=5.0) )
 \end{lstlisting}
 \end{snugshade*}}
 finally, you should add moves for the parameters of the substitution model.

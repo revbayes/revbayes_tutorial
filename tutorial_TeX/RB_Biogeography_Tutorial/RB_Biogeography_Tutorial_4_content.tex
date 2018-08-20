@@ -63,8 +63,8 @@ Add the analysis helper variables
 
 \begin{snugshade}
 \begin{lstlisting}
-mvi = 1
-mni = 1
+moves = VectorMoves()
+monitors = VectorMonitors()
 n_gen = 1e5    # more parameters, longer run!
 \end{lstlisting}
 \end{snugshade}
@@ -179,7 +179,7 @@ Assign root age with a maximum age of 15Ma to reflect the fossil pollen record f
 \begin{snugshade}
 \begin{lstlisting}
 root_age ~ dnUniform(0, 15)
-moves[mvi++] = mvScale(root_age, weight=2)
+moves.append( mvScale(root_age, weight=2) )
 \end{lstlisting}
 \end{snugshade}
 
@@ -197,9 +197,9 @@ These priors generate a relatively uniform root age distribution between 2.5--15
 \begin{snugshade}
 \begin{lstlisting}
 birth ~ dnExp(1)
-moves[mvi++] = mvScale(birth)
+moves.append( mvScale(birth) )
 death ~ dnExp(1)
-moves[mvi++] = mvScale(death)
+moves.append( mvScale(death) )
 \end{lstlisting}
 \end{snugshade}
 
@@ -214,9 +214,9 @@ tree ~ dnBDP(lambda=birth, mu=death, rho=rho, rootAge=root_age, taxa=taxa)
 Add topology and branch length moves
 \begin{snugshade}
 \begin{lstlisting}
-moves[mvi++] = mvNNI(tree, weight=n_branches/2)
-moves[mvi++] = mvFNPR(tree, weight=n_branches/8)
-moves[mvi++] = mvNodeTimeSlideUniform(tree, weight=n_branches/2)
+moves.append( mvNNI(tree, weight=n_branches/2) )
+moves.append( mvFNPR(tree, weight=n_branches/8) )
+moves.append( mvNodeTimeSlideUniform(tree, weight=n_branches/2) )
 \end{lstlisting}
 \end{snugshade}
 
@@ -241,7 +241,7 @@ This prior is uniform over orders of magnitude, between $10^{-6}$ and $10^3$, an
 \begin{lstlisting}
 log10_rate_mol ~ dnUniform(-6, 3)
 log10_rate_mol.setValue(-1)
-moves[mvi++] = mvSlide(log10_rate_mol, weight=5, delta=0.2)
+moves.append( mvSlide(log10_rate_mol, weight=5, delta=0.2) )
 rate_mol := 10^log10_rate_mol
 \end{lstlisting}
 \end{snugshade}
@@ -254,7 +254,7 @@ branch_sd <- 1.0
 branch_mean <- 0.0 - 0.5 * branch_sd^2
 for (i in 1:n_branches) {
     branch_rate_multiplier[i] ~ dnLognormal(mean=branch_mean, sd=branch_sd)
-    moves[mvi++] = mvScale(branch_rate_multiplier[i])
+    moves.append( mvScale(branch_rate_multiplier[i]) )
     branch_rates[i] := rate_mol * branch_rate_multiplier[i]
 }
 \end{lstlisting}
@@ -266,7 +266,7 @@ First, we create a Gamma-distributed transition-transversion (Ts/Tv) rate ratio 
 \begin{snugshade}
 \begin{lstlisting}
 kappa ~ dnGamma(2,2)
-moves[mvi++] = mvScale(kappa)
+moves.append( mvScale(kappa) )
 \end{lstlisting}
 \end{snugshade}
 
@@ -275,7 +275,7 @@ then create a flat Dirichlet prior on the base frequencies over A, C, G, and T
 \begin{snugshade}
 \begin{lstlisting}
 bf ~ dnDirichlet([1,1,1,1])
-moves[mvi++] = mvSimplexElementScale(bf, alpha=10, weight=2)
+moves.append( mvSimplexElementScale(bf, alpha=10, weight=2) )
 \end{lstlisting}
 \end{snugshade}
 
@@ -293,7 +293,7 @@ First, we need a parameter to control the amount of site rate variation
 \begin{snugshade}
 \begin{lstlisting}
 alpha ~ dnUniform(0,50)
-moves[mvi++] = mvScale(alpha)
+moves.append( mvScale(alpha) )
 \end{lstlisting}
 \end{snugshade}
 
@@ -338,7 +338,7 @@ First, create the biogeographic rate parameter.
 log10_rate_bg ~ dnUniform(-4,2)
 log10_rate_bg.setValue(-2)
 rate_bg := 10^log10_rate_bg
-moves[mvi++] = mvSlide(log10_rate_bg, weight=4)
+moves.append( mvSlide(log10_rate_bg, weight=4) )
 \end{lstlisting}
 \end{snugshade}
 
@@ -357,7 +357,7 @@ the distance scale parameter
 \begin{lstlisting}
 distance_scale ~ dnUnif(0,20)
 distance_scale.setValue(0.001)
-moves[mvi++] = mvScale(distance_scale, weight=3)
+moves.append( mvScale(distance_scale, weight=3) )
 \end{lstlisting}
 \end{snugshade}
 
@@ -391,7 +391,7 @@ Create the extirpation rates
 log_sd <- 0.5
 log_mean <- ln(1) - 0.5*log_sd^2
 extirpation_rate ~ dnLognormal(mean=log_mean, sd=log_sd)
-moves[mvi++] = mvScale(extirpation_rate, weight=2)
+moves.append( mvScale(extirpation_rate, weight=2) )
 
 for (i in 1:n_epochs) {
   for (j in 1:n_areas) {
@@ -427,7 +427,7 @@ for (i in 1:n_epochs) {
   time_min[i] <- time_bounds[i][2]
   if (i != n_epochs) {
     epoch_times[i] ~ dnUniform(time_min[i], time_max[i])
-    moves[mvi++] = mvSlide(epoch_times[i], delta=(time_bounds[i][1]-time_bounds[i][2])/2)
+    moves.append( mvSlide(epoch_times[i], delta=(time_bounds[i][1]-time_bounds[i][2])/2) )
   } else {
     epoch_times[i] <- 0.0
   }
@@ -452,7 +452,7 @@ Here, we treat the probability of different types of cladogenetic events as a ra
 clado_event_types <- [ "s", "a" ]
 p_sympatry ~ dnUniform(0,1)
 p_allopatry := abs(1.0 - p_sympatry)
-moves[mvi++] = mvSlide(p_sympatry, delta=0.1, weight=2)
+moves.append( mvSlide(p_sympatry, delta=0.1, weight=2) )
 clado_event_probs := simplex(p_sympatry, p_allopatry)
 P_DEC := fnDECCladoProbs(eventProbs=clado_event_probs,
                          eventTypes=clado_event_types,
@@ -527,16 +527,16 @@ One difference is that the {\tt mnFile} monitor will now record the posterior di
 
 \begin{snugshade}
 \begin{lstlisting}
-monitors[mni++] = mnScreen(printgen=100, ingroup_age)
-monitors[mni++] = mnModel(file=out_fn+".model.log", printgen=100)
-monitors[mni++] = mnFile(tree, filename=out_fn+".tre", printgen=100)
-monitors[mni++] = mnJointConditionalAncestralState(tree=tree,
+monitors.append( mnScreen(printgen=100, ingroup_age) )
+monitors.append( mnModel(file=out_fn+".model.log", printgen=100) )
+monitors.append( mnFile(tree, filename=out_fn+".tre", printgen=100) )
+monitors.append( mnJointConditionalAncestralState(tree=tree,
                                                        ctmc=m_bg,
                                                        type="NaturalNumbers",
                                                        withTips=true,
                                                        withStartStates=true,
                                                        filename=out_fn+".states.log",
-                                                       printgen=100)
+                                                       printgen=100) )
 \end{lstlisting}
 \end{snugshade}
 

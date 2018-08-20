@@ -135,12 +135,13 @@ taxa <- data.taxa()
 \end{lstlisting}
 \end{snugshade*}}
 
-Additionally, we set up a counter variable for the number of moves that we already added to our analysis.
+%Additionally, we set up a counter variable for the number of moves that we already added to our analysis.
+Additionally, we create a vector for the moves.
 [Recall that moves are algorithms used to propose new parameter values during the MCMC simulation.]
 This will make it much easier if we extend the model or analysis to include additional moves or to remove some moves.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-mvi = 0 
+moves = VectorMoves() 
 \end{lstlisting}
 \end{snugshade*}}
 You may have noticed that we used the \cl{=} operator to create the move index.
@@ -174,7 +175,7 @@ The Dirichlet prior on our parameter \cl{er} creates a \href{http://en.wikipedia
 For each stochastic node in our model, we must also specify a proposal mechanism if we wish to estimate that parameter. 
 {\tt\small \begin{snugshade*}
 \begin{lstlisting}
-moves[++mvi] = mvSimplexElementScale(er) 
+moves.append( mvSimplexElementScale(er)  )
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -191,7 +192,7 @@ The node \cl{pi} represents the $\pi$ node in Figure~\ref{fig:clock_prior}.
 Now add the simplex scale move on the stationary frequencies to the moves vector:
 {\tt \small \begin{snugshade*}
 \begin{lstlisting}
-moves[++mvi] = mvSimplexElementScale(pi)  
+moves.append( mvSimplexElementScale(pi)   )
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -237,7 +238,7 @@ The random variable that controls the rate variation is the stochastic node \cl{
 We will apply a simple scale move to this parameter.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-moves[++mvi] = mvScale(alpha, weight=2.0)
+moves.append( mvScale(alpha, weight=2.0) )
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -260,12 +261,12 @@ Instead of prior distributions on these parameters directly, we will specify log
 diversification_mean <- ln( ln(n_species/2.0) / 90 )
 diversification_sd <- 0.587405*2
 diversification ~ dnLognormal(mean=diversification_mean,sd=diversification_sd) 
-moves[++mvi] = mvScale(diversification,lambda=1.0,tune=true,weight=3.0)
+moves.append( mvScale(diversification,lambda=1.0,tune=true,weight=3.0) )
 
 turnover_mean <- ln( ln(n_species/2.0) / 90 )
 turnover_sd <- 0.587405*2
 turnover ~ dnLognormal(mean=turnover_mean,sd=turnover_sd) 
-moves[++mvi] = mvScale(turnover,lambda=1.0,tune=true,weight=3.0)
+moves.append( mvScale(turnover,lambda=1.0,tune=true,weight=3.0) )
 
 ### Transform the parameters
 birth_rate := diversification + turnover
@@ -280,7 +281,7 @@ This also has the advantage that the type of the variable for the root age is a 
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 root_time ~ dnNormal(mean=90.0,sd=6.0,min=0.0,max=5000.0)
-moves[++mvi] = mvScale(root_time,weight=2.0)
+moves.append( mvScale(root_time,weight=2.0) )
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -308,12 +309,12 @@ We also need moves that change the ages of the internal nodes; which are for exa
 These moves do not have tuning parameters associated with them, thus you only need to pass in the \cl{psi} node and proposal \cl{weight}. 
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-moves[++mvi] = mvNarrow(psi, weight=5.0)
-moves[++mvi] = mvNNI(psi, weight=1.0)
-moves[++mvi] = mvFNPR(psi, weight=5.0)
-moves[++mvi] = mvFNPR(psi, weight=2.0)
-moves[++mvi] = mvSubtreeScale(psi, weight=3.0)
-moves[++mvi] = mvNodeTimeSlideUniform(psi, weight=15.0)
+moves.append( mvNarrow(psi, weight=5.0) )
+moves.append( mvNNI(psi, weight=1.0) )
+moves.append( mvFNPR(psi, weight=5.0) )
+moves.append( mvFNPR(psi, weight=2.0) )
+moves.append( mvSubtreeScale(psi, weight=3.0) )
+moves.append( mvNodeTimeSlideUniform(psi, weight=15.0) )
 \end{lstlisting}
 \end{snugshade*}}
 The weight specifies how often the move will be applied either on average per iteration or relative to all other moves.
@@ -376,7 +377,7 @@ We will say that every magnitude or clock rates between $10^{-6}$ and $10^{1}$ a
 logClockRate ~ dnUniform(-6,1)
 clockRate := 10^logClockRate
 
-moves[++mvi] = mvSlide(logClockRate)
+moves.append( mvSlide(logClockRate) )
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -426,12 +427,13 @@ In this section, will describe how to set up the MCMC sampler and summarize the 
 
 \subsubsection{Specifying Monitors}
 
-For our MCMC analysis, we need to set up a vector of \textit{monitors} to record the states of our Markov chain. 
+%For our MCMC analysis, we need to set up a vector of \textit{monitors} to record the states of our Markov chain. 
+For our MCMC analysis, we need to create a vector for the \textit{monitors} to record the states of our Markov chain. 
 The monitor functions are all called \cl{mn*}, where \cl{*} is the wildcard representing the monitor type.
 First, we will initialize the model monitor using the \cl{mnModel} function. This creates a new monitor variable that will output the states for all model parameters when passed into a MCMC function. 
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-monitors[++mni] = mnModel(filename="output/primates_cytb_root_calibration.log",printgen=10, separator = TAB)
+monitors.append( mnModel(filename="output/primates_cytb_root_calibration.log",printgen=10, separator = TAB) )
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -439,7 +441,7 @@ The \cl{mnFile} monitor will record the states for only the parameters passed in
 
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-monitors[++mni] = mnFile(filename="output/primates_cytb_root_calibration.trees",printgen=10, separator = TAB, psi)
+monitors.append( mnFile(filename="output/primates_cytb_root_calibration.trees",printgen=10, separator = TAB, psi) )
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -447,7 +449,7 @@ monitors[++mni] = mnFile(filename="output/primates_cytb_root_calibration.trees",
 Finally, create a screen monitor that will report the states of specified variables to the screen with \cl{mnScreen}:
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-monitors[++mni] = mnScreen(printgen=1000, clockRate, root_time, age_simiiformes)
+monitors.append( mnScreen(printgen=1000, clockRate, root_time, age_simiiformes) )
 \end{lstlisting}
 \end{snugshade*}}
 

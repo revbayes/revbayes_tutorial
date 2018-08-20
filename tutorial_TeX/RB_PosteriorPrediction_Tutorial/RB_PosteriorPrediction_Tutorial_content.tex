@@ -224,27 +224,27 @@ familiar to you from the \textbf{RB\_CTMC\_Tutorial}.
 First we need to specify some monitors. 
 {\tt \begin{Snugshade}[184,207,236]
 \begin{lstlisting}
-mni = 0
-monitors[++mni] = mnModel(filename="output" + n + "/" + analysis_name + "_posterior.log",printgen=2500, separator = TAB)
+monitors = VectorMonitors()
+monitors.append( mnModel(filename="output" + n + "/" + analysis_name + "_posterior.log",printgen=2500, separator = TAB) )
 \end{lstlisting}
 \end{Snugshade}}
 {\tt \begin{Snugshade}[184,207,236]
 \begin{lstlisting}
-monitors[++mni] = mnFile(filename="output" + n + "/" + analysis_name + "_posterior.trees",printgen=2500, separator = TAB, phylogeny)
+monitors.append( mnFile(filename="output" + n + "/" + analysis_name + "_posterior.trees",printgen=2500, separator = TAB, phylogeny) )
 \end{lstlisting}
 \end{Snugshade}}
 {\tt \begin{Snugshade}[184,207,236]
 \begin{lstlisting}
-monitors[++mni] = mnScreen(printgen=2500, TL)
+monitors.append( mnScreen(printgen=2500, TL) )
 \end{lstlisting}
 \end{Snugshade}}
 {\tt \begin{Snugshade}[184,207,236]
 \begin{lstlisting}
-monitors[++mni] = mnStochasticVariable(filename="output" + n + "/" + analysis_name + "_posterior.var",printgen=2500)
+monitors.append( mnStochasticVariable(filename="output" + n + "/" + analysis_name + "_posterior.var",printgen=2500) )
 \end{lstlisting}
 \end{Snugshade}}
 
-Here the monitors are just being advanced by the value of mni which is being incremented each generation.
+%Here the monitors are just being advanced by the value of mni which is being incremented each generation.
 
 Next, we will call the MCMC function, passing it the model, monitors and moves we specified above to set 
 to build our mymcmc object.

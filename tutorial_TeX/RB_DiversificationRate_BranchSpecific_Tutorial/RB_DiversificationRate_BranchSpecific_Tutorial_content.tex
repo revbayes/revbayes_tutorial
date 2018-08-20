@@ -101,11 +101,13 @@ tree_length <- observed_phylogeny.treeLength()
 \end{lstlisting}
 \end{snugshade*}}
 
-Additionally, we can initialize an iterator variable for our vector of moves and monitors:
+%Additionally, we can initialize an iterator variable for our vector of moves and monitors:
+Additionally, we can initialize a vector  for our moves and monitors:
+
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-mvi = 0
-mni = 0
+moves = VectorMoves()
+monitors = VectorMonitors()
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -145,7 +147,7 @@ This prior density is analogous to the prior on the speciation-rate parameter in
 \begin{lstlisting}
 speciation_prior_mean <- ln( ln(NUM_TOTAL_SPECIES/2.0) / root )
 speciation_mean ~ dnLognormal(mean=speciation_prior_mean, sd=H)
-moves[++mvi] = mvScale(speciation_mean,lambda=1,tune=true,weight=5)
+moves.append( mvScale(speciation_mean,lambda=1,tune=true,weight=5) )
 \end{lstlisting}
 \end{snugshade*}}
 Additionally, we choose a fixed standard deviation of $2*H$ ($0.587405*2$) for the speciation rates because it represents two orders of magnitude variance in the rate categories.
@@ -166,7 +168,7 @@ Alternatively, we could assume that each rate category has the same extinction r
 \begin{lstlisting}
 extinction_prior_mean <- ln( ln(NUM_TOTAL_SPECIES/2.0) / root )
 extinction_mean ~ dnLognormal(mean=extinction_prior_mean,sd=2*H)
-moves[++mvi] = mvScale(extinction_mean,lambda=1.0,tune=true,weight=3.0)
+moves.append( mvScale(extinction_mean,lambda=1.0,tune=true,weight=3.0) )
 \end{lstlisting}
 \end{snugshade*}}
 As with the speciation rate, we discretize the lognormal distribution into a finite number of rate categories.
@@ -203,7 +205,7 @@ As usual for rate parameter, we apply a scaling move to the \cl{event\_rate} var
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 event_rate ~ dnLognormal( ln( EXPECTED_NUM_EVENTS/tree_length ), H)
-moves[++mvi] = mvScale(event_rate,lambda=1,tune=true,weight=5)
+moves.append( mvScale(event_rate,lambda=1,tune=true,weight=5) )
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -280,8 +282,8 @@ For the marginal likelihood analysis we don't necessarily need monitors because 
 However, as good practice we still define our two standard monitors: the model monitor and a screen monitor
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-monitors[++mni] = mnModel(filename="output/primates_MRBD.log",printgen=10, separator = TAB)
-monitors[++mni] = mnScreen(printgen=10, diversification_mean, turnover)
+monitors.append( mnModel(filename="output/primates_MRBD.log",printgen=10, separator = TAB) )
+monitors.append( mnScreen(printgen=10, diversification_mean, turnover) )
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -420,8 +422,8 @@ tree_length <- observed_phylogeny.treeLength()
 Additionally, we can initialize an iterator variable for our vector of moves:
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-mvi = 0
-mni = 0
+moves = VectorMoves()
+monitors = VectorMonitors()
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -447,7 +449,7 @@ Thus, we first create our hyper-prior on the mean speciation rate, which is draw
 \begin{lstlisting}
 speciation_prior_mean <- ln( ln(NUM_TOTAL_SPECIES/2.0) / root_age )
 speciation_mean ~ dnLognormal(mean=speciation_prior_mean, sd=H)
-moves[++mvi] = mvScale(speciation_mean,lambda=1,tune=true,weight=5)
+moves.append( mvScale(speciation_mean,lambda=1,tune=true,weight=5) )
 \end{lstlisting}
 \end{snugshade*}}
 Additionally, we choose a fixed standard deviation of $H*2$ for the speciation rates because it represents two orders of magnitude variance in the rate categories.
@@ -462,7 +464,7 @@ We define the prior on the extinction rate in the same way as we did for the spe
 \begin{lstlisting}
 extinction_prior_mean <- ln( ln(NUM_TOTAL_SPECIES/2.0) / root_age )
 extinction_mean ~ dnLognormal(mean=extinction_prior_mean,sd=H*2)
-moves[++mvi] = mvScale(extinction_mean,lambda=1.0,tune=true,weight=3.0)
+moves.append( mvScale(extinction_mean,lambda=1.0,tune=true,weight=3.0) )
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -501,7 +503,7 @@ As usual for rate parameter, we apply a scaling move to the \cl{event\_rate} var
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 event_rate ~ dnLognormal( ln( EXPECTED_NUM_EVENTS/tree_length ), H)
-moves[++mvi] = mvScale(event_rate,lambda=1,tune=true,weight=5)
+moves.append( mvScale(event_rate,lambda=1,tune=true,weight=5) )
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -511,7 +513,7 @@ The move for this random variable is a random integer walk because the random va
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 root_category ~ dnUniformNatural(1,NUM_RATE_CATEGORIES * NUM_RATE_CATEGORIES)
-moves[++mvi] = mvRandomIntegerWalk(root_category,weight=1)
+moves.append( mvRandomIntegerWalk(root_category,weight=1) )
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -558,9 +560,9 @@ We use a \cl{mvBirthDeathEvent} to add and remove events, a \cl{mvEventTimeBeta}
 and a \cl{mvDiscreteEventCategoryRandomWalk} to change the the paired-rate category to which a rate-shift event belongs.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-moves[++mvi] = mvBirthDeathEvent(timetree,weight=2)
-moves[++mvi] = mvEventTimeBeta(timetree,weight=2)
-moves[++mvi] = mvDiscreteEventCategoryRandomWalk(timetree,weight=2)
+moves.append( mvBirthDeathEvent(timetree,weight=2) )
+moves.append( mvEventTimeBeta(timetree,weight=2) )
+moves.append( mvDiscreteEventCategoryRandomWalk(timetree,weight=2) )
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -600,7 +602,7 @@ First, we will initialize the model monitor using the \cl{mnModel} function.
 This creates a new monitor variable that will output the states for all model parameters when passed into a MCMC function.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-monitors[++mni] = mnModel(filename="output/primates_BSBD.log",printgen=10, separator = TAB)
+monitors.append( mnModel(filename="output/primates_BSBD.log",printgen=10, separator = TAB) )
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -610,14 +612,14 @@ We can thus print the tree with the average speciation and extinction rates, as 
 We will need this file later to estimate and visualize the posterior distribution of the rates at the branches.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-monitors[++mni] = mnExtNewick(filename="output/primates_BSBD.trees", isNodeParameter=FALSE, printgen=10, separator = TAB, tree=timetree, avg_lambda, avg_mu, avg_net, avg_rel)
+monitors.append( mnExtNewick(filename="output/primates_BSBD.trees", isNodeParameter=FALSE, printgen=10, separator = TAB, tree=timetree, avg_lambda, avg_mu, avg_net, avg_rel) )
 \end{lstlisting}
 \end{snugshade*}}
 
 Finally, create a screen monitor that will report the states of specified variables to the screen with \cl{mnScreen}:
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-monitors[++mni] = mnScreen(printgen=10, event_rate, mean_speciation, root_category, total_num_events)
+monitors.append( mnScreen(printgen=10, event_rate, mean_speciation, root_category, total_num_events) )
 \end{lstlisting}
 \end{snugshade*}}
 

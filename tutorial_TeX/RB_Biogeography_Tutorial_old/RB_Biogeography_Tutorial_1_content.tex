@@ -146,11 +146,11 @@ n_states = floor(2^n_areas)
 \end{lstlisting}
 \end{snugshade}
 
-Declare index variables for our move vectors for future use
+Create a vector for the MCMC moves.
 
 \begin{snugshade}
 \begin{lstlisting}
-mi = 0
+moves = VectorMoves()
 \end{lstlisting}
 \end{snugshade}
 
@@ -462,8 +462,8 @@ Instead of having a fixed tree as in the previous, we should now define a \emph{
 \begin{lstlisting}
 speciation ~ dnExponential(10.)
 extinction ~ dnExponential(10.)
-moves[++mi] = mvScale(speciation, lambda=1, tune=true, weight=3.0)
-moves[++mi] = mvScale(extinction, lambda=1, tune=true, weight=3.0)
+moves.append( mvScale(speciation, lambda=1, tune=true, weight=3.0) )
+moves.append( mvScale(extinction, lambda=1, tune=true, weight=3.0) )
 \end{lstlisting}
 \end{snugshade*}}
 The phylogeny that we used are obviously not a complete sample of all the species and you should take the incomplete sampling into account. We will simply use an empirical estimate of the fraction of species which we included in this study. For more information about incomplete taxon sampling see \cite{Hoehna2011} and \cite{Hoehna2014a}. 
@@ -483,16 +483,16 @@ Note that, here, we do not have included any fossil information: we are merely d
 The first moves on the tree which we specify are moves that change the node ages. The first move randomly picks a subtree and rescales it, and the second move randomly pick a node and uniformly proposes a new node age between its parent age and oldest child's age.
 {\tt \small \begin{snugshade*}
 \begin{lstlisting}
-moves[++mi] = mvSubtreeScale(psi, weight=5.0)
-moves[++mi] = mvNodeTimeSlideUniform(psi, weight=10.0)
+moves.append( mvSubtreeScale(psi, weight=5.0) )
+moves.append( mvNodeTimeSlideUniform(psi, weight=10.0) )
 \end{lstlisting}
 \end{snugshade*}}
 
 We also need moves on the tree topology to estimate the phylogeny. The two moves which you use are the nearest-neighbor interchange (NNI) and the fixed-nodeheight-prune-and-regraft (FNPR) \citep{Hoehna2012}.
 {\tt \small \begin{snugshade*}
 \begin{lstlisting}
-moves[++mi] = mvNNI(psi, weight=5.0)
-moves[++mi] = mvFNPR(psi, weight=5.0)\end{lstlisting}
+moves.append( mvNNI(psi, weight=5.0) )
+moves.append( mvFNPR(psi, weight=5.0) )\end{lstlisting}
 \end{snugshade*}}
 
 
@@ -511,8 +511,8 @@ pi_mol ~ dnDirichlet(pi_mol_prior)
 Now add the simplex scale move one each the exchangeability rates \cl{er\_mol} and the stationary frequencies \cl{pi\_mol} to the moves vector:
 {\tt \small \begin{snugshade*}
 \begin{lstlisting}
-moves[++mi] = mvSimplexElementScale(er_mol,weight=15) 
-moves[++mi] = mvSimplexElementScale(pi_mol,weight=5)  
+moves.append( mvSimplexElementScale(er_mol,weight=15)  )
+moves.append( mvSimplexElementScale(pi_mol,weight=5)   )
 \end{lstlisting}
 \end{snugshade*}}
 We can finish setting up this part of the model by creating a deterministic node for the GTR instantaneous-rate matrix \cl{Q\_mol}. 
@@ -545,7 +545,7 @@ The random variable that controls the rate variation is the stochastic node \cl{
 We will apply a simple scale move to this parameter.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-moves[++mi] = mvScale(alpha, weight=2.0)
+moves.append( mvScale(alpha, weight=2.0) )
 \end{lstlisting}
 \end{snugshade*}}
 This finishes the substitution process part of the model.
@@ -554,7 +554,7 @@ Then next part of the model is the clock model. Here we need a clock model becau
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 clock_mol ~ dnExponential(10)
-moves[++mi] = mvScale(clock_mol, lambda=1, tune=true, weight=2.0)
+moves.append( mvScale(clock_mol, lambda=1, tune=true, weight=2.0) )
 \end{lstlisting}
 \end{snugshade*}}
 

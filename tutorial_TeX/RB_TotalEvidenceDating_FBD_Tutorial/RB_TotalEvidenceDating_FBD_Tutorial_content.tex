@@ -440,15 +440,17 @@ n_taxa <- taxa.size()
 \end{lstlisting}
 \end{snugshade*}}
 
-Next, create a workspace variable called \cl{mvi}. 
-This variable is an iterator that will build a vector containing all of the MCMC moves used to propose new states for every stochastic node in the model graph. 
-Each time a new move is added to the vector, \cl{mvi} will be incremented by a value of \cl{1}.
+%Next, create a workspace variable called \cl{mvi}. 
+%This variable is an iterator that will build a vector containing all of the MCMC moves used to propose new states for every stochastic node in the model graph. 
+%Each time a new move is added to the vector, \cl{mvi} will be incremented by a value of \cl{1}.
+Next, create a workspace variable called \cl{moves}. 
+This variable is a vector that will contain all of the MCMC moves used to propose new states for every stochastic node in the model graph. 
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-mvi = 1
+moves = VectorMoves()
 \end{lstlisting}
 \end{snugshade*}}
-One important distinction here is that \cl{mvi} is part of the \RevBayes workspace and not the hierarchical model. 
+One important distinction here is that \cl{moves} is part of the \RevBayes workspace and not the hierarchical model. 
 Thus, we use the workspace assignment operator \cl{=} instead of the constant node assignment \cl{<-}. 
 
 {\begin{framed}
@@ -497,13 +499,13 @@ Here, we will use three scale moves for each parameter with  different values of
 By using multiple moves for a single parameter, we will improve the mixing of the Markov chain. 
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-moves[mvi++] = mvScale(speciation_rate, lambda=0.01, weight=1)
-moves[mvi++] = mvScale(speciation_rate, lambda=0.1,  weight=1)
-moves[mvi++] = mvScale(speciation_rate, lambda=1.0,  weight=1)
+moves.append( mvScale(speciation_rate, lambda=0.01, weight=1) )
+moves.append( mvScale(speciation_rate, lambda=0.1,  weight=1) )
+moves.append( mvScale(speciation_rate, lambda=1.0,  weight=1) )
 
-moves[mvi++] = mvScale(extinction_rate, lambda=0.01, weight=1)
-moves[mvi++] = mvScale(extinction_rate, lambda=0.1,  weight=1)
-moves[mvi++] = mvScale(extinction_rate, lambda=1,    weight=1)
+moves.append( mvScale(extinction_rate, lambda=0.01, weight=1) )
+moves.append( mvScale(extinction_rate, lambda=0.1,  weight=1) )
+moves.append( mvScale(extinction_rate, lambda=1,    weight=1) )
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -544,9 +546,9 @@ As with the speciation and extinction rates (Sect.\ \ref{subsub:Exercise-FBD-Spe
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 psi ~ dnExponential(10) 
-moves[mvi++] = mvScale(psi, lambda=0.01, weight=1)
-moves[mvi++] = mvScale(psi, lambda=0.1,  weight=1)
-moves[mvi++] = mvScale(psi, lambda=1,    weight=1)
+moves.append( mvScale(psi, lambda=0.01, weight=1) )
+moves.append( mvScale(psi, lambda=0.1,  weight=1) )
+moves.append( mvScale(psi, lambda=1,    weight=1) )
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -561,9 +563,9 @@ However, for parameters such as the origin age, there is little risk of this bei
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 origin_time ~ dnUnif(37.0, 55.0)
-moves[mvi++] = mvSlide(origin_time, delta=0.01, weight=5.0)
-moves[mvi++] = mvSlide(origin_time, delta=0.1,  weight=5.0)
-moves[mvi++] = mvSlide(origin_time, delta=1,    weight=5.0)
+moves.append( mvSlide(origin_time, delta=0.01, weight=5.0) )
+moves.append( mvSlide(origin_time, delta=0.1,  weight=5.0) )
+moves.append( mvSlide(origin_time, delta=1,    weight=5.0) )
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -624,10 +626,10 @@ This will change a fossil that is a sampled ancestor (see Fig.\ \ref{fig:example
 In addition, when conditioning on the origin time, we also need to explicitly sample the root age (\cl{mvRootTimeSlideUniform}).
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-moves[mvi++] = mvFNPR(fbd_tree, weight=15.0)
-moves[mvi++] = mvCollapseExpandFossilBranch(fbd_tree, origin_time, weight=6.0)
-moves[mvi++] = mvNodeTimeSlideUniform(fbd_tree, weight=40.0)
-moves[mvi++] = mvRootTimeSlideUniform(fbd_tree, origin_time, weight=5.0)
+moves.append( mvFNPR(fbd_tree, weight=15.0) )
+moves.append( mvCollapseExpandFossilBranch(fbd_tree, origin_time, weight=6.0) )
+moves.append( mvNodeTimeSlideUniform(fbd_tree, weight=40.0) )
+moves.append( mvRootTimeSlideUniform(fbd_tree, origin_time, weight=5.0) )
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -672,7 +674,7 @@ for(i in 1:intervals.size())
 Finally, we add a move that samples the ages of the fossil nodes on the tree. 
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-moves[mvi++] = mvFossilTimeSlideUniform(fbd_tree, origin_time, weight=5.0)
+moves.append( mvFossilTimeSlideUniform(fbd_tree, origin_time, weight=5.0) )
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -752,9 +754,9 @@ Then, we specify scale proposal moves on the mean rate parameter.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 branch_rates_mean ~ dnExponential(10.0)
-moves[mvi++] = mvScale(branch_rates_mean, lambda=0.01, weight=1.0)
-moves[mvi++] = mvScale(branch_rates_mean, lambda=0.1,  weight=1.0)
-moves[mvi++] = mvScale(branch_rates_mean, lambda=1.0,  weight=1.0)
+moves.append( mvScale(branch_rates_mean, lambda=0.01, weight=1.0) )
+moves.append( mvScale(branch_rates_mean, lambda=0.1,  weight=1.0) )
+moves.append( mvScale(branch_rates_mean, lambda=1.0,  weight=1.0) )
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -773,9 +775,9 @@ For each rate parameter we also create scale proposal moves.
 \begin{lstlisting}
 for(i in 1:n_branches){
     branch_rates[i] ~ dnExp(1/branch_rates_mean)
-    moves[mvi++] = mvScale(branch_rates[i], lambda=1.0,  weight=1.0)
-    moves[mvi++] = mvScale(branch_rates[i], lambda=0.1,  weight=1.0)
-    moves[mvi++] = mvScale(branch_rates[i], lambda=0.01, weight=1.0)
+    moves.append( mvScale(branch_rates[i], lambda=1.0,  weight=1.0) )
+    moves.append( mvScale(branch_rates[i], lambda=0.1,  weight=1.0) )
+    moves.append( mvScale(branch_rates[i], lambda=0.01, weight=1.0) )
 }
 \end{lstlisting}
 \end{snugshade*}}
@@ -784,9 +786,9 @@ Lastly, we use a vector scale move to propose changes to all branch rates simult
 This way we can sample the total branch rate independently of each individual rate, which can improve mixing.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-moves[mvi++] = mvVectorScale(branch_rates, lambda=0.01, weight=4.0) 
-moves[mvi++] = mvVectorScale(branch_rates, lambda=0.1,  weight=4.0) 
-moves[mvi++] = mvVectorScale(branch_rates, lambda=1.0,  weight=4.0)
+moves.append( mvVectorScale(branch_rates, lambda=0.01, weight=4.0)  )
+moves.append( mvVectorScale(branch_rates, lambda=0.1,  weight=4.0)  )
+moves.append( mvVectorScale(branch_rates, lambda=1.0,  weight=4.0) )
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -826,8 +828,8 @@ Here, we use a \cl{mvSimplexElementScale} move, which scales a single element of
 The tuning parameter \cl{alpha} specifies how conservative the proposal should be, with larger values of \cl{alpha} leading to proposals closer to the current value.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-moves[mvi++] = mvSimplexElementScale(er, alpha=10.0, weight=5.0)
-moves[mvi++] = mvSimplexElementScale(sf, alpha=10.0, weight=5.0)
+moves.append( mvSimplexElementScale(er, alpha=10.0, weight=5.0) )
+moves.append( mvSimplexElementScale(sf, alpha=10.0, weight=5.0) )
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -842,9 +844,9 @@ Next, in order to model gamma-distributed rates across, we create an exponential
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 alpha_cytb ~ dnExponential( 1.0 )
-moves[mvi++] = mvScale(alpha_cytb, lambda=0.01, weight=1.0)
-moves[mvi++] = mvScale(alpha_cytb, lambda=0.1,  weight=1.0)
-moves[mvi++] = mvScale(alpha_cytb, lambda=1,    weight=1.0)
+moves.append( mvScale(alpha_cytb, lambda=0.01, weight=1.0) )
+moves.append( mvScale(alpha_cytb, lambda=0.1,  weight=1.0) )
+moves.append( mvScale(alpha_cytb, lambda=1,    weight=1.0) )
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -899,9 +901,9 @@ As in the molecular data partition, we will allow gamma-distributed rate heterog
 alpha_morpho ~ dnExponential( 1.0 )
 rates_morpho := fnDiscretizeGamma( alpha_morpho, alpha_morpho, 4 )
 
-moves[mvi++] = mvScale(alpha_morpho, lambda=0.01, weight=1.0)
-moves[mvi++] = mvScale(alpha_morpho, lambda=0.1,  weight=1.0)
-moves[mvi++] = mvScale(alpha_morpho, lambda=1,    weight=1.0)
+moves.append( mvScale(alpha_morpho, lambda=0.01, weight=1.0) )
+moves.append( mvScale(alpha_morpho, lambda=0.1,  weight=1.0) )
+moves.append( mvScale(alpha_morpho, lambda=1,    weight=1.0) )
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -910,9 +912,9 @@ For simplicity, we will assume a strict exponential clock---meaning that every b
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 clock_morpho ~ dnExponential(1.0)
-moves[mvi++] = mvScale(clock_morpho, lambda=0.01, weight=4.0)
-moves[mvi++] = mvScale(clock_morpho, lambda=0.1,  weight=4.0)
-moves[mvi++] = mvScale(clock_morpho, lambda=1,    weight=4.0)
+moves.append( mvScale(clock_morpho, lambda=0.01, weight=4.0) )
+moves.append( mvScale(clock_morpho, lambda=0.1,  weight=4.0) )
+moves.append( mvScale(clock_morpho, lambda=1,    weight=4.0) )
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -982,10 +984,10 @@ The object \cl{mymodel} is a wrapper around the entire model graph and allows us
 The next important step for our master \Rev file is to specify the monitors and output file names.
 For this, we create a vector called \cl{monitors} that will each sample and record or output our MCMC. 
 
-First, we will specify a workspace variable to iterate over the \cl{monitors} vector.
+%First, we will specify a workspace variable to iterate over the \cl{monitors} vector.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-mni = 1
+monitors = VectorMonitors()
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -996,7 +998,7 @@ Therefore, the parameters in the file written by this monitor are all numerical 
 We will also name the output file for this monitor and indicate that we wish to sample our MCMC every 10 cycles.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-monitors[mni++] = mnModel(filename="output/bears.log", printgen=10)
+monitors.append( mnModel(filename="output/bears.log", printgen=10) )
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -1006,7 +1008,7 @@ Since the tree topology is not included in the \cl{mnModel} monitor (because it 
 Remember, we are monitoring the tree with nuisance taxa pruned out  (section \ref{subsub:Exercise-FBD-DetNodes}).
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-monitors[mni++] = mnFile(filename="output/bears.trees", printgen=10, pruned_tree)
+monitors.append( mnFile(filename="output/bears.trees", printgen=10, pruned_tree) )
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -1015,7 +1017,7 @@ Like with \cl{mnFile} we must tell \cl{mnScreen} which parameters we'd like to s
 We will choose the age of the MCRCA of living bears (\cl{age\_extant}), the number of sampled ancestors (\cl{num\_samp\_anc}), and the origin time (\cl{origin\_time}).
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-monitors[mni++] = mnScreen(printgen=10, age_extant, num_samp_anc, origin_time)
+monitors.append( mnScreen(printgen=10, age_extant, num_samp_anc, origin_time) )
 \end{lstlisting}
 \end{snugshade*}}
 

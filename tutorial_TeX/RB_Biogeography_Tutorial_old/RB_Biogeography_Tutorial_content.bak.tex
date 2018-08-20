@@ -473,10 +473,10 @@ The arguments for {\tt mvScale} are fairly typical as far as RevBayes {\tt Move}
 
 \begin{snugshade}
 \begin{lstlisting}
-RevBayes > moves[1] <- mvScale(x=glr[1], lambda=0.5, tune=false, weight=5.0)
-RevBayes > moves[2] <- mvScale(x=glr[2], lambda=0.5, tune=false, weight=5.0)
-RevBayes > moves[3] <- mvScale(x=dp, 	 lambda=0.5, tune=false, weight=5.0)
-RevBayes > moves[4] <- mvSimplexElementScale(csf, alpha=10.0, tune=false, weight=4.0)
+RevBayes > moves[1] = mvScale(x=glr[1], lambda=0.5, tune=false, weight=5.0)
+RevBayes > moves[2] = mvScale(x=glr[2], lambda=0.5, tune=false, weight=5.0)
+RevBayes > moves[3] = mvScale(x=dp, 	 lambda=0.5, tune=false, weight=5.0)
+RevBayes > moves[4] = mvSimplexElementScale(csf, alpha=10.0, tune=false, weight=4.0)
 \end{lstlisting}
 \end{snugshade}
 
@@ -504,10 +504,10 @@ Let's create the character history moves as follows.
 \begin{snugshade}
 \begin{lstlisting}
 RevBayes > n_nodes  <- tree.nnodes()
-RevBayes > moves[5] <- mvNodeCHRS(ctmc=M, qmap=Q, tree=tree, lambda=0.2, type="biogeo", weight=2.0*n_nodes)
-RevBayes > moves[6] <- mvPathCHRS(ctmc=M, qmap=Q, tree=tree, lambda=0.2, type="biogeo", weight=2.0*n_nodes)
-RevBayes > moves[7] <- mvNodeCHRS(ctmc=M, qmap=Q, tree=tree, lambda=1.0, type="biogeo", weight=n_nodes)
-RevBayes > moves[8] <- mvPathCHRS(ctmc=M, qmap=Q, tree=tree, lambda=1.0, type="biogeo", weight=n_nodes)
+RevBayes > moves[5] = mvNodeCHRS(ctmc=M, qmap=Q, tree=tree, lambda=0.2, type="biogeo", weight=2.0*n_nodes)
+RevBayes > moves[6] = mvPathCHRS(ctmc=M, qmap=Q, tree=tree, lambda=0.2, type="biogeo", weight=2.0*n_nodes)
+RevBayes > moves[7] = mvNodeCHRS(ctmc=M, qmap=Q, tree=tree, lambda=1.0, type="biogeo", weight=n_nodes)
+RevBayes > moves[8] = mvPathCHRS(ctmc=M, qmap=Q, tree=tree, lambda=1.0, type="biogeo", weight=n_nodes)
 \end{lstlisting}
 \end{snugshade}
 
@@ -809,12 +809,12 @@ For more detailed data exploration, this analysis also provides annotated Newick
 \begin{lstlisting}
 Iteration  Posterior  Likelihood  Prior  Tree
 Iteration	Posterior	Likelihood	Prior	Tree
-0	-51.3307	-56.0288	4.69806	((((((((P_hawaiiensis_WaikamoiL1[&index=18;nd=0010;pa=0010;ev={}]:0.96 ...
-10	-54.4257	-58.1568	3.7311	((((((((P_hawaiiensis_WaikamoiL1[&index=18;nd=0010;pa=0010;ev={}]:0.96 ...
-20	-58.0696	-62.0923	4.02274	((((((((P_hawaiiensis_WaikamoiL1[&index=18;nd=0010;pa=0010;ev={}]:0.96 ...
-30	-46.5049	-51.1197	4.6148	((((((((P_hawaiiensis_WaikamoiL1[&index=18;nd=0010;pa=0010;ev={}]:0.96 ...
-40	-42.8697	-46.4870	3.61735	((((((((P_hawaiiensis_WaikamoiL1[&index=18;nd=0010;pa=0010;ev={}]:0.96 ...
-50	-43.5319	-47.4659	3.93394	((((((((P_hawaiiensis_WaikamoiL1[&index=18;nd=0010;pa=0010;ev={}]:0.96 ...
+0	-51.3307	-56.0288	4.69806	((((((((P_hawaiiensis_WaikamoiL1[&moves = VectorMoves()8;nd=0010;pa=0010;ev={}]:0.96 ...
+10	-54.4257	-58.1568	3.7311	((((((((P_hawaiiensis_WaikamoiL1[&moves = VectorMoves()8;nd=0010;pa=0010;ev={}]:0.96 ...
+20	-58.0696	-62.0923	4.02274	((((((((P_hawaiiensis_WaikamoiL1[&moves = VectorMoves()8;nd=0010;pa=0010;ev={}]:0.96 ...
+30	-46.5049	-51.1197	4.6148	((((((((P_hawaiiensis_WaikamoiL1[&moves = VectorMoves()8;nd=0010;pa=0010;ev={}]:0.96 ...
+40	-42.8697	-46.4870	3.61735	((((((((P_hawaiiensis_WaikamoiL1[&moves = VectorMoves()8;nd=0010;pa=0010;ev={}]:0.96 ...
+50	-43.5319	-47.4659	3.93394	((((((((P_hawaiiensis_WaikamoiL1[&moves = VectorMoves()8;nd=0010;pa=0010;ev={}]:0.96 ...
 
 ...
 \end{lstlisting}

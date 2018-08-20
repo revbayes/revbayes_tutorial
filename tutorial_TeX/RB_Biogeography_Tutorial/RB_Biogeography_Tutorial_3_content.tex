@@ -51,12 +51,14 @@ dist_fn = geo_fn + ".distances.txt"
 \end{lstlisting}
 \end{snugshade}
 
-Create move index ({\tt mvi}) and monitor index ({\tt mni}) variables to populate the elements of our {\tt moves} and {\tt monitors} vectors, respectively.
+%Create move index ({\tt mvi}) and monitor index ({\tt mni}) variables to populate the elements of our {\tt moves} and {\tt monitors} vectors, respectively.
+
+Create vectors for the moves and monitors.
 
 \begin{snugshade}
 \begin{lstlisting}
-mvi = 1
-mni = 1
+moves = VectorMoves()
+monitors = VectorMonitors()
 \end{lstlisting}
 \end{snugshade}
 
@@ -187,7 +189,7 @@ Next, we'll build an enhanced DEC model. Like before, we'll define the rate matr
 log10_rate_bg ~ dnUniform(-4,2)
 log10_rate_bg.setValue(-2)
 rate_bg := 10^log10_rate_bg
-moves[mvi++] = mvSlide(log10_rate_bg, weight=4)
+moves.append( mvSlide(log10_rate_bg, weight=4) )
 \end{lstlisting}
 \end{snugshade}
 
@@ -211,7 +213,7 @@ Add a distance scale parameter
 \begin{lstlisting}
 distance_scale ~ dnUnif(0,20)
 distance_scale.setValue(0.01)
-moves[mvi++] = mvScale(distance_scale, weight=3)
+moves.append( mvScale(distance_scale, weight=3) )
 \end{lstlisting}
 \end{snugshade}
 
@@ -252,7 +254,7 @@ We will assign the same extirpation prior as was done in the simple analysis in 
 log_sd <- 0.5
 log_mean <- ln(1) - 0.5*log_sd^2
 extirpation_rate ~ dnLognormal(mean=log_mean, sd=log_sd)
-moves[mvi++] = mvScale(extirpation_rate, weight=2)
+moves.append( mvScale(extirpation_rate, weight=2) )
 \end{lstlisting}
 \end{snugshade}
 
@@ -297,7 +299,7 @@ for (i in 1:n_epochs) {
   time_min[i] <- time_bounds[i][2]
   if (i != n_epochs) {
       epoch_times[i] ~ dnUniform(time_min[i], time_max[i])
-      moves[mvi++] = mvSlide(epoch_times[i], delta=(time_max[i]-time_min[i])/2)
+      moves.append( mvSlide(epoch_times[i], delta=(time_max[i]-time_min[i])/2) )
   } else {
       epoch_times[i] <- 0.0
   }
@@ -325,7 +327,7 @@ clado_event_types <- [ "s", "a" ]
 p_sympatry ~ dnUniform(0,1)
 p_allopatry := abs(1.0 - p_sympatry)
 clado_type_probs := simplex(p_sympatry, p_allopatry)
-moves[mvi++] = mvSlide(p_sympatry, weight=2)
+moves.append( mvSlide(p_sympatry, weight=2) )
 P_DEC := fnDECCladoProbs(eventProbs=clado_type_probs,
                          eventTypes=clado_event_types,
                          numCharacters=n_areas,
@@ -374,16 +376,16 @@ And the rest we've done before...
 
 \begin{snugshade}
 \begin{lstlisting}
-monitors[mni++] = mnScreen(printgen=100, rate_bg, extirpation_rate, distance_scale)
-monitors[mni++] = mnModel(file=out_fn+".model.log", printgen=10)
-monitors[mni++] = mnFile(tree, filename=out_fn+".tre", printgen=10)
-monitors[mni++] = mnJointConditionalAncestralState(tree=tree,
+monitors.append( mnScreen(printgen=100, rate_bg, extirpation_rate, distance_scale) )
+monitors.append( mnModel(file=out_fn+".model.log", printgen=10) )
+monitors.append( mnFile(tree, filename=out_fn+".tre", printgen=10) )
+monitors.append( mnJointConditionalAncestralState(tree=tree,
                                                        ctmc=m_bg,
                                                        type="NaturalNumbers",
                                                        withTips=true,
                                                        withStartStates=true,
                                                        filename=out_fn+".states.log",
-                                                       printgen=10)
+                                                       printgen=10) )
                                                        
 \end{lstlisting}
 \end{snugshade}

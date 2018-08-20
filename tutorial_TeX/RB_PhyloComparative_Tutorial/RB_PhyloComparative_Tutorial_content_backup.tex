@@ -121,34 +121,35 @@ logmass.clampAt(contData,2)
 The model is now entirely specified. We can define the moves on its parameters:
 \begin{itemize}
 \item
-initialize a running index for storing moves:
+%initialize a running index for storing moves:
+initialize a vector for storing moves:
 \\
-\cl{index <- 1}
+\cl{moves = VectorMoves()}
 \item
 push a scaling move on $\sigma$:
 \\
 \cl{
-moves[index] <- mvScale(sigma, lambda=2.0, tune=true, weight=3.0)
+moves.append( mvScale(sigma, lambda=2.0, tune=true, weight=3.0) )
 \\
-index <- index + 1
+%index <- index + 1
 }
 \item
 a sliding move on the Brownian process
 \\
 \cl{
-moves[index] <- mvRealNodeValTreeSliding(process=logmass, lambda=10, tune=true, weight=100)
+moves.append( mvRealNodeValTreeSliding(process=logmass, lambda=10, tune=true, weight=100) )
 \\
-index <- index + 1
+%index <- index + 1
 }
 \item
 a global translation move on the Brownian process:
 \\
 \cl{
-moves[index] <- mvRealNodeValTreeTranslation(process=logmass,lambda=1,
+moves.append( mvRealNodeValTreeTranslation(process=logmass,lambda=1,
 \\
-tune=true,weight=1)
+tune=true,weight=1) )
 \\
-index <- index + 1
+%index <- index + 1
 }
 \item
 before creating the model, we define summary statistics, to be monitored during the MCMC: the mean and the standard deviation of the trait across the tree:
@@ -301,46 +302,47 @@ Here, we give twice the index \cl{i} to the \cl{clampAt} function: the first cor
 The model is now entirely specified. We can define the moves on its parameters.
 \begin{itemize}
 \item
-initialize a running index for storing moves:
+%initialize a running index for storing moves:
+initialize a vector for storing moves:
 \\
-\cl{index <- 1}
+\cl{moves = VectorMoves()}
 \item
 push a scaling move on $\kappa$:
 \\
 \cl{
-moves[index] <- mvScale(kappa, lambda=2.0, tune=true, weight=3.0)
+moves.append( mvScale(kappa, lambda=2.0, tune=true, weight=3.0) )
 \\
-index <- index + 1
+%index <- index + 1
 }
 \item
 a sliding move on the Brownian process
 \\
 \cl{
-moves[index] <- mvMultivariateRealNodeValTreeSliding(process=X, lambda=10,
+moves.append( mvMultivariateRealNodeValTreeSliding(process=X, lambda=10,
 \\
-tune=true,weight=100)
+tune=true,weight=100) )
 \\
-index <- index + 1
+%index <- index + 1
 }
 \item
 a global translation move on the Brownian process (component-wise, that is, a random global translation across the entire phylogeny is applied to one trait taken at random):
 \\
 \cl{
-moves[index] <- mvMultivariateRealNodeValTreeTranslation(process=X, lambda=1,
+moves.append( mvMultivariateRealNodeValTreeTranslation(process=X, lambda=1,
 \\
-tune=true, weight=1)
+tune=true, weight=1) )
 \\
-index <- index + 1
+%index <- index + 1
 }
 \item
 finally, a conjugate Gibbs move for $\Sigma$: as it turns out, conditional on $\kappa$ and the Brownian process $X$, it is possible to directly resample $\Sigma$ from its conditional posterior distribution \citep{Lartillot:2011p55}. In RevBayes, this is implemented as follows:
 \\
 \cl{
-moves[index] <- mvConjugateInverseWishartBrownian(sigma=Sigma, process=X,
+moves.append( mvConjugateInverseWishartBrownian(sigma=Sigma, process=X,
 \\
-kappa=kappa, df=df, weight=1)
+kappa=kappa, df=df, weight=1) )
 \\
-index <- index + 1
+%index <- index + 1
 }
 \end{itemize}
 Before creating the model, we need to define a few summary statistics, which we want to track during MCMC, either to monitor convergence or for obtaining interesting outputs.
@@ -368,7 +370,7 @@ var2 := Sigma.covariance(2,2)
 we can also get all correlation coefficients into a single vector (you can skip this part during the session and leave it as  homework):
 \begin{verbatim}
 # initialize a running index
-corrindex <- 1
+corrmoves = VectorMoves()
 # loop over all pairs of traits
 for (i in 1:(nTraits-1))    {
     for (j in (i+1):nTraits) {
@@ -515,25 +517,25 @@ load the sequence data matrix specified in \cl{data/plac40\_4fold.nex} and condi
 in the moves section, you should add moves for divergence times:
 \\
 \cl{
-moves[index] <- mvSubtreeScale(psi, weight=5.0)
+moves.append( mvSubtreeScale(psi, weight=5.0) )
 \\
-index <- index + 1
+%index <- index + 1
 \\
-moves[index] <- mvNodeTimeSlideUniform(psi, weight=10.0)
+moves.append( mvNodeTimeSlideUniform(psi, weight=10.0) )
 \\
-index <- index + 1
+%index <- index + 1
 }
 \item
 you would add topology moves here (again, only in a second step):
 \\
 \cl{
-moves[index] <- mvNNI(psi, weight=5.0)
+moves.append( mvNNI(psi, weight=5.0) )
 \\
-index <- index + 1
+%index <- index + 1
 \\
-moves[index] <- mvFNPR(psi, weight=5.0)
+moves.append( mvFNPR(psi, weight=5.0) )
 \\
-index <- index + 1
+%index <- index + 1
 }
 \item
 finally, you should add moves for the parameters of the substitution model.
@@ -771,9 +773,9 @@ create a (univariate) Brownian motion with drift:
 \item
 move the trend parameter during the MCMC, using a regular sliding move:
 \\
-\cl{moves[index] <- mvSlide(copestrend, delta=2.0, tune=true, weight=3.0)
+\cl{moves.append( mvSlide(copestrend, delta=2.0, tune=true, weight=3.0) )
 \\
-index <- index + 1}
+%index <- index + 1}
 \end{itemize}
 After running the model, the posterior distribution on Cope's trend parameter can be visualized and quantified, and the empirical support in favor of Cope's rule can be assessed by estimating the posterior probability that this trend parameter is positive.
 

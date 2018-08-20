@@ -99,10 +99,11 @@ names <- T.names()
 \end{lstlisting}
 \end{snugshade*}}
 
-Additionally, we can initialize an iterator variable for our vector of moves:
+%Additionally, we can initialize an iterator variable for our vector of moves:
+Additionally, we can initialize a vector for our moves:
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-mi = 1 
+moves = VectorMoves() 
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -121,11 +122,12 @@ $$\mathbb{E}[\lambda]=\nu^{-1} = 10$$
 
 To estimate the value of $\lambda$, we assign a proposal mechanism to operate on this node. 
 In \RevBayes~these MCMC sampling algorithms are called \textit{moves}. 
-We need to create a vector of moves and we can do this by using vector indexing and our pre-initialized iterator \cl{mi}.
+%We need to create a vector of moves and we can do this by using vector indexing and our pre-initialized iterator \cl{mi}.
+We need to create a vector of moves and we can add moves to the vector using the function \cl{moves.append}.
 We will use a scaling move on $\lambda$ called \cl{mvScale}.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-moves[mi++] = mvScale(birth_rate,lambda=1,tune=true,weight=3)
+moves.append( mvScale(birth_rate,lambda=1,tune=true,weight=3) )
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -346,7 +348,7 @@ Initialize the useful variables:
 \begin{lstlisting}
 n_taxa <- T.ntips()
 names <- T.names()
-mi = 1 
+moves = VectorMoves() 
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -357,7 +359,7 @@ We will assume an exponential prior on \cl{diversification} and assign it a scal
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 diversification ~ dnExponential(10.0) 
-moves[mi++] = mvScale(diversification,lambda=1.0,tune=true,weight=3.0) 
+moves.append( mvScale(diversification,lambda=1.0,tune=true,weight=3.0)  )
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -365,7 +367,7 @@ The \cl{turnover} parameter can only take values between 0 and 1, thus we will a
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 turnover ~ dnBeta(2.0, 2.0) 
-moves[mi++] = mvSlide(turnover,delta=1.0,tune=true,weight=3.0)
+moves.append( mvSlide(turnover,delta=1.0,tune=true,weight=3.0) )
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -566,7 +568,7 @@ Initialize the useful variables:
 \begin{lstlisting}
 n_taxa <- T.ntips()
 names <- T.names()
-mi = 1 
+moves = VectorMoves() 
 \end{lstlisting}
 \end{snugshade*}}
 

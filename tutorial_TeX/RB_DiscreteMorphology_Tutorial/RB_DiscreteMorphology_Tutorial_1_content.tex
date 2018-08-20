@@ -202,12 +202,16 @@ n_taxa <- morpho.size()
 \end{lstlisting}
 \end{snugshade*}}
 
-Next, create a workspace variable called \cl{mvi}. 
-This variable is an iterator that will build a vector containing all of the MCMC moves used to propose new states for every stochastic node in the model graph. 
-Each time a new move is added to the vector, \cl{mvi} will be incremented by a value of \cl{1}.
+%Next, create a workspace variable called \cl{mvi}. 
+%This variable is an iterator that will build a vector containing all of the MCMC moves used to propose new states for every stochastic node in the model graph. 
+%Each time a new move is added to the vector, \cl{mvi} will be incremented by a value of \cl{1}.
+
+Next, create a workspace variable called \cl{moves}. 
+This variable is a vector that will contain all of the MCMC moves used to propose new states for every stochastic node in the model graph. 
+
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-mvi = 1
+moves = VectorMoves()
 \end{lstlisting}
 \end{snugshade*}}
 One important distinction here is that \cl{mvi} is part of the \RevBayes workspace and not the hierarchical model. 
@@ -234,11 +238,11 @@ This should be familiar from the \cl{RB\_CTMC} tutorial:
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 br_len_lambda ~ dnExp(0.2)
-moves[mvi++] = mvScale(br_len_lambda, weight=5)
+moves.append( mvScale(br_len_lambda, weight=5) )
 nbr <- 2*names.size() - 3
 for (i in 1:nbr){
     br_lens[i] ~ dnExponential(br_len_lambda)
-    moves[mvi++] = mvScale(br_lens[i]) 
+    moves.append( mvScale(br_lens[i])  )
 }
 \end{lstlisting}
 \end{snugshade*}}
@@ -262,9 +266,9 @@ alpha_morpho ~ dnExponential( 1.0 )
 rates_morpho := fnDiscretizeGamma( alpha_morpho, alpha_morpho, 4 )
 
 #Moves on the parameters to the Gamma distribution.
-moves[mvi++] = mvScale(alpha_morpho, lambda=0.01, weight=5.0)
-moves[mvi++] = mvScale(alpha_morpho, lambda=0.1,  weight=3.0)
-moves[mvi++] = mvScale(alpha_morpho, lambda=1,    weight=1.0)
+moves.append( mvScale(alpha_morpho, lambda=0.01, weight=5.0) )
+moves.append( mvScale(alpha_morpho, lambda=0.1,  weight=3.0) )
+moves.append( mvScale(alpha_morpho, lambda=1,    weight=1.0) )
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -274,8 +278,8 @@ Next we assemble the tree and specify a move on the topology.
 \begin{lstlisting}
 tau ~ dnUniformTopology(names)
 phylogeny := treeAssembly(tau, br_lens)
-moves[mvi++] = mvNNI(tau, weight=2*nbr)
-moves[mvi++] = mvSPR(tau, weight=nbr)
+moves.append( mvNNI(tau, weight=2*nbr) )
+moves.append( mvSPR(tau, weight=nbr) )
 tree_length := phylogeny.treeLength()
 \end{lstlisting}
 \end{snugshade*}}
@@ -338,10 +342,11 @@ The object \cl{mymodel} is a wrapper around the entire model graph and allows us
 The next important step for our master \Rev file is to specify the monitors and output file names.
 For this, we create a vector called \cl{monitors} that will each sample and record or output our MCMC. 
 
-First, we will specify a workspace variable to iterate over the \cl{monitors} vector.
+%First, we will specify a workspace variable to iterate over the \cl{monitors} vector.
+
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-mni = 1
+monitors = VectorMonitors()
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -352,7 +357,7 @@ Therefore, the parameters in the file written by this monitor are all numerical 
 We will also name the output file for this monitor and indicate that we wish to sample our MCMC every 10 cycles.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-monitors[mni++] = mnModel(filename="output/mk_simple.log", printgen=10)
+monitors.append( mnModel(filename="output/mk_simple.log", printgen=10) )
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -361,7 +366,7 @@ Thus, if we only cared about the branch lengths and nothing else (this is not a 
 Since the tree topology is not included in the \cl{mnModel} monitor (because it is not numerical), we will use \cl{mnFile} to write the tree to file by specifying our \cl{phylogeny} variable in the arguments.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-monitors[mni++] = mnFile(filename="output/mk_simple.trees", printgen=10, phylogeny)
+monitors.append( mnFile(filename="output/mk_simple.trees", printgen=10, phylogeny) )
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -369,20 +374,20 @@ The third monitor we will add to our analysis will print information to the scre
 Like with \cl{mnFile} we must tell \cl{mnScreen} which parameters we'd like to see updated on the screen. 
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-monitors[mni++] = mnScreen(printgen=10)
+monitors.append( mnScreen(printgen=10) )
 \end{lstlisting}
 \end{snugshade*}}
 
 Finally, we'll create an ancestral state monitor, which is described in more detail in Section \ref{sec:anc_states}.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-monitors[mni++] = mnJointConditionalAncestralState(
+monitors.append( mnJointConditionalAncestralState(
     tree=phylogeny,
     ctmc=phyMorpho,
     filename="output/mk_simple.states.txt",
     type="Standard",
     printgen=10,
-    withStartStates=false)
+    withStartStates=false) )
 \end{lstlisting}
 \end{snugshade*}}
 

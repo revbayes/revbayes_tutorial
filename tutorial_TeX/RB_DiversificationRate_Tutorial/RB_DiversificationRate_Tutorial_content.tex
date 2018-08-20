@@ -100,11 +100,12 @@ taxa <- T.taxa()
 \end{lstlisting}
 \end{snugshade*}}
 
-Additionally, we can initialize an iterator variable for our vector of moves:
+%Additionally, we can initialize an iterator variable for our vector of moves:
+Additionally, we can initialize a vector for our moves:
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-mvi = 0
-mni = 0
+moves = VectorMoves()
+monitors = VectorMonitors()
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -129,11 +130,12 @@ If you want to represent more prior uncertainty by, \EG allowing for two orders 
 
 To estimate the value of $\lambda$, we assign a proposal mechanism to operate on this node.
 In \RevBayes these MCMC sampling algorithms are called \emph{moves}.
-We need to create a vector of moves and we can do this by using vector indexing and our pre-initialized iterator \cl{mi}.
+%We need to create a vector of moves and we can do this by using vector indexing and our pre-initialized iterator \cl{mi}.
+We need to create a vector of moves and we can do this by using the function \cl{moves.append}.
 We will use a scaling move on $\lambda$ called \cl{mvScale}.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-moves[++mvi] = mvScale(birth_rate,lambda=1,tune=true,weight=3)
+moves.append( mvScale(birth_rate,lambda=1,tune=true,weight=3) )
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -206,14 +208,14 @@ The monitor functions are all called \cl{mn*}, where \cl{*} is the wildcard repr
 First, we will initialize the model monitor using the \cl{mnModel} function. This creates a new monitor variable that will output the states for all model parameters when passed into a MCMC function.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-monitors[++mni] = mnModel(filename="output/primates_Yule.log",printgen=10, separator = TAB)
+monitors.append( mnModel(filename="output/primates_Yule.log",printgen=10, separator = TAB) )
 \end{lstlisting}
 \end{snugshade*}}
 
 Additionally, create a screen monitor that will report the states of specified variables to the screen with \cl{mnScreen}:
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-monitors[++mni] = mnScreen(printgen=1000, birth_rate)
+monitors.append( mnScreen(printgen=1000, birth_rate) )
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -401,7 +403,7 @@ Thus, we just use the same prior for the diversification rate as we used before 
 diversification_mean <- ln( ln(367.0/2.0) / T.rootAge() )
 diversification_sd <- 0.587405
 diversification ~ dnLognormal(mean=diversification_mean,sd=diversification_sd)
-moves[++mvi] = mvScale(diversification,lambda=1.0,tune=true,weight=3.0)
+moves.append( mvScale(diversification,lambda=1.0,tune=true,weight=3.0) )
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -414,7 +416,7 @@ For simplicity we use the same prior on the turnover rate but with two orders of
 turnover_mean <- ln( ln(367.0/2.0) / T.rootAge() )
 turnover_sd <- 0.587405*2
 turnover ~ dnLognormal(mean=turnover_mean,sd=turnover_sd)
-moves[++mvi] = mvScale(turnover,lambda=1.0,tune=true,weight=3.0)
+moves.append( mvScale(turnover,lambda=1.0,tune=true,weight=3.0) )
 \end{lstlisting}
 \end{snugshade*}}
 

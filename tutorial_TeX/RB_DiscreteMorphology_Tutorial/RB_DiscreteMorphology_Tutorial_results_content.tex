@@ -150,12 +150,12 @@ The completed exercises from Section \ref{sec:dm_overview} made use of a monitor
 
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-monitors[mni++] = mnJointConditionalAncestralState(tree=phylogeny,
+monitors.append( mnJointConditionalAncestralState(tree=phylogeny,
                                                    ctmc=phyMorpho,
                                                    filename="output/simple.states.txt",
                                                    type="Standard",
                                                    printgen=10,
-                                                   withTips=false)
+                                                   withTips=false) )
 \end{lstlisting}
 \end{snugshade*}}
 

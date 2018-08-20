@@ -53,12 +53,12 @@ The number of classes can vary; we have chosen 4 for tractability.\par
 n_cats = 4
 alpha_ofbeta ~ dnExponential( 1 )
 beta_ofbeta ~ dnExponential( 1 )
-moves[mvi++] = mvScale(alpha_ofbeta, lambda=1,    weight=1.0 )
-moves[mvi++] = mvScale(alpha_ofbeta, lambda=0.1,  weight=3.0 )
-moves[mvi++] = mvScale(alpha_ofbeta, lambda=0.01, weight=5.0 )
-moves[mvi++] = mvScale(beta_ofbeta, lambda=1,    weight=1.0 )
-moves[mvi++] = mvScale(beta_ofbeta, lambda=0.1,  weight=3.0 )
-moves[mvi++] = mvScale(beta_ofbeta, lambda=0.01, weight=5.0 )
+moves.append( mvScale(alpha_ofbeta, lambda=1,    weight=1.0 ) )
+moves.append( mvScale(alpha_ofbeta, lambda=0.1,  weight=3.0 ) )
+moves.append( mvScale(alpha_ofbeta, lambda=0.01, weight=5.0 ) )
+moves.append( mvScale(beta_ofbeta, lambda=1,    weight=1.0 ) )
+moves.append( mvScale(beta_ofbeta, lambda=0.1,  weight=3.0 ) )
+moves.append( mvScale(beta_ofbeta, lambda=0.01, weight=5.0 ) )
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -100,7 +100,7 @@ Once we've made the our vector of matrices, we specified moves on our matrix vec
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 matrix_probs ~ dnDirichlet(v(1,1,1,1))
-moves[mvi++] = mvSimplexElementScale(matrix_probs, alpha=10, weight=1.0) 
+moves.append( mvSimplexElementScale(matrix_probs, alpha=10, weight=1.0)  )
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -168,9 +168,9 @@ First, we will create a hyperprior called \cl{dir\_alpha} and specify a move on 
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 dir_alpha ~ dnExponential(1)
-moves[mvi++] = mvScale(dir_alpha, lambda=1,    weight=1.0 )
-moves[mvi++] = mvScale(dir_alpha, lambda=0.1,  weight=3.0 )
-moves[mvi++] = mvScale(dir_alpha, lambda=0.01, weight=5.0 )
+moves.append( mvScale(dir_alpha, lambda=1,    weight=1.0 ) )
+moves.append( mvScale(dir_alpha, lambda=0.1,  weight=3.0 ) )
+moves.append( mvScale(dir_alpha, lambda=0.01, weight=5.0 ) )
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -189,7 +189,7 @@ Next, we will modify our previous loop to use these state frequencies to initial
 \begin{lstlisting}for(i in 1:n_cats)
 {
 	pi[i] ~ dnDirichlet(pi_prior)
-    moves[mvi++] = mvSimplexElementScale(pi[i], alpha=10, weight=1.0) 
+    moves.append( mvSimplexElementScale(pi[i], alpha=10, weight=1.0)  )
     
     Q_morpho[i] := fnF81(pi[i])
 }

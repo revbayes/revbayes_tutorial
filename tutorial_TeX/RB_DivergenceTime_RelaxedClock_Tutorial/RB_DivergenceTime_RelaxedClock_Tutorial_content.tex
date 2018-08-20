@@ -91,12 +91,13 @@ taxa <- data.taxa()
 \end{lstlisting}
 \end{snugshade*}}
 
-Additionally, we set up a counter variable for the number of moves that we already added to our analysis.
+%Additionally, we set up a counter variable for the number of moves that we already added to our analysis.
+Additionally, we create a vector for the moves.
 [Recall that moves are algorithms used to propose new parameter values during the MCMC simulation.]
 This will make it much easier if we extend the model or analysis to include additional moves or to remove some moves.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-mvi = 0 
+moves = VectorMoves() 
 \end{lstlisting}
 \end{snugshade*}}
 You may have noticed that we used the \cl{=} operator to create the move index.
@@ -130,7 +131,7 @@ The Dirichlet prior on our parameter \cl{er} creates a \href{http://en.wikipedia
 For each stochastic node in our model, we must also specify a proposal mechanism if we wish to estimate that parameter. 
 {\tt\small \begin{snugshade*}
 \begin{lstlisting}
-moves[++mvi] = mvSimplexElementScale(er) 
+moves.append( mvSimplexElementScale(er)  )
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -147,7 +148,7 @@ The node \cl{pi} represents the $\pi$ node in Figure~\ref{fig:clock_prior}.
 Now add the simplex scale move on the stationary frequencies to the moves vector:
 {\tt \small \begin{snugshade*}
 \begin{lstlisting}
-moves[++mvi] = mvSimplexElementScale(pi)  
+moves.append( mvSimplexElementScale(pi)   )
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -193,7 +194,7 @@ The random variable that controls the rate variation is the stochastic node \cl{
 We will apply a simple scale move to this parameter.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-moves[++mvi] = mvScale(alpha, weight=2.0)
+moves.append( mvScale(alpha, weight=2.0) )
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -216,12 +217,12 @@ Instead of prior distributions on these parameters directly, we will specify log
 diversification_mean <- ln( ln(n_species/2.0) / 90 )
 diversification_sd <- 0.587405*2
 diversification ~ dnLognormal(mean=diversification_mean,sd=diversification_sd) 
-moves[++mvi] = mvScale(diversification,lambda=1.0,tune=true,weight=3.0)
+moves.append( mvScale(diversification,lambda=1.0,tune=true,weight=3.0) )
 
 turnover_mean <- ln( ln(n_species/2.0) / 90 )
 turnover_sd <- 0.587405*2
 turnover ~ dnLognormal(mean=turnover_mean,sd=turnover_sd) 
-moves[++mvi] = mvScale(turnover,lambda=1.0,tune=true,weight=3.0)
+moves.append( mvScale(turnover,lambda=1.0,tune=true,weight=3.0) )
 
 ### Transform the parameters
 birth_rate := diversification + turnover
@@ -236,7 +237,7 @@ This also has the advantage that the type of the variable for the root age is a 
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 root_time ~ dnNormal(mean=90.0,sd=6.0,min=0.0,max=5000.0)
-moves[++mvi] = mvScale(root_time,weight=2.0)
+moves.append( mvScale(root_time,weight=2.0) )
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -264,12 +265,12 @@ We also need moves that change the ages of the internal nodes; which are for exa
 These moves do not have tuning parameters associated with them, thus you only need to pass in the \cl{psi} node and proposal \cl{weight}. 
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-moves[++mvi] = mvNarrow(psi, weight=5.0)
-moves[++mvi] = mvNNI(psi, weight=1.0)
-moves[++mvi] = mvFNPR(psi, weight=5.0)
-moves[++mvi] = mvFNPR(psi, weight=2.0)
-moves[++mvi] = mvSubtreeScale(psi, weight=3.0)
-moves[++mvi] = mvNodeTimeSlideUniform(psi, weight=15.0)
+moves.append( mvNarrow(psi, weight=5.0) )
+moves.append( mvNNI(psi, weight=1.0) )
+moves.append( mvFNPR(psi, weight=5.0) )
+moves.append( mvFNPR(psi, weight=2.0) )
+moves.append( mvSubtreeScale(psi, weight=3.0) )
+moves.append( mvNodeTimeSlideUniform(psi, weight=15.0) )
 \end{lstlisting}
 \end{snugshade*}}
 The weight specifies how often the move will be applied either on average per iteration or relative to all other moves.
@@ -369,8 +370,8 @@ ucln_sigma ~ dnExponential(10.0)
 \end{snugshade*}}
 Since both variables are stochastic parameters of the model, and defined for positive real numbers, we apply scaling moves on them.
 {\tt \begin{snugshade*}
-\begin{lstlisting}moves[++mvi] = mvScale(ucln_mean, lambda=0.5, weight=5.0)
-moves[++mvi] = mvScale(ucln_sigma, lambda=0.5, weight=5.0)
+\begin{lstlisting}moves.append( mvScale(ucln_mean, lambda=0.5, weight=5.0) )
+moves.append( mvScale(ucln_sigma, lambda=0.5, weight=5.0) )
 \end{lstlisting}
 \end{snugshade*}}
 In the next step we use the function \cl{fnDiscretizeDistribution} to compute the quantiles deterministically of the lognormal distribution.
@@ -394,7 +395,7 @@ We do this for each branch by using a for loop over all branches.
 for (j in 1:n_branches) {
     # for each branch pull from one of the rate categories
     branch_rates[j] ~ dnMixture(rate_categories, rate_probs)
-    moves[++mvi] = mvMixtureAllocation(branch_rates[j], weight=2.0)
+    moves.append( mvMixtureAllocation(branch_rates[j], weight=2.0) )
 }
 \end{lstlisting}
 \end{snugshade*}}
@@ -450,12 +451,13 @@ In this section, will describe how to set up the MCMC sampler and summarize the 
 
 \subsubsection{Specifying Monitors}
 
-For our MCMC analysis, we set up a vector of \textit{monitors} to record the states of our Markov chain. 
+%For our MCMC analysis, we set up a vector of \textit{monitors} to record the states of our Markov chain. 
+For our MCMC analysis, we create a vector for the \textit{monitors} to record the states of our Markov chain. 
 First, we will initialize the model monitor using the \cl{mnModel} function. 
 This creates a new monitor variable that will output the states for all model parameters when passed into a MCMC function. 
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-monitors[++mni] = mnModel(filename="output/primates_cytb_UCLN.log",printgen=10, separator = TAB)
+monitors.append( mnModel(filename="output/primates_cytb_UCLN.log",printgen=10, separator = TAB) )
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -463,14 +465,14 @@ The \cl{mnExtNewick} monitor will record the tree and node or branch parameters.
 These parameters can be summarized automatically in our 
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-monitors[++mni] = mnExtNewick(filename="output/primates_cytb_UCLN.trees", isNodeParameter=FALSE, printgen=10, separator = TAB, tree=psi, branch_rates)
+monitors.append( mnExtNewick(filename="output/primates_cytb_UCLN.trees", isNodeParameter=FALSE, printgen=10, separator = TAB, tree=psi, branch_rates) )
 \end{lstlisting}
 \end{snugshade*}}
 
 Finally, create a screen monitor that will report the states of specified variables to the screen with \cl{mnScreen}:
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-monitors[++mni] = mnScreen(printgen=1000, mean_rt, root_time, age_simiiformes)
+monitors.append( mnScreen(printgen=1000, mean_rt, root_time, age_simiiformes) )
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -579,7 +581,7 @@ Here we use the same prior as if we would assume a global strict clock.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 log_clock_mean ~ dnUniform(-6,1)
-moves[++mvi] = mvSlide(log_clock_mean, weight=2.0)
+moves.append( mvSlide(log_clock_mean, weight=2.0) )
 clock_mean := 10^log_clock_mean
 \end{lstlisting}
 \end{snugshade*}}
@@ -602,8 +604,8 @@ for (i in n_branches:1) {
       branch_rates[i] := branch_rates[psi.parent(i)] * clockRateMultiplier[i]
    }
    clockRateChange[i] := ifelse( clockRateMultiplier[i] == 1, 0, 1 )
-   moves[++mvi] = mvRJSwitch(clockRateMultiplier[i], weight=1.0)
-   moves[++mvi] = mvScale(clockRateMultiplier[i], lambda=0.1, tune=true, weight=2.0)
+   moves.append( mvRJSwitch(clockRateMultiplier[i], weight=1.0) )
+   moves.append( mvScale(clockRateMultiplier[i], lambda=0.1, tune=true, weight=2.0) )
 }
 \end{lstlisting}
 \end{snugshade*}}

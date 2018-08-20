@@ -55,8 +55,8 @@ The second is Element Swap Simplex move, which selects two elements
 of the \texttt{root\_frequencies} vector and simply swaps their values.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-moves[mvi++] = mvBetaSimplex(root_frequencies, alpha=0.5, weight=10)
-moves[mvi++] = mvElementSwapSimplex(root_frequencies, weight=10)
+moves.append( mvBetaSimplex(root_frequencies, alpha=0.5, weight=10) )
+moves.append( mvElementSwapSimplex(root_frequencies, weight=10) )
 \end{lstlisting}
 \end{snugshade*}}
 You can experiment with different weights for each MCMC move.
@@ -205,7 +205,7 @@ a MCMC move on the topology.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 topology ~ dnUniformTopology(taxa=taxa, constraints=clade_constraints, rooted=TRUE)
-moves[mvi++] = mvNNI(topology, weight=10.0)
+moves.append( mvNNI(topology, weight=10.0) )
 \end{lstlisting}
 \end{snugshade*}}
 Next, we create a stochastic node for each branch length.
@@ -215,7 +215,7 @@ We'll also add a simple scaling move for each branch length.
 \begin{lstlisting}
 for (i in 1:n_branches) {
     br_lens[i] ~ dnExponential(10.0)
-    moves[mvi++] = mvScale(br_lens[i], lambda=2, weight=1)
+    moves.append( mvScale(br_lens[i], lambda=2, weight=1) )
 }
 \end{lstlisting}
 \end{snugshade*}}
@@ -234,7 +234,7 @@ Use a flat Dirichlet prior for the exchange rates.
 \begin{lstlisting}
 er_prior <- v(1,1,1,1,1,1)
 er ~ dnDirichlet(er_prior)
-moves[mvi++] = mvSimplexElementScale(er, alpha=10, weight=3)
+moves.append( mvSimplexElementScale(er, alpha=10, weight=3) )
 \end{lstlisting}
 \end{snugshade*}}
 And also a flat Dirichlet prior for the stationary base frequencies.
@@ -242,7 +242,7 @@ And also a flat Dirichlet prior for the stationary base frequencies.
 \begin{lstlisting}
 pi_prior <- v(1,1,1,1)
 pi ~ dnDirichlet(pi_prior)
-moves[mvi++] = mvSimplexElementScale(pi, alpha=10, weight=2)
+moves.append( mvSimplexElementScale(pi, alpha=10, weight=2) )
 \end{lstlisting}
 \end{snugshade*}}
 Now create a deterministic variable for the nucleotide substitution rate matrix.
@@ -387,13 +387,13 @@ rho_1 ~ dnExponential(10.0)
 Add MCMC moves for each of the rates.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-mvi = 1
-moves[mvi++] = mvScale(gamma_0, lambda=1, weight=1)
-moves[mvi++] = mvScale(delta_0, lambda=1, weight=1)
-moves[mvi++] = mvScale(rho_0, lambda=1, weight=1)
-moves[mvi++] = mvScale(gamma_1, lambda=1, weight=1)
-moves[mvi++] = mvScale(delta_1, lambda=1, weight=1)
-moves[mvi++] = mvScale(rho_1, lambda=1, weight=1)
+moves = VectorMoves()
+moves.append( mvScale(gamma_0, lambda=1, weight=1) )
+moves.append( mvScale(delta_0, lambda=1, weight=1) )
+moves.append( mvScale(rho_0, lambda=1, weight=1) )
+moves.append( mvScale(gamma_1, lambda=1, weight=1) )
+moves.append( mvScale(delta_1, lambda=1, weight=1) )
+moves.append( mvScale(rho_1, lambda=1, weight=1) )
 \end{lstlisting}
 \end{snugshade*}}
 Now we create the rate matrix for the chromosome evolution model.
@@ -419,8 +419,8 @@ but here we estimate a different rate for each transition between states 0 and 1
 \begin{lstlisting}
 q_01 ~ dnExponential(10.0)
 q_10 ~ dnExponential(10.0)
-moves[mvi++] = mvScale(q_01, lambda=1, weight=1)
-moves[mvi++] = mvScale(q_10, lambda=1, weight=1)
+moves.append( mvScale(q_01, lambda=1, weight=1) )
+moves.append( mvScale(q_10, lambda=1, weight=1) )
 \end{lstlisting}
 \end{snugshade*}}
 And finally we create the transition rate matrix \texttt{Q\_b} 
@@ -567,10 +567,10 @@ clado_prob := fnChromosomesCladoProbs(clado_type, max_chromo)
 We can't forget to add moves for each cladogenetic event:
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-moves[mvi++] = mvScale(clado_no_change_pr, lambda=1.0, weight=2)
-moves[mvi++] = mvScale(clado_fission_pr, lambda=1.0, weight=2)
-moves[mvi++] = mvScale(clado_fusion_pr, lambda=1.0, weight=2)
-moves[mvi++] = mvScale(clado_polyploid_pr, lambda=1.0, weight=2)
+moves.append( mvScale(clado_no_change_pr, lambda=1.0, weight=2) )
+moves.append( mvScale(clado_fission_pr, lambda=1.0, weight=2) )
+moves.append( mvScale(clado_fusion_pr, lambda=1.0, weight=2) )
+moves.append( mvScale(clado_polyploid_pr, lambda=1.0, weight=2) )
 \end{lstlisting}
 \end{snugshade*}}
 Now we can create the cladogenetic CTMC model.

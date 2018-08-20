@@ -78,10 +78,10 @@ clado_demipoly <- 0.0
 Like usual, we must add MCMC moves for the speciation rates.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-moves[mvi++] = mvScale(clado_no_change, lambda=5.0, weight=1)
-moves[mvi++] = mvScale(clado_fission, lambda=5.0, weight=1)
-moves[mvi++] = mvScale(clado_fusion, lambda=5.0, weight=1)
-moves[mvi++] = mvScale(clado_polyploid, lambda=5.0, weight=1)
+moves.append( mvScale(clado_no_change, lambda=5.0, weight=1) )
+moves.append( mvScale(clado_fission, lambda=5.0, weight=1) )
+moves.append( mvScale(clado_fusion, lambda=5.0, weight=1) )
+moves.append( mvScale(clado_polyploid, lambda=5.0, weight=1) )
 \end{lstlisting}
 \end{snugshade*}
 }
@@ -120,7 +120,7 @@ so we use a uniform prior on the interval $\{0,1\}$.
 \begin{lstlisting}
 rel_extinction ~ dnUniform(0, 1.0)
 rel_extinction(0.4)
-moves[mvi++] = mvScale(rel_extinction, lambda=5.0, weight=3.0)
+moves.append( mvScale(rel_extinction, lambda=5.0, weight=3.0) )
 \end{lstlisting}
 \end{snugshade*}
 }

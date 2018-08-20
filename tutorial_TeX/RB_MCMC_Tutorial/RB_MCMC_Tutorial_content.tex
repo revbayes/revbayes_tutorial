@@ -265,13 +265,13 @@ It is quite likely that our move proposed too many bad new parameters.
 So let us change the window size for the scaling move applied on \cl{alpha} from
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-moves[++mvi] = mvScale(alpha, lambda=50.0, weight=2.0)
+moves.append( mvScale(alpha, lambda=50.0, weight=2.0) )
 \end{lstlisting}
 \end{snugshade*}}
 to
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-moves[++mvi] = mvScale(alpha, lambda=1.0, weight=2.0)
+moves.append( mvScale(alpha, lambda=1.0, weight=2.0) )
 \end{lstlisting}
 \end{snugshade*}}
 This will give us now the following set-up:

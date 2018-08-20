@@ -86,11 +86,12 @@ taxa <- T.taxa()
 \end{lstlisting}
 \end{snugshade*}}
 
-Additionally, we initialize an iterator variable for our vector of moves and monitors.
+%Additionally, we initialize an iterator variable for our vector of moves and monitors.
+Additionally, we initialize vectors for our moves and monitors.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-mvi = 0
-mni = 0
+moves = VectorMoves()
+monitors = VectorMonitors()
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -123,8 +124,8 @@ extinction_sd ~ dnExponential(1.0)
 We apply a simple scaling move on each prior parameter.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-moves[++mvi] = mvScale(speciation_sd,weight=5.0)
-moves[++mvi] = mvScale(extinction_sd,weight=5.0)
+moves.append( mvScale(speciation_sd,weight=5.0) )
+moves.append( mvScale(extinction_sd,weight=5.0) )
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -154,8 +155,8 @@ Normally we would use scaling moves but in this case we work on the log-transfor
 (If you are keen you can test the differences.)
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-moves[++mvi] = mvSlide(log_speciation[1], weight=2)
-moves[++mvi] = mvSlide(log_extinction[1], weight=2)
+moves.append( mvSlide(log_speciation[1], weight=2) )
+moves.append( mvSlide(log_extinction[1], weight=2) )
 \end{lstlisting}
 \end{snugshade*}}
 Now we transform the diversification rate parameters into actual rates using an exponential parameter transformation.
@@ -178,8 +179,8 @@ for (i in 1:NUM_INTERVALS) {
     log_speciation[index] ~ dnNormal( mean=log_speciation[i], sd=speciation_sd )
     log_extinction[index] ~ dnNormal( mean=log_extinction[i], sd=extinction_sd )
 
-    moves[++mvi] = mvSlide(log_speciation[index], weight=2)
-    moves[++mvi] = mvSlide(log_extinction[index], weight=2)
+    moves.append( mvSlide(log_speciation[index], weight=2) )
+    moves.append( mvSlide(log_extinction[index], weight=2) )
 
     speciation[index] := exp( log_speciation[index] )
     extinction[index] := exp( log_extinction[index] )
@@ -191,16 +192,16 @@ Finally, we apply moves that slide all values in the rate vectors, \IE all speci
 We will use an \cl{mvVectorSlide} move.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-moves[++mvi] = mvVectorSlide(log_speciation, weight=10)
-moves[++mvi] = mvVectorSlide(log_extinction, weight=10)
+moves.append( mvVectorSlide(log_speciation, weight=10) )
+moves.append( mvVectorSlide(log_extinction, weight=10) )
 \end{lstlisting}
 \end{snugshade*}}
 
 Additionally, we apply a \cl{mvShrinkExpand} move which changes the spread of several variables around their mean.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-moves[++mvi] = mvShrinkExpand( log_speciation, sd=speciation_sd, weight=10 )
-moves[++mvi] = mvShrinkExpand( log_extinction, sd=extinction_sd, weight=10 )
+moves.append( mvShrinkExpand( log_speciation, sd=speciation_sd, weight=10 ) )
+moves.append( mvShrinkExpand( log_extinction, sd=extinction_sd, weight=10 ) )
 \end{lstlisting}
 \end{snugshade*}}
 Both moves considerably improve the efficiency of our MCMC analysis.
@@ -277,7 +278,7 @@ For our MCMC analysis, we need to set up a vector of \textit{monitors} to record
 First, we will initialize the model monitor using the \cl{mnModel} function. This creates a new monitor variable that will output the states for all model parameters when passed into a MCMC function.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-monitors[++mni] = mnModel(filename="output/primates_EBD.log",printgen=10, separator = TAB)
+monitors.append( mnModel(filename="output/primates_EBD.log",printgen=10, separator = TAB) )
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -285,17 +286,17 @@ Additionally, we create four separate file monitors, one for each vector of spec
 We want to have the speciation and extinction rates stored separately so that we can plot them nicely afterwards.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-monitors[++mni] = mnFile(filename="output/primates_EBD_speciation_rates.log",printgen=10, separator = TAB, speciation)
-monitors[++mni] = mnFile(filename="output/primates_EBD_speciation_times.log",printgen=10, separator = TAB, interval_times)
-monitors[++mni] = mnFile(filename="output/primates_EBD_extinction_rates.log",printgen=10, separator = TAB, extinction)
-monitors[++mni] = mnFile(filename="output/primates_EBD_extinction_times.log",printgen=10, separator = TAB, interval_times)
+monitors.append( mnFile(filename="output/primates_EBD_speciation_rates.log",printgen=10, separator = TAB, speciation) )
+monitors.append( mnFile(filename="output/primates_EBD_speciation_times.log",printgen=10, separator = TAB, interval_times) )
+monitors.append( mnFile(filename="output/primates_EBD_extinction_rates.log",printgen=10, separator = TAB, extinction) )
+monitors.append( mnFile(filename="output/primates_EBD_extinction_times.log",printgen=10, separator = TAB, interval_times) )
 \end{lstlisting}
 \end{snugshade*}}
 
 Finally, we create a screen monitor that will report the states of specified variables to the screen with \cl{mnScreen}:
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-monitors[++mni] = mnScreen(printgen=1000, extinction_sd, speciation_sd)
+monitors.append( mnScreen(printgen=1000, extinction_sd, speciation_sd) )
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -372,7 +373,7 @@ dev.off()
 \begin{itemize}
 \item Remove all previous occurrences of the extinction rates (\IE priors, parameters and moves).
 \item Specify a lognormal prior distribution on the constant extinction rate \\(\cl{extinction $\sim$ dnLognormal(-5,sd=2*0.587405)})
-\item Add a move for the new extinction rate parameter \\\cl{moves[++mvi] = mvScale(extinction,weight=5.0)}.
+\item Add a move for the new extinction rate parameter \\\cl{moves.append( mvScale(extinction,weight=5.0)}. )
 \item Remove the argument \cl{muTimes=interval\_times} from the birth-death process.
 \end{itemize}
 \item How does this influence your estimated rates?

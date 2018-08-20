@@ -98,11 +98,12 @@ psi <- treeArray[1]
 \noindent \\ \impmark You may want to look at this tree before by loading the \cl{primates.tree} in FigTree or any other tree visualization software.
 
 As usual, we start be initializing some useful helper variables.
-For example, we set up a counter variable for the number of moves that we already added to our analysis.
+%For example, we set up a counter variable for the number of moves that we already added to our analysis.
+For example, we set up a vector for moves.
 This will make it much easier if we extend the model or analysis to include additional moves or to remove some moves.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-mvi = 0 
+moves = VectorMoves() 
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -127,8 +128,8 @@ Using this approach we have specified a prior probability distribution on \cl{si
 Since the rate of trait evolution \cl{logSigma} is a stochastic variable and we want to estimate it, we need to add a sliding move on it. Remember that the sliding move proposes new values drawn from a window with width \cl{delta} and is centered around the current values; thus it slides through the parameter space together with the current parameter value.
 {\tt \small \begin{snugshade*}
 \begin{lstlisting}
-moves[++mvi] = mvSlide(logAlpha,delta=10,tune=true,weight=2)
-moves[++mvi] = mvSlide(logSigma, delta=1.0, tune=true, weight=2.0)
+moves.append( mvSlide(logAlpha,delta=10,tune=true,weight=2) )
+moves.append( mvSlide(logSigma, delta=1.0, tune=true, weight=2.0) )
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -150,7 +151,7 @@ logOptim ~ dnUniform(-10,10)
 Again, we'll specify a sliding move that proposes new values for the \cl{rootlogmass} randomly drawn from a window centered around the current value.
 {\tt \small \begin{snugshade*}
 \begin{lstlisting}
-moves[++mvi] = mvSlide(logOptim,delta=10,tune=true,weight=2)
+moves.append( mvSlide(logOptim,delta=10,tune=true,weight=2) )
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -170,7 +171,7 @@ Let us start by creating the random variables for the internal nodes. Remember t
 for (i in (numNodes-1):(numTips+1) ) {
   logmass[i] ~ dnOrnsteinUhlenbeck( x0=logmass, theta=logOptim, alpha=alpha, sigma=sigma, time=psi.branchLength(i) )
   # moves on the Ornstein-Uhlenbeck process
-  moves[++mvi] = mvSlide( logmass[i], delta=10, tune=true ,weight=2) 
+  moves.append( mvSlide( logmass[i], delta=10, tune=true ,weight=2)  )
 }
 \end{lstlisting}
 \end{snugshade*}}
@@ -268,7 +269,7 @@ Next, we specify the prior distribution on the root value.
 {\tt \small \begin{snugshade*}
 \begin{lstlisting}
 logRootOptim ~ dnUniform(-10,10)
-moves[++mvi] = mvSlide(logRootOptim,delta=10,tune=true,weight=2)
+moves.append( mvSlide(logRootOptim,delta=10,tune=true,weight=2) )
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -284,8 +285,8 @@ for (i in numBranches:1) {
       nodeOptim[i] := nodeOptim[psi.parent(i)] * optimMultiplier[i]
    }
    optimChange[i] := ifelse( optimMultiplier[i] == 1, 0, 1 )
-   moves[++mvi] = mvRJSwitch(optimMultiplier[i], weight=1)
-   moves[++mvi] = mvScale(optimMultiplier[i], lambda=0.1, tune=true, weight=1)
+   moves.append( mvRJSwitch(optimMultiplier[i], weight=1) )
+   moves.append( mvScale(optimMultiplier[i], lambda=0.1, tune=true, weight=1) )
 }
 \end{lstlisting}
 \end{snugshade*}}

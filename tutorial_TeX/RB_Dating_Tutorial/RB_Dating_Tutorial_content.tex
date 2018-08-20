@@ -157,10 +157,10 @@ taxa <- taxa()
 \end{lstlisting}
 \end{snugshade*}}
 
-%And our move-index iterator.
+%And a vector for the monitors.
 %{\tt \begin{snugshade*}
 %\begin{lstlisting}
-%mi = 1
+%moves = VectorMoves()
 %\end{lstlisting}
 %\end{snugshade*}}
 
@@ -180,7 +180,7 @@ Diversification ($d$) is the speciation rate ($\lambda$) minus the extinction ra
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 diversification ~ dnExponential(10.0) 
-moves[mi++] = mvScale(diversification,lambda=1.0,tune=true,weight=3.0)
+moves.append( mvScale(diversification,lambda=1.0,tune=true,weight=3.0) )
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -190,7 +190,7 @@ Turnover is: $r = \mu / \lambda$.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 turnover ~ dnBeta(2.0, 2.0) 
-moves[mi++] = mvSlide(turnover,delta=1.0,tune=true,weight=3.0)
+moves.append( mvSlide(turnover,delta=1.0,tune=true,weight=3.0) )
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -382,19 +382,19 @@ stem_Ursid_fossil.clamp(tParictis)
 Next, create the vector of moves. These tree moves act on node ages:
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-moves[mi++] = mvNodeTimeSlideUniform(timetree, weight=30.0)
-moves[mi++] = mvSlide(root_time, delta=2.0, tune=true, weight=10.0)
-moves[mi++] = mvScale(root_time, lambda=2.0, tune=true, weight=10.0)
-moves[mi++] = mvTreeScale(tree=timetree, rootAge=root_time, delta=1.0, tune=true, weight=3.0)
+moves.append( mvNodeTimeSlideUniform(timetree, weight=30.0) )
+moves.append( mvSlide(root_time, delta=2.0, tune=true, weight=10.0) )
+moves.append( mvScale(root_time, lambda=2.0, tune=true, weight=10.0) )
+moves.append( mvTreeScale(tree=timetree, rootAge=root_time, delta=1.0, tune=true, weight=3.0) )
 \end{lstlisting}
 \end{snugshade*}}
 
 %And these change the tree topology. If we wish to keep the topology constant, then we can leave these moves out. Note that for some relaxed clock models (autocorrelated rates, DPP, random-local clock) tree topology moves often induce very long mixing times.
 %{\tt \begin{snugshade*}
 %\begin{lstlisting}
-%moves[mi++] = mvNNI(timetree, weight=8.0)
-%moves[mi++] = mvNarrow(timetree, weight=8.0)
-%moves[mi++] = mvFNPR(timetree, weight=8.0)
+%moves.append( mvNNI(timetree, weight=8.0) )
+%moves.append( mvNarrow(timetree, weight=8.0) )
+%moves.append( mvFNPR(timetree, weight=8.0) )
 %\end{lstlisting}
 %\end{snugshade*}}
 %
@@ -440,7 +440,7 @@ Enter the \Rev~code provided in this section in the new model file. Keep in mind
 %br_s <- 0.05
 %br_mu <- ln(br_M) - ((br_s * br_s) * 0.5)
 %base_rate ~ dnLnorm(br_mu, br_s)
-%moves[mi++] = mvScale(base_rate,lambda=0.25,tune=true,weight=5.0)
+%moves.append( mvScale(base_rate,lambda=0.25,tune=true,weight=5.0) )
 %\end{lstlisting}
 %\end{snugshade*}}
 
@@ -448,7 +448,7 @@ The clock-rate parameter is a stochastic node from a gamma distribution.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 clock_rate ~ dnGamma(2.0,4.0)
-moves[mi++] = mvScale(clock_rate,lambda=0.5,tune=true,weight=5.0)
+moves.append( mvScale(clock_rate,lambda=0.5,tune=true,weight=5.0) )
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -467,8 +467,8 @@ Specify the parameters of the GTR model and the moves to operate on them.
 sf ~ dnDirichlet(v(1,1,1,1))
 er ~ dnDirichlet(v(1,1,1,1,1,1))
 Q := fnGTR(er,sf)
-moves[mi++] = mvSimplexElementScale(er, alpha=10.0, tune=true, weight=3.0)
-moves[mi++] = mvSimplexElementScale(sf, alpha=10.0, tune=true, weight=3.0)
+moves.append( mvSimplexElementScale(er, alpha=10.0, tune=true, weight=3.0) )
+moves.append( mvSimplexElementScale(sf, alpha=10.0, tune=true, weight=3.0) )
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -512,7 +512,7 @@ Open your text editor and create the marginal-likelihood analysis file under the
 \begin{lstlisting}
 D <- readDiscreteCharacterData(file="data/bears_irbp.nex")
 n_sites <- D.nchar(1)
-mi = 1
+moves = VectorMoves()
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -623,7 +623,7 @@ In Figure \ref{m_UCLN:fig}, we can represent the vector of $N$ branch rates usin
 %\begin{lstlisting}
 %D <- readDiscreteCharacterData(file="data/bears_irbp.nex")
 %n_sites <- D.nchar(1)
-%mi = 1
+%moves = VectorMoves()
 %\end{lstlisting}
 %\end{snugshade*}}
 %
@@ -651,7 +651,7 @@ Enter the \Rev~code provided in this section in the new model file. Keep in mind
 %br_s <- 0.05
 %br_mu <- ln(br_M) - ((br_s * br_s) * 0.5)
 %base_rate ~ dnLnorm(br_mu, br_s)
-%moves[mi++] = mvScale(base_rate,lambda=0.25,tune=true,weight=5.0)
+%moves.append( mvScale(base_rate,lambda=0.25,tune=true,weight=5.0) )
 %\end{lstlisting}
 %\end{snugshade*}}
 
@@ -690,8 +690,8 @@ ucln_mu := ln(ucln_mean) - (ucln_var * 0.5)
 The only stochastic nodes we need to operate on for this part of the model are the lognormal mean ($M$ or \cl{ucln\_mean}) and the standard deviation ($\sigma$ or \cl{ucln\_sigma}).
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-moves[mi++] = mvScale(ucln_mean, lambda=1.0, tune=true, weight=4.0)
-moves[mi++] = mvScale(ucln_sigma, lambda=0.5, tune=true, weight=4.0)
+moves.append( mvScale(ucln_mean, lambda=1.0, tune=true, weight=4.0) )
+moves.append( mvScale(ucln_sigma, lambda=0.5, tune=true, weight=4.0) )
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -701,7 +701,7 @@ Within this loop, we also add the move for each branch-rate stochastic node to o
 \begin{lstlisting}
 for(i in 1:n_branches){
    branch_rates[i] ~ dnLnorm(ucln_mu, ucln_sigma)
-   moves[mi++] = mvScale(branch_rates[i], lambda=1, tune=true, weight=2.)
+   moves.append( mvScale(branch_rates[i], lambda=1, tune=true, weight=2.) )
 }
 \end{lstlisting}
 \end{snugshade*}}
@@ -720,8 +720,8 @@ Because we are dealing with semi-identifiable parameters, it often helps to appl
 Here we will add 2 additional types of moves that act on vectors.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-moves[mi++] = mvVectorScale(branch_rates,lambda=1.0,tune=true,weight=2.0) 
-moves[mi++] = mvVectorSingleElementScale(branch_rates,lambda=30.0,tune=true,weight=1.0) 
+moves.append( mvVectorScale(branch_rates,lambda=1.0,tune=true,weight=2.0)  )
+moves.append( mvVectorSingleElementScale(branch_rates,lambda=30.0,tune=true,weight=1.0)  )
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -747,8 +747,8 @@ Now, specify the stationary frequencies and exchangeability rates of the GTR mat
 sf ~ dnDirichlet(v(1,1,1,1))
 er ~ dnDirichlet(v(1,1,1,1,1,1))
 Q := fnGTR(er,sf)
-moves[mi++] = mvSimplexElementScale(er, alpha=10.0, tune=true, weight=3.0)
-moves[mi++] = mvSimplexElementScale(sf, alpha=10.0, tune=true, weight=3.0)
+moves.append( mvSimplexElementScale(er, alpha=10.0, tune=true, weight=3.0) )
+moves.append( mvSimplexElementScale(sf, alpha=10.0, tune=true, weight=3.0) )
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -822,7 +822,7 @@ Once you have completed this analysis, record the marginal likelihoods under the
 %br_s <- 0.05
 %br_mu <- ln(br_M) - ((br_s * br_s) * 0.5)
 %base_rate ~ dnLnorm(br_mu, br_s)
-%moves[mi++] = mvScale(base_rate,lambda=0.25,tune=true,weight=5.0)
+%moves.append( mvScale(base_rate,lambda=0.25,tune=true,weight=5.0) )
 %\end{lstlisting}
 %\end{snugshade*}}
 %
@@ -836,7 +836,7 @@ Once you have completed this analysis, record the marginal likelihoods under the
 %{\tt \begin{snugshade*}
 %\begin{lstlisting}
 %nu ~ dnExponential(1.0)
-%moves[mi++] = mvScale(nu, lambda=0.5, tune=true, weight=4.0)
+%moves.append( mvScale(nu, lambda=0.5, tune=true, weight=4.0) )
 %\end{lstlisting}
 %\end{snugshade*}}
 %
@@ -845,7 +845,7 @@ Once you have completed this analysis, record the marginal likelihoods under the
 %{\tt \begin{snugshade*}
 %\begin{lstlisting}
 %root_rate ~ dnGamma(2.0, 4.0)
-%moves[mi++] = mvScale(root_rate, lambda=0.5, tune=true, weight=4.0)
+%moves.append( mvScale(root_rate, lambda=0.5, tune=true, weight=4.0) )
 %\end{lstlisting}
 %\end{snugshade*}}
 %
@@ -886,9 +886,9 @@ Once you have completed this analysis, record the marginal likelihoods under the
 %Additionally, we can also add a move that is retuned so that the proposal size is optimal for the average node rate. 
 %{\tt \begin{snugshade*}
 %\begin{lstlisting}
-%moves[mi++] = mvScaleSingleACLNRates(node_rates, 4.0, false, n_branches)
-%moves[mi++] = mvScaleSingleACLNRates(node_rates, 2.0, false, n_branches)
-%moves[mi++] = mvScaleSingleACLNRates(node_rates, 3.0, true, 3* n_branches)
+%moves.append( mvScaleSingleACLNRates(node_rates, 4.0, false, n_branches) )
+%moves.append( mvScaleSingleACLNRates(node_rates, 2.0, false, n_branches) )
+%moves.append( mvScaleSingleACLNRates(node_rates, 3.0, true, 3* n_branches) )
 %\end{lstlisting}
 %\end{snugshade*}}
 %
@@ -897,7 +897,7 @@ Once you have completed this analysis, record the marginal likelihoods under the
 %This type of proposal can help your chain more efficiently sample parameter space without requiring costly recalculations of the model likelihood.
 %{\tt \begin{snugshade*}
 %\begin{lstlisting}
-%moves[mi++] = mvACLNMixingStep(timetree, node_rates, root_rate, 0.5, false, n_branches)
+%moves.append( mvACLNMixingStep(timetree, node_rates, root_rate, 0.5, false, n_branches) )
 %\end{lstlisting}
 %\end{snugshade*}}
 %
@@ -909,8 +909,8 @@ Once you have completed this analysis, record the marginal likelihoods under the
 %sf ~ dnDirichlet(v(1,1,1,1))
 %er ~ dnDirichlet(v(1,1,1,1,1,1))
 %Q := fnGTR(er,sf)
-%moves[mi++] = mvSimplexElementScale(er, alpha=10.0, tune=true, weight=3.0)
-%moves[mi++] = mvSimplexElementScale(sf, alpha=10.0, tune=true, weight=3.0)
+%moves.append( mvSimplexElementScale(er, alpha=10.0, tune=true, weight=3.0) )
+%moves.append( mvSimplexElementScale(sf, alpha=10.0, tune=true, weight=3.0) )
 %\end{lstlisting}
 %\end{snugshade*}}
 %
@@ -1042,8 +1042,8 @@ D <- readDiscreteCharacterData(file="data/bears_irbp.nex")
 ### get helpful variables from the data
 n_sites <- D.nchar(1)
 
-### initialize an iterator for the moves vector
-mi = 1
+### create a vector for the moves
+moves = VectorMoves()
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -1056,9 +1056,9 @@ These moves can be added right after the birth-death model is sourced.
 source("scripts/m_BDP_bears.Rev")
 
 ### and moves for the tree topology
-moves[mi++] = mvNNI(timetree, weight=8.0)
-moves[mi++] = mvNarrow(timetree, weight=8.0)
-moves[mi++] = mvFNPR(timetree, weight=8.0)
+moves.append( mvNNI(timetree, weight=8.0) )
+moves.append( mvNarrow(timetree, weight=8.0) )
+moves.append( mvFNPR(timetree, weight=8.0) )
 \end{lstlisting}
 \end{snugshade*}}
 

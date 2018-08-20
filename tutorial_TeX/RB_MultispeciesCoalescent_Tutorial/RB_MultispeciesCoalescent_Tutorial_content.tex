@@ -85,8 +85,8 @@ n_species <- primate_tree.ntips()
 taxa <- primate_tree.taxa()
 n_branches <- 2 * n_species - 1 # number of branches in a rooted tree
 
-# set my move index
-mi = 0
+# vector to add MCMC moves
+moves = VectorMoves()
 
 \end{lstlisting}
 \end{snugshade*}}
@@ -115,10 +115,10 @@ sampling_fraction <- 23 / 450 # 23 out of the ~ 450 primate species
 
 # create some moves that change the stochastic variables
 # all moves are sliding and scaling proposals
-moves[++mi] = mvSlideBactrian(speciation,tune=true,weight=2)
-moves[++mi] = mvSlideBactrian(relativeExtinction,tune=true,weight=2)
-moves[++mi] = mvScaleBactrian(speciation,lambda=1,tune=true,weight=2)
-moves[++mi] = mvScaleBactrian(relativeExtinction,lambda=1,tune=true,weight=2)
+moves.append( mvSlideBactrian(speciation,tune=true,weight=2) )
+moves.append( mvSlideBactrian(relativeExtinction,tune=true,weight=2) )
+moves.append( mvScaleBactrian(speciation,lambda=1,tune=true,weight=2) )
+moves.append( mvScaleBactrian(relativeExtinction,lambda=1,tune=true,weight=2) )
 
 
 # construct a variable for the tree drawn from a birth death process
@@ -180,14 +180,14 @@ for (i in 1:n_species) {
 }
 for (i in (n_species+1):n_branches) {
   Ne[i] ~ dnExponential(0.01)
-  moves[++mi] = mvScale(Ne[i],lambda=.1,tune=true,3.0)
-  moves[++mi] = mvSlide(Ne[i],tune=true,2.0)
+  moves.append( mvScale(Ne[i],lambda=.1,tune=true,3.0) )
+  moves.append( mvSlide(Ne[i],tune=true,2.0) )
 
 }
 
 # We could also assume a single effective population size for the entire species tree.
 #Ne ~ dnGamma(shape=1.0,rate=1.0)
-#moves[++mi] = mvScale(Ne,1,true,1.0)
+#moves.append( mvScale(Ne,1,true,1.0) )
 
 for (i in 1:num_loci) {
 
@@ -217,12 +217,12 @@ Then, each gene tree is added to the moves.
 \begin{lstlisting}
 
 ## General tree moves used on the species tree
-moves[++mi] = mvNarrow(psi, weight=5.0)
-moves[++mi] = mvNNI(psi, weight=1.0)
-moves[++mi] = mvFNPR(psi, weight=3.0)
-moves[++mi] = mvGPR(psi, weight=3.0)
-moves[++mi] = mvSubtreeScale(psi, weight=3.0)
-moves[++mi] = mvNodeTimeSlideUniform(psi, weight=5.0)
+moves.append( mvNarrow(psi, weight=5.0) )
+moves.append( mvNNI(psi, weight=1.0) )
+moves.append( mvFNPR(psi, weight=3.0) )
+moves.append( mvGPR(psi, weight=3.0) )
+moves.append( mvSubtreeScale(psi, weight=3.0) )
+moves.append( mvNodeTimeSlideUniform(psi, weight=5.0) )
 
 ## Joint species tree/gene tree moves
 move_species_narrow_exchange = mvSpeciesNarrow( speciesTree=psi, weight=20 )
@@ -233,13 +233,13 @@ move_species_subtree_scale = mvSpeciesSubtreeScale(psi, weight=5)
 for (i in 1:num_loci) {
 
     # moves on each gene tree
-    moves[++mi] = mvNNI(geneTree[i], 5.0)
-    moves[++mi] = mvNarrow(geneTree[i], 5.0)
-    moves[++mi] = mvFNPR(geneTree[i], 3.0)
-    moves[++mi] = mvGPR(geneTree[i], 2.0)
-    moves[++mi] = mvSubtreeScale(geneTree[i], 5.0)
-    moves[++mi] = mvTreeScale(geneTree[i], 1.0, true, 3.0)
-    moves[++mi] = mvNodeTimeSlideUniform(geneTree[i], 20.0)
+    moves.append( mvNNI(geneTree[i], 5.0) )
+    moves.append( mvNarrow(geneTree[i], 5.0) )
+    moves.append( mvFNPR(geneTree[i], 3.0) )
+    moves.append( mvGPR(geneTree[i], 2.0) )
+    moves.append( mvSubtreeScale(geneTree[i], 5.0) )
+    moves.append( mvTreeScale(geneTree[i], 1.0, true, 3.0) )
+    moves.append( mvNodeTimeSlideUniform(geneTree[i], 20.0) )
 
     # Associating the joint species tree/gene tree moves to each gene tree
     move_species_narrow_exchange.addGeneTreeVariable( geneTree[i] )
@@ -249,9 +249,9 @@ for (i in 1:num_loci) {
 }
 
 ## We must not forget to include the joint moves into the vector of moves!
-moves[++mi] = move_species_narrow_exchange
-moves[++mi] = move_species_subtree_scale_beta
-moves[++mi] = move_species_subtree_scale
+moves.append( move_species_narrow_exchange )
+moves.append( move_species_subtree_scale_beta )
+moves.append( move_species_subtree_scale )
 
 
 
@@ -269,10 +269,10 @@ One could also choose to use a relaxed clock model instead of a strict clock.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 
-for ( i in 1:num_loci ) {
+for ( i in 1:num_loci ) { 
    clock_rate[i] ~ dnExponential(1.0)
-   moves[++mi] = mvScale(clock_rate[i], weight=2.0)
-   moves[++mi] = mvSlide(clock_rate[i], weight=3.0)
+   moves.append( mvScale(clock_rate[i], weight=2.0) )
+   moves.append( mvSlide(clock_rate[i], weight=3.0) )
 }
 \end{lstlisting}
 \end{snugshade*}}
@@ -287,12 +287,12 @@ for ( i in 1:num_loci ) {
 
     #### specify the HKY substitution model applied uniformly to all sites ###
     kappa[i] ~ dnLognormal(0,1)
-    moves[++mi] = mvScale(kappa[i],weight=1.0)
-    moves[++mi] = mvSlide(kappa[i], weight=1.0)
+    moves.append( mvScale(kappa[i],weight=1.0) )
+    moves.append( mvSlide(kappa[i], weight=1.0) )
 
     pi_prior[i] <- v(1,1,1,1)
     pi[i] ~ dnDirichlet(pi_prior[i])
-    moves[++mi] = mvSimplexElementScale(pi[i],weight=2.0)
+    moves.append( mvSimplexElementScale(pi[i],weight=2.0) )
 
     #### create a deterministic variable for the rate matrix ####
     Q[i] := fnHKY(kappa[i],pi[i])

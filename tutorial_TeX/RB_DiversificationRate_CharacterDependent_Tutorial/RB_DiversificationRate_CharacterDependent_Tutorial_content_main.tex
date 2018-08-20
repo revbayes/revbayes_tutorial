@@ -264,11 +264,12 @@ taxa <- observed_phylogeny.taxa()
 \end{lstlisting}
 \end{snugshade*}}
 
-Our vectors of moves and monitors will be defined later, but here we initialize iterator variables for them:
+%Our vectors of moves and monitors will be defined later, but here we initialize iterator variables for them:
+Our moves and monitors will be defined later, but here we initialize vectors for them:
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-mvi = 0
-mni = 0
+moves = VectorMoves()
+monitors = VectorMonitors()
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -308,12 +309,12 @@ for (i in 1:NUM_STATES) {
      ### Create a lognormal distributed variable for the diversification rate
     log_speciation[i] ~ dnNormal(mean=rate_mean,sd=rate_sd) 
     speciation[i] := exp( log_speciation[i] )
-    moves[++mvi] = mvSlide(log_speciation[i],delta=0.20,tune=true,weight=3.0)
+    moves.append( mvSlide(log_speciation[i],delta=0.20,tune=true,weight=3.0) )
 
     ### Create a lognormal distributed variable for the turnover rate
     log_extinction[i] ~ dnNormal(mean=rate_mean,sd=rate_sd) 
     extinction[i] := exp( log_extinction[i] )
-    moves[++mvi] = mvSlide(log_extinction[i],delta=0.20,tune=true,weight=3.0)
+    moves.append( mvSlide(log_extinction[i],delta=0.20,tune=true,weight=3.0) )
 
 }
 \end{lstlisting}
@@ -333,8 +334,8 @@ rate_21 ~ dnExponential(rate_pr)
 For both transition rate variables we specify a scaling move.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-moves[++mvi] = mvScale( rate_12, weight=2 )
-moves[++mvi] = mvScale( rate_21, weight=2 )
+moves.append( mvScale( rate_12, weight=2 ) )
+moves.append( mvScale( rate_21, weight=2 ) )
 \end{lstlisting}
 \end{snugshade*}}
 Finally, we put the rates into a matrix, because this is what's needed by the function for the state-dependent birth-death process.
@@ -355,7 +356,7 @@ You could also fix the prior probabilities for the root states to be equal (gene
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 rate_category_prior ~ dnDirichlet( rep(1,NUM_STATES) )
-moves[++mvi] = mvDirichletSimplex(rate_category_prior,tune=true,weight=2)
+moves.append( mvDirichletSimplex(rate_category_prior,tune=true,weight=2) )
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -420,7 +421,7 @@ For our MCMC analysis, we set up a vector of \emph{monitors} to record the state
 The first monitor will model all numerical variables; we are particularly interesed in the rates of speciation, extinction, and transition.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-monitors[++mni] = mnModel(filename="output/primates_BiSSE.log", printgen=1)
+monitors.append( mnModel(filename="output/primates_BiSSE.log", printgen=1) )
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -429,7 +430,7 @@ This monitor takes a draw from the joint posterior distribution of the ancestral
 Thus, with this output file we will be able to make a nice plot with ancestral states.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-monitors[++mni] = mnJointConditionalAncestralState(tree=timetree, cdbdp=timetree, type="Standard", printgen=1, withTips=true, withStartStates=false, filename="output/anc_states_primates_BiSSE.log")
+monitors.append( mnJointConditionalAncestralState(tree=timetree, cdbdp=timetree, type="Standard", printgen=1, withTips=true, withStartStates=false, filename="output/anc_states_primates_BiSSE.log") )
 \end{lstlisting}
 \end{snugshade*}}
 (Note that this is a bit different than the marginal ancestral state reconstructions commonly produced by, e.g., Mesquite or various R packages.
@@ -439,7 +440,7 @@ These joint draws are a self-consistent set of states across all nodes.
 Finally, we add a screen monitor showing some updates during the MCMC run.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-monitors[++mni] = mnScreen(printgen=10, rate_12, rate_21, speciation, extinction)
+monitors.append( mnScreen(printgen=10, rate_12, rate_21, speciation, extinction) )
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -647,11 +648,12 @@ taxa <- observed_phylogeny.taxa()
 \end{lstlisting}
 \end{snugshade*}}
 
-Additionally, we can initialize an iterator variable for our vector of moves and monitors:
+%Additionally, we can initialize an iterator variable for our vector of moves and monitors:
+Additionally, we can initialize a vector for our moves and monitors:
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-mvi = 0
-mni = 0
+moves = VectorMoves()
+monitors = VectorMonitors()
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -688,12 +690,12 @@ for (i in 1:NUM_STATES) {
      ### Create a lognormal distributed variable for the diversification rate
     log_speciation[i] ~ dnNormal(mean=rate_mean,sd=rate_sd) 
     speciation[i] := exp( log_speciation[i] )
-    moves[++mvi] = mvSlide(log_speciation[i],delta=0.20,tune=true,weight=3.0)
+    moves.append( mvSlide(log_speciation[i],delta=0.20,tune=true,weight=3.0) )
 
     ### Create a lognormal distributed variable for the turnover rate
     log_extinction[i] ~ dnNormal(mean=rate_mean,sd=rate_sd) 
     extinction[i] := exp( log_extinction[i] )
-    moves[++mvi] = mvSlide(log_extinction[i],delta=0.20,tune=true,weight=3.0)
+    moves.append( mvSlide(log_extinction[i],delta=0.20,tune=true,weight=3.0) )
 
 }
 \end{lstlisting}
@@ -705,11 +707,11 @@ for (i in 1:(NUM_HIDDEN-1)) {
     
     ### Create an exponential distributed variable for the diversification rate
     speciation_beta[i] ~ dnExp(1.0) 
-    moves[++mvi] = mvScale(speciation_beta[i],lambda=0.20,tune=true,weight=2.0)        
+    moves.append( mvScale(speciation_beta[i],lambda=0.20,tune=true,weight=2.0)         )
 
     ### Create an normal distributed variable for the turnover rate
     extinction_beta[i] ~ dnNormal(0.0,1.0)
-    moves[++mvi] = mvSlide(extinction_beta[i],delta=0.20,tune=true,weight=2.0)
+    moves.append( mvSlide(extinction_beta[i],delta=0.20,tune=true,weight=2.0) )
     
 }
 \end{lstlisting}
@@ -742,8 +744,8 @@ rate_21 ~ dnExponential(rate_pr)
 For both rate variable we specify a scaling move.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-moves[++mvi] = mvScale( rate_12, weight=2 )
-moves[++mvi] = mvScale( rate_21, weight=2 )
+moves.append( mvScale( rate_12, weight=2 ) )
+moves.append( mvScale( rate_21, weight=2 ) )
 \end{lstlisting}
 \end{snugshade*}}
 Finally, we build a rate matrix for the relative-rate of change between categories.
@@ -758,7 +760,7 @@ We assume the transitions among the hidden states are all equal and drawn from a
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 hidden_rate ~ dnExponential(rate_pr)
-moves[++mvi] = mvScale(hidden_rate,lambda=0.2,tune=true,weight=5)
+moves.append( mvScale(hidden_rate,lambda=0.2,tune=true,weight=5) )
 
 for (i in 1:(NUM_HIDDEN * (NUM_HIDDEN - 1))) {
     R[i] := hidden_rate
@@ -782,7 +784,7 @@ In this case we are actually estimating the prior frequencies of the root states
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 rate_category_prior ~ dnDirichlet( rep(1,NUM_STATES) )
-moves[++mvi] = mvDirichletSimplex(rate_category_prior,tune=true,weight=2)
+moves.append( mvDirichletSimplex(rate_category_prior,tune=true,weight=2) )
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -850,9 +852,9 @@ For our MCMC analysis, we set up a vector of \emph{monitors} to record the state
 For more details 
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-monitors[++mni] = mnModel(filename="output/primates_HiSSE.log", printgen=1)
-monitors[++mni] = mnJointConditionalAncestralState(tree=timetree, cdbdp=timetree, type="NaturalNumbers", printgen=1, withTips=true, withStartStates=false, filename="output/anc_states_primates_HiSSE.log")
-monitors[++mni] = mnScreen(printgen=100, Q, R)
+monitors.append( mnModel(filename="output/primates_HiSSE.log", printgen=1) )
+monitors.append( mnJointConditionalAncestralState(tree=timetree, cdbdp=timetree, type="NaturalNumbers", printgen=1, withTips=true, withStartStates=false, filename="output/anc_states_primates_HiSSE.log") )
+monitors.append( mnScreen(printgen=100, Q, R) )
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -1030,8 +1032,8 @@ data_biogeo = readCharacterDataDelimited("data/primates_biogeo.tsv", stateLabels
 Also we need to set the move and monitor indices.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-mvi = 0
-mni = 0
+moves = VectorMoves()
+monitors = VectorMonitors()
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -1073,9 +1075,9 @@ state 0.
 Add MCMC moves for each extinction rate.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-moves[++mvi] = mvSlide( extinction_rates[2], weight=4 )
-moves[++mvi] = mvSlide( extinction_rates[3], weight=4 )
-moves[++mvi] = mvSlide( extinction_rates[4], weight=4 )
+moves.append( mvSlide( extinction_rates[2], weight=4 ) )
+moves.append( mvSlide( extinction_rates[3], weight=4 ) )
+moves.append( mvSlide( extinction_rates[4], weight=4 ) )
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -1099,8 +1101,8 @@ anagenetic_dispersal_23 ~ dnLognormal(rate_mean, rate_sd) # disperse from Old to
 Now add MCMC moves for each anagenetic dispersal rate.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-moves[++mvi] = mvSlide( anagenetic_dispersal_13, weight=4 )
-moves[++mvi] = mvSlide( anagenetic_dispersal_23, weight=4 )
+moves.append( mvSlide( anagenetic_dispersal_13, weight=4 ) )
+moves.append( mvSlide( anagenetic_dispersal_23, weight=4 ) )
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -1157,7 +1159,7 @@ Define the speciation rate for widespread sympatric cladogenesis events:
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 speciation_wide_sympatry ~ dnLognormal(rate_mean, rate_sd)
-moves[++mvi] = mvSlide( speciation_wide_sympatry, weight=4 )
+moves.append( mvSlide( speciation_wide_sympatry, weight=4 ) )
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -1182,7 +1184,7 @@ ancestral range but the other lineage inherits only a single region.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 speciation_sub_sympatry ~ dnLognormal(rate_mean, rate_sd)
-moves[++mvi] = mvSlide( speciation_sub_sympatry, weight=4 )
+moves.append( mvSlide( speciation_sub_sympatry, weight=4 ) )
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -1205,7 +1207,7 @@ split the ancestral range:
 {\tt \begin{snugshade*}
 \begin{lstlisting}
 speciation_allopatry ~ dnLognormal(rate_mean, rate_sd)
-moves[++mvi] = mvSlide( speciation_allopatry, weight=4 )
+moves.append( mvSlide( speciation_allopatry, weight=4 ) )
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -1295,9 +1297,9 @@ mymodel = model(classe)
 First, set up the monitors that will output parameter values to file and screen.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-monitors[++mni] = mnModel(filename="output/primates_ClaSSE.log", printgen=1)
-monitors[++mni] = mnJointConditionalAncestralState(tree=observed_phylogeny, cdbdp=classe, type="NaturalNumbers", printgen=1, withTips=true, withStartStates=true, filename="output/anc_states_primates_ClaSSE.log")
-monitors[++mni] = mnScreen(printgen=1, speciation_wide_sympatry, speciation_sub_sympatry, speciation_allopatry, extinction_rates)
+monitors.append( mnModel(filename="output/primates_ClaSSE.log", printgen=1) )
+monitors.append( mnJointConditionalAncestralState(tree=observed_phylogeny, cdbdp=classe, type="NaturalNumbers", printgen=1, withTips=true, withStartStates=true, filename="output/anc_states_primates_ClaSSE.log") )
+monitors.append( mnScreen(printgen=1, speciation_wide_sympatry, speciation_sub_sympatry, speciation_allopatry, extinction_rates) )
 \end{lstlisting}
 \end{snugshade*}}
 

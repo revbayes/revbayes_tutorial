@@ -243,7 +243,7 @@ A post increment (\cl{a++}) increases the value after returning the value, that 
 A pre increment (\cl{++a}) increases the value before returning the value, that is, the new value is returned.
 {\tt \begin{snugshade*}
 \begin{lstlisting}    
-index <- 1
+moves = VectorMoves()
 index++                          # post increment
 ++index                          # pre increment
 index--                          # post decrement
@@ -661,8 +661,8 @@ We use the same sliding window move as we implemented above by ourselves.
 {\tt \begin{snugshade*}
 \begin{lstlisting} 
 mi <- 0
-moves[mi++] = mvSlide(alpha)
-moves[mi++] = mvSlide(beta)
+moves.append( mvSlide(alpha) )
+moves.append( mvSlide(beta) )
 \end{lstlisting}
 \end{snugshade*}}
 Then we set up the model.
@@ -805,10 +805,10 @@ Only for \cl{theta} we choose the sliding window proposal.
 {\tt \begin{snugshade*}
 \begin{lstlisting} 
 mi <- 0
-moves[mi++] = mvScale(eta)
-moves[mi++] = mvScale(beta)
-moves[mi++] = mvScale(gamma)
-moves[mi++] = mvSlide(theta)
+moves.append( mvScale(eta) )
+moves.append( mvScale(beta) )
+moves.append( mvScale(gamma) )
+moves.append( mvSlide(theta) )
 \end{lstlisting}
 \end{snugshade*}}
 Then, we set up the model by computing the conditional rate of the Poisson distribution, creating random variables for each observation and attaching (clamping) data to the variables.

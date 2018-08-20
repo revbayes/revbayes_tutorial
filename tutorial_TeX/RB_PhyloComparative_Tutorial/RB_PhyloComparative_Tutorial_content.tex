@@ -161,11 +161,12 @@ psi <- treeArray[1]
 %\end{snugshade*}}
 
 As usual, we start be initializing some useful helper variables.
-For example, we set up a counter variable for the number of moves that we already added to our analysis.
+%For example, we set up a counter variable for the number of moves that we already added to our analysis.
+For example, we will set up a vector for the moves.
 This will make it much easier if we extend the model or analysis to include additional moves or to remove some moves.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-mvi = 0 
+moves = VectorMoves() 
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -187,7 +188,7 @@ Using this approach we have specified a prior probability distribution on \cl{si
 Since the rate of trait evolution \cl{logSigma} is a stochastic variable and we want to estimate it, we need to add a sliding move on it. Remember that the sliding move proposes new values drawn from a window with width \cl{delta} and is centered around the current values; thus it slides through the parameter space together with the current parameter value.
 {\tt \small \begin{snugshade*}
 \begin{lstlisting}
-moves[++mvi] = mvSlide(logSigma, delta=1.0, tune=true, weight=2.0)
+moves.append( mvSlide(logSigma, delta=1.0, tune=true, weight=2.0) )
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -276,7 +277,7 @@ rootlogmass ~ dnUniform(-100,100)
 Next, we'll specify a sliding move that proposes new values for the \cl{rootlogmass} randomly drawn from a window centered around the current value.
 {\tt \small \begin{snugshade*}
 \begin{lstlisting}
-moves[++mvi] = mvSlide(rootlogmass,delta=10,tune=true,weight=2) 
+moves.append( mvSlide(rootlogmass,delta=10,tune=true,weight=2)  )
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -340,7 +341,7 @@ rootlogmass ~ dnUniform(-100,100)
 Again, we'll specify a sliding move that proposes new values for the \cl{rootlogmass} randomly drawn from a window centered around the current value.
 {\tt \small \begin{snugshade*}
 \begin{lstlisting}
-moves[++mvi] = mvSlide(rootlogmass,delta=10,tune=true,weight=2) 
+moves.append( mvSlide(rootlogmass,delta=10,tune=true,weight=2)  )
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -370,7 +371,7 @@ Let us start by creating the random variables for the internal nodes. Remember t
 for (i in (numNodes-1):(numTips+1) ) {
   logmass[i] ~ dnNormal( logmass[psi.parent(i)], sd=sigma*sqrt(psi.branchLength(i)) )
   # moves on the Brownian process
-  moves[++mvi] = mvSlide( logmass[i], delta=10, tune=true ,weight=2) 
+  moves.append( mvSlide( logmass[i], delta=10, tune=true ,weight=2)  )
 }
 \end{lstlisting}
 \end{snugshade*}}
@@ -457,7 +458,7 @@ Furthermore, we have now four characters and hence we will estimate a root state
 \begin{lstlisting}
 for (i in 1:4) {
    rootlogmass[i] ~ dnUniform(-100,100)
-   moves[++mvi] = mvSlide(rootlogmass[i],delta=10,tune=true,weight=2) 
+   moves.append( mvSlide(rootlogmass[i],delta=10,tune=true,weight=2)  )
 }
 \end{lstlisting}
 \end{snugshade*}}
@@ -492,7 +493,7 @@ Compare the results to the previous single trait analyses?
 {\tt \small \begin{snugshade*}
 \begin{lstlisting}
 perSiteRates ~ dnDirichlet([1,1,1,1])
-moves[++mvi] = mvSimplexElementScale(perSiteRates,alpha=10,tune=true,weight=4)
+moves.append( mvSimplexElementScale(perSiteRates,alpha=10,tune=true,weight=4) )
 \end{lstlisting}
 \end{snugshade*}}
 
@@ -524,7 +525,7 @@ siteRateDiff ~ dnBeta(1,1)
 Next, we specify a sliding move on the \cl{siteRateDiff}.
 {\tt \small \begin{snugshade*}
 \begin{lstlisting}
-moves[++mvi] = mvSlide(siteRateDiff,delta=10,tune=true,weight=2)
+moves.append( mvSlide(siteRateDiff,delta=10,tune=true,weight=2) )
 \end{lstlisting}
 \end{snugshade*}}
 To obtain the rates we use \cl{siteRateDiff} as the rate for the ECV evolution in females and males and 1-\cl{siteRateDiff} as the rate for the body mass evolution in females and males.
@@ -641,7 +642,7 @@ Is any of the log-Bayes factors larger than 1.16 for substantial support of the 
 %move the trend parameter during the MCMC, using a regular sliding move:
 %{\tt \small \begin{snugshade*}
 %\begin{lstlisting}
-%moves[++mvi] = mvSlide(copestrend, delta=2.0, tune=true, weight=3.0)
+%moves.append( mvSlide(copestrend, delta=2.0, tune=true, weight=3.0) )
 %\end{lstlisting}
 %\end{snugshade*}}
 %
@@ -690,8 +691,8 @@ Instead, you could also use directly the speciation and extinction rates, \EG en
 {\tt \small \begin{snugshade*}
 \begin{lstlisting}
 # rescaling moves on speciation and extinction rates
-moves[++mvi] = mvScale(diversification, lambda=1, tune=true, weight=3.0)
-moves[++mvi] = mvScale(turnover, lambda=1, tune=true, weight=3.0)
+moves.append( mvScale(diversification, lambda=1, tune=true, weight=3.0) )
+moves.append( mvScale(turnover, lambda=1, tune=true, weight=3.0) )
 \end{lstlisting}
 \end{snugshade*}}
 The phylogeny that we used are obviously not a complete sample of all the species and you should take the incomplete sampling into account. We will simply use an empirical estimate of the fraction of species which we included in this study. For more information about incomplete taxon sampling see \cite{Hohna2011} and \cite{Hohna2014a}. 
@@ -711,16 +712,16 @@ Note that, here, we do not have included any fossil information: we are merely d
 The first moves on the tree which we specify are moves that change the node ages. The first move randomly picks a subtree and rescales it, and the second move randomly pick a node and uniformly proposes a new node age between its parent age and oldest child's age.
 {\tt \small \begin{snugshade*}
 \begin{lstlisting}
-moves[++mvi] = mvSubtreeScale(psi, weight=5.0)
-moves[++mvi] = mvNodeTimeSlideUniform(psi, weight=10.0)
+moves.append( mvSubtreeScale(psi, weight=5.0) )
+moves.append( mvNodeTimeSlideUniform(psi, weight=10.0) )
 \end{lstlisting}
 \end{snugshade*}}
 
 We also need moves on the tree topology to estimate the phylogeny. The two moves which you use are the nearest-neighbor interchange (NNI) and the fixed-nodeheight-prune-and-regraft (FNPR) \citep{Hohna2012}.
 {\tt \small \begin{snugshade*}
 \begin{lstlisting}
-moves[++mvi] = mvNNI(psi, weight=5.0)
-moves[++mvi] = mvFNPR(psi, weight=5.0)\end{lstlisting}
+moves.append( mvNNI(psi, weight=5.0) )
+moves.append( mvFNPR(psi, weight=5.0) )\end{lstlisting}
 \end{snugshade*}}
 We are essentially done now. We  only need to add a new monitor for the tree so that we can monitor and build the maximum a posteriori tree later.
 {\tt \small \begin{snugshade*}
@@ -801,8 +802,8 @@ pi ~ dnDirichlet(pi_prior)
 Now add the simplex scale move one each the exchangeability rates \cl{er} and the stationary frequencies \cl{pi} to the moves vector:
 {\tt \small \begin{snugshade*}
 \begin{lstlisting}
-moves[++mvi] = mvSimplexElementScale(er) 
-moves[++mvi] = mvSimplexElementScale(pi)  
+moves.append( mvSimplexElementScale(er)  )
+moves.append( mvSimplexElementScale(pi)   )
 \end{lstlisting}
 \end{snugshade*}}
 We can finish setting up this part of the model by creating a deterministic node for the GTR instantaneous-rate matrix \cl{Q}. 
@@ -835,7 +836,7 @@ The random variable that controls the rate variation is the stochastic node \cl{
 We will apply a simple scale move to this parameter.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-moves[++mvi] = mvScale(alpha, weight=2.0)
+moves.append( mvScale(alpha, weight=2.0) )
 \end{lstlisting}
 \end{snugshade*}}
 This finishes the substitution process part of the model.
@@ -850,7 +851,7 @@ clockRate := 10^logClockRate
 We will apply a sliding window move to the \cl{\cl{logClockRate}}.
 {\tt \begin{snugshade*}
 \begin{lstlisting}
-moves[++mvi] = mvSlide(logClockRate, delta=0.1, tune=true, weight=2.0)
+moves.append( mvSlide(logClockRate, delta=0.1, tune=true, weight=2.0) )
 \end{lstlisting}
 \end{snugshade*}}
 
